@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {dayOf,dailyRows,counts,revised,fingerprint} from '../daily-import.mjs';
+import {dayOf,dailyRows,counts,revised,fingerprint} from '../src/daily-import.mjs';
 test('fechas del PDF y filtros combinados sin inventar fecha de importación',()=>{
  assert.equal(dayOf({date:'23/10/26'}),'2026-10-23');assert.equal(dayOf({date:'23/10/2026'}),'2026-10-23');assert.equal(dayOf({importedAt:'2026-10-23'}),'');
  const rows=[{date:'23/10/2026',operator:'Ana',plate:'1234',route:'Norte',status:'En preparación'},{date:'23/10/2026',operator:'Ana',plate:'5678',status:'Finalizada'},{date:'22/10/2026',operator:'Ana'}];
