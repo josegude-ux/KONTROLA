@@ -38,7 +38,7 @@
       <p class="muted">Selecciona la función de tu jornada.</p>
       <div class="home-grid">
         <button id="openPreparation" class="feature feature-pink" type="button"><span class="feature-icon" aria-hidden="true">📦</span><span><b>Preparación</b><small>Consulta de mercancía por pasillos y control de tiempo</small></span><span class="arrow">→</span></button>
-        <button id="openReview" class="feature feature-blue" type="button" disabled aria-disabled="true"><span class="feature-icon" aria-hidden="true">✅</span><span><b>Revisión</b><small>Verificación física · Próxima fase</small></span><span class="arrow">→</span></button>
+        <button id="openReview" class="feature feature-blue" type="button"><span class="feature-icon" aria-hidden="true">✅</span><span><b>Verificación</b><small>Comprobación física independiente, línea por línea</small></span><span class="arrow">→</span></button>
         <button id="openAdmin" class="feature feature-cream" type="button" hidden><span class="feature-icon" aria-hidden="true">🗂️</span><span><b>Administración</b><small>Publicar documentos y gestionar las cargas</small></span><span class="arrow">→</span></button>
       </div>
     </section>
@@ -55,6 +55,24 @@
         <div class="line"><div><h2>Mercancía por pasillos</h2><p class="muted">Solo consulta. El picking se registra con la pistola y Business Central.</p></div><button id="viewPdf" class="secondary" type="button">Ver PDF original</button></div>
         <div id="aisleTabs" class="pills" role="group" aria-label="Filtrar por pasillo"></div>
         <div id="productList"></div>
+      </section>
+    </section>
+    <section id="reviewLoadsView" class="view" hidden>
+      <div class="page-heading"><button type="button" data-back="home" class="back-button">← Volver</button><h1>Verificación física</h1><p class="muted">Solo aparecen preparaciones finalizadas por otra persona. Selecciona una carga para comprobarla línea por línea.</p></div>
+      <div class="toolbar"><label class="search-wrap">Buscar carga<input id="reviewSearch" type="search" placeholder="Nº de carga, ruta o matrícula"></label><button type="button" id="reloadReviewLoads" class="secondary">Actualizar</button></div>
+      <div id="reviewLoadsList" class="loads-list" aria-live="polite"></div>
+    </section>
+    <section id="reviewDetailView" class="view" hidden>
+      <div class="page-heading"><button type="button" id="backToReviewLoads" class="back-button">← Volver a verificaciones</button><p class="eyebrow">VERIFICACIÓN FÍSICA</p><h1 id="reviewDetailTitle"></h1><p class="muted" id="reviewDetailSubtitle"></p></div>
+      <div id="reviewStatus" class="info-bar" aria-live="polite"></div>
+      <div id="reviewProgress" class="facts"></div>
+      <section class="panel">
+        <div class="line"><div><h2>Comprobación de mercancía</h2><p class="muted">Introduce la cantidad física. Las diferencias crean incidencias en KONTROLA; la regularización en Business Central es manual.</p></div></div>
+        <div id="verificationLines"></div>
+        <div class="verification-finish">
+          <button id="finishVerification" class="primary" type="button" disabled>Finalizar verificación</button>
+          <p class="hint">La carga se cierra al comprobar todas las líneas, aunque queden incidencias pendientes.</p>
+        </div>
       </section>
     </section>
     <section id="adminView" class="view" hidden>

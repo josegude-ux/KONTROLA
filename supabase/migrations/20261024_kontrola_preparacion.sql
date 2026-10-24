@@ -26,6 +26,19 @@ $$;
 revoke all on function public.kontrola_es_administrador() from public, anon;
 grant execute on function public.kontrola_es_administrador() to authenticated;
 
+-- Expone solo el perfil de la sesión actual; el navegador no consulta usuarios_app.
+create or replace function public.kontrola_mi_perfil()
+returns table(id uuid,nombre text,rol text,activo boolean)
+language sql stable security definer set search_path = ''
+as $$
+ select u.id,u.nombre::text,u.rol::text,u.activo
+ from public.usuarios_app u
+ where u.id = (select auth.uid()) and u.activo = true
+  and u.rol in ('operario','administrador');
+$$;
+revoke all on function public.kontrola_mi_perfil() from public, anon;
+grant execute on function public.kontrola_mi_perfil() to authenticated;
+
 create table if not exists public.kontrola_cargas (
  codigo text primary key check (codigo ~ '^LP[0-9]{2}-[0-9]{4,6}$'),
  fecha date,

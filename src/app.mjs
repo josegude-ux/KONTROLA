@@ -1,8 +1,10 @@
 import {SUPABASE_URL,SUPABASE_KEY,PDF_BUCKET,APP_VERSION} from "./config.mjs";
 import {parseDocumentPages} from "./core.mjs";
 import {agruparPasillos,ordenarCargas,validacionPublicacion,normalizarCarga,rutaArchivo} from "./logic.mjs";
+import {parseCheckedQuantity,summarizeVerification} from "./verification.mjs";
 const $=id=>document.getElementById(id);
 let client=null,user=null,profile=null,loads=[],current=null,groups=[],selectedAisle="TODOS",busy=false,opening=false;
+let reviewLoads=[],currentVerification=null,verificationLines=[];
 $("appVersion").textContent=APP_VERSION;
 const visible=(element,show)=>{element.hidden=!show;};
 const status=(id,message="",level="")=>{const el=$(id);el.textContent=message;el.className="status "+level;};
@@ -21,19 +23,20 @@ function switchView(id,{force=false}={}){
   return true;
 }
 function loggedOut(message=""){
-  user=null;profile=null;loads=[];current=null;
+  user=null;profile=null;loads=[];current=null;reviewLoads=[];currentVerification=null;verificationLines=[];
   visible($("shell"),false);visible($("loginView"),true);
   status("authMessage",message,message?"error":"");
 }
 async function authorize(authUser){
-  const {data,error}=await client.from("usuarios_app").select("id,nombre,rol,activo").eq("id",authUser.id).maybeSingle();
+  const {data,error}=await client.rpc("kontrola_mi_perfil");
   if(error)throw error;
-  if(!data?.activo||!["operario","administrador"].includes(data.rol))throw Error("Cuenta no habilitada. Solicita acceso a administración.");
-  user=authUser;profile=data;
-  $("userName").textContent=data.nombre||authUser.email||"Usuario";
-  $("profileName").textContent=data.nombre||authUser.email||"";
-  $("profileRole").textContent=data.rol;
-  visible($("openAdmin"),data.rol==="administrador");
+  const ownProfile=Array.isArray(data)?data[0]:data;
+  if(!ownProfile?.activo||ownProfile.id!==authUser.id||!["operario","administrador"].includes(ownProfile.rol))throw Error("Cuenta no habilitada. Solicita acceso a administración.");
+  user=authUser;profile=ownProfile;
+  $("userName").textContent=ownProfile.nombre||authUser.email||"Usuario";
+  $("profileName").textContent=ownProfile.nombre||authUser.email||"";
+  $("profileRole").textContent=ownProfile.rol;
+  visible($("openAdmin"),ownProfile.rol==="administrador");
   visible($("loginView"),false);visible($("shell"),true);switchView("homeView");
 }
 async function initialize(){
@@ -98,12 +101,13 @@ function renderLoadList(){
 $("loadSearch").addEventListener("input",renderLoadList);
 $("reloadLoads").addEventListener("click",()=>refreshLoads().catch(()=>{}));
 $("openPreparation").addEventListener("click",async()=>{switchView("loadsView");await refreshLoads().catch(()=>{});});
-$("openReview").addEventListener("click",()=>{});
+$("openReview").addEventListener("click",async()=>{switchView("reviewLoadsView");await refreshReviewLoads().catch(()=>{});});
 $("openAdmin").addEventListener("click",()=>{if(profile?.rol==="administrador")switchView("adminView");});
 $("openSettings").addEventListener("click",()=>switchView("settingsView"));
 $("goHome").addEventListener("click",()=>switchView("homeView"));
 document.querySelectorAll("[data-back='home']").forEach(b=>b.addEventListener("click",()=>switchView("homeView")));
 $("backToLoads").addEventListener("click",()=>switchView("loadsView"));
+$("backToReviewLoads").addEventListener("click",()=>switchView("reviewLoadsView"));
 async function openLoad(code){
   if(opening||!user)return;
   const load=loads.find(x=>x.codigo===code);if(!load)return;
@@ -158,6 +162,132 @@ function renderAisles(){
     }
   }
 }
+async function refreshReviewLoads(){
+  $("reviewLoadsList").textContent="Consultando cargas preparadas por otros operarios…";
+  const {data,error}=await client.rpc("kontrola_cargas_para_verificar");
+  if(error){$("reviewLoadsList").textContent="No se pueden cargar las verificaciones: "+errorText(error);throw error;}
+  reviewLoads=ordenarCargas(data||[]);
+  renderReviewLoads();
+}
+function renderReviewLoads(){
+  const target=$("reviewLoadsList");target.replaceChildren();
+  const search=$("reviewSearch").value.trim().toLocaleLowerCase("es-ES");
+  const records=reviewLoads.filter(r=>[r.codigo,r.ruta,r.matricula].some(v=>String(v||"").toLocaleLowerCase("es-ES").includes(search)));
+  if(!records.length){const p=document.createElement("p");p.className="muted";p.textContent="No hay preparaciones ajenas finalizadas disponibles para verificar.";target.appendChild(p);return;}
+  for(const load of records){
+    const button=document.createElement("button");button.type="button";button.className="load-card";
+    const left=document.createElement("span"),title=document.createElement("strong"),meta=document.createElement("span");
+    title.className="load-title";title.textContent=load.codigo;
+    const checked=Number(load.lineas_comprobadas||0),total=Number(load.lineas_total||0),incidents=Number(load.incidencias_pendientes||0);
+    const progress=load.estado==="finalizada"?"Finalizada · "+incidents+" incidencia(s)":total?checked+" de "+total+" líneas":"Pendiente de iniciar";
+    meta.className="load-meta";meta.textContent=[load.ruta,load.matricula,progress].filter(Boolean).join(" · ");
+    left.append(title,meta);
+    const weight=document.createElement("span");weight.className="load-weight";weight.textContent=fmt(load.peso_kg)+" kg";
+    button.append(left,weight);button.addEventListener("click",()=>openVerification(load.codigo));target.appendChild(button);
+  }
+}
+$("reviewSearch").addEventListener("input",renderReviewLoads);
+$("reloadReviewLoads").addEventListener("click",()=>refreshReviewLoads().catch(()=>{}));
+async function openVerification(code){
+  if(opening||!user)return;
+  const load=reviewLoads.find(item=>item.codigo===code);if(!load)return;
+  opening=true;global("Abriendo la verificación de "+code+"…");
+  try{
+    const {data:id,error}=await client.rpc("kontrola_abrir_verificacion",{p_codigo:code});
+    if(error)throw error;
+    const {data:lines,error:linesError}=await client.from("kontrola_verificacion_lineas")
+      .select("linea,sku,descripcion,ubicacion,prevista_cantidad,unidad,comprobada_cantidad,comprobada_en")
+      .eq("verificacion_id",id).order("linea",{ascending:true});
+    if(linesError)throw linesError;
+    currentVerification={id,load,finished:load.estado==="finalizada"};
+    verificationLines=(lines||[]).map(line=>({
+      lineNumber:Number(line.linea),sku:line.sku,description:line.descripcion,location:line.ubicacion,
+      expectedQuantity:Number(line.prevista_cantidad),unit:line.unidad,
+      checkedQuantity:line.comprobada_cantidad===null?null:Number(line.comprobada_cantidad),
+      checkedAt:line.comprobada_en
+    }));
+    $("reviewDetailTitle").textContent=load.codigo;
+    $("reviewDetailSubtitle").textContent=[load.repartidor,load.ruta,load.matricula].filter(Boolean).join(" · ")||"Carga preparada";
+    renderVerification();switchView("reviewDetailView",{force:true});
+  }catch(err){global("No se pudo abrir esta verificación: "+errorText(err),"error");}
+  finally{opening=false;}
+}
+function renderVerification(){
+  const summary=summarizeVerification(verificationLines);
+  const reviewStatus=$("reviewStatus");
+  reviewStatus.className="info-bar"+(currentVerification?.finished?" complete":summary.differences?" warning":"");
+  reviewStatus.textContent=currentVerification?.finished
+    ?"Verificación finalizada. La carga está cerrada en KONTROLA; las regularizaciones pendientes se realizan manualmente en Business Central."
+    :summary.pending
+      ?"Verificación en curso. Faltan "+summary.pending+" línea(s)."
+      :"Todas las líneas están comprobadas. Puedes cerrar la carga aunque existan diferencias.";
+  const progress=$("reviewProgress");progress.replaceChildren();
+  for(const [label,value] of [["Líneas",summary.total],["Comprobadas",summary.checked],["Pendientes",summary.pending],["Diferencias",summary.differences]]){
+    const fact=document.createElement("div");fact.className="fact";
+    const small=document.createElement("small");small.textContent=label;
+    const strong=document.createElement("b");strong.textContent=String(value);fact.append(small,strong);progress.appendChild(fact);
+  }
+  const target=$("verificationLines");target.replaceChildren();
+  for(const line of verificationLines){
+    const checked=line.checkedQuantity!==null;
+    const difference=checked?line.checkedQuantity-line.expectedQuantity:null;
+    const card=document.createElement("article");
+    card.className="verification-line"+(checked?" is-checked":"")+(difference?" has-difference":"");
+    const heading=document.createElement("div");heading.className="verification-line-head";
+    const info=document.createElement("div"),sku=document.createElement("b"),description=document.createElement("span"),location=document.createElement("small");
+    sku.textContent=line.sku;description.className="description";description.textContent=line.description||"Sin descripción";
+    location.textContent="Ubicación: "+(line.location||"SIN UBICACIÓN");info.append(sku,description,location);
+    const expected=document.createElement("span");expected.className="expected";expected.textContent=fmt(line.expectedQuantity)+" "+(line.unit||"");
+    heading.append(info,expected);card.appendChild(heading);
+    const form=document.createElement("form");form.className="verification-entry";
+    const label=document.createElement("label");label.textContent="Cantidad física";
+    const input=document.createElement("input");input.type="text";input.inputMode="decimal";input.required=true;
+    input.autocomplete="off";input.value=checked?String(line.checkedQuantity).replace(".",","):"";
+    input.setAttribute("aria-label","Cantidad física de "+line.sku);input.disabled=currentVerification?.finished;
+    const save=document.createElement("button");save.type="submit";save.className="secondary";
+    save.textContent=checked?"Actualizar":"Registrar";save.disabled=currentVerification?.finished;
+    label.appendChild(input);form.append(label,save);
+    form.addEventListener("submit",event=>{event.preventDefault();saveVerificationLine(line,input.value);});
+    card.appendChild(form);
+    if(checked){
+      const note=document.createElement("p");note.className=difference?"difference-note":"match-note";
+      note.textContent=difference
+        ?"Diferencia: "+(difference>0?"+":"")+fmt(difference)+" "+(line.unit||"")
+        :"Cantidad conforme";
+      card.appendChild(note);
+    }
+    target.appendChild(card);
+  }
+  $("finishVerification").disabled=!summary.canFinish||currentVerification?.finished||busy;
+}
+async function saveVerificationLine(line,rawQuantity){
+  if(busy||currentVerification?.finished)return;
+  let quantity;
+  try{quantity=parseCheckedQuantity(rawQuantity);}catch(error){return global(errorText(error),"error");}
+  busy=true;renderVerification();global("Registrando "+line.sku+"…");
+  try{
+    const {error}=await client.rpc("kontrola_registrar_linea",{
+      p_verificacion:currentVerification.id,p_linea:line.lineNumber,p_cantidad:quantity
+    });
+    if(error)throw error;
+    line.checkedQuantity=quantity;line.checkedAt=new Date().toISOString();
+    global("Cantidad registrada con hora del servidor.","success");
+  }catch(error){global("No se pudo registrar la línea: "+errorText(error),"error");}
+  finally{busy=false;renderVerification();}
+}
+$("finishVerification").addEventListener("click",async()=>{
+  if(busy||currentVerification?.finished)return;
+  const summary=summarizeVerification(verificationLines);if(!summary.canFinish)return;
+  busy=true;renderVerification();global("Cerrando la verificación…");
+  try{
+    const {data,error}=await client.rpc("kontrola_finalizar_verificacion",{p_verificacion:currentVerification.id});
+    if(error)throw error;
+    const result=Array.isArray(data)?data[0]:data;
+    currentVerification.finished=true;
+    global("Carga cerrada. Incidencias pendientes: "+Number(result?.incidencias_pendientes||0)+".","success");
+  }catch(error){global("No se pudo finalizar: "+errorText(error),"error");}
+  finally{busy=false;renderVerification();}
+});
 $("viewPdf").addEventListener("click",async()=>{
   if(!current?.documento_ruta)return global("No existe un PDF publicado para esta carga.","error");
   // Abrir la pestaña como consecuencia directa del clic, antes de solicitar la URL firmada.
