@@ -10,10 +10,15 @@ const global=(message="",level="")=>status("globalMessage",message,level);
 const fmt=n=>n==null?"—":Number(n).toLocaleString("es-ES",{maximumFractionDigits:3});
 const errorText=e=>{const msg=String(e?.message||e||"Error");if(/relation .* does not exist|schema cache|could not find the function|PGRST202|PGRST205/i.test(msg))return "KONTROLA aún no tiene instalada la migración de base de datos. Contacta con administración.";return msg;};
 const escapeHtml=x=>String(x??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-function switchView(id){
+function switchView(id,{force=false}={}){
+  if(!force&&(busy||opening)){
+    global("Hay una operación en curso. Espera a que termine antes de cambiar de pantalla.","error");
+    return false;
+  }
   for(const element of document.querySelectorAll(".view"))visible(element,element.id===id);
   global();
   window.scrollTo({top:0,behavior:"instant"});
+  return true;
 }
 function loggedOut(message=""){
   user=null;profile=null;loads=[];current=null;
@@ -60,8 +65,8 @@ $("loginForm").addEventListener("submit",async e=>{
     $("loginPassword").value="";
   }catch(err){
     const msg=errorText(err);
-    status("authMessage",msg,"error");
     await client.auth.signOut().catch(()=>{});
+    status("authMessage",msg,"error");
   }finally{button.disabled=false;}
 });
 async function refreshLoads(){
@@ -121,7 +126,7 @@ async function openLoad(code){
       const small=document.createElement("small");small.textContent=label;
       const strong=document.createElement("b");strong.textContent=value;d.append(small,strong);facts.appendChild(d);
     }
-    renderAisles();switchView("detailView");
+    renderAisles();switchView("detailView",{force:true});
   }catch(err){global("No se pudo abrir esta carga: "+errorText(err),"error");}finally{opening=false;}
 }
 function renderAisles(){
@@ -232,6 +237,7 @@ $("checkUpdates").addEventListener("click",async()=>{
   }catch(e){status("settingsStatus",errorText(e),"error");}
 });
 $("logout").addEventListener("click",async()=>{
+  if(busy||opening)return status("settingsStatus","Espera a que finalice la operación en curso antes de cerrar sesión.","error");
   if(!client)return;
   await client.auth.signOut().catch(e=>status("settingsStatus",errorText(e),"error"));
   loggedOut();
