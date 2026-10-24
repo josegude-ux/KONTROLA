@@ -1,7 +1,8 @@
 # KONTROLA — Ficha maestra de continuidad
 
 **Actualizada:** 2026-10-25
-**Repositorio privado:** `josegude-ux/KONTROLA`
+**Visibilidad confirmada:** público (GitHub, 25/10/2026).
+**Repositorio público:** `josegude-ux/KONTROLA`
 **Alcance:** únicamente KONTROLA; no confundir con INVENTA, MOVENTA, Control de Cargas ni Control de Tanques.
 
 > **Regla de continuidad:** antes de proponer nuevos desarrollos, inspeccionar **la PR #1 y su rama**. `main` solo tiene README y documentación: **no concluir que KONTROLA no está programada** al mirar únicamente `main`. Verificar código, pruebas y migraciones. No publicar, fusionar ni alterar producción sin autorización.
