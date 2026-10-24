@@ -1,0 +1,11 @@
+{
+  "name": "kontrola",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "KONTROLA · fase 1 preparación",
+  "scripts": {
+    "test": "node --test tests/*.test.mjs",
+    "check": "node --check src/app.mjs && node --test tests/*.test.mjs"
+  }
+}
