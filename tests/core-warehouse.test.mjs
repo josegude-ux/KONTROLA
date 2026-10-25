@@ -29,3 +29,25 @@ test("keeps unknown warehouse unclassified instead of assigning Coruña",()=>{
   assert.equal(parsed.warehouseKnown,false);
   assert.ok(parsed.warnings.some(item=>/clasificar/i.test(item)));
 });
+
+
+test("reconoce ubicación fragmentada en la misma línea del producto",()=>{
+  const page=pageFor("COR_01_COR");
+  page.items=page.items.filter(item=>!item.text.includes("A101-1 PRD"));
+  page.items.push(
+    {text:"A101",x:80,y:110},
+    {text:"-",x:116,y:110},
+    {text:"12",x:124,y:110},
+    {text:"PRD0000001",x:160,y:110}
+  );
+  const parsed=parseDocumentPages([page],"LP26-12347.pdf");
+  assert.equal(parsed.products[0].location,"A101-12");
+});
+
+test("no toma ubicación de una fila distinta",()=>{
+  const page=pageFor("COR_01_COR");
+  page.items=page.items.filter(item=>!item.text.includes("A101-1 PRD"));
+  page.items.push({text:"A101-1",x:90,y:96},{text:"PRD0000001",x:160,y:110});
+  const parsed=parseDocumentPages([page],"LP26-12348.pdf");
+  assert.equal(parsed.products[0].location,"");
+});

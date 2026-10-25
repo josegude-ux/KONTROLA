@@ -81,9 +81,14 @@ export function parseDocumentPages(pages, fileName='Documento.pdf', options={}) 
    const hit=i.text.match(/\bPRD\d{7}\b/i);
    if(!hit)continue;
    // Ubicación estandar y variante impresa K109-3 (pertenece al pasillo K).
-   const locPattern=/\b([A-Z]\d{2}-P\d{2}|[A-Z]\d{3}-\d|ZFRIO)\b/i;
-   const prev=zone.filter(p=>p.x<i.x+3&&Math.abs(p.y-i.y)<8).map(p=>p.text).join(' ');
-   const loc=(i.text.match(locPattern)||[])[0]||(prev.match(locPattern)||[])[0]||'';
+   // PDF.js puede separar una ubicación en varios fragmentos de texto.
+   // Buscar solo en la misma fila y a la izquierda del SKU evita copiar
+   // ubicaciones de productos vecinos.
+   const locPattern=/\b([A-Z]\d{2,3}\s*-\s*P?\d{1,3}|ZFRIO)\b/i;
+   const prev=zone.filter(p=>p.x<=i.x+3&&Math.abs(p.y-i.y)<8)
+     .sort((a,b)=>a.x-b.x).map(p=>p.text).join(' ');
+   const loc=((i.text.match(locPattern)||[])[0]||(prev.match(locPattern)||[])[0]||'')
+     .toUpperCase().replace(/\s+/g,'');
    rows.push({sku:hit[0].toUpperCase(),location:loc.toUpperCase(),y:i.y});
   }
   rows.sort((a,b)=>a.y-b.y);

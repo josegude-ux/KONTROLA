@@ -310,3 +310,8 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 - `styles.css`: cabecera de revisión flexible, evita desbordamiento de almacén/estado en iPhone.
 - `assets/kontrola.svg`: reduce el espacio excesivo antes de la A final.
 - No se rellenan ubicaciones ni se publican cargas automáticamente. Pruebas y despliegue pendientes.
+
+## 2026-10-25 — Extracción de ubicaciones PDF.js
+- `src/core.mjs`: reconoce ubicaciones fragmentadas en varios textos PDF.js, admite sufijos de más de un dígito y conserva la regla de buscar solo en la misma fila, a la izquierda del SKU. No asigna ubicaciones de otras filas.
+- `tests/core-warehouse.test.mjs`: pruebas para ubicación fragmentada y prevención de asignación de otra fila.
+- Las cargas existentes no se alteran automáticamente. Pendiente CI y despliegue.
