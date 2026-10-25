@@ -451,3 +451,8 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 - Corrección preventiva: no archivar antes de 90 días desde la última actualización de una incidencia, aunque `cerrada_en` sea anterior. Este criterio conservador protege regularizaciones posteriores.
 - La migración sigue en `supabase/proposals/` y NO se aplica automáticamente en CI ni Supabase; pendiente validar SQL real, RPC de panel y autorización.
 - No realizar borrado automático, no modificar INVENTA ni MOVENTA.
+
+### Pruebas reales del archivo lógico en PostgreSQL aislado
+- `tests/integration/archive.sql` crea casos de archivo temprano rechazado, archivo tras 92 días simulados en BD aislada, listado, idempotencia, restauración, auditoría y denegación a operario.
+- `tests/integration/run.sh` aplica exclusivamente en su BD efímera de pruebas la propuesta de `supabase/proposals/` después de las pruebas existentes. No despliega en Supabase.
+- Pendiente comprobar que esta nueva ejecución de GitHub Actions pase; ninguna migración real aplicada.

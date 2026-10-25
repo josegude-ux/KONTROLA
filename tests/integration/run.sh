@@ -42,4 +42,8 @@ tests/integration/concurrency.sh "$DB"
 grep -q "KONTROLA_INTEGRATION_OK" /tmp/kontrola-workflow.log
 grep -q "KONTROLA_REVISION_OK" /tmp/kontrola-revisions.log
 grep -q "KONTROLA_OPERATOR_STATS_OK" /tmp/kontrola-operator-stats.log
-echo "KONTROLA_DATABASE_OK migrations=5 workflow=passed revisions=passed stats=passed concurrency=passed"
+# Propuesta de archivo: ejecutar SOLO en base aislada tras las pruebas principales.
+"${PSQL[@]}" -f supabase/proposals/kontrola_archivo_logico.sql >/tmp/kontrola-archivo-migration.log
+"${PSQL[@]}" -f tests/integration/archive.sql >/tmp/kontrola-archivo.log
+grep -q "KONTROLA_ARCHIVE_OK" /tmp/kontrola-archivo.log
+echo "KONTROLA_DATABASE_OK migrations=5 workflow=passed revisions=passed stats=passed concurrency=passed archive=passed"
