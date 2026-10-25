@@ -40,6 +40,7 @@ export function createAdminController({client,getUser,bucket,global,errorText,on
   const operatorStats=configurarEstadisticasOperarios({client,getUser,errorText,getWarehouse:()=>document.getElementById("adminWarehouse").value});
   const printBatch=configurarLoteImpresion({client,getUser,errorText,getWarehouse:()=>document.getElementById("adminWarehouse").value});
   let busy=false,draft=null;
+  let archiveGeneration=0;
   const setStatus=(message="",level="")=>{
     const target=$("importStatus");target.textContent=message;target.className="status "+level;
   };
@@ -516,30 +517,34 @@ export function createAdminController({client,getUser,bucket,global,errorText,on
   async function changeArchive(archivar){
     const code=$("archiveCode").value.trim();
     const status=$("archiveStatus");
+    const generation=archiveGeneration;
     if(!code){status.textContent="Introduce un código de carga.";return;}
     if(!window.confirm(archivar?"¿Archivar esta carga? No se eliminará.":"¿Restaurar esta carga al listado activo?"))return;
     const buttons=[$("archiveLoad"),$("restoreLoad")];buttons.forEach(b=>b.disabled=true);
     try{
       const {data,error}=await client.rpc("kontrola_cambiar_archivo",{p_codigo:code,p_archivar:archivar});
+      if(generation!==archiveGeneration)return;
       if(error)throw error;
       status.textContent=data===false?"La carga ya estaba en ese estado.":archivar?"Carga archivada correctamente.":"Carga restaurada correctamente.";
       await refreshArchivedLoads();
-    }catch(error){status.textContent="No se ha realizado la operación: "+errorText(error);}
+    }catch(error){if(generation===archiveGeneration)status.textContent="No se ha realizado la operación: "+errorText(error);}
     finally{buttons.forEach(b=>b.disabled=false);}
   }
   $("archiveLoad").addEventListener("click",()=>changeArchive(true));
   $("restoreLoad").addEventListener("click",()=>changeArchive(false));
   async function refreshArchivedLoads(){
+    const generation=archiveGeneration;
     const target=$("archivedLoadsList");target.textContent="Consultando cargas archivadas…";
     try{
       const {data,error}=await client.rpc("kontrola_listar_archivadas");
+      if(generation!==archiveGeneration)return;
       if(error)throw error;
       const rows=Array.isArray(data)?data:[];
       if(!rows.length){target.textContent="No hay cargas archivadas disponibles para este almacén.";return;}
       const table=document.createElement("table");const head=document.createElement("tr");
       for(const label of ["Código","Fecha","Almacén","Archivada el"]){const th=document.createElement("th");th.textContent=label;head.appendChild(th);}const thead=document.createElement("thead");thead.appendChild(head);table.appendChild(thead);
       const tbody=document.createElement("tbody");for(const row of rows){const tr=document.createElement("tr");for(const value of [row.codigo,row.fecha,row.almacen,row.archivado_en]){const td=document.createElement("td");td.textContent=value==null?"":String(value);tr.appendChild(td);}tbody.appendChild(tr);}table.appendChild(tbody);target.replaceChildren(table);
-    }catch(error){target.textContent="No se pudieron consultar las archivadas: "+errorText(error);}
+    }catch(error){if(generation===archiveGeneration)target.textContent="No se pudieron consultar las archivadas: "+errorText(error);}
   }
   $("refreshArchived").addEventListener("click",refreshArchivedLoads);
   async function open(){
@@ -547,7 +552,11 @@ export function createAdminController({client,getUser,bucket,global,errorText,on
     await Promise.all([refreshAttention(),refreshPendingPublish(),refreshReviewSelector(),refreshSummary(),refreshIncidents(),operatorStats.refresh(),printBatch.refresh()]);
   }
   function clearSensitive(){
+    archiveGeneration++;
     draft=null;busy=false;
+    $("archiveCode").value="";
+    $("archiveStatus").textContent="";
+    $("archivedLoadsList").replaceChildren();
     revisionControl.clear();operatorStats.clear();printBatch.clear();
     for(const id of ["documentReview","attentionList","adminSummary","adminActivity",
       "incidentList","reviewReadiness","reportPaper"]){

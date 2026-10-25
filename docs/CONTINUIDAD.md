@@ -505,3 +505,11 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 ### 2026-10-25 — Mejora del listado tras archivo/restauración
 - Al completar `kontrola_cambiar_archivo`, se ejecuta `refreshArchivedLoads()` para reflejar el nuevo estado del listado sin pulsar Actualizar.
 - No se modifica el backend ni la política de 90 días. Pendiente comprobar CI y prueba visual manual autenticada.
+
+### 2026-10-25 — Protección de datos archivados al cerrar sesión
+- `src/admin.mjs` limpia código, mensajes y tabla de archivadas en `clearSensitive()`.
+- `archiveGeneration` invalida los resultados de RPC iniciadas antes del cierre; el callback tardío no puede reinsertar datos en la interfaz.
+- Sin cambios de Supabase o datos de cargas. Pendiente CI y revisión manual.
+
+### Pruebas de purga del archivo administrativo
+- `tests/archive-session.test.mjs`: verifica mediante contrato estático que `clearSensitive()` purga el archivo y que las respuestas tardías de RPC se invalidan. CI las ejecuta con `node --test tests/*.test.mjs`.
