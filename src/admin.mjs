@@ -66,9 +66,11 @@ export function createAdminController({client,getUser,bucket,global,errorText,on
     draft.file=new File([data],draft.parsed.id+".pdf",{type:"application/pdf"});
     return draft.file;
   }
-  async function processSinglePdf(file){
+  async function processSinglePdf(file,seenCodes){
     setStatus("Analizando "+file.name+"…");
     const parsed=await parsePdfFile(file);
+    if(seenCodes.has(parsed.id))throw Error("El lote contiene más de un PDF para la carga "+parsed.id+". Importa las revisiones de esa carga por separado.");
+    seenCodes.add(parsed.id);
     const hash=await hashFile(file);
     // La UI solicita permiso antes de reservar. La autoridad final permanece en la RPC.
     const {data:existing,error:lookupError}=await client.from("kontrola_cargas")
@@ -107,13 +109,13 @@ export function createAdminController({client,getUser,bucket,global,errorText,on
       "Los cambios que no hayas guardado se perderán. ¿Continuar con la importación?"
     ))return setStatus("Importación cancelada. Conservas la revisión que estabas consultando.");
     setBusy(true);
-    const outcomes=[];
+    const outcomes=[],seenCodes=new Set();
     try{
       for(let i=0;i<files.length;i++){
         const file=files[i];
         setStatus("Procesando PDF "+(i+1)+" de "+files.length+": "+file.name+"…");
         try{
-          const estado=await processSinglePdf(file);
+          const estado=await processSinglePdf(file,seenCodes);
           outcomes.push({archivo:file.name,estado});
         }catch(error){
           outcomes.push({archivo:file.name,estado:"error",mensaje:errorText(error)});
