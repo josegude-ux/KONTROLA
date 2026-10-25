@@ -1,6 +1,6 @@
 # KONTROLA — Matriz de cierre y brechas funcionales
 
-**Lectura inicial:** KONTROLA v0.3.13 (PR #2) y Control de Cargas Móvil v0.5.26 (referencia funcional). El código de KONTROLA está desarrollado en la rama; **no publicado en producción**. El estado «programado» no significa «validado en móvil».
+**Lectura inicial:** KONTROLA v0.3.15 (PR #2) y Control de Cargas Móvil v0.5.26 (referencia funcional). El código de KONTROLA está desarrollado en la rama; **no publicado en producción**. El estado «programado» no significa «validado en móvil».
 
 | Función necesaria | Estado de código | Pendiente antes de producción |
 |---|---|---|
@@ -28,6 +28,10 @@
 | Impresión conjunta de hojas procesadas | **Programada v0.3.11** | Probar paginación real Safari/AirPrint y límite de 10 cargas |
 | Auditoría de backups JSON legacy | **Programada v0.3.10** | No migra datos; cotejar con teléfonos/OneDrive y obtener permisos antes de actuar |
 | Conciliación de backup con panel autorizado | **Programada v0.3.13 (solo lectura)** | Comprobar con dos perfiles y móviles; no asumir PDF idénticos ni importar registros |
+
+| Inventario local de PDFs legacy | **Programado v0.3.14** | Validar acceso desde el mismo origen/contenedor; un iPhone con PWA separada puede no compartir IndexedDB |
+| Recuperación local individual PDF legacy | **Programada v0.3.15** | Validar Safari/Archivos, SHA-256, privacidad, permisos y copias antes de migrar |
+
 ## Prioridades de continuación
 
 1. **P0 antes de uso empresarial:** no desplegar sin inventario de datos locales, matriz de acceso validada, permisos Storage probados y copia/restauración ensayada.
