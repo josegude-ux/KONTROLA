@@ -7,6 +7,7 @@ const $=id=>document.getElementById(id);
 let client=null,user=null,profile=null,loads=[],current=null,currentPreparation=null,groups=[],selectedAisle="TODOS",busy=false,opening=false;
 let reviewLoads=[],currentVerification=null,verificationLines=[];
 let warehouses=[],selectedWarehouse=localStorage.getItem("kontrola-warehouse")||"COR_01_COR",adminController=null;
+let loadsParent="homeView",reviewLoadsParent="homeView";
 $("appVersion").textContent=APP_VERSION;
 $("loginVersion").textContent=APP_VERSION;
 const visible=(element,show)=>{element.hidden=!show;};
@@ -40,6 +41,7 @@ async function authorize(authUser){
   $("profileName").textContent=ownProfile.nombre||authUser.email||"";
   $("profileRole").textContent=ownProfile.rol;
   visible($("openAdmin"),ownProfile.rol==="administrador");
+  visible($("cargasAdministrar"),ownProfile.rol==="administrador");
   visible($("loginView"),false);visible($("shell"),true);switchView("homeView");
   await loadWarehouses();
   await refreshOperatorDashboard().catch(()=>{});
@@ -156,9 +158,30 @@ function renderLoadList(){
 }
 $("loadSearch").addEventListener("input",renderLoadList);
 $("reloadLoads").addEventListener("click",()=>refreshLoads().catch(()=>{}));
-$("openPreparation").addEventListener("click",async()=>{switchView("loadsView");await refreshLoads().catch(()=>{});});
-$("openReview").addEventListener("click",async()=>{switchView("reviewLoadsView");await refreshReviewLoads().catch(()=>{});});
-$("openAdmin").addEventListener("click",async()=>{if(profile?.rol==="administrador"&&switchView("adminView"))await adminController.open().catch(error=>global(errorText(error),"error"));});
+function openLoadsMenu(parent="homeView"){
+  if(!switchView("loadsView"))return;
+  loadsParent=parent;
+  refreshLoads().catch(()=>{});
+}
+function openReviewMenu(parent="homeView"){
+  if(!switchView("reviewLoadsView"))return;
+  reviewLoadsParent=parent;
+  refreshReviewLoads().catch(()=>{});
+}
+async function openAdminMenu(){
+  if(profile?.rol!=="administrador"||!switchView("adminView"))return;
+  await adminController.open().catch(error=>global(errorText(error),"error"));
+}
+$("openPreparation").addEventListener("click",()=>openLoadsMenu());
+$("openReview").addEventListener("click",()=>openReviewMenu());
+$("openCargas").addEventListener("click",()=>switchView("cargasMenuView"));
+$("cargasConsultar").addEventListener("click",()=>openLoadsMenu("cargasMenuView"));
+$("cargasPreparar").addEventListener("click",()=>openLoadsMenu("cargasMenuView"));
+$("cargasVerificar").addEventListener("click",()=>openReviewMenu("cargasMenuView"));
+$("cargasAdministrar").addEventListener("click",openAdminMenu);
+$("openAdmin").addEventListener("click",openAdminMenu);
+$("backFromLoads").addEventListener("click",()=>switchView(loadsParent));
+$("backFromReviewLoads").addEventListener("click",()=>switchView(reviewLoadsParent));
 $("openSettings").addEventListener("click",()=>switchView("settingsView"));
 $("goHome").addEventListener("click",()=>switchView("homeView"));
 document.querySelectorAll("[data-back='home']").forEach(b=>b.addEventListener("click",()=>switchView("homeView")));
