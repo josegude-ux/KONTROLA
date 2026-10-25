@@ -445,3 +445,50 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 - Pestaña Archivo de cargas: código, archivar y restaurar, confirmación, errores y bloqueo durante la solicitud.
 - Llama a RPC `kontrola_cambiar_archivo` solo cuando el administrador actúa; si falta la RPC, muestra error sin afirmar éxito.
 - Backend de PR #11 sigue siendo propuesta sin aplicar. Pendiente consulta de archivadas, pruebas y despliegue.
+
+### 2026-10-25 — Rama de integración de archivo (sin despliegue)
+- Se ha consolidado `src/admin.mjs` e `index.html` de `feat/admin-archivo-ui-20261025`, backend SQL propuesto y las pruebas de `feat/archivo-rpc-segura-20261025`.
+- Corrección preventiva: no archivar antes de 90 días desde la última actualización de una incidencia, aunque `cerrada_en` sea anterior. Este criterio conservador protege regularizaciones posteriores.
+- La migración sigue en `supabase/proposals/` y NO se aplica automáticamente en CI ni Supabase; pendiente validar SQL real, RPC de panel y autorización.
+- No realizar borrado automático, no modificar INVENTA ni MOVENTA.
+
+### Pruebas reales del archivo lógico en PostgreSQL aislado
+- `tests/integration/archive.sql` crea casos de archivo temprano rechazado, archivo tras 92 días simulados en BD aislada, listado, idempotencia, restauración, auditoría y denegación a operario.
+- `tests/integration/run.sh` aplica exclusivamente en su BD efímera de pruebas la propuesta de `supabase/proposals/` después de las pruebas existentes. No despliega en Supabase.
+- Pendiente comprobar que esta nueva ejecución de GitHub Actions pase; ninguna migración real aplicada.
+
+### CI archivo — corrección de permisos ejecutables
+- GitHub Actions del commit `b384f8e` falló con salida 126 al iniciar pruebas de base de datos: el archivo `tests/integration/run.sh` fue reemplazado con modo no ejecutable `100644`.
+- Restaurado modo ejecutable `100755`. Aún no se considera validada la integración hasta ejecución CI correcta.
+
+### Corrección del test de auditoría
+- CI detectó denegación de lectura directa de `kontrola_archivo_eventos` bajo rol `authenticated`, que es la restricción buscada. El test pasa a `reset role` únicamente para comprobar la auditoría con privilegios del runner local, y vuelve al rol autenticado antes de probar la API. No se conceden permisos nuevos.
+
+### CI archivo — confirmación de modo ejecutable
+- El commit de test reintrodujo accidentalmente `100644` en `tests/integration/run.sh` por utilizar una base de árbol antigua; se vuelve a forzar `100755` junto con el test y documentación actuales.
+
+### Ampliación de pruebas integradas de retención
+- Tras CI real favorable con 171 pruebas y `archive=passed`, se incorporan dos escenarios adicionales de PostgreSQL aislado: rechazar incidencia regularizada muy recientemente y rechazar incidencia aún pendiente aun con carga antigua.
+- Ningún cambio de datos en Supabase. Pendiente validar el CI de esta ampliación.
+
+### Corrección del test de incidencias (PL/pgSQL)
+- La ejecución de GitHub Actions detectó dos bloques DO escritos con delimitadores `$` en vez de `$$`. Se han corregido en `tests/integration/archive.sql`. Pendiente CI del nuevo commit.
+
+### Corrección definitiva de delimitadores SQL del test
+- El reemplazo JavaScript anterior interpretó `$$` en la cadena de sustitución como un solo `$`. Ahora el reemplazo se realiza mediante función para conservar los dos caracteres literales. Pendiente CI.
+
+### 2026-10-25 — Integración de estados archivados en listados
+- La RPC propuesta `kontrola_codigos_archivados(p_almacen)` devuelve solo códigos archivados del almacén permitido a usuario autenticado. Se revoca a anon y PUBLIC.
+- `src/app.mjs` consulta este estado junto con las RPC de panel existentes, superpone `archivado` por código y filtra cargas activas. Historial conserva todas y marca cuáles están archivadas.
+- Si falla alguna RPC, los listados fallan de forma segura, evitando mostrar cargas archivadas como activas. Requiere aplicar backend antes de fusionar desplegar esta interfaz.
+- Pendiente CI aislado; Supabase real sin modificar.
+
+### Pruebas SQL de visibilidad por archivo
+- `tests/integration/archive.sql` comprueba la RPC `kontrola_codigos_archivados` en los estados archivado y restaurado de una carga real dentro de la base temporal.
+- No hay cambios en Supabase real. Pendiente validación CI del último commit.
+
+### Archivo lógico — Migración desplegada y canonizada (25/10/2026)
+- Aplicada con éxito mediante el conector de Supabase al proyecto de pruebas `control-cargas-movil` (`oevetnszmfxeukcncwji`). Se verificaron 13 cargas existentes, 0 archivadas y 0 eventos de archivo tras la aplicación. Los cinco campos nuevos y las tres RPC están presentes.
+- Se incorpora copia canónica del SQL aplicado en `supabase/migrations/20261031_kontrola_archivo_logico_seguro.sql`, y el runner CI pasa a ejecutarlo dentro de las migraciones normales (seis en total), sin ejecución duplicada desde `supabase/proposals`.
+- Pruebas de PostgreSQL real aislado completadas previamente en PR #14; tras cambiar la ruta canónica se requiere CI nuevo. Operaciones autenticadas contra Supabase real no comprobadas aún.
+- No hay eliminación automática ni migración a INVENTA/MOVENTA.

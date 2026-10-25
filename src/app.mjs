@@ -157,10 +157,11 @@ $("loginForm").addEventListener("submit",async e=>{
 async function refreshLoads(){
   const warehouse=selectedWarehouse,userId=user?.id;
   loads=[];$("loadsList").textContent="Consultando cargas disponibles…";
-  const {data,error}=await client.rpc("kontrola_panel_cargas_v2",{p_almacen:warehouse});
+  const [panel,archivo]=await Promise.all([client.rpc("kontrola_panel_cargas_v2",{p_almacen:warehouse}),client.rpc("kontrola_codigos_archivados",{p_almacen:warehouse})]);
   if(!validRequest(warehouse,userId))return;
-  if(error){$("loadsList").textContent="No se pueden cargar los documentos: "+errorText(error);throw error;}
-  loads=ordenarCargas(filtrarArchivoLogico(data||[],{vista:"activas"}));
+  if(panel.error||archivo.error){const err=panel.error||archivo.error;$("loadsList").textContent="No se pueden cargar los documentos: "+errorText(err);throw err;}
+  const archivados=new Set((archivo.data||[]).map(r=>r.codigo));
+  loads=ordenarCargas(filtrarArchivoLogico((panel.data||[]).map(r=>({...r,archivado:archivados.has(r.codigo)})),{vista:"activas"}));
   renderLoadList();
 }
 function renderLoadList(){
@@ -195,10 +196,11 @@ async function refreshHistory(){
   $("historyList").replaceChildren();$("historySummary").replaceChildren();
   status("historyStatusMessage","Cargando el historial autorizado…");
   try{
-    const {data,error}=await client.rpc("kontrola_panel_cargas",{p_almacen:warehouse});
-    if(error)throw error;
+    const [panel,archivo]=await Promise.all([client.rpc("kontrola_panel_cargas",{p_almacen:warehouse}),client.rpc("kontrola_codigos_archivados",{p_almacen:warehouse})]);
+    if(panel.error||archivo.error)throw panel.error||archivo.error;
     if(!validRequest(warehouse,requestUser))return;
-    historyRows=filtrarArchivoLogico(data||[],{vista:"todas"});historyReady=true;
+    const archivados=new Set((archivo.data||[]).map(r=>r.codigo));
+    historyRows=filtrarArchivoLogico((panel.data||[]).map(r=>({...r,archivado:archivados.has(r.codigo)})),{vista:"todas"});historyReady=true;
     renderHistory();
   }catch(error){
     if(!validRequest(warehouse,requestUser))return;
