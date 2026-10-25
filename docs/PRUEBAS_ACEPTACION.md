@@ -40,12 +40,17 @@
 | A24 | Fecha diaria | Consultar el resumen cerca de medianoche y al cambiar horario verano/invierno | Fecha del almacén Europe/Madrid, no UTC |
 | A25 | Importación múltiple | Seleccionar varios PDF autorizados, uno correcto, otro repetido y otro inválido | Procesamiento secuencial, informe por archivo, ninguna publicación automática |
 | A26 | Lote conflictivo | Dos PDF distintos con el mismo número de carga dentro del lote | Se bloquea el segundo para revisión individual, sin sobrescribir el primero |
+| A27 | Estadísticas operarios | Administrador filtra A Coruña y Ferrol por fecha | No se mezclan almacenes ni se cuentan tiempos abiertos como finalizados |
+| A28 | Privacidad de estadísticas | Operario intenta RPC nominal de estadísticas | Acceso denegado por servidor |
+| A29 | Copia legacy | Abrir backup JSON local del original con duplicados y fechas vacías | Informe local, sin subir, sobrescribir ni borrar información |
+| A30 | Origen PDF histórico | Revisar copias JSON y almacenamiento IndexedDB de móviles | Se advierte que el backup NO incluye archivos PDF originales |
+| A31 | Imprimir lote procesado | Seleccionar 10 cargas autorizadas, imprimir y guardar desde iPhone | Un documento paginado por carga, sin modificar originales ni mezclar almacenes |
 
 ## Condiciones de salida
 
 **Desarrollo:** funciones implementadas, pruebas unitarias y SQL temporales superadas.
 
-**Validación real:** todas las pruebas A01–A24 ejecutadas y registradas con evidencias, sin errores bloqueantes.
+**Validación real:** todas las pruebas A01–A31 ejecutadas y registradas con evidencias, sin errores bloqueantes.
 
 **Puesta en producción:** únicamente tras inventario de datos locales y nube, copia verificada, migración autorizada con reversión, revisión de permisos, aprobación explícita y despliegue controlado.
 
