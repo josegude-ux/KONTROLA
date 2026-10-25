@@ -1,7 +1,7 @@
 name: Verificar KONTROLA
 on:
   push:
-    branches: [desarrollo/fase-1-operario]
+    branches: [desarrollo/fase-1-operario, cursor/verificacion-fisica-cargas-8ba0]
   pull_request:
     branches: [main, desarrollo/fase-1-operario, cursor/verificacion-fisica-cargas-8ba0]
 permissions:

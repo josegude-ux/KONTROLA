@@ -406,3 +406,8 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 - El workflow `.github/workflows/ci.yml` solo escuchaba PR hacia `main` y `desarrollo/fase-1-operario`; por ello el PR #3 dirigido a `cursor/verificacion-fisica-cargas-8ba0` no generaba ejecución.
 - Se añade exclusivamente la rama activa a los destinos `pull_request`, preservando los anteriores y sin ampliar los disparadores `push`.
 - Cambio de infraestructura de pruebas sin alteraciones de lógica operativa, Supabase, INVENTA ni MOVENTA. Pendiente comprobar ejecución y resultado de GitHub Actions.
+
+## 2026-10-25 — CI de pushes en rama operativa
+- Se incorpora `cursor/verificacion-fisica-cargas-8ba0` al disparador `push` de `.github/workflows/ci.yml`, además del disparador de PR ya existente. Se conserva la rama `desarrollo/fase-1-operario`.
+- Objetivo: verificar cada nuevo commit directo o integración posterior en la rama operativa; no modifica aplicación, datos, despliegues ni permisos.
+- Cambio aislado en PR; pendiente validación de CI y aprobación de integración.
