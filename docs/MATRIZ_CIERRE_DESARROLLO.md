@@ -17,9 +17,9 @@ El código de la aplicación se mantiene y evoluciona sobre la PR #2; no se ha d
 | Nuevas revisiones, historial y SHA-256 | Programado | Probar únicamente con documentos generados tras el arranque |
 | Consulta y estadísticas de operarios | Programado | Privacidad de nombres, RPC y fecha local |
 | Resumen y CSV compatible con Excel | Programado | Excel real y permisos por almacén |
-| Impresión de hojas procesadas (hasta 10) | Programado | Calidad, paginación y guardado de PDF auténtico en iPhone |
+| Impresión de hojas procesadas por fechas (hasta 10, con carátula) | **Programado v0.3.17** | Verificar índice, paginación y guardado como PDF auténtico en iPhone |
 | Impresión en lote de PDF originales de BC | Pendiente | Decidir alcance; no confundir con hojas procesadas |
-| **Archivo periódico en OneDrive** | **Procedimiento manual documentado** | Probar desde Archivos del iPhone a la carpeta OneDrive acordada y verificar la copia |
+| **Archivo periódico en OneDrive** | **Filtro de fechas y guía manual v0.3.17** | Comprobar Safari → PDF → Archivos → OneDrive, incluido archivo de más de diez cargas |
 | Migración/conciliación de datos y PDF antiguos | **Fuera del alcance** | Ninguna: no necesaria para este nuevo arranque |
 | Manual PDF con capturas auténticas | Borrador | Ejecutar PWA con datos ficticios, capturar pantallas y preparar PDF final |
 | Control de Tanques | Oculto y pausado | Solo con autorización futura |
@@ -28,7 +28,7 @@ El código de la aplicación se mantiene y evoluciona sobre la PR #2; no se ha d
 ## Siguientes pasos
 
 1. Finalizar las mejoras y correcciones relativas a los **PDF nuevos**, sin importar material histórico.
-2. Probar los 35 casos aplicables de [Pruebas de aceptación](PRUEBAS_ACEPTACION.md).
+2. Ejecutar los casos aplicables de [Pruebas de aceptación](PRUEBAS_ACEPTACION.md), incluidos los nuevos escenarios de archivo por fechas.
 3. Verificar en iPhone **Imprimir / Guardar PDF → Archivos → carpeta OneDrive elegida**, sin transferencia ni borrado automático.
 4. Cerrar el manual definitivo con capturas auténticas y aprobar el despliegue cuando Supabase/Auth/Storage hayan sido validados.
 
