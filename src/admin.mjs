@@ -523,6 +523,7 @@ export function createAdminController({client,getUser,bucket,global,errorText,on
       const {data,error}=await client.rpc("kontrola_cambiar_archivo",{p_codigo:code,p_archivar:archivar});
       if(error)throw error;
       status.textContent=data===false?"La carga ya estaba en ese estado.":archivar?"Carga archivada correctamente.":"Carga restaurada correctamente.";
+      await refreshArchivedLoads();
     }catch(error){status.textContent="No se ha realizado la operación: "+errorText(error);}
     finally{buttons.forEach(b=>b.disabled=false);}
   }

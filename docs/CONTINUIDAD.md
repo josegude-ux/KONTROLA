@@ -501,3 +501,7 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 - PR #11 y #13 cerrados sin fusionar al estar sustituidos por PR #14 (sin borrar ramas ni datos). PR #10 continúa independiente pendiente de valorar.
 - **Pendiente de validación manual:** abrir la PWA con una sesión real de administrador y de operario para comprobar experiencia de usuario, despliegue de frontend y autorización del endpoint. No se ha archivado ninguna carga real.
 - Política: nunca eliminar automáticamente, 90 días mínimos de cierre definitivo y actividad de incidencia, conservar eventos y permitir restauración administrada.
+
+### 2026-10-25 — Mejora del listado tras archivo/restauración
+- Al completar `kontrola_cambiar_archivo`, se ejecuta `refreshArchivedLoads()` para reflejar el nuevo estado del listado sin pulsar Actualizar.
+- No se modifica el backend ni la política de 90 días. Pendiente comprobar CI y prueba visual manual autenticada.
