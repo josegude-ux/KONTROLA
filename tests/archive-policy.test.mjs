@@ -6,8 +6,8 @@ const read=path=>readFileSync(new URL("../"+path,import.meta.url),"utf8");
 const html=read("index.html"),css=read("styles.css");
 const admin=read("src/admin.mjs"),policy=read("docs/PLAN_ARCHIVO_ONEDRIVE.md");
 test("no se muestra el panel de migración de PDF antiguos en el nuevo arranque",()=>{
-  assert.match(html,/id="legacyAuditPanel" hidden aria-hidden="true"/);
-  assert.match(css,/#legacyAuditPanel\[hidden\]\{display:none!important\}/);
+  assert.doesNotMatch(html,/id="legacyAuditPanel"/);
+  assert.doesNotMatch(read("src/admin.mjs"),/configurarAuditoriaLegacy|configurarInventarioOriginales|configurarConciliacionLegacy/);
   assert.match(policy,/No es necesario importar, reconstruir, conciliar ni conservar en KONTROLA los PDF generados anteriormente/);
 });
 test("el archivo periódico de PDFs nuevos en OneDrive se presenta como acción manual",()=>{
