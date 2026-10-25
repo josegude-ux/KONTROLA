@@ -216,3 +216,16 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 7. Mantener la ficha **solo en KONTROLA**, en la rama/PR de desarrollo correspondiente. No alterar INVENTA, Control de Cargas, Tanques, Business Central, `main` ni producción sin autorización específica. No introducir secretos, PDF empresariales ni datos personales en la ficha pública.
 
 **Aplicación inmediata:** este protocolo rige para todas las modificaciones posteriores a su incorporación, incluyendo las realizadas por agentes Cursor u otros asistentes. La ficha no sustituye las pruebas ni la revisión humana.
+
+
+## Preparación de publicación gratuita para pruebas en iPhone (25/10/2026)
+
+- **Decisión:** priorizar pruebas de KONTROLA en Safari/iPhone sin contratar Cursor ni servicios de pago. La unificación futura de las bases de Supabase se mantiene como objetivo, pero se pospone su ejecución. Los datos existentes son de prueba según el responsable; no se han borrado ni modificado.
+- **Rama y PR:** `cursor/verificacion-fisica-cargas-8ba0`, PR #2. **Versión de aplicación:** 0.3.19, sin cambio funcional.
+- **Archivos modificados en el mismo commit:** `.github/workflows/pages.yml` (nuevo) y esta ficha `docs/CONTINUIDAD.md`.
+- **Antes:** no existía una automatización de publicación de la versión avanzada en GitHub Pages. **Después:** un workflow prepara exclusivamente `index.html`, `styles.css`, `manifest.webmanifest`, `sw.js`, `version.json`, `src/`, `assets/` y `vendor/` y solicita su despliegue en Pages cuando se actualice esta rama o se lance manualmente. Ejecuta `npm ci`, `npm run check` y comprobación de dependencias antes de publicar.
+- **Seguridad:** el sitio web será público como recurso estático; no contiene claves privadas y la aplicación conserva su inicio de sesión. Esto **no sustituye** RLS/Storage/Auth ni valida permisos de la base. No publicar PDF reales en GitHub. La configuración de cliente existente apunta al proyecto Supabase compartido con Control de Cargas, sin alterarlo.
+- **Estado de pruebas:** workflow añadido; ejecución de GitHub Actions, URL final, habilitación de Pages en Settings, autenticación real, importación de PDF y uso en Safari/iPhone **pendientes de comprobar**. No declarar despliegue exitoso hasta ver un run exitoso y abrir la URL.
+- **Condición externa:** el administrador del repositorio debe seleccionar `Settings → Pages → Build and deployment → Source: GitHub Actions` si todavía no está configurado. La publicación puede fallar hasta entonces.
+- **Sin cambios:** no se ha fusionado `main`, ni ejecutado migraciones, ni modificado INVENTA, Control de Cargas, Tanques o Business Central.
+- **Siguiente paso:** comprobar ejecución de Pages, obtener URL real, abrir en Safari, añadir a pantalla de inicio y verificar primero navegación; después revisar cuentas, esquema KONTROLA y cargas PDF de prueba antes de ejecutar operaciones persistentes.
