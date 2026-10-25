@@ -1,7 +1,7 @@
 import {buildPreparationReport} from "./report.mjs";
 import {comprobarLoteActualizado} from "./archive-snapshot.mjs";
 import {fechaAlmacen} from "./business-date.mjs";
-import {filtrarCargasArchivo,validarPeriodoArchivo,nombreSugeridoArchivo,portadaLoteArchivo,MAX_HOJAS_ARCHIVO} from "./archive-period.mjs";
+import {filtrarCargasArchivo,nombreSugeridoArchivo,portadaLoteArchivo,MAX_HOJAS_ARCHIVO} from "./archive-period.mjs";
 
 // Solo lectura; crea una vista imprimible a partir de las cargas autorizadas.
 // No incluye los PDF originales ni publica/actualiza documentos.
@@ -15,8 +15,8 @@ export function configurarLoteImpresion({client,getUser,getWarehouse,errorText})
   }
   function render(){
     list.replaceChildren();
-    const from=$("batchPrintFrom").value,to=$("batchPrintTo").value;
-    try{rows=filtrarCargasArchivo(allRows,from,to);}
+    const today=fechaAlmacen();
+    try{rows=filtrarCargasArchivo(allRows,today,today);}
     catch(error){
       rows=[];selected.clear();button.disabled=true;
       status.textContent=error.message;return;
@@ -24,10 +24,10 @@ export function configurarLoteImpresion({client,getUser,getWarehouse,errorText})
     selected=new Set([...selected].filter(id=>rows.some(row=>row.codigo===id)));
     button.disabled=selected.size===0;
     $("batchArchiveName").textContent=!rows.length
-      ?"No hay hojas para el periodo seleccionado."
+      ?"No hay hojas procesadas para hoy."
       :!selected.size?"Selecciona las cargas para ver el nombre recomendado del PDF."
       :"Nombre sugerido para guardar el PDF: "+nombreSugeridoArchivo(
-        currentWarehouse,from,to,fechaAlmacen(),[...selected]
+        currentWarehouse,today,today,today,[...selected]
       );
     for(const load of rows){
       const label=document.createElement("label");label.className="batch-print-row";
@@ -41,7 +41,7 @@ export function configurarLoteImpresion({client,getUser,getWarehouse,errorText})
         button.disabled=selected.size===0;
         $("batchArchiveName").textContent=selected.size
           ?"Nombre sugerido para guardar el PDF: "+nombreSugeridoArchivo(
-            currentWarehouse,$("batchPrintFrom").value,$("batchPrintTo").value,fechaAlmacen(),[...selected])
+            currentWarehouse,fechaAlmacen(),fechaAlmacen(),fechaAlmacen(),[...selected])
           :"Selecciona las cargas para ver el nombre recomendado del PDF.";
         status.textContent=selected.size+" hoja(s) seleccionada(s) de "+rows.length+".";
       });
@@ -63,7 +63,7 @@ export function configurarLoteImpresion({client,getUser,getWarehouse,errorText})
       if(error)throw error;
       allRows=(data||[]).filter(x=>x&&x.codigo&&Array.isArray(x.productos));
       render();
-      status.textContent=rows.length+" carga(s) en el periodo seleccionado. Selecciona las hojas para guardar.";
+      status.textContent=rows.length+" carga(s) de hoy. Selecciona las hojas para guardar.";
     }catch(error){
       if(req!==seq||getUser()?.id!==session)return;
       reset();status.textContent="No se pudieron consultar las cargas: "+errorText(error);
@@ -82,20 +82,19 @@ export function configurarLoteImpresion({client,getUser,getWarehouse,errorText})
     if(chosen.length!==codes.length||!chosen.length||chosen.length>MAX_HOJAS_ARCHIVO){
       status.textContent="Elige entre 1 y "+MAX_HOJAS_ARCHIVO+" hojas válidas.";return;
     }
-    const from=$("batchPrintFrom").value,to=$("batchPrintTo").value;
-    try{validarPeriodoArchivo(from,to);}catch(error){status.textContent=error.message;return;}
+    const today=fechaAlmacen();
     previewing=true;button.disabled=true;
     status.textContent="Verificando en el servidor que las "+chosen.length+" cargas no han cambiado…";
     try{
       const {data,error}=await client.rpc("kontrola_panel_cargas",{p_almacen:warehouse});
       if(request!==seq||getUser()?.id!==session||getWarehouse()!==warehouse
-        ||$("batchPrintFrom").value!==from||$("batchPrintTo").value!==to
+        ||fechaAlmacen()!==today
         ||selected.size!==codes.length||codes.some(id=>!selected.has(id)))return;
       if(error)throw error;
       const verified=comprobarLoteActualizado(chosen,data||[],warehouse);
       const date=fechaAlmacen();
       const cover=portadaLoteArchivo(verified,{
-        almacen:warehouse,desde:from,hasta:to,fechaGeneracion:date
+        almacen:warehouse,desde:today,hasta:today,fechaGeneracion:date
       });
       $("reportPaper").innerHTML=cover+verified
         .map(row=>'<section class="report-batch-sheet">'+buildPreparationReport(row)+"</section>").join("");
@@ -116,14 +115,6 @@ export function configurarLoteImpresion({client,getUser,getWarehouse,errorText})
     }
   }
   $("batchPrintRefresh").addEventListener("click",refresh);
-  for(const id of ["batchPrintFrom","batchPrintTo"]){
-    $(id).addEventListener("change",()=>{
-      if(allRows.length){
-        nextGroupStart=0;render();
-        status.textContent=rows.length+" carga(s) en el periodo seleccionado.";
-      }
-    });
-  }
   $("batchPrintSelectVisible").addEventListener("click",()=>{
     if(!rows.length){status.textContent="No hay hojas visibles para seleccionar.";return;}
     // Cada pulsación avanza al siguiente grupo. No se considera archivado.

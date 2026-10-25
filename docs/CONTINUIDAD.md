@@ -245,3 +245,11 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 - Antes: RPC `kontrola_necesitan_atencion` ordenaba un UNION ALL por `creado_en` (nombre de columna no admitido en ese contexto).
 - Después: migración incremental `20261029_kontrola_fix_orden_atencion.sql` sustituye únicamente la RPC, ordenando por la posición de salida `ORDER BY 6`.
 - Validación pendiente: aplicar migración a Supabase compartido y comprobar RPC desde sesión autenticada; no se modifica ningún dato de otras aplicaciones.
+
+## 2026-10-25 — Impresión diaria sin fechas manuales
+- Rama `cursor/verificacion-fisica-cargas-8ba0`, versión UI 0.3.19.
+- Solicitud: imprimir solo cargas del mismo día; eliminar filtros Desde/Hasta de impresión por lotes.
+- Antes: impresión por periodos arbitrarios y archivo OneDrive mezclados en un mismo formulario.
+- Después: `src/admin-print-batch.mjs` filtra estrictamente por fecha del almacén (`Europe/Madrid`) tanto al mostrar como al verificar antes de imprimir; `index.html` elimina filtros; conserva selección máxima de 20, validación del servidor y PDF procesado. Archivo OneDrive sigue siendo manual e independiente.
+- Prueba añadida en `tests/admin-print-batch.test.mjs`; ejecución CI pendiente.
+- No se modifica Supabase, INVENTA ni Control de Cargas.

@@ -33,3 +33,12 @@ test("la impresión por lotes se actualiza al cambiar el almacén administrativo
  assert.match(admin,/configurarLoteImpresion/);
  assert.match(admin,/printBatch\.refresh\(\)/);
 });
+
+test("la impresión de lotes usa únicamente la fecha del almacén sin filtros de periodo",()=>{
+ const code=read("src/admin-print-batch.mjs");
+ const html=read("index.html");
+ assert.match(code,/filtrarCargasArchivo\\(allRows,today,today\\)/);
+ assert.match(code,/const today=fechaAlmacen\\(\\)/);
+ assert.doesNotMatch(code,/batchPrintFrom|batchPrintTo/);
+ assert.doesNotMatch(html,/id="batchPrintFrom"|id="batchPrintTo"/);
+});
