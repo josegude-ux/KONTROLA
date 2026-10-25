@@ -286,3 +286,5 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 - Solicitud: importación de PDF como primera acción visible al entrar a Administración, y paneles ordenados según flujo de trabajo.
 - `index.html`: se reordena únicamente el DOM de las ocho secciones, sin cambiar IDs, botones, funciones ni datos. Orden: Importar/procesar/revisar/publicar, Resumen y almacén, Necesitan atención, Archivo periódico, Imprimir hojas, Actividad operario, Incidencias, Historial revisiones. Los controles de importación aparecen primero.
 - Pruebas CI y despliegue pendientes.
+
+- Ajuste final de orden: Importación primero, Resumen segundo, Necesitan atención tercero, Impresión cuarto, Actividad quinto, Incidencias sexto, Historial séptimo y Archivo OneDrive al final.
