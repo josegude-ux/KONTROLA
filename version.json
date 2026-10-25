@@ -1,4 +1,4 @@
 {
-  "version": "0.3.22",
-  "notes": "El marcador ? en las cargas BC identifica recogida; ya no genera aviso de revisión. Mantiene intactas cantidades y trazabilidad."
+  "version": "0.3.23",
+  "notes": "Inicio más claro: Mi actividad conserva contadores, sin lista de eventos con fechas y horas. Totales por pasillo en hojas de preparación."
 }
