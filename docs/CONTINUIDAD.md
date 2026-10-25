@@ -513,3 +513,8 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 
 ### Pruebas de purga del archivo administrativo
 - `tests/archive-session.test.mjs`: verifica mediante contrato estático que `clearSensitive()` purga el archivo y que las respuestas tardías de RPC se invalidan. CI las ejecuta con `node --test tests/*.test.mjs`.
+
+### 2026-10-25 — Versión 0.3.21 preparada para publicación PWA
+- Sin modificaciones de base de datos: actualiza `package.json`, `version.json`, los indicadores de versión de `index.html` y el identificador de caché de `sw.js` a `kontrola-integral-v052` para invalidar recursos antiguos.
+- Objetivo: que la instalación PWA del **mismo origen de GitHub Pages** pueda recibir la interfaz de archivo y sus correcciones. Despliegue controlado por `.github/workflows/pages.yml` en la rama operativa, sujeto a configuración de GitHub Pages y a validación de la URL real.
+- No se cambia el alcance ni la política del archivo, no se realiza borrado ni se despliega a `main`.

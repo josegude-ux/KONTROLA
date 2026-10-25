@@ -1,4 +1,4 @@
 {
-  "version": "0.3.20",
-  "notes": "Corrección del importador PDF.js, registro automático de generación para impresión y reimpresión; renovación de caché Safari."
+  "version": "0.3.21",
+  "notes": "Archivo lógico seguro: interfaz, restauración, permisos de Supabase, actualización de listas y limpieza de datos de sesión. PWA con caché renovada."
 }
