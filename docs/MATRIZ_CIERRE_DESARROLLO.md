@@ -1,6 +1,6 @@
 # KONTROLA — Matriz de cierre y brechas funcionales
 
-**Lectura inicial:** KONTROLA v0.3.8 (PR #2) y Control de Cargas Móvil v0.5.26 (referencia funcional). El código de KONTROLA está desarrollado en la rama; **no publicado en producción**. El estado «programado» no significa «validado en móvil».
+**Lectura inicial:** KONTROLA v0.3.11 (PR #2) y Control de Cargas Móvil v0.5.26 (referencia funcional). El código de KONTROLA está desarrollado en la rama; **no publicado en producción**. El estado «programado» no significa «validado en móvil».
 
 | Función necesaria | Estado de código | Pendiente antes de producción |
 |---|---|---|
@@ -17,17 +17,21 @@
 | Historial filtrado y resúmenes CSV/impresión | Programado | Validar exportación con Excel y AirPrint |
 | Fecha diaria Europe/Madrid y protección de almacén | Programado y probado automáticamente | Comprobar reloj/dispositivo real |
 | Importación múltiple del Control de Cargas original | **Programada v0.3.8** | Pruebas E2E de hasta 20 documentos, memoria móvil, confirmaciones y acceso a revisiones pendientes |
-| Impresión por lotes de originales | **Pendiente** | Definir política de exposición/permiso de originales por revisión y probar impresora |
-| Estadística por operario con nombres identificables | **Parcial** | Definir consultas autorizadas de servidor y permisos sobre perfiles |
-| Paso de cargas/historial local del Control de Cargas original | **Pendiente** | Inventariar móviles, copias JSON, OneDrive, PDFs, identificadores y evitar duplicados |
+| Impresión por lotes de originales | **Pendiente** | La impresión conjunta v0.3.11 SOLO cubre hojas procesadas; pendiente combinación vectorial y validación iPhone de originales |
+| Estadística por operario con nombres identificables | **Programada v0.3.9** | Validar privacidad, fechas y permisos RPC en Supabase autorizado y comprobar iPhone |
+| Paso de cargas/historial local del Control de Cargas original | **Auditoría local v0.3.10; migración pendiente** | Examinar copias JSON de cada móvil, originales PDF en IndexedDB, OneDrive y datos remotos; preparar plan reversible |
 | Manual PDF con capturas auténticas | **Borrador** | Capturar pantallas de PWA en ejecución y verificar textos antes de producir PDF |
 | Control de Tanques | **Oculto y pausado** | Solo integrar con autorización posterior |
 | Unificación Auth/Supabase con INVENTA | **Estudio, no implementado** | Requiere propuesta, backups y autorización; INVENTA independiente |
 
+
+| Impresión conjunta de hojas procesadas | **Programada v0.3.11** | Probar paginación real Safari/AirPrint y límite de 10 cargas |
+| Auditoría de backups JSON legacy | **Programada v0.3.10** | No migra datos; cotejar con teléfonos/OneDrive y obtener permisos antes de actuar |
+
 ## Prioridades de continuación
 
 1. **P0 antes de uso empresarial:** no desplegar sin inventario de datos locales, matriz de acceso validada, permisos Storage probados y copia/restauración ensayada.
-2. **P1 funcional:** validar importación PDF múltiple y desarrollar, previa especificación, impresión por lotes y estadísticas por operario, sin inventar reglas de picking o BC.
+2. **P1 funcional:** validar importación PDF múltiple, estadísticas por operario y lote de hojas procesadas; resolver impresión por lotes de PDF originales y diseño de migración reversible, sin inventar reglas de BC.
 3. **P1 de aceptación:** ejecutar y firmar los escenarios de [PRUEBAS_ACEPTACION.md](PRUEBAS_ACEPTACION.md).
 4. **P2 documentación:** cerrar [MANUAL_USUARIO_BORRADOR.md](MANUAL_USUARIO_BORRADOR.md), producir el PDF definitivo con capturas reales y distribuirlo solo tras aprobación.
 5. **P2 lanzamiento:** plan de reversión, aprobación escrita para migraciones y despliegue, publicación gradual y supervisión inicial.
