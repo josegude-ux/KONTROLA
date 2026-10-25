@@ -52,7 +52,9 @@ export function inventariarOriginalesLocales(indexedDb=globalThis.indexedDB){
       tx.oncomplete=()=>{
         db.close();
         done({disponible:true,cantidad:contador,truncado,...resumirClavesOriginales(rows),
-          aviso:"Se han leído únicamente las claves del almacén, NO los archivos PDF ni su contenido. Las huellas almacenadas en la clave no se han recalculado."});
+          claves:rows.filter(key=>clasificarClaveOriginal(key).tipo!=="desconocida")
+            .map(key=>({clave:key,...clasificarClaveOriginal(key)})),
+          aviso:"El inventario lee solo las claves. Para guardar un PDF se requiere pulsar su botón expresamente; no se envía a ningún servidor."});
       };
       tx.onerror=()=>{db.close();fail(tx.error||Error("Error al consultar originales locales."));};
       tx.onabort=()=>{db.close();fail(tx.error||Error("Lectura interrumpida."));};
@@ -68,4 +70,52 @@ export function inventariarOriginalesLocales(indexedDb=globalThis.indexedDB){
       };
     };
   });
+}
+
+
+// Recuperación solicitada expresamente: lee UN PDF de IndexedDB con transacción
+// READONLY, verifica la cabecera y su SHA-256 antes de ofrecer una copia local.
+// Nunca elimina la entrada antigua ni la sube a un servicio.
+export async function recuperarPdfOriginalLocal(
+  clave,indexedDb=globalThis.indexedDB,cryptoApi=globalThis.crypto
+){
+  const parsed=clasificarClaveOriginal(clave);
+  if(parsed.tipo==="desconocida")throw Error("Clave de PDF no válida.");
+  if(!indexedDb?.open)throw Error("IndexedDB no está disponible en esta aplicación.");
+  const blob=await new Promise((resolve,reject)=>{
+    let request,upgrade=false;
+    try{request=indexedDb.open(DATABASE);}catch(error){reject(error);return;}
+    request.onupgradeneeded=()=>{upgrade=true;request.transaction?.abort();};
+    request.onerror=()=>reject(Error(upgrade
+      ?"Los originales no están disponibles en este contenedor del navegador."
+      :"No se pudo abrir el almacenamiento local de PDF."));
+    request.onsuccess=()=>{
+      const db=request.result;
+      if(!db.objectStoreNames.contains(STORE)){
+        db.close();reject(Error("El almacén local de originales no existe."));return;
+      }
+      let file;
+      const tx=db.transaction(STORE,"readonly");
+      tx.onerror=()=>{db.close();reject(tx.error||Error("Error de lectura del PDF."));};
+      tx.onabort=()=>{db.close();reject(tx.error||Error("Lectura cancelada."));};
+      const read=tx.objectStore(STORE).get(clave);
+      read.onsuccess=()=>{file=read.result;};
+      read.onerror=()=>reject(read.error||Error("No se pudo leer el PDF."));
+      tx.oncomplete=()=>{
+        db.close();
+        if(!file)reject(Error("Ese PDF ya no aparece en el almacenamiento local."));
+        else resolve(file);
+      };
+    };
+  });
+  if(!(blob instanceof Blob)||blob.size===0||blob.size>50*1024*1024)
+    throw Error("El original no es un PDF válido o supera 50 MB.");
+  const start=String.fromCharCode(...new Uint8Array(await blob.slice(0,5).arrayBuffer()));
+  if(start!=="%PDF-")throw Error("El archivo guardado no tiene cabecera PDF.");
+  if(!cryptoApi?.subtle?.digest)throw Error("No se puede verificar la huella del PDF.");
+  const hash=[...new Uint8Array(await cryptoApi.subtle.digest("SHA-256",await blob.arrayBuffer()))]
+    .map(value=>value.toString(16).padStart(2,"0")).join("");
+  if(parsed.tipo==="version"&&hash!==parsed.huellaEnClave)
+    throw Error("La huella SHA-256 no coincide con la revisión guardada. No se ha descargado el archivo.");
+  return {blob,codigo:parsed.codigo,hash,tipo:parsed.tipo};
 }
