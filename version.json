@@ -1,4 +1,4 @@
 {
-  "version": "0.3.9",
-  "notes": "Estadísticas por operario para administración, filtradas por fecha y almacén con permisos servidor; impresión múltiple pendiente de validar."
+  "version": "0.3.10",
+  "notes": "Auditoría local, no destructiva, de copias JSON antiguas de Control de Cargas; estadísticas por operario protegidas."
 }
