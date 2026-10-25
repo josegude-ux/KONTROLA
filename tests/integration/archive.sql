@@ -17,6 +17,26 @@ update public.kontrola_cargas set cerrada_en=now()-interval '92 days' where codi
 update public.kontrola_incidencias set actualizada_en=now()-interval '92 days' where codigo='LP26-10001';
 set role authenticated;
 select set_config('request.jwt.claim.sub','00000000-0000-0000-0000-000000000001',false);
+-- Una regularización posterior reinicia el mínimo de conservación.
+reset role;
+update public.kontrola_incidencias set actualizada_en=now()-interval '2 days' where codigo='LP26-10001';
+set role authenticated;
+do $begin
+ perform public.kontrola_cambiar_archivo('LP26-10001',true);
+ raise exception 'ASSERTION FAILED: incidencia reciente permite archivo';
+exception when sqlstate '22023' then null;
+end$;
+reset role;
+update public.kontrola_incidencias set actualizada_en=now()-interval '92 days',estado='pendiente' where codigo='LP26-10001';
+set role authenticated;
+do $begin
+ perform public.kontrola_cambiar_archivo('LP26-10001',true);
+ raise exception 'ASSERTION FAILED: incidencia pendiente permite archivo';
+exception when sqlstate '22023' then null;
+end$;
+reset role;
+update public.kontrola_incidencias set estado='regularizada' where codigo='LP26-10001';
+set role authenticated;
 select test.assert(public.kontrola_cambiar_archivo('LP26-10001',true),'administrador archiva elegible');
 select test.assert((select archivado=true from public.kontrola_cargas where codigo='LP26-10001'),'carga queda archivada');
 select test.assert((select count(*)=1 from public.kontrola_listar_archivadas() where codigo='LP26-10001'),'lista muestra archivada');

@@ -466,3 +466,7 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 
 ### CI archivo — confirmación de modo ejecutable
 - El commit de test reintrodujo accidentalmente `100644` en `tests/integration/run.sh` por utilizar una base de árbol antigua; se vuelve a forzar `100755` junto con el test y documentación actuales.
+
+### Ampliación de pruebas integradas de retención
+- Tras CI real favorable con 171 pruebas y `archive=passed`, se incorporan dos escenarios adicionales de PostgreSQL aislado: rechazar incidencia regularizada muy recientemente y rechazar incidencia aún pendiente aun con carga antigua.
+- Ningún cambio de datos en Supabase. Pendiente validar el CI de esta ampliación.
