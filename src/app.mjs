@@ -15,6 +15,7 @@ const visible=(element,show)=>{element.hidden=!show;};
 const status=(id,message="",level="")=>{const el=$(id);el.textContent=message;el.className="status "+level;};
 const global=(message="",level="")=>status("globalMessage",message,level);
 const fmt=n=>n==null?"—":Number(n).toLocaleString("es-ES",{maximumFractionDigits:3});
+const validRequest=(warehouse,userId)=>selectedWarehouse===warehouse&&user?.id===userId;
 const errorText=e=>{const msg=String(e?.message||e||"Error");if(/relation .* does not exist|schema cache|could not find the function|PGRST202|PGRST205/i.test(msg))return "KONTROLA aún no tiene instalada la migración de base de datos. Contacta con administración.";return msg;};
 const escapeHtml=x=>String(x??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 function switchView(id,{force=false}={}){
@@ -82,10 +83,12 @@ async function selectWarehouse(code,context="home"){
 }
 async function refreshOperatorDashboard(){
   if(!client||!user||!selectedWarehouse)return;
+  const warehouse=selectedWarehouse,userId=user.id;
   const [{data:summary,error},{data:activity,error:activityError}]=await Promise.all([
-    client.rpc("kontrola_resumen_zona",{p_almacen:selectedWarehouse,p_dia:new Date().toISOString().slice(0,10)}),
-    client.from("kontrola_actividad").select("tipo,codigo,creado_en,detalle").eq("almacen",selectedWarehouse).order("creado_en",{ascending:false}).limit(20)
+    client.rpc("kontrola_resumen_zona",{p_almacen:warehouse,p_dia:new Date().toISOString().slice(0,10)}),
+    client.from("kontrola_actividad").select("tipo,codigo,creado_en,detalle").eq("almacen",warehouse).order("creado_en",{ascending:false}).limit(20)
   ]);
+  if(!validRequest(warehouse,userId))return;
   if(error)throw error;
   const values=Array.isArray(summary)?summary[0]:summary,target=$("operatorSummary");target.replaceChildren();
   for(const [label,key] of [["Disponibles","publicadas"],["En preparación","en_preparacion"],["Por verificar","pendientes_verificacion"],["Cerradas","cerradas"]]){
@@ -135,8 +138,10 @@ $("loginForm").addEventListener("submit",async e=>{
   }finally{button.disabled=false;}
 });
 async function refreshLoads(){
-  $("loadsList").textContent="Consultando cargas disponibles…";
-  const {data,error}=await client.rpc("kontrola_panel_cargas",{p_almacen:selectedWarehouse});
+  const warehouse=selectedWarehouse,userId=user?.id;
+  loads=[];$("loadsList").textContent="Consultando cargas disponibles…";
+  const {data,error}=await client.rpc("kontrola_panel_cargas",{p_almacen:warehouse});
+  if(!validRequest(warehouse,userId))return;
   if(error){$("loadsList").textContent="No se pueden cargar los documentos: "+errorText(error);throw error;}
   loads=ordenarCargas(data||[]);
   renderLoadList();
@@ -168,11 +173,11 @@ async function refreshHistory(){
   try{
     const {data,error}=await client.rpc("kontrola_panel_cargas",{p_almacen:warehouse});
     if(error)throw error;
-    if(!user||user.id!==requestUser||selectedWarehouse!==warehouse)return;
+    if(!validRequest(warehouse,requestUser))return;
     historyRows=data||[];
     renderHistory();
   }catch(error){
-    if(!user||user.id!==requestUser||selectedWarehouse!==warehouse)return;
+    if(!validRequest(warehouse,requestUser))return;
     historyRows=[];
     status("historyStatusMessage","No se pudo consultar el historial: "+errorText(error),"error");
   }
@@ -352,13 +357,15 @@ function renderAisles(){
 }
 $("productSearch").addEventListener("input",()=>{selectedAisle="TODOS";renderAisles();});
 async function refreshReviewLoads(){
-  $("reviewLoadsList").textContent="Consultando cargas preparadas por otros operarios…";
-  const {data,error}=await client.rpc("kontrola_panel_cargas",{p_almacen:selectedWarehouse});
+  const warehouse=selectedWarehouse,userId=user?.id;
+  reviewLoads=[];$("reviewLoadsList").textContent="Consultando cargas preparadas por otros operarios…";
+  const {data,error}=await client.rpc("kontrola_panel_cargas",{p_almacen:warehouse});
+  if(!validRequest(warehouse,userId))return;
   if(error){$("reviewLoadsList").textContent="No se pueden cargar las verificaciones: "+errorText(error);throw error;}
   reviewLoads=ordenarCargas((data||[]).filter(load=>
-    load.preparador_id&&load.preparador_id!==user.id&&
+    load.preparador_id&&load.preparador_id!==userId&&
     ["preparacion_en_curso","preparada","verificacion_en_curso","cerrada"].includes(load.estado)&&
-    (!load.verificador_id||load.verificador_id===user.id)
+    (!load.verificador_id||load.verificador_id===userId)
   ));
   renderReviewLoads();
 }
