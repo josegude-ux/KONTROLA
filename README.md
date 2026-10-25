@@ -2,7 +2,7 @@
 
 PWA móvil de operaciones de almacén para **preparación, consulta, verificación, historial e incidencias de cargas**.
 
-**Versión de esta rama:** 0.3.12. **Estado:** desarrollo probado parcialmente, **no apto aún para producción**.
+**Versión de esta rama:** 0.3.13. **Estado:** desarrollo probado parcialmente, **no apto aún para producción**.
 
 - PR de Fase 1: https://github.com/josegude-ux/KONTROLA/pull/1
 - PR de operación integral: https://github.com/josegude-ux/KONTROLA/pull/2
@@ -117,3 +117,14 @@ Pendiente: pruebas completas con Supabase Auth/Storage real, documentos autoriza
 - El botón de cierre **no confirma éxito** cuando Supabase devuelve error. Se solicita reintentar y no se simula que la cuenta haya salido.
 - Se limpian la contraseña escrita y los controles de descarga de historial.
 - Esta protección del cliente **no sustituye** RLS/Storage de servidor. Para validar de verdad deben probarse dos cuentas en el mismo iPhone y la expulsión de la sesión remota.
+
+
+## Conciliación de datos antiguos — v0.3.13
+
+- En **Administración → Auditar copia antigua de Control de Cargas**, selecciona el backup JSON y pulsa **Comparar con KONTROLA (solo lectura)**.
+- El backup se lee **en el dispositivo**. Solo se consulta por RPC la lista de cargas que el usuario tiene permiso para ver en el almacén seleccionado. El backup antiguo **no se envía** a Supabase.
+- Se detectan códigos de carga presentes en ambos sistemas, datos que coinciden, diferencias de fecha/ruta/matrícula/repartidor/peso, duplicados, códigos inválidos y faltantes **en la zona consultada**.
+- **No se compara el hash de los PDF**, porque `kontrola_panel_cargas` no lo expone. Coincidencia de datos NO acredita igualdad de documentos, tiempos, cantidades o archivos locales.
+- No se migran, fusionan, eliminan, reescriben ni actualizan datos. Los PDF originales continúan en IndexedDB de cada dispositivo antiguo: hay que inventariarlos de manera independiente.
+- La ejecución `40188458388` de GitHub Actions verificó **104 pruebas JavaScript, 0 fallidas** y las cinco migraciones/operaciones/concurrencia en PostgreSQL temporal.
+- **No hay validación E2E de iPhone/Supabase real**, ni despliegue de producción autorizado.
