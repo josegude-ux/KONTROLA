@@ -48,6 +48,6 @@ test("el análisis es local: no debe subir copias ni restaurar almacenamiento",(
  assert.match(ui,/await file\.text\(\)/);
  assert.match(ui,/auditarCopiaCargas\(/);
  assert.doesNotMatch(ui,/\.rpc\(|\.from\(|\.upload\(|localStorage|indexedDB|fetch\(/);
- assert.match(html,/id="legacyAuditPanel"/);
- assert.match(html,/id="legacyBackupFile"/);
+ assert.doesNotMatch(html,/id="legacyAuditPanel"/);
+ assert.doesNotMatch(html,/id="legacyBackupFile"/);
 });
