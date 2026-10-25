@@ -63,5 +63,8 @@ export function configurarEstadisticasOperarios({client,getUser,errorText,getWar
   }
   date.addEventListener("change",refresh);
   $("operatorStatsRefresh").addEventListener("click",refresh);
-  return {refresh};
+  return {refresh,clear:()=>{
+    requestId++;clear();status.textContent="";
+    date.value=fechaAlmacen();$("operatorStatsRefresh").disabled=false;
+  }};
 }
