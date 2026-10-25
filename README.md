@@ -2,7 +2,7 @@
 
 PWA móvil de operaciones de almacén para **preparación, consulta, verificación, historial e incidencias de cargas**.
 
-**Versión de esta rama:** 0.3.11. **Estado:** desarrollo probado parcialmente, **no apto aún para producción**.
+**Versión de esta rama:** 0.3.12. **Estado:** desarrollo probado parcialmente, **no apto aún para producción**.
 
 - PR de Fase 1: https://github.com/josegude-ux/KONTROLA/pull/1
 - PR de operación integral: https://github.com/josegude-ux/KONTROLA/pull/2
@@ -109,3 +109,11 @@ Pendiente: pruebas completas con Supabase Auth/Storage real, documentos autoriza
 - **v0.3.10 — Auditoría local de copias antiguas:** selecciona el backup JSON del antiguo Control de Cargas para identificar duplicados, cargas sin fecha, tiempos incompletos, estados y SHA-256 faltantes. El JSON se procesa **solo en el navegador**, sin subir datos ni restaurarlos. Los originales PDF se conservan en **IndexedDB en cada dispositivo** y NO están incluidos en la copia JSON. Deben inventariarse por separado.
 - **v0.3.11 — Lotes de hojas procesadas:** permite marcar un máximo de 10 cargas autorizadas del almacén y preparar un único informe multipágina de hojas **procesadas** para imprimir o guardar como PDF. No es la impresión conjunta de **PDF originales**; esa sigue pendiente de solución, validación de calidad y pruebas reales de iPhone.
 - Las migraciones y pruebas SQL siguen únicamente en PostgreSQL temporal. Ninguna funcionalidad publicada para trabajadores ni habilitada en Supabase empresarial.
+
+
+## Seguridad de sesión compartida (v0.3.12)
+- Al cerrar la sesión se eliminan los datos visibles **y los de pantallas ocultas** (estadísticas, historial, PDF en pantalla, documentos en revisión y listados).
+- Se invalidan peticiones pendientes y se vacían los datos temporales de Administración, selección de lotes y análisis de copias.
+- El botón de cierre **no confirma éxito** cuando Supabase devuelve error. Se solicita reintentar y no se simula que la cuenta haya salido.
+- Se limpian la contraseña escrita y los controles de descarga de historial.
+- Esta protección del cliente **no sustituye** RLS/Storage de servidor. Para validar de verdad deben probarse dos cuentas en el mismo iPhone y la expulsión de la sesión remota.
