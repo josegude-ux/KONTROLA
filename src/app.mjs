@@ -158,6 +158,76 @@ function renderLoadList(){
     target.appendChild(b);
   }
 }
+// Historial de lectura; los datos proceden del mismo RPC con permisos por almacén.
+async function refreshHistory(){
+  if(!client||!user)return;
+  const warehouse=selectedWarehouse,requestUser=user.id;
+  historyRows=[];
+  $("historyList").replaceChildren();$("historySummary").replaceChildren();
+  status("historyStatusMessage","Cargando el historial autorizado…");
+  try{
+    const {data,error}=await client.rpc("kontrola_panel_cargas",{p_almacen:warehouse});
+    if(error)throw error;
+    if(!user||user.id!==requestUser||selectedWarehouse!==warehouse)return;
+    historyRows=data||[];
+    renderHistory();
+  }catch(error){
+    if(!user||user.id!==requestUser||selectedWarehouse!==warehouse)return;
+    historyRows=[];
+    status("historyStatusMessage","No se pudo consultar el historial: "+errorText(error),"error");
+  }
+}
+function renderHistory(){
+  const filtered=filtrarHistorial(historyRows,{
+    fecha:$("historyDate").value,estado:$("historyStatus").value,busqueda:$("historySearch").value
+  });
+  const summary=resumenHistorial(filtered),stats=$("historySummary");stats.replaceChildren();
+  for(const [label,value] of [
+    ["Cargas",summary.cargas],["Peso total",fmt(summary.pesoKg)+" kg"],
+    ["Referencias",fmt(summary.referencias)],["Cerradas",summary.cerradas],
+    ["Incidencias pendientes",summary.incidencias]
+  ]){
+    const fact=document.createElement("div");fact.className="fact";
+    const small=document.createElement("small"),strong=document.createElement("b");
+    small.textContent=label;strong.textContent=String(value);
+    fact.append(small,strong);stats.appendChild(fact);
+  }
+  const list=$("historyList");list.replaceChildren();
+  status("historyStatusMessage",filtered.length===historyRows.length
+    ?filtered.length+" carga(s) del almacén seleccionado."
+    :filtered.length+" de "+historyRows.length+" carga(s) según los filtros.");
+  if(!filtered.length){
+    const empty=document.createElement("p");empty.className="muted";
+    empty.textContent=historyRows.length?"No hay cargas que coincidan con los filtros.":"Todavía no hay cargas publicadas en este almacén.";
+    list.appendChild(empty);return;
+  }
+  for(const load of filtered){
+    const button=document.createElement("button");button.type="button";button.className="load-card";
+    const left=document.createElement("span"),title=document.createElement("strong"),details=document.createElement("span");
+    title.className="load-title";title.textContent=String(load.codigo||"Sin código");
+    details.className="load-meta";
+    details.textContent=[formatoFechaCarga(load.fecha),load.estado,load.ruta,load.repartidor,load.matricula]
+      .filter(Boolean).join(" · ");
+    left.append(title,details);
+    const weight=document.createElement("span");weight.className="load-weight";
+    weight.textContent=fmt(load.peso_kg)+" kg";
+    button.append(left,weight);
+    button.addEventListener("click",()=>openLoad(load.codigo,{
+      source:historyRows,returnTo:"cargasHistoryView",readOnly:true
+    }));
+    list.appendChild(button);
+  }
+}
+for(const id of ["historyDate","historyStatus","historySearch"]){
+  $(id).addEventListener("input",renderHistory);
+}
+$("historyClear").addEventListener("click",()=>{
+  $("historyDate").value="";$("historyStatus").value="";$("historySearch").value="";
+  renderHistory();
+});
+$("historyRefresh").addEventListener("click",()=>refreshHistory().catch(()=>{}));
+$("historyWarehouse").addEventListener("change",event=>selectWarehouse(event.target.value,"history").catch(err=>status("historyStatusMessage",errorText(err),"error")));
+
 $("loadSearch").addEventListener("input",renderLoadList);
 $("reloadLoads").addEventListener("click",()=>refreshLoads().catch(()=>{}));
 function openLoadsMenu(parent="homeView",mode="preparacion"){
