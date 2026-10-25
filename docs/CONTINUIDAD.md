@@ -253,3 +253,10 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 - Después: `src/admin-print-batch.mjs` filtra estrictamente por fecha del almacén (`Europe/Madrid`) tanto al mostrar como al verificar antes de imprimir; `index.html` elimina filtros; conserva selección máxima de 20, validación del servidor y PDF procesado. Archivo OneDrive sigue siendo manual e independiente.
 - Prueba añadida en `tests/admin-print-batch.test.mjs`; ejecución CI pendiente.
 - No se modifica Supabase, INVENTA ni Control de Cargas.
+
+## 2026-10-25 — Control automático de generación y reimpresión
+- Rama `cursor/verificacion-fisica-cargas-8ba0`; sin alterar versión 0.3.19.
+- Nuevo `supabase/migrations/20261030_kontrola_impresiones.sql`: historial por carga/usuario/almacén/fecha, RPC de estado y registro atómico con bloqueo de concurrencia; solo administradores; sin acceso directo a la tabla.
+- `src/admin-print-batch.mjs` excluye de la impresión normal las cargas ya generadas y ofrece Reimprimir sin confirmación adicional; registra el intento justo antes de abrir la vista imprimible. `index.html` incorpora el control.
+- Limitación: Safari no informa del éxito físico de la impresora; se registra intento de generación, no impresión efectiva. Si falla, reimprimir. Si la vista no abre tras registrar, se puede reimprimir.
+- No modifica tablas ni datos de INVENTA o Control de Cargas. Pendiente: aplicar migración y verificar CI y despliegue.

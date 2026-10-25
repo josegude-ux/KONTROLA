@@ -7,16 +7,16 @@ import {filtrarCargasArchivo,nombreSugeridoArchivo,portadaLoteArchivo,MAX_HOJAS_
 // No incluye los PDF originales ni publica/actualiza documentos.
 const $=id=>document.getElementById(id);
 export function configurarLoteImpresion({client,getUser,getWarehouse,errorText}){
-  let rows=[],allRows=[],selected=new Set(),currentWarehouse="",currentSession=null,seq=0,nextGroupStart=0,previewing=false;
+  let rows=[],allRows=[],selected=new Set(),currentWarehouse="",currentSession=null,seq=0,nextGroupStart=0,previewing=false,printCounts=new Map(),reprintMode=false;
   const status=$("batchPrintStatus"),list=$("batchPrintList"),button=$("batchPrintOpen");
   function reset(){
-    rows=[];allRows=[];selected.clear();nextGroupStart=0;list.replaceChildren();button.disabled=true;
+    rows=[];allRows=[];selected.clear();printCounts.clear();reprintMode=false;$("batchPrintReprint").checked=false;nextGroupStart=0;list.replaceChildren();button.disabled=true;
     $("batchArchiveName").textContent="";
   }
   function render(){
     list.replaceChildren();
     const today=fechaAlmacen();
-    try{rows=filtrarCargasArchivo(allRows,today,today);}
+    try{rows=filtrarCargasArchivo(allRows,today,today).filter(row=>reprintMode?(printCounts.get(row.codigo)||0)>0:!(printCounts.get(row.codigo)||0));}
     catch(error){
       rows=[];selected.clear();button.disabled=true;
       status.textContent=error.message;return;
@@ -48,7 +48,7 @@ export function configurarLoteImpresion({client,getUser,getWarehouse,errorText})
       const info=document.createElement("span");
       const heading=document.createElement("b");heading.textContent=load.codigo||"Carga sin código";
       const detail=document.createElement("small");
-      detail.textContent=[load.fecha,load.ruta,load.repartidor].filter(Boolean).join(" · ");
+      detail.textContent=[load.fecha,load.ruta,load.repartidor,reprintMode?"Intentos anteriores: "+printCounts.get(load.codigo):""].filter(Boolean).join(" · ");
       info.append(heading,detail);label.append(check,info);list.append(label);
     }
   }
@@ -61,6 +61,10 @@ export function configurarLoteImpresion({client,getUser,getWarehouse,errorText})
       const {data,error}=await client.rpc("kontrola_panel_cargas",{p_almacen:warehouse});
       if(req!==seq||getUser()?.id!==session||getWarehouse()!==warehouse)return;
       if(error)throw error;
+      const {data:prints,error:printError}=await client.rpc("kontrola_estado_impresion",{p_almacen:warehouse});
+      if(printError)throw printError;
+      if(req!==seq||getUser()?.id!==session||getWarehouse()!==warehouse)return;
+      printCounts=new Map((prints||[]).map(x=>[x.codigo,Number(x.intentos)]));
       allRows=(data||[]).filter(x=>x&&x.codigo&&Array.isArray(x.productos));
       render();
       status.textContent=rows.length+" carga(s) de hoy. Selecciona las hojas para guardar.";
@@ -96,12 +100,16 @@ export function configurarLoteImpresion({client,getUser,getWarehouse,errorText})
       const cover=portadaLoteArchivo(verified,{
         almacen:warehouse,desde:today,hasta:today,fechaGeneracion:date
       });
+      const {error:registerError}=await client.rpc("kontrola_registrar_lote_impresion",{p_almacen:warehouse,p_codigos:codes,p_reimprimir:reprintMode});
+      if(registerError)throw registerError;
+      if(request!==seq||getUser()?.id!==session||getWarehouse()!==warehouse)return;
       $("reportPaper").innerHTML=cover+verified
         .map(row=>'<section class="report-batch-sheet">'+buildPreparationReport(row)+"</section>").join("");
       $("reportTitle").textContent="Lote verificado para archivo · "+verified.length+" hojas · "+warehouse;
-      status.textContent="Lote comprobado contra el servidor. Usa «Imprimir / Guardar PDF» y después muévelo a OneDrive desde Archivos.";
+      status.textContent="Generación registrada. Usa «Imprimir / Guardar PDF». Si falla, activa Reimprimir para repetir sin duplicar la carga.";
       $("reportView").hidden=false;document.body.classList.add("report-open");
       window.scrollTo(0,0);
+      await refresh();
     }catch(error){
       if(request!==seq||getUser()?.id!==session||getWarehouse()!==warehouse)return;
       $("reportPaper").replaceChildren();
@@ -115,6 +123,7 @@ export function configurarLoteImpresion({client,getUser,getWarehouse,errorText})
     }
   }
   $("batchPrintRefresh").addEventListener("click",refresh);
+  $("batchPrintReprint").addEventListener("change",event=>{reprintMode=event.target.checked;selected.clear();nextGroupStart=0;render();status.textContent=reprintMode?"Reimpresión: elige cargas ya generadas.":"Impresión normal: solo cargas sin generar.";});
   $("batchPrintSelectVisible").addEventListener("click",()=>{
     if(!rows.length){status.textContent="No hay hojas visibles para seleccionar.";return;}
     // Cada pulsación avanza al siguiente grupo. No se considera archivado.
