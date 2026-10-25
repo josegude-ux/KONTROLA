@@ -57,11 +57,14 @@
 | A38 | Grupos consecutivos | Filtrar 45 cargas y pulsar sucesivamente la selección rápida | Primer grupo 20, segundo 20, tercero 5; cada carátula corresponde a las cargas correctas |
 | A39 | Impresión grande iPhone | Imprimir un grupo de 20 cargas con muchas líneas por hoja | Sin bloqueos de memoria ni páginas cortadas; PDF legible y guardable en Archivos/OneDrive |
 
+| A40 | Carga modificada | Seleccionar veinte cargas y modificar una cantidad o matrícula desde otra sesión antes de imprimir | Se bloquea la generación y se exige actualizar la lista; no se archivan datos anteriores |
+| A41 | Cambio durante la impresión | Iniciar comprobación de lote con red lenta y cambiar almacén o sesión | Se descarta la respuesta anterior y no aparece un PDF del almacén o usuario previo |
+
 ## Condiciones de salida
 
 **Desarrollo:** funciones implementadas, pruebas unitarias y SQL temporales superadas.
 
-**Validación real:** todas las pruebas A01–A39 ejecutadas y registradas con evidencias, sin errores bloqueantes.
+**Validación real:** todas las pruebas A01–A41 ejecutadas y registradas con evidencias, sin errores bloqueantes.
 
 **Puesta en producción:** únicamente tras definir el inicio documental nuevo sin borrado de datos, validar la privacidad y permisos, probar el guardado PDF y movimiento manual a OneDrive, obtener aprobación explícita y realizar un despliegue controlado.
 
