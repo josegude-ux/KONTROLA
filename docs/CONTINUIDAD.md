@@ -440,3 +440,8 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 - `src/app.mjs`: conecta `filtrarArchivoLogico` a las respuestas de los RPC ya existentes: cargas operativas usa `activas`; historial usa `todas`.
 - Sin columna `archivado` confirmada, las cargas existentes mantienen la misma visibilidad; solo `archivado === true` en respuesta autorizada excluye una carga del listado activo.
 - No crea selector visual de archivadas ni escribe en Supabase; el historial sigue sujeto al RPC y permisos existentes. No equivale a archivo lógico operativo completo.
+
+### 2026-10-25 — UI administrativa para archivo (pendiente de backend)
+- Pestaña Archivo de cargas: código, archivar y restaurar, confirmación, errores y bloqueo durante la solicitud.
+- Llama a RPC `kontrola_cambiar_archivo` solo cuando el administrador actúa; si falta la RPC, muestra error sin afirmar éxito.
+- Backend de PR #11 sigue siendo propuesta sin aplicar. Pendiente consulta de archivadas, pruebas y despliegue.
