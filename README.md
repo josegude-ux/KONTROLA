@@ -4,7 +4,7 @@
 
 PWA móvil de operaciones de almacén para **preparación, consulta, verificación, historial e incidencias de cargas**.
 
-**Versión de esta rama:** 0.3.17. **Estado:** desarrollo probado parcialmente, **no apto aún para producción**.
+**Versión de esta rama:** 0.3.18. **Estado:** desarrollo probado parcialmente, **no apto aún para producción**.
 
 - PR de Fase 1: https://github.com/josegude-ux/KONTROLA/pull/1
 - PR de operación integral: https://github.com/josegude-ux/KONTROLA/pull/2
@@ -148,10 +148,19 @@ La migración de copias y PDF antiguos ha quedado fuera del alcance por decisió
 En Administración → Imprimir varias hojas procesadas:
 1. Seleccionar almacén autorizado.
 2. Indicar opcionalmente fechas **Desde** y **Hasta** (inclusive). Las cargas sin fecha válida no se incluyen si se usa un filtro.
-3. Actualizar la lista y elegir cargas individualmente, o seleccionar rápidamente las primeras 10 del periodo.
+3. Actualizar la lista y elegir cargas individualmente, o seleccionar **grupos sucesivos de hasta 20** del periodo.
 4. Preparar la impresión. La primera página es una **carátula con la relación de cargas, fechas, almacén y nombre sugerido**, seguida de una hoja procesada por carga.
 5. En **Imprimir / Guardar PDF**, obtener un PDF real con el navegador; guardarlo en Archivos y moverlo manualmente a la carpeta de OneDrive autorizada. La aplicación NO afirma ni registra que esté archivado antes de verificar la copia.
 
 Se han **desconectado y eliminado de la interfaz** los accesos a migración, conciliación y recuperación de PDF anteriores al arranque. Los módulos históricos continúan en el repositorio para trazabilidad, pero no son importados por la aplicación activa ni precargados en el caché.
 
 Pruebas: GitHub Actions `40191583046`, **123 pruebas correctas, 0 fallidas**, cinco migraciones PostgreSQL temporal y concurrencia correctas. Pendientes: Safari/iPhone, permisos Supabase y movimiento real a OneDrive.
+
+
+### Ampliación del archivo a 20 cargas — v0.3.18
+
+- Se pueden incluir **20 hojas procesadas por PDF**, en vez de 10.
+- El botón **Seleccionar siguiente grupo de hasta 20 cargas** avanza por todos los grupos del periodo (por ejemplo, 45 cargas → 20, 20 y 5), sin etiquetarlos como archivados.
+- El nombre sugerido incluye todos los códigos de las cargas del lote en formato abreviado y reversible, ordenados, y se limita a 255 caracteres para evitar conflictos de longitud en OneDrive.
+- La carátula muestra el índice completo de las cargas; el administrador guarda cada PDF en Archivos y lo mueve manualmente a OneDrive.
+- **Por validar en iPhone real:** rendimiento, tamaño, impresión y paginación cuando las 20 hojas contengan muchas líneas.
