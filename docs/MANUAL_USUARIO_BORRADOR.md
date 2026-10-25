@@ -87,7 +87,7 @@ Si hay diferencia, KONTROLA registra una incidencia. **La carga puede cerrarse a
 
 1. Descarga el PDF manualmente desde Business Central.
 2. En KONTROLA, entra en **Administración**.
-3. Selecciona el archivo PDF desde el móvil, Archivos u OneDrive.
+3. Selecciona uno o varios PDF desde el móvil, Archivos u OneDrive (máximo 20 archivos por lote). Cada PDF queda pendiente de revisión individual; ninguno se publica automáticamente.
 4. Pulsa **Importar y procesar**.
 5. Revisa los datos, el almacén, las cantidades y cualquier aviso.
 6. Corrige únicamente lo que puedas comprobar con el documento.
