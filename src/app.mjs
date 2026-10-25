@@ -1,10 +1,12 @@
 import {SUPABASE_URL,SUPABASE_KEY,PDF_BUCKET,APP_VERSION} from "./config.mjs";
-import {parseDocumentPages} from "./core.mjs";
-import {agruparPasillos,ordenarCargas,validacionPublicacion,normalizarCarga,rutaArchivo} from "./logic.mjs";
-import {parseCheckedQuantity,summarizeVerification} from "./verification.mjs";
+import {agruparPasillos,ordenarCargas} from "./logic.mjs";
+import {buildVerificationLines,parseCheckedQuantity,summarizeVerification} from "./verification.mjs";
+import {buildPreparationReport,filterProducts} from "./report.mjs";
+import {createAdminController} from "./admin.mjs";
 const $=id=>document.getElementById(id);
 let client=null,user=null,profile=null,loads=[],current=null,currentPreparation=null,groups=[],selectedAisle="TODOS",busy=false,opening=false;
 let reviewLoads=[],currentVerification=null,verificationLines=[];
+let warehouses=[],selectedWarehouse=localStorage.getItem("kontrola-warehouse")||"COR_01_COR",adminController=null;
 $("appVersion").textContent=APP_VERSION;
 const visible=(element,show)=>{element.hidden=!show;};
 const status=(id,message="",level="")=>{const el=$(id);el.textContent=message;el.className="status "+level;};
@@ -38,12 +40,67 @@ async function authorize(authUser){
   $("profileRole").textContent=ownProfile.rol;
   visible($("openAdmin"),ownProfile.rol==="administrador");
   visible($("loginView"),false);visible($("shell"),true);switchView("homeView");
+  await loadWarehouses();
+  await refreshOperatorDashboard().catch(()=>{});
+}
+async function loadWarehouses(){
+  const {data,error}=await client.rpc("kontrola_mis_almacenes");
+  if(error)throw error;
+  warehouses=data||[];
+  if(!warehouses.some(item=>item.codigo===selectedWarehouse))selectedWarehouse=warehouses[0]?.codigo||"COR_01_COR";
+  localStorage.setItem("kontrola-warehouse",selectedWarehouse);
+  for(const id of ["homeWarehouse","adminWarehouse"]){
+    const select=$(id);select.replaceChildren();
+    for(const warehouse of warehouses){const option=document.createElement("option");option.value=warehouse.codigo;option.textContent=warehouse.nombre;select.appendChild(option);}
+    select.value=selectedWarehouse;
+  }
+  renderWarehouseTabs("prepWarehouseTabs");
+  renderWarehouseTabs("reviewWarehouseTabs");
+}
+function renderWarehouseTabs(id){
+  const target=$(id);target.replaceChildren();
+  for(const warehouse of warehouses){
+    const button=document.createElement("button");button.type="button";button.textContent=warehouse.nombre;
+    button.className=warehouse.codigo===selectedWarehouse?"active":"";
+    button.setAttribute("aria-selected",String(warehouse.codigo===selectedWarehouse));
+    button.addEventListener("click",()=>selectWarehouse(warehouse.codigo,id.startsWith("review")?"review":"preparation"));
+    target.appendChild(button);
+  }
+}
+async function selectWarehouse(code,context="home"){
+  selectedWarehouse=code;localStorage.setItem("kontrola-warehouse",code);
+  $("homeWarehouse").value=code;$("adminWarehouse").value=code;
+  renderWarehouseTabs("prepWarehouseTabs");renderWarehouseTabs("reviewWarehouseTabs");
+  if(context==="review")await refreshReviewLoads();
+  else if(context==="preparation")await refreshLoads();
+  await refreshOperatorDashboard().catch(()=>{});
+}
+async function refreshOperatorDashboard(){
+  if(!client||!user||!selectedWarehouse)return;
+  const [{data:summary,error},{data:activity,error:activityError}]=await Promise.all([
+    client.rpc("kontrola_resumen_zona",{p_almacen:selectedWarehouse,p_dia:new Date().toISOString().slice(0,10)}),
+    client.from("kontrola_actividad").select("tipo,codigo,creado_en,detalle").eq("almacen",selectedWarehouse).order("creado_en",{ascending:false}).limit(20)
+  ]);
+  if(error)throw error;
+  const values=Array.isArray(summary)?summary[0]:summary,target=$("operatorSummary");target.replaceChildren();
+  for(const [label,key] of [["Disponibles","publicadas"],["En preparación","en_preparacion"],["Por verificar","pendientes_verificacion"],["Cerradas","cerradas"]]){
+    const card=document.createElement("div");card.className="fact";const small=document.createElement("small"),strong=document.createElement("b");
+    small.textContent=label;strong.textContent=Number(values?.[key]||0);card.append(small,strong);target.appendChild(card);
+  }
+  const log=$("operatorActivity");log.replaceChildren();
+  if(activityError){log.textContent=errorText(activityError);return;}
+  if(!activity?.length){log.textContent="Todavía no hay actividad registrada.";return;}
+  for(const event of activity){const row=document.createElement("p");row.textContent=new Date(event.creado_en).toLocaleString("es-ES")+" · "+event.tipo+" · "+(event.codigo||"");log.appendChild(row);}
 }
 async function initialize(){
   status("authMessage","Conectando con el servidor…");
   try{
     const {createClient}=await import("https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm");
     client=createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+    adminController=createAdminController({
+      client,getUser:()=>user,bucket:PDF_BUCKET,global,errorText,
+      onPublished:()=>Promise.all([refreshLoads(),refreshOperatorDashboard()])
+    });
     const {data,error}=await client.auth.getUser();
     if(error && !/session missing|auth session missing/i.test(error.message||""))throw error;
     if(data?.user) {
@@ -74,9 +131,7 @@ $("loginForm").addEventListener("submit",async e=>{
 });
 async function refreshLoads(){
   $("loadsList").textContent="Consultando cargas disponibles…";
-  const {data,error}=await client.from("kontrola_cargas")
-    .select("codigo,fecha,matricula,ruta,repartidor,peso_kg,referencias,productos,documento_ruta,documento_hash,publicado_en")
-    .order("peso_kg",{ascending:false}).limit(500);
+  const {data,error}=await client.rpc("kontrola_panel_cargas",{p_almacen:selectedWarehouse});
   if(error){$("loadsList").textContent="No se pueden cargar los documentos: "+errorText(error);throw error;}
   loads=ordenarCargas(data||[]);
   renderLoadList();
@@ -84,13 +139,13 @@ async function refreshLoads(){
 function renderLoadList(){
   const target=$("loadsList");target.replaceChildren();
   const search=$("loadSearch").value.trim().toLocaleLowerCase("es-ES");
-  const records=loads.filter(r=>[r.codigo,r.ruta,r.matricula].some(v=>String(v||"").toLocaleLowerCase("es-ES").includes(search)));
+  const records=loads.filter(r=>[r.codigo,r.ruta,r.matricula,r.repartidor].some(v=>String(v||"").toLocaleLowerCase("es-ES").includes(search)));
   if(!records.length){const p=document.createElement("p");p.className="muted";p.textContent="No hay cargas publicadas que coincidan con la búsqueda.";target.appendChild(p);return;}
   for(const r of records){
     const b=document.createElement("button");b.type="button";b.className="load-card";
     const a=document.createElement("span"),id=document.createElement("strong"),meta=document.createElement("span");
     id.className="load-title";id.textContent=r.codigo;
-    meta.className="load-meta";meta.textContent=[r.repartidor,r.ruta,r.matricula].filter(Boolean).join(" · ")||"Sin datos de ruta";
+    meta.className="load-meta";meta.textContent=[r.repartidor,r.ruta,r.matricula,r.estado].filter(Boolean).join(" · ")||"Sin datos de ruta";
     a.append(id,meta);
     const weight=document.createElement("span");weight.className="load-weight";weight.textContent=fmt(r.peso_kg)+" kg";
     b.append(a,weight);
@@ -102,7 +157,7 @@ $("loadSearch").addEventListener("input",renderLoadList);
 $("reloadLoads").addEventListener("click",()=>refreshLoads().catch(()=>{}));
 $("openPreparation").addEventListener("click",async()=>{switchView("loadsView");await refreshLoads().catch(()=>{});});
 $("openReview").addEventListener("click",async()=>{switchView("reviewLoadsView");await refreshReviewLoads().catch(()=>{});});
-$("openAdmin").addEventListener("click",async()=>{if(profile?.rol==="administrador"&&switchView("adminView"))await refreshIncidents().catch(()=>{});});
+$("openAdmin").addEventListener("click",async()=>{if(profile?.rol==="administrador"&&switchView("adminView"))await adminController.open().catch(error=>global(errorText(error),"error"));});
 $("openSettings").addEventListener("click",()=>switchView("settingsView"));
 $("goHome").addEventListener("click",()=>switchView("homeView"));
 document.querySelectorAll("[data-back='home']").forEach(b=>b.addEventListener("click",()=>switchView("homeView")));
@@ -111,37 +166,49 @@ $("backToReviewLoads").addEventListener("click",()=>switchView("reviewLoadsView"
 async function openLoad(code){
   if(opening||!user)return;
   const load=loads.find(x=>x.codigo===code);if(!load)return;
-  opening=true;global("Registrando el inicio de preparación de "+code+"…");
-  try{
-    const {data,error}=await client.rpc("kontrola_abrir_carga",{p_codigo:code});
-    if(error)throw error;
-    current=load;groups=agruparPasillos(load.productos||[]);selectedAisle="TODOS";
-    $("detailTitle").textContent=load.codigo;
-    $("detailSubtitle").textContent=[load.repartidor,load.ruta].filter(Boolean).join(" · ")||"Preparación por pasillos";
-    const notice=$("prepStatus");
-    const result=Array.isArray(data)?data[0]:data;
-    const alreadyDone=Boolean(result?.finalizada);
-    currentPreparation={finalized:alreadyDone};
-    notice.className="info-bar"+(alreadyDone?" complete":"");
-    notice.textContent=alreadyDone?"Preparación ya cerrada. Esta consulta no modifica los horarios.":result?.ya_iniciada?"Preparación en curso. Se conserva la hora de inicio original.":"Preparación iniciada. El cambio a otra carga cerrará automáticamente esta preparación.";
-    visible($("finishPreparation"),!alreadyDone);
-    const facts=$("detailFacts");facts.replaceChildren();
-    const entries=[["Matrícula",load.matricula||"—"],["Peso",fmt(load.peso_kg)+" kg"],["Referencias",fmt(load.referencias)],["Fecha",load.fecha||"—"]];
-    for(const [label,value] of entries){
-      const d=document.createElement("div");d.className="fact";
-      const small=document.createElement("small");small.textContent=label;
-      const strong=document.createElement("b");strong.textContent=value;d.append(small,strong);facts.appendChild(d);
-    }
-    renderAisles();switchView("detailView",{force:true});
-  }catch(err){global("No se pudo abrir esta carga: "+errorText(err),"error");}finally{opening=false;}
+  current=load;selectedAisle="TODOS";$("productSearch").value="";
+  currentPreparation={
+    active:load.preparador_id===user.id&&!load.preparacion_fin,
+    finalized:Boolean(load.preparacion_fin)
+  };
+  $("detailTitle").textContent=load.codigo;
+  $("detailSubtitle").textContent=[load.repartidor,load.ruta,load.almacen].filter(Boolean).join(" · ")||"Preparación por pasillos";
+  const notice=$("prepStatus");
+  notice.className="info-bar"+(currentPreparation.finalized?" complete":"");
+  notice.textContent=currentPreparation.active?"Preparación en curso. Los cambios confirmados están guardados en el servidor."
+    :currentPreparation.finalized?"Preparación finalizada. La consulta no modifica los horarios."
+    :"Modo consulta: el reloj no está iniciado.";
+  visible($("startPreparation"),!currentPreparation.active&&!currentPreparation.finalized&&load.estado!=="cerrada");
+  visible($("finishPreparation"),currentPreparation.active);
+  const facts=$("detailFacts");facts.replaceChildren();
+  const entries=[["Matrícula",load.matricula||"—"],["Peso",fmt(load.peso_kg)+" kg"],["Referencias",fmt(load.referencias)],["Estado",load.estado||"—"]];
+  for(const [label,value] of entries){
+    const d=document.createElement("div");d.className="fact";
+    const small=document.createElement("small");small.textContent=label;
+    const strong=document.createElement("b");strong.textContent=value;d.append(small,strong);facts.appendChild(d);
+  }
+  renderAisles();switchView("detailView",{force:true});
 }
+$("startPreparation").addEventListener("click",async()=>{
+  if(busy||!current||currentPreparation?.active)return;
+  busy=true;$("startPreparation").disabled=true;global("Iniciando preparación…");
+  try{
+    const {data,error}=await client.rpc("kontrola_iniciar_preparacion",{p_codigo:current.codigo,p_request_id:crypto.randomUUID()});
+    if(error)throw error;
+    const result=Array.isArray(data)?data[0]:data;
+    currentPreparation={active:true,finalized:false};current.preparador_id=user.id;current.preparacion_inicio=result.inicio;current.estado="preparacion_en_curso";
+    visible($("startPreparation"),false);visible($("finishPreparation"),true);
+    $("prepStatus").textContent="Preparación iniciada con hora del servidor.";global("Preparación guardada en el servidor.","success");
+  }catch(error){global("No se pudo iniciar: "+errorText(error),"error");}
+  finally{busy=false;$("startPreparation").disabled=false;}
+});
 $("finishPreparation").addEventListener("click",async()=>{
-  if(busy||!current||currentPreparation?.finalized)return;
+  if(busy||!current||!currentPreparation?.active)return;
   busy=true;$("finishPreparation").disabled=true;global("Finalizando la preparación de "+current.codigo+"…");
   try{
     const {error}=await client.rpc("kontrola_finalizar_preparacion",{p_codigo:current.codigo});
     if(error)throw error;
-    currentPreparation.finalized=true;visible($("finishPreparation"),false);
+    currentPreparation={active:false,finalized:true};current.preparacion_fin=new Date().toISOString();current.estado="preparada";visible($("finishPreparation"),false);
     $("prepStatus").className="info-bar complete";
     $("prepStatus").textContent="Preparación finalizada. La carga ya puede ser verificada por otra persona.";
     global("Preparación finalizada con hora del servidor.","success");
@@ -149,6 +216,8 @@ $("finishPreparation").addEventListener("click",async()=>{
   finally{busy=false;$("finishPreparation").disabled=false;}
 });
 function renderAisles(){
+  const products=filterProducts(current?.productos||[],$("productSearch").value);
+  groups=agruparPasillos(products);
   const tabs=$("aisleTabs");tabs.replaceChildren();
   for(const name of ["TODOS",...groups.map(x=>x.nombre)]){
     const b=document.createElement("button");b.type="button";b.className="pill"+(name===selectedAisle?" active":"");
@@ -177,24 +246,29 @@ function renderAisles(){
     }
   }
 }
+$("productSearch").addEventListener("input",()=>{selectedAisle="TODOS";renderAisles();});
 async function refreshReviewLoads(){
   $("reviewLoadsList").textContent="Consultando cargas preparadas por otros operarios…";
-  const {data,error}=await client.rpc("kontrola_cargas_para_verificar");
+  const {data,error}=await client.rpc("kontrola_panel_cargas",{p_almacen:selectedWarehouse});
   if(error){$("reviewLoadsList").textContent="No se pueden cargar las verificaciones: "+errorText(error);throw error;}
-  reviewLoads=ordenarCargas(data||[]);
+  reviewLoads=ordenarCargas((data||[]).filter(load=>
+    load.preparador_id&&load.preparador_id!==user.id&&
+    ["preparacion_en_curso","preparada","verificacion_en_curso","cerrada"].includes(load.estado)&&
+    (!load.verificador_id||load.verificador_id===user.id)
+  ));
   renderReviewLoads();
 }
 function renderReviewLoads(){
   const target=$("reviewLoadsList");target.replaceChildren();
   const search=$("reviewSearch").value.trim().toLocaleLowerCase("es-ES");
-  const records=reviewLoads.filter(r=>[r.codigo,r.ruta,r.matricula].some(v=>String(v||"").toLocaleLowerCase("es-ES").includes(search)));
+  const records=reviewLoads.filter(r=>[r.codigo,r.ruta,r.matricula,r.repartidor].some(v=>String(v||"").toLocaleLowerCase("es-ES").includes(search)));
   if(!records.length){const p=document.createElement("p");p.className="muted";p.textContent="No hay preparaciones ajenas finalizadas disponibles para verificar.";target.appendChild(p);return;}
   for(const load of records){
     const button=document.createElement("button");button.type="button";button.className="load-card";
     const left=document.createElement("span"),title=document.createElement("strong"),meta=document.createElement("span");
     title.className="load-title";title.textContent=load.codigo;
-    const checked=Number(load.lineas_comprobadas||0),total=Number(load.lineas_total||0),incidents=Number(load.incidencias_pendientes||0);
-    const progress=load.estado==="finalizada"?"Finalizada · "+incidents+" incidencia(s)":total?checked+" de "+total+" líneas":"Pendiente de iniciar";
+    const incidents=Number(load.incidencias_pendientes||0);
+    const progress=load.estado==="cerrada"?"Finalizada · "+incidents+" incidencia(s)":load.estado==="verificacion_en_curso"?"Continuar verificación":"Pendiente de iniciar";
     meta.className="load-meta";meta.textContent=[load.ruta,load.matricula,progress].filter(Boolean).join(" · ");
     left.append(title,meta);
     const weight=document.createElement("span");weight.className="load-weight";weight.textContent=fmt(load.peso_kg)+" kg";
@@ -206,37 +280,47 @@ $("reloadReviewLoads").addEventListener("click",()=>refreshReviewLoads().catch((
 async function openVerification(code){
   if(opening||!user)return;
   const load=reviewLoads.find(item=>item.codigo===code);if(!load)return;
-  opening=true;global("Abriendo la verificación de "+code+"…");
+  current=load;currentVerification=null;verificationLines=buildVerificationLines(load.productos||[]);
+  $("reviewDetailTitle").textContent=load.codigo;
+  $("reviewDetailSubtitle").textContent=[load.repartidor,load.ruta,load.matricula,load.almacen].filter(Boolean).join(" · ")||"Carga preparada";
+  switchView("reviewDetailView",{force:true});
+  if(!load.verificador_id){renderVerification();return;}
+  opening=true;global("Recuperando el trabajo guardado de "+code+"…");
   try{
-    const {data:id,error}=await client.rpc("kontrola_abrir_verificacion",{p_codigo:code});
+    await startOrResumeVerification(load);
+  }catch(err){global("No se pudo recuperar esta verificación: "+errorText(err),"error");}
+  finally{opening=false;}
+}
+async function startOrResumeVerification(load){
+    const {data,error}=await client.rpc("kontrola_iniciar_verificacion",{p_codigo:load.codigo,p_request_id:crypto.randomUUID()});
     if(error)throw error;
-    const [{data:verification,error:verificationError},{data:lines,error:linesError}]=await Promise.all([
-      client.from("kontrola_verificaciones").select("estado").eq("id",id).single(),
-      client.from("kontrola_verificacion_lineas")
-        .select("linea,sku,descripcion,ubicacion,prevista_cantidad,unidad,comprobada_cantidad,comprobada_en")
-        .eq("verificacion_id",id).order("linea",{ascending:true})
-    ]);
-    if(verificationError)throw verificationError;
+    const started=Array.isArray(data)?data[0]:data,id=started.id;
+    const {data:lines,error:linesError}=await client.from("kontrola_verificacion_lineas")
+      .select("linea,sku,descripcion,ubicacion,prevista_cantidad,unidad,comprobada_cantidad,comprobada_en")
+      .eq("verificacion_id",id).order("linea",{ascending:true});
     if(linesError)throw linesError;
-    load.estado=verification.estado;
-    currentVerification={id,load,finished:verification.estado==="finalizada"};
+    load.estado=started.estado==="finalizada"?"cerrada":"verificacion_en_curso";load.verificador_id=user.id;
+    currentVerification={id,load,finished:started.estado==="finalizada"};
     verificationLines=(lines||[]).map(line=>({
       lineNumber:Number(line.linea),sku:line.sku,description:line.descripcion,location:line.ubicacion,
       expectedQuantity:Number(line.prevista_cantidad),unit:line.unidad,
       checkedQuantity:line.comprobada_cantidad===null?null:Number(line.comprobada_cantidad),
       checkedAt:line.comprobada_en
     }));
-    $("reviewDetailTitle").textContent=load.codigo;
-    $("reviewDetailSubtitle").textContent=[load.repartidor,load.ruta,load.matricula].filter(Boolean).join(" · ")||"Carga preparada";
-    renderVerification();switchView("reviewDetailView",{force:true});
-  }catch(err){global("No se pudo abrir esta verificación: "+errorText(err),"error");}
-  finally{opening=false;}
+    renderVerification();
 }
+$("startVerification").addEventListener("click",async()=>{
+  if(busy||currentVerification||!current)return;
+  busy=true;$("startVerification").disabled=true;global("Iniciando verificación…");
+  try{await startOrResumeVerification(current);global("Verificación iniciada y guardada en el servidor.","success");}
+  catch(error){global("No se pudo iniciar: "+errorText(error),"error");}
+  finally{busy=false;$("startVerification").disabled=false;renderVerification();}
+});
 function renderVerification(){
   const summary=summarizeVerification(verificationLines);
   const reviewStatus=$("reviewStatus");
   reviewStatus.className="info-bar"+(currentVerification?.finished?" complete":summary.differences?" warning":"");
-  reviewStatus.textContent=currentVerification?.finished
+  reviewStatus.textContent=!currentVerification?"Modo consulta: inicia explícitamente la verificación para registrar cantidades.":currentVerification.finished
     ?"Verificación finalizada. La carga está cerrada en KONTROLA; las regularizaciones pendientes se realizan manualmente en Business Central."
     :summary.pending
       ?"Verificación en curso. Faltan "+summary.pending+" línea(s)."
@@ -263,9 +347,9 @@ function renderVerification(){
     const label=document.createElement("label");label.textContent="Cantidad física";
     const input=document.createElement("input");input.type="text";input.inputMode="decimal";input.required=true;
     input.autocomplete="off";input.value=checked?String(line.checkedQuantity).replace(".",","):"";
-    input.setAttribute("aria-label","Cantidad física de "+line.sku);input.disabled=currentVerification?.finished;
+    input.setAttribute("aria-label","Cantidad física de "+line.sku);input.disabled=!currentVerification||currentVerification.finished;
     const save=document.createElement("button");save.type="submit";save.className="secondary";
-    save.textContent=checked?"Actualizar":"Registrar";save.disabled=currentVerification?.finished;
+    save.textContent=checked?"Actualizar":"Registrar";save.disabled=!currentVerification||currentVerification.finished;
     label.appendChild(input);form.append(label,save);
     form.addEventListener("submit",event=>{event.preventDefault();saveVerificationLine(line,input.value);});
     card.appendChild(form);
@@ -278,7 +362,8 @@ function renderVerification(){
     }
     target.appendChild(card);
   }
-  $("finishVerification").disabled=!summary.canFinish||currentVerification?.finished||busy;
+  visible($("startVerification"),!currentVerification);
+  $("finishVerification").disabled=!currentVerification||!summary.canFinish||currentVerification.finished||busy;
 }
 async function saveVerificationLine(line,rawQuantity){
   if(busy||currentVerification?.finished)return;
@@ -304,55 +389,13 @@ $("finishVerification").addEventListener("click",async()=>{
     if(error)throw error;
     const result=Array.isArray(data)?data[0]:data;
     currentVerification.finished=true;
-    currentVerification.load.estado="finalizada";
+    currentVerification.load.estado="cerrada";
     currentVerification.load.incidencias_pendientes=Number(result?.incidencias_pendientes||0);
     global("Carga cerrada. Incidencias pendientes: "+Number(result?.incidencias_pendientes||0)+".","success");
   }catch(error){global("No se pudo finalizar: "+errorText(error),"error");}
   finally{busy=false;renderVerification();}
 });
-async function refreshIncidents(){
-  const target=$("incidentList");target.textContent="Consultando incidencias pendientes…";
-  const {data,error}=await client.rpc("kontrola_incidencias_pendientes");
-  if(error){target.textContent="No se pueden consultar las incidencias: "+errorText(error);throw error;}
-  renderIncidents(data||[]);
-}
-function renderIncidents(incidents){
-  const target=$("incidentList");target.replaceChildren();
-  if(!incidents.length){const p=document.createElement("p");p.className="muted";p.textContent="No hay incidencias pendientes de regularización.";target.appendChild(p);return;}
-  const groups=new Map();
-  for(const incident of incidents){
-    if(!groups.has(incident.codigo))groups.set(incident.codigo,[]);
-    groups.get(incident.codigo).push(incident);
-  }
-  for(const [code,items] of groups){
-    const group=document.createElement("section");group.className="incident-group";
-    const title=document.createElement("h3");title.textContent=code+" · "+items.length+" pendiente(s)";group.appendChild(title);
-    for(const incident of items){
-      const row=document.createElement("div");row.className="incident-row";
-      const info=document.createElement("div"),name=document.createElement("b"),detail=document.createElement("p");
-      name.textContent=incident.sku+" · línea "+incident.linea;
-      detail.textContent="Previsto "+fmt(incident.prevista_cantidad)+" · comprobado "+fmt(incident.comprobada_cantidad)+" · diferencia "+(Number(incident.diferencia)>0?"+":"")+fmt(incident.diferencia);
-      info.append(name,detail);
-      const button=document.createElement("button");button.type="button";button.className="secondary";button.textContent="Marcar regularizada";
-      button.addEventListener("click",()=>regularizeIncident(incident.id,button));
-      row.append(info,button);group.appendChild(row);
-    }
-    target.appendChild(group);
-  }
-}
-async function regularizeIncident(id,button){
-  if(busy||profile?.rol!=="administrador")return;
-  busy=true;button.disabled=true;global("Confirmando regularización manual…");
-  try{
-    const {error}=await client.rpc("kontrola_regularizar_incidencia",{p_incidencia:id});
-    if(error)throw error;
-    global("Incidencia marcada como regularizada. KONTROLA no ha modificado Business Central.","success");
-    await refreshIncidents();
-  }catch(error){global("No se pudo actualizar la incidencia: "+errorText(error),"error");}
-  finally{busy=false;button.disabled=false;}
-}
-$("reloadIncidents").addEventListener("click",()=>refreshIncidents().catch(()=>{}));
-$("viewPdf").addEventListener("click",async()=>{
+async function openCurrentPdf(){
   if(!current?.documento_ruta)return global("No existe un PDF publicado para esta carga.","error");
   // Abrir la pestaña como consecuencia directa del clic, antes de solicitar la URL firmada.
   const popup=window.open("about:blank","_blank");
@@ -364,60 +407,18 @@ $("viewPdf").addEventListener("click",async()=>{
     if(popup&&!popup.closed)popup.location.replace(data.signedUrl);
     else window.location.assign(data.signedUrl);
   }catch(err){if(popup&&!popup.closed)popup.close();global("PDF no disponible: "+errorText(err),"error");}
-});
-let pdfjsPromise;
-async function pdfEngine(){
-  if(!pdfjsPromise)pdfjsPromise=import("https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.min.mjs").then(m=>{
-    m.GlobalWorkerOptions.workerSrc="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.worker.min.mjs";return m;
-  }).catch(e=>{pdfjsPromise=null;throw e;});
-  return pdfjsPromise;
 }
-async function parsePDF(file){
-  const m=await pdfEngine();
-  const pdf=await m.getDocument({data:new Uint8Array(await file.arrayBuffer())}).promise;
-  const pages=[];
-  for(let n=1;n<=pdf.numPages;n++){
-    const page=await pdf.getPage(n),cont=await page.getTextContent(),v=page.getViewport({scale:1});
-    const items=cont.items.filter(i=>typeof i.str==="string").map(i=>({text:i.str,x:i.transform?.[4]??0,y:v.height-(i.transform?.[5]??0)}));
-    pages.push({number:n,width:v.width,items});
-  }
-  return parseDocumentPages(pages,file.name);
+function showCurrentReport(){
+  if(!current)return;
+  $("reportPaper").innerHTML=buildPreparationReport(current);
+  $("reportTitle").textContent="Hoja procesada · "+current.codigo;
+  $("reportView").hidden=false;document.body.classList.add("report-open");window.scrollTo(0,0);
 }
-$("importPdf").addEventListener("click",async()=>{
-  if(profile?.rol!=="administrador"||busy)return;
-  const file=$("pdfInput").files?.[0];if(!file)return status("importStatus","Selecciona un PDF.","error");
-  if(!/\.pdf$/i.test(file.name)||file.type && file.type!=="application/pdf")return status("importStatus","El archivo debe ser PDF.","error");
-  if(file.size>25*1024*1024)return status("importStatus","El PDF supera el límite de 25 MB.","error");
-  busy=true;const button=$("importPdf");button.disabled=true;
-  try{
-    status("importStatus","Analizando las páginas de mercancía…");
-    const parsed=await parsePDF(file);
-    const reason=validacionPublicacion(parsed);
-    if(reason)throw Error(reason);
-    const digest=await crypto.subtle.digest("SHA-256",await file.arrayBuffer());
-    const hash=[...new Uint8Array(digest)].map(x=>x.toString(16).padStart(2,"0")).join("");
-    const {data:old,error:oldError}=await client.from("kontrola_cargas").select("codigo,documento_hash").eq("codigo",parsed.id).maybeSingle();
-    if(oldError)throw oldError;
-    if(old){
-      if(old.documento_hash===hash){status("importStatus","La carga "+parsed.id+" ya está publicada con este mismo PDF.","success");return;}
-      throw Error("La carga "+parsed.id+" ya está publicada con otro PDF. No se reemplaza automáticamente; la revisión de documentos corregidos se implementará de forma controlada.");
-    }
-    const path=rutaArchivo(parsed.id,hash);
-    status("importStatus","Publicando PDF privado de "+parsed.id+"…");
-    const {error:uploadError}=await client.storage.from(PDF_BUCKET).upload(path,file,{contentType:"application/pdf",upsert:false});
-    if(uploadError)throw uploadError;
-    const data=normalizarCarga(parsed,hash,path,user.id);
-    const {error:insertError}=await client.from("kontrola_cargas").insert(data);
-    if(insertError){
-      // Solo intenta retirar el objeto que esta operación acaba de subir; la carga previa no se toca.
-      await client.storage.from(PDF_BUCKET).remove([path]).catch(()=>{});
-      throw insertError;
-    }
-    status("importStatus","Carga "+parsed.id+" publicada correctamente. Ya puede consultarse desde las cuentas autorizadas.","success");
-    $("pdfInput").value="";
-  }catch(err){status("importStatus","No publicada: "+errorText(err),"error");}
-  finally{busy=false;button.disabled=false;}
-});
+$("viewPdf").addEventListener("click",openCurrentPdf);
+$("reviewPdf").addEventListener("click",openCurrentPdf);
+$("viewPreparationSheet").addEventListener("click",showCurrentReport);
+$("reviewSheet").addEventListener("click",showCurrentReport);
+$("homeWarehouse").addEventListener("change",event=>selectWarehouse(event.target.value,"home"));
 $("checkUpdates").addEventListener("click",async()=>{
   try{
     status("settingsStatus","Buscando actualización…");
@@ -436,5 +437,12 @@ $("logout").addEventListener("click",async()=>{
   await client.auth.signOut().catch(e=>status("settingsStatus",errorText(e),"error"));
   loggedOut();
 });
+function renderConnection(){
+  const target=$("connectionStatus");target.textContent=navigator.onLine?"En línea":"Sin conexión · no se guardará";
+  target.className="connection-status"+(navigator.onLine?"":" offline");
+}
+window.addEventListener("online",()=>{renderConnection();global("Conexión recuperada. Actualiza la pantalla para recuperar el trabajo guardado.","success");});
+window.addEventListener("offline",()=>{renderConnection();global("Sin conexión. KONTROLA no confirmará operaciones hasta recuperar la red.","error");});
+renderConnection();
 if("serviceWorker" in navigator)navigator.serviceWorker.register("./sw.js",{updateViaCache:"none"}).catch(()=>{});
 initialize();

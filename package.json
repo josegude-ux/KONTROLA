@@ -1,11 +1,12 @@
 {
   "name": "kontrola",
   "private": true,
-  "version": "0.2.0",
+  "version": "0.3.0",
   "type": "module",
-  "description": "KONTROLA · preparación y verificación física de cargas",
+  "description": "KONTROLA · operación integral de preparación y verificación de cargas",
   "scripts": {
     "test": "node --test tests/*.test.mjs",
-    "check": "node --check src/app.mjs && node --test tests/*.test.mjs"
+    "test:db": "tests/integration/run.sh",
+    "check": "node --check src/*.mjs && node --test tests/*.test.mjs"
   }
 }

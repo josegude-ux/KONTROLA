@@ -1,4 +1,4 @@
 {
-  "version": "0.2.0",
-  "notes": "Verificación física línea por línea; migraciones SQL y pruebas reales aún pendientes."
+  "version": "0.3.0",
+  "notes": "Operación por almacén, revisión documental, hojas procesadas, preparación explícita y paneles."
 }

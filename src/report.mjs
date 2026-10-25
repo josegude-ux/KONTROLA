@@ -13,6 +13,7 @@ export function filterProducts(products=[],query=""){
 export function buildPreparationReport(load){
   const products=load.productos||load.products||[];
   const warehouse=load.almacen||load.warehouse||"PENDIENTE DE CLASIFICAR";
+  const weight=load.peso_kg??load.weight??null;
   const grouped=new Map();
   for(const product of products){
     if(Number(product.qty)<=0)continue;
@@ -36,7 +37,7 @@ export function buildPreparationReport(load){
       <div><dt>Matrícula</dt><dd>${escapeHtml(load.matricula||load.plate||"—")}</dd></div>
       <div><dt>Ruta</dt><dd>${escapeHtml(load.ruta||load.route||"—")}</dd></div>
       <div><dt>Repartidor</dt><dd>${escapeHtml(load.repartidor||load.driver||"—")}</dd></div>
-      <div><dt>Peso</dt><dd>${load.peso_kg??load.weight??null?number(load.peso_kg??load.weight)+" kg":"—"}</dd></div>
+      <div><dt>Peso</dt><dd>${weight===null?"—":number(weight)+" kg"}</dd></div>
       <div><dt>Referencias</dt><dd>${escapeHtml(load.referencias??load.refs??products.length)}</dd></div>
     </dl>
     ${sections||"<p>Sin líneas de mercancía.</p>"}

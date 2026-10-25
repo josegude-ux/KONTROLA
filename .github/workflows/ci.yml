@@ -9,6 +9,23 @@ permissions:
 jobs:
   test:
     runs-on: ubuntu-latest
+    env:
+      PGHOST: localhost
+      PGPORT: 5432
+      PGUSER: postgres
+      PGPASSWORD: postgres
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -22,5 +39,9 @@ jobs:
           node --check src/verification.mjs
           node --check src/document-review.mjs
           node --check src/report.mjs
+          node --check src/admin.mjs
+          node --check src/pdf.mjs
       - name: Pruebas de regresión
         run: node --test tests/*.test.mjs
+      - name: Migraciones, RLS y concurrencia
+        run: npm run test:db

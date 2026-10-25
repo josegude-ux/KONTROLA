@@ -11,6 +11,10 @@
 <link rel="icon" href="./assets/kontrola.svg" type="image/svg+xml">
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="stylesheet" href="./styles.css">
+<style id="printStyles">
+.preparation-report{font:12px Arial,sans-serif;color:#111;background:#fff}.preparation-report header{text-align:center;border-bottom:2px solid #111}.preparation-report dl{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.preparation-report dl div{border:1px solid #777;padding:6px}.preparation-report dt{font-size:9px;text-transform:uppercase}.preparation-report dd{margin:3px 0 0;font-weight:700}.preparation-report table{width:100%;border-collapse:collapse}.preparation-report th,.preparation-report td{border:1px solid #777;padding:6px;text-align:left}.preparation-report .number{text-align:right}.preparation-report footer{margin-top:12px}
+@page{size:A4 portrait;margin:10mm}@media print{body>*:not(#reportView){display:none!important}#reportView{display:block!important;position:static!important}.report-controls{display:none!important}.preparation-report{font-size:10px}.preparation-report tr{break-inside:avoid}}
+</style>
 </head>
 <body>
 <section id="loginView" class="auth-view">
@@ -30,7 +34,7 @@
 <div id="shell" hidden>
   <header class="topbar">
     <button type="button" id="goHome" class="brand-button" aria-label="Volver al inicio"><img src="./assets/kontrola.svg" alt="KONTROLA"></button>
-    <div class="top-actions"><span id="userName" class="user-name"></span><button id="openSettings" class="icon-button" type="button" aria-label="Ajustes">⚙ <span>Ajustes</span></button></div>
+    <div class="top-actions"><span id="connectionStatus" class="connection-status"></span><span id="userName" class="user-name"></span><button id="openSettings" class="icon-button" type="button" aria-label="Ajustes">⚙ <span>Ajustes</span></button></div>
   </header>
   <main class="container">
     <div id="globalMessage" class="status" role="status" aria-live="polite"></div>
@@ -42,34 +46,40 @@
         <button id="openReview" class="feature feature-blue" type="button"><span class="feature-icon" aria-hidden="true">✅</span><span><b>Verificación</b><small>Comprobación física independiente, línea por línea</small></span><span class="arrow">→</span></button>
         <button id="openAdmin" class="feature feature-cream" type="button" hidden><span class="feature-icon" aria-hidden="true">🗂️</span><span><b>Administración</b><small>Publicar documentos y gestionar las cargas</small></span><span class="arrow">→</span></button>
       </div>
+      <section class="panel"><div class="line"><h2>Mi actividad</h2><select id="homeWarehouse" class="warehouse-select" aria-label="Almacén activo"></select></div><div id="operatorSummary" class="facts"></div><div id="operatorActivity" class="activity-list"></div></section>
     </section>
     <section id="loadsView" class="view" hidden>
-      <div class="page-heading"><button type="button" data-back="home" class="back-button">← Volver</button><h1>Preparación de cargas</h1><p class="muted">Selecciona una carga para consultar su mercancía. La preparación comienza al abrirla.</p></div>
-      <div class="toolbar"><label class="search-wrap">Buscar carga<input id="loadSearch" type="search" placeholder="Nº de carga, ruta o matrícula"></label><button type="button" id="reloadLoads" class="secondary">Actualizar</button></div>
+      <div class="page-heading"><button type="button" data-back="home" class="back-button">← Volver</button><h1>Preparación de cargas</h1><p class="muted">Consultar una carga no inicia el reloj. Inícialo únicamente al comenzar la preparación física.</p></div>
+      <div id="prepWarehouseTabs" class="warehouse-tabs" role="tablist" aria-label="Almacén"></div>
+      <div class="toolbar"><label class="search-wrap">Buscar carga<input id="loadSearch" type="search" placeholder="Nº de carga, ruta, matrícula o repartidor"></label><button type="button" id="reloadLoads" class="secondary">Actualizar</button></div>
       <div id="loadsList" class="loads-list" aria-live="polite"></div>
     </section>
     <section id="detailView" class="view" hidden>
       <div class="page-heading"><button type="button" id="backToLoads" class="back-button">← Volver a cargas</button><p class="eyebrow">CONSULTA DE PREPARACIÓN</p><h1 id="detailTitle"></h1><p class="muted" id="detailSubtitle"></p></div>
       <div id="prepStatus" class="info-bar" aria-live="polite"></div>
+      <button id="startPreparation" class="primary full" type="button">Iniciar preparación</button>
       <button id="finishPreparation" class="primary full" type="button" hidden>Finalizar preparación</button>
       <div class="facts" id="detailFacts"></div>
       <section class="panel">
-        <div class="line"><div><h2>Mercancía por pasillos</h2><p class="muted">Solo consulta. El picking se registra con la pistola y Business Central.</p></div><button id="viewPdf" class="secondary" type="button">Ver PDF original</button></div>
+        <div class="line"><div><h2>Mercancía por pasillos</h2><p class="muted">Solo consulta. El picking se registra con la pistola y Business Central.</p></div><div class="actions"><button id="viewPdf" class="secondary" type="button">PDF original</button><button id="viewPreparationSheet" class="secondary" type="button">Hoja procesada</button></div></div>
+        <label class="search-wrap">Buscar referencia, ubicación o descripción<input id="productSearch" type="search"></label>
         <div id="aisleTabs" class="pills" role="group" aria-label="Filtrar por pasillo"></div>
         <div id="productList"></div>
       </section>
     </section>
     <section id="reviewLoadsView" class="view" hidden>
       <div class="page-heading"><button type="button" data-back="home" class="back-button">← Volver</button><h1>Verificación física</h1><p class="muted">Solo aparecen preparaciones finalizadas por otra persona. Selecciona una carga para comprobarla línea por línea.</p></div>
-      <div class="toolbar"><label class="search-wrap">Buscar carga<input id="reviewSearch" type="search" placeholder="Nº de carga, ruta o matrícula"></label><button type="button" id="reloadReviewLoads" class="secondary">Actualizar</button></div>
+      <div id="reviewWarehouseTabs" class="warehouse-tabs" role="tablist" aria-label="Almacén"></div>
+      <div class="toolbar"><label class="search-wrap">Buscar carga<input id="reviewSearch" type="search" placeholder="Nº de carga, ruta, matrícula o repartidor"></label><button type="button" id="reloadReviewLoads" class="secondary">Actualizar</button></div>
       <div id="reviewLoadsList" class="loads-list" aria-live="polite"></div>
     </section>
     <section id="reviewDetailView" class="view" hidden>
       <div class="page-heading"><button type="button" id="backToReviewLoads" class="back-button">← Volver a verificaciones</button><p class="eyebrow">VERIFICACIÓN FÍSICA</p><h1 id="reviewDetailTitle"></h1><p class="muted" id="reviewDetailSubtitle"></p></div>
       <div id="reviewStatus" class="info-bar" aria-live="polite"></div>
+      <button id="startVerification" class="primary full" type="button">Iniciar verificación</button>
       <div id="reviewProgress" class="facts"></div>
       <section class="panel">
-        <div class="line"><div><h2>Comprobación de mercancía</h2><p class="muted">Introduce la cantidad física. Las diferencias crean incidencias en KONTROLA; la regularización en Business Central es manual.</p></div></div>
+        <div class="line"><div><h2>Comprobación de mercancía</h2><p class="muted">Introduce la cantidad física. Las diferencias crean incidencias en KONTROLA; la regularización en Business Central es manual.</p></div><div class="actions"><button id="reviewPdf" class="secondary" type="button">PDF original</button><button id="reviewSheet" class="secondary" type="button">Hoja procesada</button></div></div>
         <div id="verificationLines"></div>
         <div class="verification-finish">
           <button id="finishVerification" class="primary" type="button" disabled>Finalizar verificación</button>
@@ -78,13 +88,17 @@
       </section>
     </section>
     <section id="adminView" class="view" hidden>
-      <div class="page-heading"><button type="button" data-back="home" class="back-button">← Volver</button><h1>Administración</h1><p class="muted">Publicación segura de documentos para consulta de los operarios.</p></div>
+      <div class="page-heading"><button type="button" data-back="home" class="back-button">← Volver</button><h1>Administración</h1><p class="muted">Documentos, operación, tiempos e incidencias por almacén.</p></div>
+      <section class="panel"><div class="line"><h2>Resumen diario por zona</h2><select id="adminWarehouse" class="warehouse-select" aria-label="Almacén administrativo"></select></div><div id="adminSummary" class="facts"></div><div id="adminActivity" class="activity-list"></div></section>
+      <section class="panel"><div class="line"><div><h2>Necesitan atención</h2><p class="muted">Documentos, clasificaciones, verificaciones e incidencias pendientes.</p></div><button id="reloadAttention" type="button" class="secondary">Actualizar</button></div><div id="attentionList" class="attention-list"></div></section>
       <section class="panel">
-        <h2>Importar un PDF para KONTROLA</h2><p class="muted">Reutiliza el lector de Control de Cargas. Solo se publican documentos cuyos totales se hayan podido contrastar.</p>
+        <h2>Importar → procesar → revisar → publicar</h2><p class="muted">Carga manual desde Business Central. KONTROLA conserva el original y usa el motor v0.5.26 de Control de Cargas.</p>
         <label>Hoja de carga de Business Central<input type="file" accept=".pdf,application/pdf" id="pdfInput"></label>
-        <button id="importPdf" type="button" class="primary">Analizar y publicar</button>
+        <button id="processPdf" type="button" class="primary">Importar y procesar</button>
         <div class="status" id="importStatus" role="status" aria-live="polite"></div>
-        <p class="hint">Este procedimiento no modifica los registros originales de Control de Cargas. La conexión automática entre ambos programas se desarrollará por separado.</p>
+        <div id="documentReview" class="document-review">Procesa un PDF para iniciar la revisión.</div>
+        <p id="reviewReadiness" class="status"></p>
+        <div class="actions"><button id="saveDocumentReview" type="button" class="secondary" disabled>Guardar revisión</button><button id="generateSheet" type="button" class="secondary" disabled>Generar hoja</button><button id="publishReviewedLoad" type="button" class="primary" disabled>Publicar carga</button></div>
       </section>
       <section class="panel">
         <div class="line"><div><h2>Incidencias pendientes</h2><p class="muted">Agrupadas por carga. Confirma aquí únicamente una regularización ya realizada manualmente en Business Central.</p></div><button id="reloadIncidents" type="button" class="secondary">Actualizar</button></div>
@@ -94,7 +108,7 @@
     <section id="settingsView" class="view" hidden>
       <div class="page-heading"><button type="button" data-back="home" class="back-button">← Volver</button><h1>Ajustes</h1></div>
       <section class="panel">
-        <p><b>Aplicación:</b> KONTROLA</p><p><b>Versión:</b> <span id="appVersion">0.2.0</span></p>
+        <p><b>Aplicación:</b> KONTROLA</p><p><b>Versión:</b> <span id="appVersion">0.3.0</span></p>
         <p><b>Usuario:</b> <span id="profileName"></span></p><p><b>Perfil:</b> <span id="profileRole"></span></p>
         <div class="actions"><button type="button" id="checkUpdates" class="secondary">Buscar actualización</button><button id="logout" type="button" class="ghost-danger">Cerrar sesión</button></div>
         <div class="status" id="settingsStatus" role="status" aria-live="polite"></div>
@@ -103,6 +117,10 @@
   </main>
   <footer> KONTROLA · MOVENTA · Los datos de picking se gestionan en Business Central.</footer>
 </div>
+<section id="reportView" class="report-view" hidden>
+  <header class="report-controls"><button id="closeReport" class="back-button" type="button">← Volver</button><h1 id="reportTitle">Hoja procesada</h1><div class="actions"><button id="downloadReport" class="secondary" type="button">Descargar</button><button id="printReport" class="primary" type="button">Imprimir / Guardar PDF</button></div></header>
+  <main id="reportPaper" class="report-paper"></main>
+</section>
 <script type="module" src="./src/app.mjs"></script>
 </body>
 </html>

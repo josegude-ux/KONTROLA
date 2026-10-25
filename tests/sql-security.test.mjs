@@ -49,8 +49,8 @@ test("finishing closes the load even when unresolved incidents exist",()=>{
 });
 
 test("the client reads current server state before enabling a verification",()=>{
-  assert.match(app,/from\(["']kontrola_verificaciones["']\)\.select\(["']estado["']\)/);
-  assert.match(app,/finished:verification\.estado===["']finalizada["']/);
+  assert.match(app,/rpc\(["']kontrola_iniciar_verificacion["']/);
+  assert.match(app,/finished:started\.estado===["']finalizada["']/);
 });
 
 test("only an active administrator can mark a pending incident as regularized",()=>{
