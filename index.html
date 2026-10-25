@@ -6,9 +6,9 @@
 <meta name="theme-color" content="#0B2647">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="KONTROLA">
-<title>KONTROLA · MOVENTA</title>
-<link rel="icon" href="./assets/kontrola.svg" type="image/svg+xml">
+<meta name="apple-mobile-web-app-title" content="VISURA PREPARA">
+<title>VISURA PREPARA · LOGÍSTICA</title>
+<link rel="icon" href="./assets/visura-prepara.svg" type="image/svg+xml">
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="stylesheet" href="./styles.css">
 <style id="printStyles">
@@ -30,7 +30,7 @@
 <body>
 <section id="loginView" class="auth-view">
   <div class="auth-card">
-    <div class="app-brand"><img src="./assets/kontrola.svg" alt="KONTROLA" width="240" height="56"><span>MOVENTA · OPERACIONES DE ALMACÉN</span></div>
+    <div class="app-brand"><img src="./assets/visura-prepara.svg" alt="VISURA PREPARA" width="240" height="56"><span>VISURA · OPERACIONES DE ALMACÉN</span></div>
     <h1>Acceso de trabajadores</h1>
     <p class="muted">Identifícate para consultar tus cargas y registrar su preparación.</p>
     <form id="loginForm">
@@ -39,20 +39,20 @@
       <button class="primary full" type="submit" id="loginButton">Entrar</button>
     </form>
     <p id="authMessage" class="status" role="status" aria-live="polite"></p>
-    <p class="hint">Las cuentas son habilitadas por administración. No existen usuarios de demostración.<br>Versión <span id="loginVersion">0.3.29</span></p>
+    <p class="hint">Las cuentas son habilitadas por administración. No existen usuarios de demostración.<br>Versión <span id="loginVersion">0.3.30</span></p>
   </div>
 </section>
 <div id="shell" hidden>
   <header class="topbar">
     <button type="button" id="globalBack" class="topbar-back" aria-label="Volver a la pantalla anterior" hidden>← Volver</button>
-    <button type="button" id="goHome" class="brand-button" aria-label="Volver al inicio"><img src="./assets/kontrola.svg" alt="KONTROLA"></button>
+    <button type="button" id="goHome" class="brand-button" aria-label="Volver al inicio"><img src="./assets/visura-prepara.svg" alt="VISURA PREPARA"></button>
     <div class="top-actions"><span id="connectionStatus" class="connection-status"></span><span id="userName" class="user-name"></span><button id="openSettings" class="icon-button" type="button" aria-label="Ajustes">⚙ <span>Ajustes</span></button></div>
   </header>
   <main class="container">
     <div id="globalMessage" class="status" role="status" aria-live="polite"></div>
     <section id="homeView" class="view">
-      <div class="home-welcome"><p class="eyebrow">KONTROLA · MOVENTA</p><h1>Tu almacén,<br>bajo control</h1><p class="muted">¿Qué necesitas hacer hoy?</p></div>
-      <div class="home-grid inventa-inspired-home" aria-label="Funciones principales de KONTROLA">
+      <div class="home-welcome"><p class="eyebrow">VISURA PREPARA · LOGÍSTICA</p><h1>Tu almacén,<br>bajo control</h1><p class="muted">¿Qué necesitas hacer hoy?</p></div>
+      <div class="home-grid inventa-inspired-home" aria-label="Funciones principales de VISURA PREPARA">
         <button id="openPreparation" class="feature feature-pink" type="button"><span class="feature-copy"><b>Preparación</b><small>Consulta la mercancía por pasillos y controla la preparación</small><span class="feature-go" aria-hidden="true">→</span></span><span class="feature-art" aria-hidden="true"><span class="feature-art-glow"></span><img class="feature-illustration" src="./assets/home/kontrola-preparacion-3d.webp" alt="" width="640" height="640" loading="eager" decoding="async"></span></button>
         <button id="openReview" class="feature feature-blue" type="button"><span class="feature-copy"><b>Verificación</b><small>Comprueba físicamente las cargas, referencia a referencia</small><span class="feature-go" aria-hidden="true">→</span></span><span class="feature-art" aria-hidden="true"><span class="feature-art-glow"></span><img class="feature-illustration" src="./assets/home/kontrola-verificacion-3d.webp" alt="" width="640" height="640" loading="eager" decoding="async"></span></button>
         <button id="openCargas" class="feature feature-lilac" type="button"><span class="feature-copy"><b>Control de Cargas</b><small>Consulta documentos y gestiona tus cargas</small><span class="feature-go" aria-hidden="true">→</span></span><span class="feature-art" aria-hidden="true"><span class="feature-art-glow"></span><img class="feature-illustration" src="./assets/home/kontrola-control-cargas-3d.webp" alt="" width="640" height="640" loading="eager" decoding="async"></span></button>
@@ -63,7 +63,7 @@
     <section id="cargasMenuView" class="view" hidden>
       <div class="page-heading">
         <button type="button" data-back="home" class="back-button">← Volver al inicio</button>
-        <p class="eyebrow">KONTROLA / CONTROL DE CARGAS</p>
+        <p class="eyebrow">VISURA PREPARA / CONTROL DE CARGAS</p>
         <h1>Control de Cargas</h1>
         <p class="muted">Accede a las funciones de las cargas. Consultar un documento no inicia ningún reloj.</p>
       </div>
@@ -79,7 +79,7 @@
     <section id="cargasHistoryView" class="view" hidden>
       <div class="page-heading">
         <button id="backFromHistory" type="button" class="back-button">← Volver a Control de Cargas</button>
-        <p class="eyebrow">KONTROLA / CONTROL DE CARGAS</p>
+        <p class="eyebrow">VISURA PREPARA / CONTROL DE CARGAS</p>
         <h1>Historial y resumen</h1>
         <p class="muted">Consulta las cargas publicadas por fecha y estado. Los filtros no modifican horarios ni documentos.</p>
       </div>
@@ -128,7 +128,7 @@
       <button id="startVerification" class="primary full" type="button">Iniciar verificación</button>
       <div id="reviewProgress" class="facts"></div>
       <section class="panel">
-        <div class="line"><div><h2>Comprobación de mercancía</h2><p class="muted">Introduce la cantidad física. Las diferencias crean incidencias en KONTROLA; la regularización en Business Central es manual.</p></div><div class="actions"><button id="reviewPdf" class="secondary" type="button">PDF original</button><button id="reviewSheet" class="secondary" type="button">Hoja procesada</button></div></div>
+        <div class="line"><div><h2>Comprobación de mercancía</h2><p class="muted">Introduce la cantidad física. Las diferencias crean incidencias en VISURA PREPARA; la regularización en Business Central es manual.</p></div><div class="actions"><button id="reviewPdf" class="secondary" type="button">PDF original</button><button id="reviewSheet" class="secondary" type="button">Hoja procesada</button></div></div>
         <div id="verificationLines"></div>
         <div class="verification-finish">
           <button id="finishVerification" class="primary" type="button" disabled>Finalizar verificación</button>
@@ -140,7 +140,7 @@
       <div class="page-heading"><button type="button" data-back="home" class="back-button">← Volver</button><h1>Administración</h1><p class="muted">Documentos, operación, tiempos e incidencias por almacén.</p></div>
       <nav class="admin-tabs" aria-label="Funciones de Administración"><button type="button" class="admin-tab active" data-admin-tab="0" aria-controls="adminSection0" aria-selected="true" role="tab">Importar PDF</button><button type="button" class="admin-tab" data-admin-tab="1" aria-controls="adminSection1" aria-selected="false" role="tab">Pendientes</button><button type="button" class="admin-tab" data-admin-tab="2" aria-controls="adminSection2" aria-selected="false" role="tab">Impresión</button><button type="button" class="admin-tab" data-admin-tab="3" aria-controls="adminSection3" aria-selected="false" role="tab">Operarios</button><button type="button" class="admin-tab" data-admin-tab="4" aria-controls="adminSection4" aria-selected="false" role="tab">Incidencias</button><button type="button" class="admin-tab" data-admin-tab="5" aria-controls="adminSection5" aria-selected="false" role="tab">Historial</button><button type="button" class="admin-tab" data-admin-tab="6" aria-controls="adminSection6" aria-selected="false" role="tab">Archivo OneDrive</button><button type="button" class="admin-tab" data-admin-tab="7" aria-controls="adminSection7" aria-selected="false" role="tab">Resumen</button><button type="button" class="admin-tab" data-admin-tab="8" aria-controls="adminSection8" aria-selected="false" role="tab">Archivo de cargas</button></nav>
       <section class="panel" id="adminSection0" role="tabpanel">
-        <h2>Importar → procesar → revisar → publicar</h2><p class="muted">Carga manual desde Business Central. KONTROLA conserva el original y usa el motor v0.5.26 de Control de Cargas.</p>
+        <h2>Importar → procesar → revisar → publicar</h2><p class="muted">Carga manual desde Business Central. VISURA PREPARA conserva el original y usa el motor v0.5.26 de Control de Cargas.</p>
         <label>PDF de cargas de Business Central (hasta 20 archivos)<input type="file" accept=".pdf,application/pdf" id="pdfInput" multiple></label><p class="hint">Puedes seleccionar varios documentos. Se analizan uno a uno, quedan para revisión y nunca se publican automáticamente.</p>
         <button id="processPdf" type="button" class="primary">Importar y procesar</button>
         <div class="status" id="importStatus" role="status" aria-live="polite"></div><details id="importResultDetails" hidden><summary>Ver archivos con error</summary><div id="importResultList"></div></details>
@@ -189,9 +189,9 @@
       </section>
       <section class="panel" id="adminSection6" role="tabpanel" hidden id="archiveOneDrivePanel">
         <h2>Archivo periódico en OneDrive</h2>
-        <p class="muted">Partimos de cero: no hace falta incorporar los PDF generados antes de iniciar KONTROLA. Conservaremos las revisiones nuevas que produzca la aplicación.</p>
+        <p class="muted">Partimos de cero: no hace falta incorporar los PDF generados antes de iniciar VISURA PREPARA. Conservaremos las revisiones nuevas que produzca la aplicación.</p>
         <p class="hint">Al terminar el periodo de trabajo, prepara las hojas nuevas desde «Imprimir varias hojas procesadas». En la vista del informe elige «Imprimir / Guardar PDF», guarda el PDF en Archivos y muévelo a la carpeta de OneDrive acordada. Comprueba la copia antes de liberar espacio.</p>
-        <p class="muted">Este procedimiento es manual. KONTROLA no envía documentos ni elimina versiones automáticamente.</p>
+        <p class="muted">Este procedimiento es manual. VISURA PREPARA no envía documentos ni elimina versiones automáticamente.</p>
       </section>
       <section class="panel" id="adminSection7" role="tabpanel" hidden><div class="line"><h2>Resumen diario por zona</h2><select id="adminWarehouse" class="warehouse-select" aria-label="Almacén administrativo"></select></div><div id="adminSummary" class="facts"></div><div id="adminActivity" class="activity-list"></div></section>
       <section class="panel" id="adminSection8" role="tabpanel" hidden><h2>Archivo lógico de cargas</h2><p class="muted">Conservación mínima de 90 días. No se eliminan registros. Solo administración puede archivar o restaurar.</p><label>Código de carga <input id="archiveCode" autocomplete="off" placeholder="Código exacto"></label><div class="line"><button type="button" id="archiveLoad">Archivar</button><button type="button" id="restoreLoad" class="secondary">Restaurar</button><button type="button" id="refreshArchived" class="secondary">Consultar archivadas</button></div><p id="archiveStatus" role="status" aria-live="polite"></p><div id="archivedLoadsList" aria-live="polite"></div></section>
@@ -199,14 +199,14 @@
     <section id="settingsView" class="view" hidden>
       <div class="page-heading"><button type="button" data-back="home" class="back-button">← Volver</button><h1>Ajustes</h1></div>
       <section class="panel">
-        <p><b>Aplicación:</b> KONTROLA</p><p><b>Versión:</b> <span id="appVersion">0.3.29</span></p>
+        <p><b>Aplicación:</b> VISURA PREPARA</p><p><b>Versión:</b> <span id="appVersion">0.3.29</span></p>
         <p><b>Usuario:</b> <span id="profileName"></span></p><p><b>Perfil:</b> <span id="profileRole"></span></p>
         <div class="actions"><button type="button" id="checkUpdates" class="secondary">Buscar actualización</button><button id="logout" type="button" class="ghost-danger">Cerrar sesión</button></div>
         <div class="status" id="settingsStatus" role="status" aria-live="polite"></div>
       </section>
     </section>
   </main>
-  <footer> KONTROLA · MOVENTA · Los datos de picking se gestionan en Business Central.</footer>
+  <footer> VISURA PREPARA · LOGÍSTICA · Los datos de picking se gestionan en Business Central.</footer>
 </div>
 <section id="reportView" class="report-view" hidden>
   <header class="report-controls"><button id="closeReport" class="back-button" type="button">← Volver</button><h1 id="reportTitle">Hoja procesada</h1><div class="actions"><button id="downloadReport" class="secondary" type="button" title="Descarga una copia HTML; para OneDrive utiliza Guardar PDF">Descargar HTML</button><button id="printReport" class="primary" type="button">Imprimir / Guardar PDF</button></div></header>

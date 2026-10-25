@@ -576,3 +576,12 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 - Ambas pantallas muestran el almacén activo, distinguen un almacén vacío de una búsqueda sin coincidencias y reinician filtros antiguos al reabrir.
 - El texto de Preparación indica el inicio automático del reloj al seleccionar una carga publicada; Consulta sigue sin mutaciones.
 - Actualización PWA 0.3.29, caché v060, pruebas y continuidad en el mismo commit. Sin modificaciones de Supabase ni INVENTA.
+
+
+## 2026-10-26 — Identidad comercial VISURA PREPARA (propuesta en rama independiente)
+
+- La marca matriz definida por el usuario es VISURA. KONTROLA pasa a denominarse comercialmente **VISURA PREPARA**; INVENTA pasa a **VISURA INVENTA**. Los nombres internos de código, RPC, base de datos, repositorio y URL permanecen intactos.
+- Esta rama cambia exclusivamente textos e identidad vectorial provisional de interfaz, favicon/manifest y versión de caché PWA; conserva las ilustraciones 3D propias de las funciones y todas las pantallas operativas. No modifica Supabase ni Business Central ni MOVENTA.
+- **Pendiente de integración de activos oficiales**: el usuario facilitó `VISURA_Identidad_3D(1).zip` con imágenes tridimensionales definitivas de VISURA MATRIZ, INVENTA y PREPARA. Las imágenes binarias aprobadas no están incorporadas a este commit; no presentar la migración visual como terminada hasta copiarlas, referenciarlas y verificar formato PWA.
+- Verificación ejecutada antes de commit: comprobaciones de cadenas y preservación de rutas técnicas; pendiente CI completa y revisión móvil. Este avance no autoriza fusionar ni desplegar.
+- Próximo paso: incorporar PNG/WebP aprobados (uno exclusivo por producto), comprobar instalación/actualización PWA y revisión en iPhone/Android/Windows.

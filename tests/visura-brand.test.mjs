@@ -1,0 +1,3 @@
+import test from "node:test";import assert from "node:assert/strict";import {readFile} from "node:fs/promises";
+const read=p=>readFile(new URL("../"+p,import.meta.url),"utf8");
+test("VISURA PREPARA labels are commercial only",async()=>{const [html,mf,sw,logo]=await Promise.all(["index.html","manifest.webmanifest","sw.js","assets/visura-prepara.svg"].map(read));assert.match(html,/VISURA PREPARA/);assert.match(mf,/VISURA PREPARA/);assert.match(sw,/visura-prepara\.svg/);assert.match(logo,/VISURA PREPARA/);assert.match(html,/id="openPreparation"/);assert.match(html,/id="openReview"/);assert.match(html,/id="openCargas"/);assert.match(html,/id="openAdmin"/);});

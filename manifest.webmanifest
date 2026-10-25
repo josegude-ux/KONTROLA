@@ -1,7 +1,7 @@
 {
-  "name": "KONTROLA · MOVENTA",
-  "short_name": "KONTROLA",
-  "description": "Preparación y consulta de cargas",
+  "name": "VISURA PREPARA · Preparación y verificación de pedidos",
+  "short_name": "VISURA PREPARA",
+  "description": "Preparación, revisión y validación de pedidos · Plataforma VISURA",
   "start_url": "./",
   "display": "standalone",
   "background_color": "#FFFAF6",
