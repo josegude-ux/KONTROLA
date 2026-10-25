@@ -336,3 +336,7 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 - `src/admin-print-batch.mjs`: estado vacío explicativo y ocultación de botones de selección, impresión y reimpresión sin cargas disponibles.
 - `index.html`: explicación abreviada, con referencia al apartado Pendientes.
 - Sin saltar revisión ni publicar automáticamente. Pendiente CI y despliegue.
+
+## 2026-10-25 — Corrección de prueba CI
+- `tests/archive-period.test.mjs`: se actualiza la expectativa del texto de ayuda de impresión («Máximo 20 hojas por grupo»), conservando las comprobaciones funcionales de agrupación.
+- La prueba de despliegue fallaba por el texto antiguo tras compactar la interfaz; sin cambios de lógica de negocio.

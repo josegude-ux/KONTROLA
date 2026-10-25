@@ -86,5 +86,5 @@ test("selector de grupos sucesivos recorre la lista en bloques de veinte",()=>{
  assert.match(src,/if\(nextGroupStart>=rows\.length\)nextGroupStart=0/);
  assert.match(src,/nombreSugeridoArchivo\([\s\S]*?\[\.\.\.selected\]/);
  assert.match(ui,/Seleccionar siguiente grupo de hasta 20 cargas/);
- assert.match(ui,/grupos de hasta 20 hojas/);
+ assert.match(ui,/Máximo 20 hojas por grupo/);
 });
