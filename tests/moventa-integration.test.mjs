@@ -1,0 +1,10 @@
+import test from "node:test";
+import assert from "node:assert/strict";
+import {resolveKontrolaMount, assertKontrolaIdentity} from "../src/moventa-integration.mjs";
+const origin="https://example.org";
+test("accepts same-origin KONTROLA module",()=>assert.equal(resolveKontrolaMount({hostOrigin:origin,moduleUrl:"/kontrola/"}),"https://example.org/kontrola/"));
+test("rejects external origin",()=>assert.throws(()=>resolveKontrolaMount({hostOrigin:origin,moduleUrl:"https://elsewhere.org/kontrola/"})));
+test("rejects URL token or query",()=>assert.throws(()=>resolveKontrolaMount({hostOrigin:origin,moduleUrl:"/kontrola/?token=secret"})));
+test("rejects missing permission",()=>assert.throws(()=>assertKontrolaIdentity({moventaUserId:"a",kontrolaUserId:"a",authorized:false})));
+test("rejects different identity",()=>assert.throws(()=>assertKontrolaIdentity({moventaUserId:"a",kontrolaUserId:"b",authorized:true})));
+test("accepts verified same identity",()=>assert.equal(assertKontrolaIdentity({moventaUserId:"a",kontrolaUserId:"a",authorized:true}),true));

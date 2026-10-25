@@ -396,3 +396,10 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 - En Administración → Pendientes se consultan todas las importaciones en revisión/aprobadas del almacén, independientemente de la fecha BC. Contador, selección de aprobadas, selección total y publicación explícita tras confirmación.
 - Cada carga con errores permanece sin publicar y ofrece acceso a revisión. Publicación individual mediante RPC existente, errores por carga no bloquean las demás. Aviso con acceso directo desde Impresión.
 - Archivos: `src/admin.mjs`, `index.html`; sin cambios en otras aplicaciones ni publicación automática. Pendiente CI.
+
+## 2026-10-25 — MOVENTA: prioridad KONTROLA y rama aislada
+- El usuario prioriza KONTROLA para pruebas operativas reales; INVENTA queda en pausa. MOVENTA sigue siendo el contenedor principal, con KONTROLA e INVENTA como aplicaciones independientes.
+- Se creó la rama `integracion/moventa-kontrola` desde `cursor/verificacion-fisica-cargas-8ba0`. No publicar ni fusionar sin aprobación.
+- Se añade `src/moventa-integration.mjs` como contrato de seguridad preliminar y `tests/moventa-integration.test.mjs` para validar origen, ruta e identidad. NO conecta aún las sesiones reales ni supone SSO funcional.
+- KONTROLA utiliza Supabase `oevetnszmfxeukcncwji`, distinto del de INVENTA/MOVENTA. No compartir JWT entre proyectos ni suponer que UUID iguales representan a la misma persona. La comprobación de identidad real necesita unificar Auth o una solución de confianza verificable por servidor.
+- Mantener `kontrola_mi_perfil`, roles, almacenes y RLS como controles propios de KONTROLA. Sin cambios en base de datos, aplicación publicada ni versiones instaladas.
