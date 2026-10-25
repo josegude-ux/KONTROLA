@@ -147,6 +147,18 @@ Estas son **hojas procesadas por KONTROLA**, no copias de los PDF originales de 
 
 **Captura pendiente:** selector de cargas e informe multipágina real.
 
+### 14. Buscar y conservar PDF originales del móvil antiguo
+
+1. No elimines ni desinstales la aplicación antigua de Control de Cargas.
+2. Desde la misma instalación/navegador que contiene los PDF (si KONTROLA comparte ese contenedor), abre **Administración → Auditar copia antigua**.
+3. Pulsa **Buscar claves de PDF locales (solo lectura)**. La herramienta muestra qué originales o revisiones puede localizar sin abrir su contenido.
+4. Si aparece un botón **Guardar PDF**, púlsalo únicamente para la carga/revisión que necesitas. Antes de guardar, KONTROLA verifica que la cabecera corresponde a PDF y comprueba el SHA-256.
+5. Conserva el archivo descargado en un lugar seguro; el original almacenado permanece intacto.
+
+**Importante:** las aplicaciones instaladas de iPhone pueden tener almacenamientos separados. Si no aparecen documentos, no significa que se hayan perdido. No se realiza recuperación automática desde otro contenedor ni se suben PDF al servidor. No borres nunca el almacenamiento antiguo antes de una copia de seguridad y una migración autorizada.
+
+**Capturas pendientes:** prueba real en Safari/PWA con archivos ficticios y guardado en Archivos.
+
 ## Capturas y entrega definitiva
 
 - Capturar todas las pantallas anteriores en una ejecución real de la versión candidata y un entorno autorizado de pruebas.
