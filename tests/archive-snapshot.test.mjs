@@ -30,7 +30,8 @@ test("bloquea desaparecidas, almacenes cruzados, códigos repetidos y mercancía
  assert.throws(()=>comprobarLoteActualizado(selected,[],"COR_01_COR"),/ya no está disponible/);
  assert.throws(()=>comprobarLoteActualizado(selected,[doc("LP26-10001",{almacen:"COR_02_NAR"})],"COR_01_COR"),/otro almacén/);
  assert.throws(()=>comprobarLoteActualizado(selected,[...selected,...selected],"COR_01_COR"),/códigos duplicados/);
- assert.throws(()=>comprobarLoteActualizado(selected,[doc("LP26-10001",{productos:[]})],"COR_01_COR"),/no contiene productos/);
+ assert.throws(()=>comprobarLoteActualizado(selected,[doc("LP26-10001",{productos:[]})],"COR_01_COR"),/no contiene cantidades positivas/);
+ assert.throws(()=>comprobarLoteActualizado(selected,[doc("LP26-10001",{productos:[{sku:"SKU1",location:"A1",description:"Vacío",qty:0,unit:"CAJA"}]})],"COR_01_COR"),/no contiene cantidades positivas/);
  assert.throws(()=>comprobarLoteActualizado([selected[0],selected[0]],selected,"COR_01_COR"),/repetidos/);
  assert.throws(()=>comprobarLoteActualizado([],selected,"COR_01_COR"),/entre 1 y 20/);
 });
