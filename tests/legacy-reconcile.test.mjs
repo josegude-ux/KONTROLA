@@ -60,5 +60,5 @@ test("la interfaz no envía el backup al servidor ni realiza mutaciones",()=>{
   assert.match(code,/getUser\(\)\?\.id!==session\|\|getWarehouse\(\)!==warehouse/);
   assert.doesNotMatch(code,/\.insert\(|\.update\(|\.delete\(|\.upload\(|\.upsert\(/);
   assert.match(sql,/if not public\.kontrola_puede_almacen\(p_almacen\)/);
-  assert.match(html,/id="legacyCompareStart"/);
+  assert.doesNotMatch(html,/id="legacyCompareStart"/);
 });
