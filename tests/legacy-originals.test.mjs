@@ -1,7 +1,8 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import {readFileSync} from "node:fs";
-import {clasificarClaveOriginal,resumirClavesOriginales,inventariarOriginalesLocales} from "../src/legacy-originals.mjs";
+import {clasificarClaveOriginal,resumirClavesOriginales,inventariarOriginalesLocales,recuperarPdfOriginalLocal} from "../src/legacy-originals.mjs";
+import {webcrypto} from "node:crypto";
 
 const hash="a".repeat(64);
 test("distingue claves vigentes y revisiones del IndexedDB original",()=>{
@@ -58,4 +59,78 @@ test("usa SOLO una transacción de lectura y un cursor de claves",()=>{
   assert.match(view,/active!==current\|\|getUser\(\)\?\.id!==session/);
   assert.match(admin,/legacyOriginals\.clear\(\)/);
   assert.match(html,/id="legacyOriginalsScan"/);
+});
+
+function fakeReadOnlyDatabase(file){
+  const modes=[],keys=[],dbName=[];
+  let closed=0;
+  const idb={open(name){
+    dbName.push(name);
+    const open={};
+    queueMicrotask(()=>{
+      open.result={
+        objectStoreNames:{contains:name=>name==="originales"},
+        close(){closed++;},
+        transaction(name,mode){
+          modes.push(mode);
+          const tx={
+            objectStore(store){
+              assert.equal(store,"originales");
+              return {get(key){
+                keys.push(key);
+                const read={};
+                queueMicrotask(()=>{
+                  read.result=file;
+                  read.onsuccess();
+                  queueMicrotask(()=>tx.oncomplete());
+                });
+                return read;
+              }};
+            }
+          };
+          return tx;
+        }
+      };
+      open.onsuccess();
+    });
+    return open;
+  }};
+  return {idb,modes,keys,dbName,getClosed:()=>closed};
+}
+test("recupera un original PDF sin escribir en IndexedDB y valida SHA-256",async()=>{
+ const blob=new Blob(["%PDF-1.4\nArchivo inventado de prueba"],{type:"application/pdf"});
+ const hash=[...new Uint8Array(await webcrypto.subtle.digest("SHA-256",await blob.arrayBuffer()))]
+   .map(x=>x.toString(16).padStart(2,"0")).join("");
+ const mocked=fakeReadOnlyDatabase(blob);
+ const result=await recuperarPdfOriginalLocal("LP26-12345::"+hash,mocked.idb,webcrypto);
+ assert.strictEqual(result.blob,blob);
+ assert.equal(result.hash,hash);
+ assert.equal(result.codigo,"LP26-12345");
+ assert.deepEqual(mocked.modes,["readonly"]);
+ assert.deepEqual(mocked.dbName,["control_cargas_movil_originales"]);
+ assert.equal(mocked.getClosed(),1);
+});
+test("una revisión con PDF distinto a su SHA-256 no puede descargarse",async()=>{
+ const blob=new Blob(["%PDF-1.4\ncontenido modificado"],{type:"application/pdf"});
+ const mocked=fakeReadOnlyDatabase(blob);
+ await assert.rejects(
+   recuperarPdfOriginalLocal("LP26-12345::"+"f".repeat(64),mocked.idb,webcrypto),
+   /huella SHA-256 no coincide/
+ );
+ assert.deepEqual(mocked.modes,["readonly"]);
+});
+test("rechaza una clave inválida y archivos que no son PDF",async()=>{
+ await assert.rejects(recuperarPdfOriginalLocal("../secret",null,webcrypto),/Clave de PDF no válida/);
+ const mocked=fakeReadOnlyDatabase(new Blob(["No es PDF"],{type:"application/pdf"}));
+ await assert.rejects(recuperarPdfOriginalLocal("LP26-12345",mocked.idb,webcrypto),/cabecera PDF/);
+});
+test("la recuperación solo se inicia desde botón y nunca sube PDF",()=>{
+ const view=readFileSync(new URL("../src/admin-originals.mjs",import.meta.url),"utf8");
+ const source=readFileSync(new URL("../src/legacy-originals.mjs",import.meta.url),"utf8");
+ assert.match(view,/download\.addEventListener\("click",async\(\)=>\{/);
+ assert.match(view,/URL\.createObjectURL\(file\.blob\)/);
+ assert.match(view,/file\.hash\.slice\(0,12\)/);
+ assert.match(source,/db\.transaction\(STORE,"readonly"\)/);
+ assert.doesNotMatch(source,/\.put\(|\.delete\(|\.clear\(|"readwrite"/);
+ assert.doesNotMatch(view,/\.upload\(|\.upsert\(|\.rpc\(|fetch\(/);
 });
