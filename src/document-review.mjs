@@ -37,8 +37,9 @@ export function analyzeDocument(parsed={}){
     if(!Number.isFinite(qty)||qty<0)findings.push(finding("invalid_quantity","error","Cantidad no interpretable.",line,clean(product?.qty)));
     if(Number.isFinite(qty)&&qty>0&&!unit)findings.push(finding("missing_unit","error","Unidad no interpretable.",line,sku));
     if(!clean(product?.description))findings.push(finding("incomplete_row","warning","La línea no tiene descripción.",line,sku));
-    const context=clean(product?.sourceContext)||[sku,product?.description,product?.location,product?.unit].map(clean).join(" ");
-    if(context.includes("?"))findings.push(finding("special_marker","warning","La línea contiene el marcador especial ?; revisar su contexto sin alterar cantidades automáticamente.",line,context));
+    // El símbolo ? en BC indica recogida; no es una incidencia ni altera cantidades.
+    // Se conserva íntegramente en sourceContext para la trazabilidad.
+
   });
   if(parsed.refs!=null&&Number(parsed.refs)!==products.length)findings.push(finding(
     "reference_total_mismatch","error","El número de referencias no coincide con el total documental.",null,
@@ -84,7 +85,10 @@ export function applyLineCorrection(parsed,lineNumber,changes,userId,at=new Date
   return {...parsed,products,actualTotal,verified:false,corrections};
 }
 
+export const normalizeReviewFindings=(findings=[])=>findings.filter(item=>item.code!=="special_marker");
+
 export function publicationReadiness(findings=[],acknowledgedIds=[]){
+  findings=normalizeReviewFindings(findings);
   const acknowledged=new Set(acknowledgedIds);
   const errors=findings.filter(item=>item.severity==="error");
   const pendingWarnings=findings.filter(item=>item.severity==="warning"&&!acknowledged.has(item.id));

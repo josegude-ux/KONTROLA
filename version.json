@@ -1,4 +1,4 @@
 {
-  "version": "0.3.21",
-  "notes": "Archivo lógico seguro: interfaz, restauración, permisos de Supabase, actualización de listas y limpieza de datos de sesión. PWA con caché renovada."
+  "version": "0.3.22",
+  "notes": "El marcador ? en las cargas BC identifica recogida; ya no genera aviso de revisión. Mantiene intactas cantidades y trazabilidad."
 }
