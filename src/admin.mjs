@@ -1,4 +1,5 @@
 import {fechaAlmacen} from "./business-date.mjs";
+import {validarLotePdf,resumenLotePdf} from "./import-batch.mjs";
 import {analyzeDocument,applyLineCorrection,publicationReadiness,warehouseZone} from "./document-review.mjs";
 import {fechaISO} from "./logic.mjs";
 import {parsePdfFile} from "./pdf.mjs";
@@ -65,48 +66,71 @@ export function createAdminController({client,getUser,bucket,global,errorText,on
     draft.file=new File([data],draft.parsed.id+".pdf",{type:"application/pdf"});
     return draft.file;
   }
+  async function processSinglePdf(file){
+    setStatus("Analizando "+file.name+"…");
+    const parsed=await parsePdfFile(file);
+    const hash=await hashFile(file);
+    // La UI solicita permiso antes de reservar. La autoridad final permanece en la RPC.
+    const {data:existing,error:lookupError}=await client.from("kontrola_cargas")
+      .select("codigo,revision,documento_hash,estado,almacen")
+      .eq("codigo",parsed.id).maybeSingle();
+    if(lookupError)throw lookupError;
+    const decision=revisarSustitucion(existing,hash);
+    if(decision.tipo==="bloqueada")throw Error(decision.mensaje);
+    if(decision.tipo==="confirmar"&&!window.confirm(decision.mensaje))return "cancelado";
+    const findings=analyzeDocument(parsed);
+    const {data,error}=await client.rpc("kontrola_reservar_importacion",{
+      p_codigo:parsed.id,p_hash:hash,p_archivo:file.name,p_tamano:file.size
+    });
+    if(error)throw error;
+    const reservation=Array.isArray(data)?data[0]:data;
+    if(!reservation?.id||!reservation.documento_ruta)throw Error("Reserva documental incompleta.");
+    if(reservation.repetida){
+      if(reservation.estado==="reservada"){
+        setStatus("Recuperando importación interrumpida: "+file.name+"…");
+        await persistParsedImport(reservation,file,parsed,findings,hash);
+        return "recuperado";
+      }
+      await loadImport(reservation.id);
+      return "repetido";
+    }
+    await persistParsedImport(reservation,file,parsed,findings,hash);
+    return "nuevo";
+  }
   async function processPdf(){
     if(busy)return;
-    const file=$("pdfInput").files?.[0];
-    if(!file)return setStatus("Selecciona un PDF.","error");
-    if(!/\.pdf$/i.test(file.name)||file.type&&file.type!=="application/pdf")return setStatus("El archivo debe ser PDF.","error");
-    if(file.size>25*1024*1024)return setStatus("El PDF supera 25 MB.","error");
+    let files;
+    try{files=validarLotePdf($("pdfInput").files);}
+    catch(error){return setStatus(errorText(error),"error");}
+    if(draft&&!window.confirm(
+      "Hay una revisión abierta. Antes de importar otros PDF, comprueba que has pulsado Guardar revisión. "+
+      "Los cambios que no hayas guardado se perderán. ¿Continuar con la importación?"
+    ))return setStatus("Importación cancelada. Conservas la revisión que estabas consultando.");
     setBusy(true);
+    const outcomes=[];
     try{
-      setStatus("Procesando el documento con el motor de Control de Cargas…");
-      const parsed=await parsePdfFile(file);
-      const hash=await hashFile(file);
-      // Consultar el documento vigente ANTES de reservar: una sustitución
-      // requiere aceptación explícita y el servidor valida de nuevo al publicar.
-      const {data:existing,error:lookupError}=await client.from("kontrola_cargas")
-        .select("codigo,revision,documento_hash,estado,almacen")
-        .eq("codigo",parsed.id).maybeSingle();
-      if(lookupError)throw lookupError;
-      const decision=revisarSustitucion(existing,hash);
-      if(decision.tipo==="bloqueada")return setStatus(decision.mensaje,"error");
-      if(decision.tipo==="confirmar"&&!window.confirm(decision.mensaje)){
-        return setStatus("Importación cancelada. La carga publicada no se ha modificado.");
-      }
-      const findings=analyzeDocument(parsed);
-      const {data,error}=await client.rpc("kontrola_reservar_importacion",{
-        p_codigo:parsed.id,p_hash:hash,p_archivo:file.name,p_tamano:file.size
-      });
-      if(error)throw error;
-      const reservation=Array.isArray(data)?data[0]:data;
-      if(reservation?.repetida){
-        if(reservation.estado==="reservada"){
-          setStatus("Recuperando la importación interrumpida…");
-          await persistParsedImport(reservation,file,parsed,findings,hash);
-          return;
+      for(let i=0;i<files.length;i++){
+        const file=files[i];
+        setStatus("Procesando PDF "+(i+1)+" de "+files.length+": "+file.name+"…");
+        try{
+          const estado=await processSinglePdf(file);
+          outcomes.push({archivo:file.name,estado});
+        }catch(error){
+          outcomes.push({archivo:file.name,estado:"error",mensaje:errorText(error)});
         }
-        setStatus("Este documento ya fue importado. Se conserva la importación existente ("+reservation.estado+").","success");
-        await loadImport(reservation.id);
-        return;
       }
-      await persistParsedImport(reservation,file,parsed,findings,hash);
-    }catch(error){
-      setStatus("No se pudo completar la importación: "+errorText(error),"error");
-    }finally{setBusy(false);}
+      const total=resumenLotePdf(outcomes);
+      const summary="Importación terminada: "+total.nuevos+" nuevo(s), "+total.recuperados+
+        " recuperado(s), "+total.repetidos+" repetido(s), "+total.cancelados+
+        " cancelado(s), "+total.errores+" error(es)."+
+        " Los documentos admitidos quedan pendientes de revisión; ninguno se publica automáticamente.";
+      const issues=outcomes.filter(item=>item.estado==="error")
+        .map(item=>item.archivo+": "+item.mensaje).join("\n");
+      setStatus(summary+(issues?"\n"+issues:""),total.hayErrores?"error":"success");
+    }finally{
+      setBusy(false);
+      $("pdfInput").value="";
+    }
   }
   async function loadImport(id){
     const {data,error}=await client.from("kontrola_importaciones")
