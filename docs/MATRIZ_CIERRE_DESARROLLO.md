@@ -1,6 +1,6 @@
 # KONTROLA — Matriz de cierre y brechas funcionales
 
-**Lectura inicial:** KONTROLA v0.3.11 (PR #2) y Control de Cargas Móvil v0.5.26 (referencia funcional). El código de KONTROLA está desarrollado en la rama; **no publicado en producción**. El estado «programado» no significa «validado en móvil».
+**Lectura inicial:** KONTROLA v0.3.13 (PR #2) y Control de Cargas Móvil v0.5.26 (referencia funcional). El código de KONTROLA está desarrollado en la rama; **no publicado en producción**. El estado «programado» no significa «validado en móvil».
 
 | Función necesaria | Estado de código | Pendiente antes de producción |
 |---|---|---|
@@ -19,7 +19,7 @@
 | Importación múltiple del Control de Cargas original | **Programada v0.3.8** | Pruebas E2E de hasta 20 documentos, memoria móvil, confirmaciones y acceso a revisiones pendientes |
 | Impresión por lotes de originales | **Pendiente** | La impresión conjunta v0.3.11 SOLO cubre hojas procesadas; pendiente combinación vectorial y validación iPhone de originales |
 | Estadística por operario con nombres identificables | **Programada v0.3.9** | Validar privacidad, fechas y permisos RPC en Supabase autorizado y comprobar iPhone |
-| Paso de cargas/historial local del Control de Cargas original | **Auditoría local v0.3.10; migración pendiente** | Examinar copias JSON de cada móvil, originales PDF en IndexedDB, OneDrive y datos remotos; preparar plan reversible |
+| Paso de cargas/historial local del Control de Cargas original | **Auditoría 0.3.10 y conciliación 0.3.13; migración pendiente** | Comparar códigos y metadatos por almacén autorizado; cotejar PDF IndexedDB, historial de horarios y OneDrive por separado; plan de migración reversible |
 | Manual PDF con capturas auténticas | **Borrador** | Capturar pantallas de PWA en ejecución y verificar textos antes de producir PDF |
 | Control de Tanques | **Oculto y pausado** | Solo integrar con autorización posterior |
 | Unificación Auth/Supabase con INVENTA | **Estudio, no implementado** | Requiere propuesta, backups y autorización; INVENTA independiente |
@@ -27,7 +27,7 @@
 
 | Impresión conjunta de hojas procesadas | **Programada v0.3.11** | Probar paginación real Safari/AirPrint y límite de 10 cargas |
 | Auditoría de backups JSON legacy | **Programada v0.3.10** | No migra datos; cotejar con teléfonos/OneDrive y obtener permisos antes de actuar |
-
+| Conciliación de backup con panel autorizado | **Programada v0.3.13 (solo lectura)** | Comprobar con dos perfiles y móviles; no asumir PDF idénticos ni importar registros |
 ## Prioridades de continuación
 
 1. **P0 antes de uso empresarial:** no desplegar sin inventario de datos locales, matriz de acceso validada, permisos Storage probados y copia/restauración ensayada.
