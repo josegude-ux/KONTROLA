@@ -45,12 +45,14 @@
 | A29 | Copia legacy | Abrir backup JSON local del original con duplicados y fechas vacías | Informe local, sin subir, sobrescribir ni borrar información |
 | A30 | Origen PDF histórico | Revisar copias JSON y almacenamiento IndexedDB de móviles | Se advierte que el backup NO incluye archivos PDF originales |
 | A31 | Imprimir lote procesado | Seleccionar 10 cargas autorizadas, imprimir y guardar desde iPhone | Un documento paginado por carga, sin modificar originales ni mezclar almacenes |
+| A32 | Cambio de usuario | Operario A cierra sesión y operario B entra en el mismo iPhone | No aparecen datos, PDFs ni información de la sesión A en vistas ocultas o informes |
+| A33 | Error de salida | Simular cierre de sesión fallido en Supabase | La aplicación comunica error y no anuncia falsamente la sesión como cerrada |
 
 ## Condiciones de salida
 
 **Desarrollo:** funciones implementadas, pruebas unitarias y SQL temporales superadas.
 
-**Validación real:** todas las pruebas A01–A31 ejecutadas y registradas con evidencias, sin errores bloqueantes.
+**Validación real:** todas las pruebas A01–A33 ejecutadas y registradas con evidencias, sin errores bloqueantes.
 
 **Puesta en producción:** únicamente tras inventario de datos locales y nube, copia verificada, migración autorizada con reversión, revisión de permisos, aprobación explícita y despliegue controlado.
 
