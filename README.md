@@ -4,7 +4,7 @@
 
 PWA móvil de operaciones de almacén para **preparación, consulta, verificación, historial e incidencias de cargas**.
 
-**Versión de esta rama:** 0.3.15. **Estado:** desarrollo probado parcialmente, **no apto aún para producción**.
+**Versión de esta rama:** 0.3.16. **Estado:** desarrollo probado parcialmente, **no apto aún para producción**.
 
 - PR de Fase 1: https://github.com/josegude-ux/KONTROLA/pull/1
 - PR de operación integral: https://github.com/josegude-ux/KONTROLA/pull/2
@@ -140,3 +140,5 @@ Pendiente: pruebas completas con Supabase Auth/Storage real, documentos autoriza
 - La operación no se conecta a Supabase, no transmite documentos y **no modifica los originales**. Los archivos recuperados van al mecanismo de descarga/Archivos del navegador utilizado.
 - Limitación fundamental: IndexedDB está aislada por **origen y contenedor de almacenamiento**, no se puede leer un contenedor diferente de una PWA de inicio de iOS desde Safari/otra PWA. Si no aparecen documentos, **no significa que estén perdidos**. No borrar ni desinstalar el sistema antiguo.
 - **Sin validación real de iPhone, Safari ni recuperación de PDF empresariales**. El uso con documentos reales requiere una autorización específica.
+
+La migración de copias y PDF antiguos ha quedado fuera del alcance por decisión del usuario. El panel de recuperación antigua está oculto. El archivo de PDF nuevos en OneDrive es manual, no automático.
