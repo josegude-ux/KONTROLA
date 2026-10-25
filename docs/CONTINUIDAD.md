@@ -416,3 +416,8 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 - Hallazgo por inspección: el control Reimprimir se ocultaba si la lista normal estaba vacía, incluso cuando había cargas publicadas hoy con intentos de impresión registrados.
 - Se muestra Reimprimir cuando existe al menos una carga publicada hoy con intentos previos; se mantiene oculta cuando no hay ninguna.
 - Se añade prueba de regresión; sin migraciones, cambios de permisos, despliegue ni alteración de documentos originales. Pendiente CI y revisión del PR.
+
+## 2026-10-25 — Propuesta de conservación de cargas finalizadas durante 90 días
+- Se documenta en `docs/POLITICA_RETENCION_CARGAS.md` una propuesta de archivo lógico y elegibilidad para revisión de eliminación solo tras 90 días completos desde la finalización verificable.
+- Se protegen cargas no finalizadas, incidencias, bloqueos y dependencias; no se habilita borrado automático ni manual.
+- Cambio documental aislado sin migraciones, despliegues ni modificaciones de Supabase, INVENTA o MOVENTA. Pendiente revisión y autorización de cualquier implementación.
