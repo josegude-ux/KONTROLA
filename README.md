@@ -4,7 +4,7 @@
 
 PWA móvil de operaciones de almacén para **preparación, consulta, verificación, historial e incidencias de cargas**.
 
-**Versión de esta rama:** 0.3.18. **Estado:** desarrollo probado parcialmente, **no apto aún para producción**.
+**Versión de esta rama:** 0.3.19. **Estado:** desarrollo probado parcialmente, **no apto aún para producción**.
 
 - PR de Fase 1: https://github.com/josegude-ux/KONTROLA/pull/1
 - PR de operación integral: https://github.com/josegude-ux/KONTROLA/pull/2
@@ -164,3 +164,14 @@ Pruebas: GitHub Actions `40191583046`, **123 pruebas correctas, 0 fallidas**, ci
 - El nombre sugerido incluye todos los códigos de las cargas del lote en formato abreviado y reversible, ordenados, y se limita a 255 caracteres para evitar conflictos de longitud en OneDrive.
 - La carátula muestra el índice completo de las cargas; el administrador guarda cada PDF en Archivos y lo mueve manualmente a OneDrive.
 - **Por validar en iPhone real:** rendimiento, tamaño, impresión y paginación cuando las 20 hojas contengan muchas líneas.
+
+
+## Impresión segura de lotes — v0.3.19
+
+- Al pulsar **Preparar impresión**, KONTROLA vuelve a consultar el servidor (`kontrola_panel_cargas`) para el almacén autorizado.
+- Se comparan código, almacén, fecha, matrícula, ruta, repartidor, peso, referencias y productos con la selección inicial. Si faltan cargas, hay duplicados, otra zona, cantidades no imprimibles o cambios de contenido, **no se genera PDF**; es necesario actualizar la lista.
+- Si alguien cambia de sesión, almacén, fecha o selección durante la consulta, se desecha el resultado obsoleto.
+- El documento se genera con la **respuesta actual del servidor**, no con la copia anterior.
+- La hoja conserva cabeceras al saltar de página y evita partir líneas de productos.
+- Esto no confirma que el PDF se haya guardado en Archivos o movido a OneDrive. La transferencia sigue siendo manual y requiere comprobación.
+- **Pendiente:** validar Safari/iPhone y archivos de 20 cargas con muchos artículos; las pruebas unitarias no sustituyen esa validación.
