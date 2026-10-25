@@ -76,7 +76,7 @@ export function configurarLoteImpresion({client,getUser,getWarehouse,errorText})
     const cover=portadaLoteArchivo(chosen,{almacen:currentWarehouse,desde:from,hasta:to,fechaGeneracion:date});
     $("reportPaper").innerHTML=cover+chosen
       .map(row=>'<section class="report-batch-sheet">'+buildPreparationReport(row)+"</section>").join("");
-    $("reportTitle").textContent="Archivo OneDrive · "+chosen.length+" hojas · "+currentWarehouse;
+    $("reportTitle").textContent="Lote preparado para archivo · "+chosen.length+" hojas · "+currentWarehouse;
     status.textContent="Informe preparado. Usa «Imprimir / Guardar PDF» y después muévelo a OneDrive desde Archivos.";
     $("reportView").hidden=false;document.body.classList.add("report-open");
     window.scrollTo(0,0);
