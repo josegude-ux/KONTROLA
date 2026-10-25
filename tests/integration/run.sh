@@ -37,7 +37,9 @@ for migration in supabase/migrations/*.sql;do
 done
 "${PSQL[@]}" -f tests/integration/workflow.sql >/tmp/kontrola-workflow.log
 "${PSQL[@]}" -f tests/integration/revisions.sql >/tmp/kontrola-revisions.log
+"${PSQL[@]}" -f tests/integration/operator-stats.sql >/tmp/kontrola-operator-stats.log
 tests/integration/concurrency.sh "$DB"
 grep -q "KONTROLA_INTEGRATION_OK" /tmp/kontrola-workflow.log
 grep -q "KONTROLA_REVISION_OK" /tmp/kontrola-revisions.log
-echo "KONTROLA_DATABASE_OK migrations=4 workflow=passed revisions=passed concurrency=passed"
+grep -q "KONTROLA_OPERATOR_STATS_OK" /tmp/kontrola-operator-stats.log
+echo "KONTROLA_DATABASE_OK migrations=5 workflow=passed revisions=passed stats=passed concurrency=passed"
