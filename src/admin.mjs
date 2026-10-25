@@ -2,6 +2,7 @@ import {analyzeDocument,applyLineCorrection,publicationReadiness,warehouseZone} 
 import {fechaISO} from "./logic.mjs";
 import {parsePdfFile} from "./pdf.mjs";
 import {buildPreparationReport} from "./report.mjs";
+import {revisarSustitucion} from "./import-policy.mjs";
 
 const $=id=>document.getElementById(id);
 const fmt=value=>value==null?"—":Number(value).toLocaleString("es-ES",{maximumFractionDigits:3});
@@ -72,6 +73,17 @@ export function createAdminController({client,getUser,bucket,global,errorText,on
       setStatus("Procesando el documento con el motor de Control de Cargas…");
       const parsed=await parsePdfFile(file);
       const hash=await hashFile(file);
+      // Consultar el documento vigente ANTES de reservar: una sustitución
+      // requiere aceptación explícita y el servidor valida de nuevo al publicar.
+      const {data:existing,error:lookupError}=await client.from("kontrola_cargas")
+        .select("codigo,revision,documento_hash,estado,almacen")
+        .eq("codigo",parsed.id).maybeSingle();
+      if(lookupError)throw lookupError;
+      const decision=revisarSustitucion(existing,hash);
+      if(decision.tipo==="bloqueada")return setStatus(decision.mensaje,"error");
+      if(decision.tipo==="confirmar"&&!window.confirm(decision.mensaje)){
+        return setStatus("Importación cancelada. La carga publicada no se ha modificado.");
+      }
       const findings=analyzeDocument(parsed);
       const {data,error}=await client.rpc("kontrola_reservar_importacion",{
         p_codigo:parsed.id,p_hash:hash,p_archivo:file.name,p_tamano:file.size
