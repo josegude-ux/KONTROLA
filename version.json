@@ -1,4 +1,4 @@
 {
-  "version": "0.3.5",
-  "notes": "Revisión documental: confirmación de sustitución, PDF duplicados seguros y conservación de versiones, con pruebas PostgreSQL."
+  "version": "0.3.6",
+  "notes": "Historial visual de revisiones de PDF, comparación de productos, cambios documentales y enlaces privados temporales."
 }
