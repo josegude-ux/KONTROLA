@@ -2,7 +2,7 @@
 
 PWA móvil de operaciones de almacén para **preparación, consulta, verificación, historial e incidencias de cargas**.
 
-**Versión de esta rama:** 0.3.8. **Estado:** desarrollo probado parcialmente, **no apto aún para producción**.
+**Versión de esta rama:** 0.3.11. **Estado:** desarrollo probado parcialmente, **no apto aún para producción**.
 
 - PR de Fase 1: https://github.com/josegude-ux/KONTROLA/pull/1
 - PR de operación integral: https://github.com/josegude-ux/KONTROLA/pull/2
@@ -101,3 +101,11 @@ Pendiente: pruebas completas con Supabase Auth/Storage real, documentos autoriza
 - **Validación:** ejecución GitHub Actions `40182749152`, commit `11de1cfd161d66d32a4e6c5e32021c820855e7d7`, 81 pruebas JavaScript correctas y 0 fallidas; migraciones y concurrencia sobre PostgreSQL temporal superadas.
 - **Documentos de cierre:** [Matriz funcional](docs/MATRIZ_CIERRE_DESARROLLO.md), [pruebas de aceptación](docs/PRUEBAS_ACEPTACION.md) y [borrador de manual](docs/MANUAL_USUARIO_BORRADOR.md).
 - **No se ha publicado la app, fusionado la PR ni aplicado migraciones a producción.** Faltan las pruebas de Supabase real, impresoras, dispositivos y migración de datos antiguos, todas sujetas a autorización.
+
+
+## Hitos 0.3.9–0.3.11
+
+- **v0.3.9 — Estadísticas por operario:** nuevo panel exclusivo de Administración con nombre, preparaciones, verificaciones, duraciones finalizadas y tareas abiertas, filtrado por fecha de inicio (Europe/Madrid) y almacén. La RPC de SQL rechaza las peticiones de operarios. Migración adicional `supabase/migrations/20261028_kontrola_estadisticas_operarios.sql`, **no aplicada a producción**.
+- **v0.3.10 — Auditoría local de copias antiguas:** selecciona el backup JSON del antiguo Control de Cargas para identificar duplicados, cargas sin fecha, tiempos incompletos, estados y SHA-256 faltantes. El JSON se procesa **solo en el navegador**, sin subir datos ni restaurarlos. Los originales PDF se conservan en **IndexedDB en cada dispositivo** y NO están incluidos en la copia JSON. Deben inventariarse por separado.
+- **v0.3.11 — Lotes de hojas procesadas:** permite marcar un máximo de 10 cargas autorizadas del almacén y preparar un único informe multipágina de hojas **procesadas** para imprimir o guardar como PDF. No es la impresión conjunta de **PDF originales**; esa sigue pendiente de solución, validación de calidad y pruebas reales de iPhone.
+- Las migraciones y pruebas SQL siguen únicamente en PostgreSQL temporal. Ninguna funcionalidad publicada para trabajadores ni habilitada en Supabase empresarial.
