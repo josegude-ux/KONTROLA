@@ -435,3 +435,8 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 - `src/archive-view.mjs`: selector puro para vistas activas, archivadas y todas, sin llamadas de red ni escritura. Solo `archivado === true` acredita archivo; campo ausente permanece visible en activas para evitar ocultaciones accidentales.
 - `tests/archive-view.test.mjs`: seis pruebas de filtros, valores ambiguos, vista inválida y ausencia de mutación.
 - `archivado` es un contrato de presentación propuesto, NO una columna de Supabase acreditada. Sin conexión a RPC, interfaz, migraciones, eliminación ni despliegue. El filtrado de permisos debe continuar en el servidor.
+
+### 2026-10-25 — Integración conservadora del selector en lecturas (pendiente revisión)
+- `src/app.mjs`: conecta `filtrarArchivoLogico` a las respuestas de los RPC ya existentes: cargas operativas usa `activas`; historial usa `todas`.
+- Sin columna `archivado` confirmada, las cargas existentes mantienen la misma visibilidad; solo `archivado === true` en respuesta autorizada excluye una carga del listado activo.
+- No crea selector visual de archivadas ni escribe en Supabase; el historial sigue sujeto al RPC y permisos existentes. No equivale a archivo lógico operativo completo.
