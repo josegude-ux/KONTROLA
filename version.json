@@ -1,4 +1,4 @@
 {
-  "version": "0.3.15",
-  "notes": "Inventario y recuperación individual, voluntaria y verificada por SHA-256 de PDFs locales antiguos, sin subir ni alterar originales."
+  "version": "0.3.16",
+  "notes": "Inicio documental con PDF nuevos; sin migración de históricos y con archivado periódico manual en OneDrive."
 }
