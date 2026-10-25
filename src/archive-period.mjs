@@ -1,5 +1,6 @@
 // Archivo manual de hojas NUEVAS: filtra por fechas de carga y genera carátula
 // imprimible. No guarda marcas de archivo ni escribe en OneDrive/Supabase.
+export const MAX_HOJAS_ARCHIVO=20;
 const esc=value=>String(value??"").replace(/[&<>"']/g,char=>({
   "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
 }[char]));
@@ -37,19 +38,22 @@ export function nombreSugeridoArchivo(almacen,desde="",hasta="",hoy="",codigos=[
   validarPeriodoArchivo(desde,hasta);
   const safe=value=>String(value??"").replace(/[^A-Za-z0-9_-]/g,"_").slice(0,36)||"SIN_DATO";
   const period=desde&&hasta?desde+"_"+hasta:desde?"desde_"+desde:hasta?"hasta_"+hasta:hoy||"sin_fecha";
-  if(!Array.isArray(codigos)||codigos.length>10)throw Error("El nombre de archivo admite hasta diez códigos de carga.");
+  if(!Array.isArray(codigos)||codigos.length>MAX_HOJAS_ARCHIVO)throw Error("El nombre de archivo admite hasta "+MAX_HOJAS_ARCHIVO+" códigos de carga.");
   const ids=codigos.map(value=>String(value??"").trim().toUpperCase());
   if(ids.some(id=>!/^LP[0-9]{2}-[0-9]{4,6}$/.test(id))||new Set(ids).size!==ids.length)
     throw Error("Los códigos del lote son inválidos o repetidos.");
-  // Incluimos TODOS los códigos ordenados: dos grupos distintos del mismo
-  // periodo NO reciben el mismo nombre, y tampoco depende del orden de clic.
-  const suffix=ids.length?"_"+ids.sort().join("_"):"";
-  return "KONTROLA_HOJAS_"+safe(almacen)+"_"+safe(period)+suffix+".pdf";
+  // Se incluyen todos los códigos ordenados sin LP ni guion: es reversible
+  // (año + número de carga), evita colisiones y mantiene nombres cortos incluso
+  // con 20 documentos, sin depender del orden en que se marcaron.
+  const suffix=ids.length?"_"+ids.map(id=>id.slice(2,4)+id.slice(5)).sort().join("_"):"";
+  const filename="KONTROLA_HOJAS_"+safe(almacen)+"_"+safe(period)+suffix+".pdf";
+  if(filename.length>255)throw Error("El nombre del PDF supera el límite de longitud.");
+  return filename;
 }
 export function portadaLoteArchivo(cargas,{almacen="",desde="",hasta="",fechaGeneracion=""}={}){
   validarPeriodoArchivo(desde,hasta);
-  if(!Array.isArray(cargas)||!cargas.length||cargas.length>10)
-    throw Error("El archivo debe contener entre 1 y 10 hojas.");
+  if(!Array.isArray(cargas)||!cargas.length||cargas.length>MAX_HOJAS_ARCHIVO)
+    throw Error("El archivo debe contener entre 1 y "+MAX_HOJAS_ARCHIVO+" hojas.");
   const ids=new Set();
   for(const carga of cargas){
     const id=String(carga?.codigo||"");
