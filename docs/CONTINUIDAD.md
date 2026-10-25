@@ -448,3 +448,7 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 ### Revisión SQL defensiva
 - Rechazar explícitamente `p_archivar IS NULL` para evitar restauración accidental.
 - La propuesta no se ha aplicado ni validado en Supabase.
+
+### Validación pendiente de archivo lógico
+- Pruebas automáticas actuales no ejercitan la nueva RPC, porque SQL está en `supabase/proposals` y no en `supabase/migrations`.
+- Antes de migrar: confirmar cierre definitivo, que las incidencias no se reabran, políticas RLS y auditoría de restauración; probar rollback en base aislada.
