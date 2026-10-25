@@ -275,3 +275,9 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 
 ## 2026-10-25 — CI: última expectativa obsoleta
 - `tests/archive-period.test.mjs` comprobaba `from,to` aunque la impresión ahora usa `today,today`. Actualizada aserción literal sin modificar la lógica de producción.
+
+## 2026-10-25 — 0.3.20: renovación de caché Safari
+- El usuario continúa viendo `pdf.destroy is not a function` tras publicar corrección. No está confirmado si es error histórico en pantalla o módulo antiguo cacheado.
+- `sw.js` cambia clave de caché v050 a v051 y pasa a network-first con fallback offline para recursos de mismo origen, incluidos módulos dinámicos; antes era cache-first y conservaba módulos antiguos indefinidamente.
+- Actualizados `src/config.mjs`, `version.json`, `index.html` a 0.3.20 para distinguir despliegue nuevo. Sin cambios de base de datos.
+- Pendiente CI y prueba manual en Safari de importación de un PDF.
