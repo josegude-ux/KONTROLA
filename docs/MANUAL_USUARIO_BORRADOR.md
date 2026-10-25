@@ -121,6 +121,28 @@ KONTROLA registra la confirmación, **no modifica Business Central por sí misma
 
 **Captura pendiente:** incidencias administrativas de prueba.
 
+### 11. Estadísticas por trabajador
+
+En **Administración → Actividad por operario**, elige la fecha y el almacén. Pulsa **Actualizar**. Comprueba los tiempos de trabajos terminados y las tareas que siguen abiertas. Esta pantalla está reservada a administradores.
+
+**Captura pendiente:** tabla real de operarios con cuentas ficticias.
+
+### 12. Auditar una copia antigua
+
+Desde el Control de Cargas original, guarda una copia JSON. En **Administración → Auditar copia antigua de Control de Cargas**, selecciona ese archivo y pulsa **Analizar copia**. La aplicación mostrará duplicados y datos incompletos, pero **no importará ni enviará el JSON a la nube**.
+
+Recuerda que los PDF originales están guardados aparte en el móvil antiguo; conserva ese teléfono y no borres su almacenamiento hasta completar una migración autorizada.
+
+**Captura pendiente:** análisis local de una copia ficticia.
+
+### 13. Imprimir varias hojas procesadas
+
+En **Administración → Imprimir varias hojas procesadas**, pulsa **Actualizar**, selecciona hasta 10 cargas y luego **Preparar impresión de hojas seleccionadas**. Desde la vista de informe utiliza **Imprimir / Guardar PDF**.
+
+Estas son **hojas procesadas por KONTROLA**, no copias de los PDF originales de Business Central. La impresión conjunta de originales sigue pendiente.
+
+**Captura pendiente:** selector de cargas e informe multipágina real.
+
 ## Capturas y entrega definitiva
 
 - Capturar todas las pantallas anteriores en una ejecución real de la versión candidata y un entorno autorizado de pruebas.
