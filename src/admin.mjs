@@ -2,7 +2,7 @@ import {fechaAlmacen} from "./business-date.mjs";
 import {validarLotePdf,resumenLotePdf} from "./import-batch.mjs";
 import {configurarEstadisticasOperarios} from "./admin-stats.mjs";
 import {configurarLoteImpresion} from "./admin-print-batch.mjs";
-import {analyzeDocument,applyLineCorrection,publicationReadiness,warehouseZone} from "./document-review.mjs";
+import {analyzeDocument,applyLineCorrection,publicationReadiness,warehouseZone,normalizeReviewFindings} from "./document-review.mjs";
 import {fechaISO} from "./logic.mjs";
 import {parsePdfFile} from "./pdf.mjs";
 import {buildPreparationReport} from "./report.mjs";
@@ -177,7 +177,7 @@ export function createAdminController({client,getUser,bucket,global,errorText,on
         availableWarehouses:payload.parser_metadata?.available_warehouses||[],
         corrections:data.correcciones||[]
       },
-      findings:data.hallazgos||[],acknowledged:data.advertencias_confirmadas?(data.hallazgos||[]).filter(item=>item.severity==="warning").map(item=>item.id):[]
+      findings:normalizeReviewFindings(data.hallazgos||[]),acknowledged:data.advertencias_confirmadas?normalizeReviewFindings(data.hallazgos||[]).filter(item=>item.severity==="warning").map(item=>item.id):[]
     };
     renderDraft();
     $("reviewLoadSelect").value=data.id;

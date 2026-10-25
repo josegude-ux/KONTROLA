@@ -4,7 +4,8 @@ import {
   analyzeDocument,
   applyLineCorrection,
   publicationReadiness,
-  warehouseZone
+  warehouseZone,
+  normalizeReviewFindings
 } from "../src/document-review.mjs";
 
 const parsed={
@@ -24,13 +25,20 @@ test("classifies warehouses without guessing unknown codes",()=>{
   assert.equal(warehouseZone(null).zone,"pending");
 });
 
-test("document findings preserve special marker context and severity",()=>{
-  const findings=analyzeDocument(parsed);
-  assert.ok(findings.some(item=>item.code==="missing_location"&&item.severity==="warning"&&item.line===2));
-  assert.ok(findings.some(item=>item.code==="missing_unit"&&item.severity==="error"&&item.line===2));
-  const marker=findings.find(item=>item.code==="special_marker");
-  assert.equal(marker.severity,"warning");
-  assert.match(marker.context,/unidad/);
+test("el símbolo ? indica recogida y no genera incidencia ni modifica cantidades",()=>{
+  const good={...parsed,products:[{sku:"PRD0000001",description:"Retornable ?",location:"A101-1",qty:2,unit:"CAJA",sourceContext:"A101-1 PRD0000001 RETORNABLE ? 2 CAJA"}],refs:1,declaredTotal:2,actualTotal:2};
+  const findings=analyzeDocument(good);
+  assert.deepEqual(findings,[]);
+  assert.equal(publicationReadiness(findings,[]).ready,true);
+  assert.equal(good.products[0].qty,2);
+  assert.match(good.products[0].sourceContext,/\\?/);
+});
+
+test("hallazgos antiguos special_marker se ignoran sin ocultar incidencias reales",()=>{
+  const legacy=[{code:"special_marker",severity:"warning",id:"special_marker:2"},{code:"missing_location",severity:"warning",id:"missing_location:2"}];
+  assert.deepEqual(normalizeReviewFindings(legacy).map(f=>f.code),["missing_location"]);
+  assert.equal(publicationReadiness(legacy,[]).ready,false);
+  assert.equal(publicationReadiness(legacy,["missing_location:2"]).ready,true);
 });
 
 test("corrections preserve PDF values and append actor/time audit",()=>{
