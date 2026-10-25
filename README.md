@@ -1,30 +1,64 @@
 # KONTROLA · MOVENTA
 
-Aplicación web progresiva para preparación de cargas, desarrollada a partir del motor PDF de [Control de Cargas](https://github.com/josegude-ux/control-cargas-movil) y siguiendo la identidad de [INVENTA](https://github.com/josegude-ux/INVENTA-).
+PWA móvil de operaciones de almacén para **preparación, consulta, verificación e incidencias de cargas**.
 
-**Estado:** Fase 1 y primer bloque de verificación en desarrollo. **No lista para producción.** La aplicación precisa migraciones que todavía no están aplicadas en Supabase y pruebas con cuentas autorizadas.
+**Versión de esta rama:** 0.3.1. **Estado:** desarrollo probado parcialmente, **no apto aún para producción**.
 
-## Funcionalidad de fase 1
+- PR de Fase 1: https://github.com/josegude-ux/KONTROLA/pull/1
+- PR de operación integral: https://github.com/josegude-ux/KONTROLA/pull/2
+- Documento de continuidad: [docs/CONTINUIDAD.md](docs/CONTINUIDAD.md)
 
-- Inicio de sesión real (Supabase, el proyecto de Control de Cargas).
-- Menú de operario y administración según rol (restricción efectiva mediante RLS).
-- Cargas publicadas ordenadas por peso, búsqueda y consulta por pasillos.
-- Visualización de código, descripción, ubicación, cantidad y unidad (sin checks; picking en BC).
-- Apertura automática de preparación, cierre de la anterior al abrir otra y cierre manual de la última, todo en el servidor.
-- Acceso al PDF original desde almacenamiento privado si el documento está publicado.
-- Importación administrativa individual de PDF verificado con el motor existente.
-- Verificación física independiente línea por línea; el preparador no puede verificar su propia carga.
-- Incidencias agrupadas por carga, trazabilidad de cantidades y cierre aun con diferencias pendientes.
-- Confirmación administrativa de regularizaciones realizadas manualmente en Business Central.
+La aplicación completa está en la rama de la PR #2, **no en main**.
 
-## Validación
+## Flujo previsto
+
+1. El administrador descarga manualmente los PDF de Business Central.
+2. Desde KONTROLA los importa, revisa, corrige y publica.
+3. KONTROLA clasifica por almacén: **A Coruña (COR_01_COR)** o **Ferrol (COR_02_NAR)**. Los códigos desconocidos se revisan antes de publicar.
+4. El operario consulta la carga sin iniciar ningún reloj; para trabajar pulsa **Iniciar preparación**.
+5. La preparación física se registra con la pistola de Business Central, que KONTROLA no sustituye.
+6. La preparación se cierra manualmente, al comenzar otra carga o al finalizar la verificación, según proceda.
+7. Un segundo operario, distinto del preparador, verifica cantidades físicas línea por línea.
+8. Al comprobar todas las líneas se cierra la carga, aunque existan diferencias.
+9. El administrador consulta incidencias y registra confirmaciones de regularizaciones hechas **manualmente** en Business Central.
+
+También hay paneles de tiempos, incidencias, seguimiento y documentos por almacén, así como funciones para generar, descargar e imprimir hojas procesadas.
+
+## Arquitectura y seguridad
+
+- **Supabase** con autenticación de usuarios reales y roles `operario` y `administrador`.
+- Proyecto de Control de Cargas; **INVENTA es independiente**.
+- Tablas, RPC y Storage privado de KONTROLA, distintos de los documentos originales de otras aplicaciones.
+- Migraciones propuestas en `supabase/migrations/`.
+- Control de concurrencia en preparación, importación y verificación; RLS y políticas para documentos privados.
+- PWA para teléfonos móviles. La conectividad, impresión real y recuperación de sesiones requieren pruebas en dispositivos.
+- La descarga desde Business Central y las regularizaciones son **manuales**, sin API ni escritura automática.
+
+## Pruebas
 
 ```bash
+npm ci
 npm run check
 ```
 
-Antes de probar con operarios hay que revisar y aplicar de forma autorizada la migración en `supabase/migrations/`. No se ejecuta desde la PWA.
+Las pruebas de base de datos requieren un servidor **PostgreSQL local y descartable**, compatible con los scripts del repositorio:
 
-Consulta [docs/FASE_1.md](docs/FASE_1.md) para la puesta en marcha, límites y pruebas, y [docs/REVISION_CURSOR.md](docs/REVISION_CURSOR.md) para la revisión independiente de Cursor.
+```bash
+npm run test:db
+```
 
-**Ramas:** Fase 1 en `desarrollo/fase-1-operario`; verificación en `cursor/verificacion-fisica-cargas-8ba0`. No fusionar a `main` hasta la aceptación.
+**ATENCIÓN:** `test:db` elimina y recrea la base `kontrola_test` en el PostgreSQL local. El script se niega a trabajar con bases de otros nombres o con `PGHOST` remoto. Nunca lo ejecutes contra datos que quieras conservar.
+
+GitHub Actions ya ha validado satisfactoriamente pruebas de JavaScript y migraciones, flujo de operaciones y concurrencia en PostgreSQL 16 temporal. Esto **no prueba todavía** el entorno Supabase empresarial completo.
+
+## Límites actuales
+
+- Las migraciones no se han aplicado desde este trabajo al Supabase de producción.
+- Faltan pruebas E2E con varias cuentas y móviles reales, comprobaciones del Storage privado y validación con impresoras del almacén.
+- Los PDF ficticios de pruebas no sustituyen la verificación con documentos reales autorizados.
+- No se han fusionado las PR a `main` ni desplegado una versión productiva.
+- Las reglas especiales de totales por pasillos siguen pendientes de definición.
+
+Para detalles del estado comprobado, las decisiones aprobadas y los siguientes pasos consulta [docs/CONTINUIDAD.md](docs/CONTINUIDAD.md).
+
+**No publicar PDF reales en este repositorio público.**
