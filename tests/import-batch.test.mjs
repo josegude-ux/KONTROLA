@@ -34,7 +34,8 @@ test("la interfaz no autopublica PDFs en el bucle ni descarta el historial",()=>
   const body=code.slice(start,end);
   assert.match(body,/validarLotePdf\(\$\("pdfInput"\)\.files\)/);
   assert.match(body,/for\(let i=0;i<files\.length;i\+\+\)/);
-  assert.match(body,/processSinglePdf\(file\)/);
+  assert.match(body,/processSinglePdf\(file,seenCodes\)/);
+  assert.match(code,/if\(seenCodes\.has\(parsed\.id\)\)throw Error/);
   assert.doesNotMatch(body,/kontrola_publicar_importacion/);
   assert.match(body,/window\.confirm/);
   assert.match(html,/id="pdfInput" multiple/);
