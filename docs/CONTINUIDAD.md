@@ -411,3 +411,8 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 - Se incorpora `cursor/verificacion-fisica-cargas-8ba0` al disparador `push` de `.github/workflows/ci.yml`, además del disparador de PR ya existente. Se conserva la rama `desarrollo/fase-1-operario`.
 - Objetivo: verificar cada nuevo commit directo o integración posterior en la rama operativa; no modifica aplicación, datos, despliegues ni permisos.
 - Cambio aislado en PR; pendiente validación de CI y aprobación de integración.
+
+## 2026-10-25 — Corrección de acceso a reimpresión cuando no hay hojas nuevas
+- Hallazgo por inspección: el control Reimprimir se ocultaba si la lista normal estaba vacía, incluso cuando había cargas publicadas hoy con intentos de impresión registrados.
+- Se muestra Reimprimir cuando existe al menos una carga publicada hoy con intentos previos; se mantiene oculta cuando no hay ninguna.
+- Se añade prueba de regresión; sin migraciones, cambios de permisos, despliegue ni alteración de documentos originales. Pendiente CI y revisión del PR.
