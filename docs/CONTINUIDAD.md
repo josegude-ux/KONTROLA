@@ -298,3 +298,8 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 ## 2026-10-25 — Desbloqueo de publicación 0.3.20
 - Sincronizadas versiones `package.json`, `package-lock.json` y pruebas de navegación con `src/config.mjs`, `version.json` y caché v051.
 - El fallo previo de CI era la versión desincronizada, no el menú compacto. Pendiente verificación final.
+
+## 2026-10-25 — Botones operativos de Administración
+- `src/admin.mjs`: cada botón de menú ahora inicia su acción: Importar abre selector de archivos iPhone; Pendientes, Impresión, Operarios, Incidencias y Resumen actualizan datos; Historial enfoca búsqueda. Archivo OneDrive muestra instrucciones, sin conexión automática.
+- Seguridad: no se importa sin selección y pulsar Procesar, no se publica ni imprime automáticamente; preserva autorizaciones y revisión.
+- Pendiente CI y publicación.

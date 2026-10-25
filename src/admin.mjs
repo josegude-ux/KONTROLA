@@ -344,7 +344,22 @@ export function createAdminController({client,getUser,bucket,global,errorText,on
       $("adminSection"+button.dataset.adminTab).hidden=!active;
     }
   }
-  for(const button of document.querySelectorAll("[data-admin-tab]"))button.addEventListener("click",()=>selectAdminTab(Number(button.dataset.adminTab)));
+  // Cada acceso inicia su acción de consulta; importar abre Archivos, nunca publica automáticamente.
+  const adminActions=[
+    ()=>{if(!busy)$("pdfInput").click();},
+    ()=>refreshAttention(),
+    ()=>printBatch.refresh(),
+    ()=>operatorStats.refresh(),
+    ()=>refreshIncidents(),
+    ()=>{$("revisionCode").focus();},
+    ()=>{},
+    ()=>refreshSummary()
+  ];
+  for(const button of document.querySelectorAll("[data-admin-tab]"))button.addEventListener("click",async()=>{
+    const index=Number(button.dataset.adminTab);
+    selectAdminTab(index);
+    try{await adminActions[index]();}catch(error){global(errorText(error),"error");}
+  });
   async function open(){
     selectAdminTab(0);
     await Promise.all([refreshAttention(),refreshSummary(),refreshIncidents(),operatorStats.refresh(),printBatch.refresh()]);
