@@ -186,3 +186,16 @@ footer{padding:18px;text-align:center;background:#fff;border-top:1px solid #e6e8
 #homeView .inventa-inspired-home .feature-illustration{inset:0;width:100%;height:100%;object-fit:contain;filter:none;mix-blend-mode:normal}
 #homeView .inventa-inspired-home .feature-copy{width:50%;max-width:50%}
 @media(max-width:540px){#homeView .inventa-inspired-home .feature-art{width:54%;right:0}#homeView .inventa-inspired-home .feature-copy{width:53%;max-width:53%}#homeView .inventa-inspired-home .feature-illustration{width:100%;height:100%;object-fit:contain}}
+
+/* KONTROLA 0.3.28: única acción Volver en la esquina superior izquierda de las vistas. */
+#shell .topbar .topbar-back{border:1px solid #d4e0eb;border-radius:10px;background:#f2f7fa;color:#0b2647;font-weight:800;padding:10px 12px;min-height:44px;white-space:nowrap;flex:none}
+#shell .view .page-heading>.back-button{display:none}
+.report-view .report-controls{position:sticky;top:0;z-index:105;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.report-view .report-controls>.back-button{border:1px solid #d4e0eb;background:#f2f7fa;border-radius:10px;padding:10px 12px;white-space:nowrap;flex:none}
+.home-summary-bottom{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:9px;flex-wrap:wrap}
+.home-summary-bottom .status{margin:0;min-height:0;flex:1}
+.home-summary-bottom .status.warning{color:#a35c0e}
+.home-summary-bottom button{font-size:13px;padding:7px 12px;min-height:40px}
+.prep-clock{margin:-3px 0 15px;padding:12px 15px;border-radius:12px;border:1px solid #a6d8ba;background:#eaf8ef;color:#155c36;font-variant-numeric:tabular-nums;font-weight:800;font-size:18px}
+@media(max-width:600px){#shell .topbar{gap:7px;padding-inline:8px}#shell .topbar .brand-button img{width:94px}#shell .topbar .top-actions{gap:6px}#shell .topbar .top-actions .icon-button{padding:8px 9px;min-height:42px;font-size:20px}#shell .topbar .top-actions .icon-button span{display:none}#shell .topbar .connection-status{font-size:10px}#shell .topbar .topbar-back{padding:9px 9px;font-size:13px}}
+@media print{#shell .topbar .topbar-back{display:none!important}.report-view .report-controls{display:none!important}}
