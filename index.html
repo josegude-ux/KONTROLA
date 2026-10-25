@@ -142,6 +142,11 @@
         <p class="hint">La comparación solo consulta el almacén seleccionado. No comprueba si los PDF originales son iguales ni migra registros.</p>
         <div id="legacyCompareStatus" class="status" role="status" aria-live="polite"></div>
         <div id="legacyCompareResults" class="legacy-audit-results"></div>
+        <hr class="muted-divider">
+        <p class="muted">Si abriste Control de Cargas en este mismo navegador, también puedes comprobar si aquí siguen las claves de sus PDF. La búsqueda NO lee ni copia los archivos y no sirve para otras PWA con almacenamiento separado.</p>
+        <button id="legacyOriginalsScan" type="button" class="secondary">Buscar claves de PDF locales (solo lectura)</button>
+        <div id="legacyOriginalsStatus" class="status" role="status" aria-live="polite"></div>
+        <div id="legacyOriginalsResults" class="legacy-audit-results"></div>
         <div id="legacyAuditStatus" class="status" role="status" aria-live="polite"></div>
         <div id="legacyAuditResults" class="legacy-audit-results"></div>
       </section>
