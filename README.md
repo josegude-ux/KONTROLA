@@ -1,8 +1,8 @@
 # KONTROLA · MOVENTA
 
-PWA móvil de operaciones de almacén para **preparación, consulta, verificación e incidencias de cargas**.
+PWA móvil de operaciones de almacén para **preparación, consulta, verificación, historial e incidencias de cargas**.
 
-**Versión de esta rama:** 0.3.1. **Estado:** desarrollo probado parcialmente, **no apto aún para producción**.
+**Versión de esta rama:** 0.3.3. **Estado:** desarrollo probado parcialmente, **no apto aún para producción**.
 
 - PR de Fase 1: https://github.com/josegude-ux/KONTROLA/pull/1
 - PR de operación integral: https://github.com/josegude-ux/KONTROLA/pull/2
@@ -62,3 +62,13 @@ GitHub Actions ya ha validado satisfactoriamente pruebas de JavaScript y migraci
 Para detalles del estado comprobado, las decisiones aprobadas y los siguientes pasos consulta [docs/CONTINUIDAD.md](docs/CONTINUIDAD.md).
 
 **No publicar PDF reales en este repositorio público.**
+
+## Navegación e historial v0.3.3
+
+- KONTROLA mantiene Preparación, Verificación y Administración; Control de Cargas es un submenú integrado.
+- «Consultar cargas» usa **modo de solo lectura**: no aparecen los botones de iniciar/finalizar y sus manejadores comprueban el modo antes de escribir.
+- «Historial y resumen» filtra los registros publicados por el RPC autorizado `kontrola_panel_cargas` según fecha de carga, estado, matrícula, ruta o repartidor; resume cargas, peso, referencias, cerradas e incidencias pendientes.
+- El filtro por almacén respeta los permisos concedidos por el servidor. El historial no importa documentos ni altera los datos de Business Central.
+- El detalle de un registro del historial es de solo lectura. Las cargas sin fecha quedan al final de la lista.
+- Control de Tanques permanece **completamente oculto** hasta que pueda integrarse y probarse.
+- No se han creado tablas nuevas para esta función. Queda pendiente probar el comportamiento en Supabase real y dispositivos.
