@@ -37,3 +37,49 @@ export function formatoFechaCarga(fecha){
   const [year,month,day]=fecha.split("-");
   return `${day}/${month}/${year}`;
 }
+
+const safeHtml=value=>clean(value).replace(/[&<>"']/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));
+// Hoja para Excel en España: punto y coma, BOM UTF-8 y cadenas potencialmente peligrosas como texto.
+// Nunca tratar metadatos procedentes de un PDF como fórmulas ejecutables en Excel.
+function csvField(value){
+  let v=String(value??"");
+  if(/^[\s\u0000-\u001f]*[=+@\-]/u.test(v))v="'"+v;
+  return '"'+v.replace(/"/g,'""')+'"';
+}
+export function csvHistorial(rows=[],almacen=""){
+  const columns=[
+    ["Almacén",()=>almacen],["Código",r=>r.codigo],["Fecha de carga",r=>r.fecha],
+    ["Estado",r=>r.estado],["Ruta",r=>r.ruta],["Repartidor",r=>r.repartidor],
+    ["Matrícula",r=>r.matricula],["Peso (kg)",r=>r.peso_kg],
+    ["Referencias",r=>r.referencias],["Incidencias pendientes",r=>r.incidencias_pendientes]
+  ];
+  const lines=[columns.map(([header])=>csvField(header)).join(";")];
+  for(const row of rows)lines.push(columns.map(([,get])=>csvField(get(row))).join(";"));
+  return "\uFEFF"+lines.join("\r\n")+"\r\n";
+}
+export function htmlResumenHistorial(rows=[],{almacen="",fecha="",estado="",busqueda=""}={}){
+  const resumen=resumenHistorial(rows);
+  const filtros=[
+    ["Almacén",almacen],["Fecha",fecha||"Todas"],["Estado",estado||"Todos"],
+    ["Búsqueda",busqueda||"Sin filtro"]
+  ];
+  const facts=[
+    ["Cargas",resumen.cargas],["Peso total",resumen.pesoKg.toLocaleString("es-ES")+" kg"],
+    ["Referencias",resumen.referencias],["Cerradas",resumen.cerradas],
+    ["Incidencias pendientes",resumen.incidencias]
+  ];
+  const detail=rows.map(r=>"<tr>"+
+    [r.codigo,formatoFechaCarga(r.fecha),r.estado,r.ruta,r.repartidor,r.matricula,
+      r.peso_kg==null?"—":Number(r.peso_kg).toLocaleString("es-ES"),
+      r.referencias==null?"—":r.referencias,r.incidencias_pendientes??0]
+      .map(cell=>"<td>"+safeHtml(cell)+"</td>").join("")+"</tr>").join("");
+  return '<article class="preparation-report history-print">'+
+    "<header><h2>KONTROLA · Resumen de cargas</h2><p>Listado de consulta; no sustituye documentos de Business Central.</p></header>"+
+    "<dl>"+filtros.map(([label,value])=>"<div><dt>"+safeHtml(label)+"</dt><dd>"+safeHtml(value)+"</dd></div>").join("")+"</dl>"+
+    "<dl>"+facts.map(([label,value])=>"<div><dt>"+safeHtml(label)+"</dt><dd>"+safeHtml(value)+"</dd></div>").join("")+"</dl>"+
+    '<div class="history-table-scroll"><table><thead><tr>'+
+    ["Carga","Fecha","Estado","Ruta","Repartidor","Matrícula","Kg","Refs.","Incidencias"]
+      .map(v=>"<th>"+safeHtml(v)+"</th>").join("")+
+    "</tr></thead><tbody>"+(detail||'<tr><td colspan="9">No hay cargas para estos filtros.</td></tr>')+
+    "</tbody></table></div></article>";
+}
