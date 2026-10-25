@@ -45,9 +45,9 @@ test("La versión y el caché están preparados para instalar nuevas pantallas",
   assert.equal(version,"0.3.3");
   assert.equal(JSON.parse(read("package.json")).version,version);
   assert.equal(JSON.parse(read("package-lock.json")).version,version);
-  assert.match(read("src/config.mjs"),/APP_VERSION="0\.3\.3"/);
-  assert.match(html,/id="appVersion">0\.3\.3</);
-  assert.match(read("sw.js"),/kontrola-integral-v034/);
+  assert.match(read("src/config.mjs"),/APP_VERSION="0\.3\.4"/);
+  assert.match(html,/id="appVersion">0\.3\.4</);
+  assert.match(read("sw.js"),/kontrola-integral-v035/);
 });
 
 test("Las consultas descartan respuestas de sesiones o almacenes anteriores",()=>{
@@ -57,4 +57,14 @@ test("Las consultas descartan respuestas de sesiones o almacenes anteriores",()=
     assert.ok(start>=0,"Falta función "+marker);
     assert.match(app.slice(start,start+1200),/if\(!validRequest\(warehouse,userId\)\)return;/);
   }
+});
+
+test("El historial exporta CSV e imprime solo registros filtrados",()=>{
+  for(const id of ["historyDownload","historyPrint"]){
+    assert.match(html,new RegExp('id="'+id+'"[^>]*disabled'));
+    assert.ok(app.includes('$("'+id+'").addEventListener'),"Sin controlador "+id);
+  }
+  assert.match(app,/csvHistorial\(records,selectedWarehouse\)/);
+  assert.match(app,/htmlResumenHistorial\(records,/);
+  assert.match(read("sw.js"),/\.\/src\/history\.mjs/);
 });
