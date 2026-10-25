@@ -4,7 +4,7 @@
 
 ## Condiciones previas obligatorias
 - Aprobación específica antes de utilizar Supabase empresarial o publicar/migrar en producción.
-- Copias verificadas de la información real antes de cualquier migración.
+- No habrá migración de PDF/registro histórico anterior al nuevo arranque. Se conservan intactas las aplicaciones y datos originales; no se autoriza borrar ninguna base.
 - Dos cuentas de operario distintas y una de administrador, todas autorizadas, con asignación de Coruña y Ferrol configurada en entorno aislado.
 - PDFs ficticios representativos de ambos almacenes, sin incluir información empresarial confidencial en repositorios públicos.
 - Registrar por escenario: fecha, entorno, dispositivo, cuenta, versión, pasos reales, evidencia (sin secretos), resultado y defectos.
@@ -42,25 +42,20 @@
 | A26 | Lote conflictivo | Dos PDF distintos con el mismo número de carga dentro del lote | Se bloquea el segundo para revisión individual, sin sobrescribir el primero |
 | A27 | Estadísticas operarios | Administrador filtra A Coruña y Ferrol por fecha | No se mezclan almacenes ni se cuentan tiempos abiertos como finalizados |
 | A28 | Privacidad de estadísticas | Operario intenta RPC nominal de estadísticas | Acceso denegado por servidor |
-| A29 | Copia legacy | Abrir backup JSON local del original con duplicados y fechas vacías | Informe local, sin subir, sobrescribir ni borrar información |
-| A30 | Origen PDF histórico | Revisar copias JSON y almacenamiento IndexedDB de móviles | Se advierte que el backup NO incluye archivos PDF originales |
-| A31 | Imprimir lote procesado | Seleccionar 10 cargas autorizadas, imprimir y guardar desde iPhone | Un documento paginado por carga, sin modificar originales ni mezclar almacenes |
-| A32 | Cambio de usuario | Operario A cierra sesión y operario B entra en el mismo iPhone | No aparecen datos, PDFs ni información de la sesión A en vistas ocultas o informes |
-| A33 | Error de salida | Simular cierre de sesión fallido en Supabase | La aplicación comunica error y no anuncia falsamente la sesión como cerrada |
-| A34 | Conciliación local | Seleccionar JSON legacy y comparar contra almacén autorizado | Coincidencias, faltantes y diferencias visibles sin subir el backup ni escribir en KONTROLA |
-| A35 | Conciliación por almacén | Cambiar Coruña/Ferrol durante la consulta | Ignorar respuesta anterior; no presentar datos de otra zona |
-| A36 | Integridad documental | Copias con PDF renombrado o metadatos coincidentes sin hash conocido | No declarar PDF idéntico; exigir cotejo de originales y horarios antes de migrar |
-| A37 | Inventario PDF local | En el mismo contenedor del Control de Cargas, buscar claves de documentos IndexedDB | Mostrar versiones y documentos presentes sin crear, modificar ni borrar bases de datos |
-| A38 | Aislamiento de PWA | Buscar desde otro contenedor de Safari/PWA de iOS | Advertir que un resultado vacío no significa que los PDF se hayan perdido |
-| A39 | Recuperar revisión antigua | Guardar un PDF local con SHA correcto; probar otro con huella incorrecta | Solo descarga tras clic; compara SHA y rechaza archivo alterado sin tocar originales |
-| A40 | Seguridad PDF local | Cambiar usuario mientras se está preparando una recuperación | No descargar el archivo bajo la sesión nueva ni dejar datos visibles anteriores |
+| A29 | Imprimir lote procesado | Seleccionar 10 cargas autorizadas, imprimir y guardar desde iPhone | Un documento paginado por carga, sin modificar originales ni mezclar almacenes |
+| A30 | Cambio de usuario | Operario A cierra sesión y operario B entra en el mismo iPhone | No aparecen datos, PDFs ni información de la sesión A en vistas ocultas o informes |
+| A31 | Error de salida | Simular cierre de sesión fallido en Supabase | La aplicación comunica error y no anuncia falsamente la sesión como cerrada |
+| A32 | Archivo periódico | Generar un informe nuevo desde KONTROLA y guardarlo como PDF con Safari/iPhone | PDF válido, distinto del HTML de descarga, listo para mover a OneDrive |
+| A33 | Movimiento a OneDrive | Mover el PDF nuevo a la carpeta empresarial elegida mediante Archivos | Archivo presente y accesible en OneDrive, sin que KONTROLA haya enviado el contenido automáticamente |
+| A34 | Archivo y retención | Comprobar después de mover el documento nuevo a OneDrive | Sin borrados automáticos del original BC, las revisiones en KONTROLA o la copia guardada |
+| A35 | Alcance documental | Entrar en Administración tras iniciar la app con documentos nuevos | Ningún menú de migración de PDFs antiguos; las revisiones nuevas siguen funcionando |
 
 ## Condiciones de salida
 
 **Desarrollo:** funciones implementadas, pruebas unitarias y SQL temporales superadas.
 
-**Validación real:** todas las pruebas A01–A40 ejecutadas y registradas con evidencias, sin errores bloqueantes.
+**Validación real:** todas las pruebas A01–A35 ejecutadas y registradas con evidencias, sin errores bloqueantes.
 
-**Puesta en producción:** únicamente tras inventario de datos locales y nube, copia verificada, migración autorizada con reversión, revisión de permisos, aprobación explícita y despliegue controlado.
+**Puesta en producción:** únicamente tras definir el inicio documental nuevo sin borrado de datos, validar la privacidad y permisos, probar el guardado PDF y movimiento manual a OneDrive, obtener aprobación explícita y realizar un despliegue controlado.
 
 **Manual definitivo en PDF:** solo después de estabilizar la interfaz y capturar pantallas reales desde una ejecución verificada. No sustituir capturas por imágenes generadas.
