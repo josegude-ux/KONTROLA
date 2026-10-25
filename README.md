@@ -2,7 +2,7 @@
 
 PWA móvil de operaciones de almacén para **preparación, consulta, verificación, historial e incidencias de cargas**.
 
-**Versión de esta rama:** 0.3.3. **Estado:** desarrollo probado parcialmente, **no apto aún para producción**.
+**Versión de esta rama:** 0.3.4. **Estado:** desarrollo probado parcialmente, **no apto aún para producción**.
 
 - PR de Fase 1: https://github.com/josegude-ux/KONTROLA/pull/1
 - PR de operación integral: https://github.com/josegude-ux/KONTROLA/pull/2
@@ -72,3 +72,10 @@ Para detalles del estado comprobado, las decisiones aprobadas y los siguientes p
 - El detalle de un registro del historial es de solo lectura. Las cargas sin fecha quedan al final de la lista.
 - Control de Tanques permanece **completamente oculto** hasta que pueda integrarse y probarse.
 - No se han creado tablas nuevas para esta función. Queda pendiente probar el comportamiento en Supabase real y dispositivos.
+
+## Informes de Control de Cargas (v0.3.4)
+
+- **Exportar Excel (CSV)**: utiliza el conjunto de cargas ya autorizado por el RPC de cada almacén y aplica exactamente los filtros vigentes. Genera CSV UTF-8 con BOM, delimitador de punto y coma y neutralización de celdas que podrían ser interpretadas como fórmulas.
+- **Imprimir resumen**: muestra un informe de lectura con totales, filtros y tabla de cargas; puede imprimirse o guardarse a PDF desde el navegador. No imprime ni altera los PDF originales de Business Central.
+- Ambas acciones se deshabilitan hasta que haya terminado la consulta o cuando el filtro no devuelve registros.
+- **No se escriben registros ni se requieren migraciones adicionales**. No se ha aplicado ningún cambio a Supabase de producción y sigue pendiente la prueba con cuentas y dispositivos reales.
