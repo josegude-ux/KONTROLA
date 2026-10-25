@@ -68,3 +68,16 @@ footer{padding:18px;text-align:center;background:#fff;border-top:1px solid #e6e8
 .history-print tr{break-inside:avoid}
 @media(max-width:720px){.history-print dl{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media print{.history-print dl{grid-template-columns:repeat(4,minmax(0,1fr))}.history-table-scroll{overflow:visible}.history-print th,.history-print td{font-size:8px;padding:3px 2px}}
+
+/* Historial documental: mismas tarjetas y tonos que Administración. */
+.revision-list{display:grid;gap:9px;margin:14px 0}
+.revision-entry{display:flex;align-items:center;justify-content:space-between;gap:12px;border:1px solid #dce5ed;border-radius:13px;background:#fff;padding:14px}
+.revision-entry b{display:block;font-size:15px}.revision-entry small{display:block;margin-top:5px;font-size:12px}
+.revision-entry button{flex:none}
+.revision-selectors{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:16px 0}
+.revision-selectors label{margin:0}.revision-selectors select{display:block;width:100%;margin-top:7px}
+.revision-diff{border:1px solid #dae5ee;border-radius:14px;background:#f8fafc;padding:16px;overflow-wrap:anywhere}
+.revision-diff h3{font-size:17px;margin:0 0 9px}.revision-changes{margin-top:13px}
+.revision-changes h4{font-size:14px;margin:0 0 7px}
+.revision-changes ul{padding-left:18px;margin:0}.revision-changes li{font-size:13px;line-height:1.6;padding:3px 0}
+@media(max-width:520px){.revision-entry{align-items:stretch;flex-direction:column}.revision-entry button{width:100%}.revision-selectors{grid-template-columns:1fr}}
