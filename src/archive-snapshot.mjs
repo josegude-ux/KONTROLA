@@ -39,8 +39,8 @@ export function comprobarLoteActualizado(seleccion=[],consultadas=[],almacen="")
     if(!row)throw Error("La carga "+code+" ya no está disponible. Actualiza antes de imprimir.");
     if(row.almacen&&row.almacen!==almacen)
       throw Error("La carga "+code+" pertenece a otro almacén. No se generará el PDF.");
-    if(!Array.isArray(row.productos)||!row.productos.length)
-      throw Error("La carga "+code+" no contiene productos procesados. Revisa la publicación.");
+    if(!Array.isArray(row.productos)||!row.productos.some(product=>Number(product?.qty)>0))
+      throw Error("La carga "+code+" no contiene cantidades positivas que imprimir. Revisa la publicación.");
     if(JSON.stringify(snapshot(selected))!==JSON.stringify(snapshot(row)))
       throw Error("La carga "+code+" ha cambiado desde la última consulta. Actualiza antes de imprimir.");
     verified.push(row);
