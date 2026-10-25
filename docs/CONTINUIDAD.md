@@ -510,3 +510,6 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 - `src/admin.mjs` limpia código, mensajes y tabla de archivadas en `clearSensitive()`.
 - `archiveGeneration` invalida los resultados de RPC iniciadas antes del cierre; el callback tardío no puede reinsertar datos en la interfaz.
 - Sin cambios de Supabase o datos de cargas. Pendiente CI y revisión manual.
+
+### Pruebas de purga del archivo administrativo
+- `tests/archive-session.test.mjs`: verifica mediante contrato estático que `clearSensitive()` purga el archivo y que las respuestas tardías de RPC se invalidan. CI las ejecuta con `node --test tests/*.test.mjs`.
