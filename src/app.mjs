@@ -2,12 +2,13 @@ import {SUPABASE_URL,SUPABASE_KEY,PDF_BUCKET,APP_VERSION} from "./config.mjs";
 import {agruparPasillos,ordenarCargas} from "./logic.mjs";
 import {buildVerificationLines,parseCheckedQuantity,summarizeVerification} from "./verification.mjs";
 import {buildPreparationReport,filterProducts} from "./report.mjs";
+import {filtrarHistorial,resumenHistorial,formatoFechaCarga} from "./history.mjs";
 import {createAdminController} from "./admin.mjs";
 const $=id=>document.getElementById(id);
 let client=null,user=null,profile=null,loads=[],current=null,currentPreparation=null,groups=[],selectedAisle="TODOS",busy=false,opening=false;
 let reviewLoads=[],currentVerification=null,verificationLines=[];
 let warehouses=[],selectedWarehouse=localStorage.getItem("kontrola-warehouse")||"COR_01_COR",adminController=null;
-let loadsParent="homeView",reviewLoadsParent="homeView";
+let loadsParent="homeView",reviewLoadsParent="homeView",loadsMode="preparacion",currentReadOnly=false,detailBackView="loadsView",historyRows=[];
 $("appVersion").textContent=APP_VERSION;
 $("loginVersion").textContent=APP_VERSION;
 const visible=(element,show)=>{element.hidden=!show;};
@@ -27,7 +28,7 @@ function switchView(id,{force=false}={}){
   return true;
 }
 function loggedOut(message=""){
-  user=null;profile=null;loads=[];current=null;currentPreparation=null;reviewLoads=[];currentVerification=null;verificationLines=[];
+  user=null;profile=null;loads=[];historyRows=[];current=null;currentPreparation=null;currentReadOnly=false;reviewLoads=[];currentVerification=null;verificationLines=[];
   visible($("shell"),false);visible($("loginView"),true);
   status("authMessage",message,message?"error":"");
 }
@@ -52,7 +53,7 @@ async function loadWarehouses(){
   warehouses=data||[];
   if(!warehouses.some(item=>item.codigo===selectedWarehouse))selectedWarehouse=warehouses[0]?.codigo||"COR_01_COR";
   localStorage.setItem("kontrola-warehouse",selectedWarehouse);
-  for(const id of ["homeWarehouse","adminWarehouse"]){
+  for(const id of ["homeWarehouse","adminWarehouse","historyWarehouse"]){
     const select=$(id);select.replaceChildren();
     for(const warehouse of warehouses){const option=document.createElement("option");option.value=warehouse.codigo;option.textContent=warehouse.nombre;select.appendChild(option);}
     select.value=selectedWarehouse;
@@ -72,10 +73,11 @@ function renderWarehouseTabs(id){
 }
 async function selectWarehouse(code,context="home"){
   selectedWarehouse=code;localStorage.setItem("kontrola-warehouse",code);
-  $("homeWarehouse").value=code;$("adminWarehouse").value=code;
+  $("homeWarehouse").value=code;$("adminWarehouse").value=code;$("historyWarehouse").value=code;
   renderWarehouseTabs("prepWarehouseTabs");renderWarehouseTabs("reviewWarehouseTabs");
   if(context==="review")await refreshReviewLoads();
   else if(context==="preparation")await refreshLoads();
+  else if(context==="history")await refreshHistory();
   await refreshOperatorDashboard().catch(()=>{});
 }
 async function refreshOperatorDashboard(){
@@ -158,9 +160,13 @@ function renderLoadList(){
 }
 $("loadSearch").addEventListener("input",renderLoadList);
 $("reloadLoads").addEventListener("click",()=>refreshLoads().catch(()=>{}));
-function openLoadsMenu(parent="homeView"){
+function openLoadsMenu(parent="homeView",mode="preparacion"){
   if(!switchView("loadsView"))return;
-  loadsParent=parent;
+  loadsParent=parent;loadsMode=mode;
+  $("loadsHeading").textContent=mode==="consulta"?"Consulta de cargas":"Preparación de cargas";
+  $("loadsDescription").textContent=mode==="consulta"
+    ?"Modo de solo lectura: consulta la mercancía y los PDF sin modificar los tiempos de preparación."
+    :"Consultar una carga no inicia el reloj. Inícialo únicamente al comenzar la preparación física.";
   refreshLoads().catch(()=>{});
 }
 function openReviewMenu(parent="homeView"){
@@ -175,9 +181,11 @@ async function openAdminMenu(){
 $("openPreparation").addEventListener("click",()=>openLoadsMenu());
 $("openReview").addEventListener("click",()=>openReviewMenu());
 $("openCargas").addEventListener("click",()=>switchView("cargasMenuView"));
-$("cargasConsultar").addEventListener("click",()=>openLoadsMenu("cargasMenuView"));
+$("cargasConsultar").addEventListener("click",()=>openLoadsMenu("cargasMenuView","consulta"));
 $("cargasPreparar").addEventListener("click",()=>openLoadsMenu("cargasMenuView"));
 $("cargasVerificar").addEventListener("click",()=>openReviewMenu("cargasMenuView"));
+$("cargasHistorial").addEventListener("click",()=>{if(switchView("cargasHistoryView"))refreshHistory().catch(()=>{});});
+$("backFromHistory").addEventListener("click",()=>switchView("cargasMenuView"));
 $("cargasAdministrar").addEventListener("click",openAdminMenu);
 $("openAdmin").addEventListener("click",openAdminMenu);
 $("backFromLoads").addEventListener("click",()=>switchView(loadsParent));
@@ -185,11 +193,12 @@ $("backFromReviewLoads").addEventListener("click",()=>switchView(reviewLoadsPare
 $("openSettings").addEventListener("click",()=>switchView("settingsView"));
 $("goHome").addEventListener("click",()=>switchView("homeView"));
 document.querySelectorAll("[data-back='home']").forEach(b=>b.addEventListener("click",()=>switchView("homeView")));
-$("backToLoads").addEventListener("click",()=>switchView("loadsView"));
+$("backToLoads").addEventListener("click",()=>switchView(detailBackView));
 $("backToReviewLoads").addEventListener("click",()=>switchView("reviewLoadsView"));
-async function openLoad(code){
+async function openLoad(code,{source=loads,returnTo="loadsView",readOnly=loadsMode==="consulta"}={}){
   if(opening||!user)return;
-  const load=loads.find(x=>x.codigo===code);if(!load)return;
+  const load=source.find(x=>x.codigo===code);if(!load)return;
+  currentReadOnly=readOnly;detailBackView=returnTo;
   current=load;selectedAisle="TODOS";$("productSearch").value="";
   currentPreparation={
     active:load.preparador_id===user.id&&!load.preparacion_fin,
@@ -199,11 +208,12 @@ async function openLoad(code){
   $("detailSubtitle").textContent=[load.repartidor,load.ruta,load.almacen].filter(Boolean).join(" · ")||"Preparación por pasillos";
   const notice=$("prepStatus");
   notice.className="info-bar"+(currentPreparation.finalized?" complete":"");
-  notice.textContent=currentPreparation.active?"Preparación en curso. Los cambios confirmados están guardados en el servidor."
+  notice.textContent=currentReadOnly?"Solo lectura. Consultar la carga no inicia, finaliza ni cambia su preparación."
+    :currentPreparation.active?"Preparación en curso. Los cambios confirmados están guardados en el servidor."
     :currentPreparation.finalized?"Preparación finalizada. La consulta no modifica los horarios."
     :"Modo consulta: el reloj no está iniciado.";
-  visible($("startPreparation"),!currentPreparation.active&&!currentPreparation.finalized&&load.estado!=="cerrada");
-  visible($("finishPreparation"),currentPreparation.active);
+  visible($("startPreparation"),!currentReadOnly&&!currentPreparation.active&&!currentPreparation.finalized&&load.estado!=="cerrada");
+  visible($("finishPreparation"),!currentReadOnly&&currentPreparation.active);
   const facts=$("detailFacts");facts.replaceChildren();
   const entries=[["Matrícula",load.matricula||"—"],["Peso",fmt(load.peso_kg)+" kg"],["Referencias",fmt(load.referencias)],["Estado",load.estado||"—"]];
   for(const [label,value] of entries){
@@ -214,7 +224,7 @@ async function openLoad(code){
   renderAisles();switchView("detailView",{force:true});
 }
 $("startPreparation").addEventListener("click",async()=>{
-  if(busy||!current||currentPreparation?.active)return;
+  if(busy||!current||currentReadOnly||currentPreparation?.active)return;
   busy=true;$("startPreparation").disabled=true;global("Iniciando preparación…");
   try{
     const {data,error}=await client.rpc("kontrola_iniciar_preparacion",{p_codigo:current.codigo,p_request_id:crypto.randomUUID()});
@@ -227,7 +237,7 @@ $("startPreparation").addEventListener("click",async()=>{
   finally{busy=false;$("startPreparation").disabled=false;}
 });
 $("finishPreparation").addEventListener("click",async()=>{
-  if(busy||!current||!currentPreparation?.active)return;
+  if(busy||!current||currentReadOnly||!currentPreparation?.active)return;
   busy=true;$("finishPreparation").disabled=true;global("Finalizando la preparación de "+current.codigo+"…");
   try{
     const {error}=await client.rpc("kontrola_finalizar_preparacion",{p_codigo:current.codigo});
