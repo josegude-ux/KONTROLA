@@ -445,3 +445,7 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 - Pestaña Archivo de cargas: código, archivar y restaurar, confirmación, errores y bloqueo durante la solicitud.
 - Llama a RPC `kontrola_cambiar_archivo` solo cuando el administrador actúa; si falta la RPC, muestra error sin afirmar éxito.
 - Backend de PR #11 sigue siendo propuesta sin aplicar. Pendiente consulta de archivadas, pruebas y despliegue.
+
+### 2026-10-25 — UI de consulta de archivadas
+- Añadido botón `Consultar archivadas` y tabla con código, fecha, almacén y momento de archivo. Consume RPC administrativa `kontrola_listar_archivadas` y muestra error si no existe o no autoriza.
+- Pendiente CI, revisión visual y backend Supabase aún no aplicado.
