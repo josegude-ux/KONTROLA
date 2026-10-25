@@ -28,7 +28,7 @@
       <button class="primary full" type="submit" id="loginButton">Entrar</button>
     </form>
     <p id="authMessage" class="status" role="status" aria-live="polite"></p>
-    <p class="hint">Las cuentas son habilitadas por administración. No existen usuarios de demostración.</p>
+    <p class="hint">Las cuentas son habilitadas por administración. No existen usuarios de demostración.<br>Versión <span id="loginVersion">0.3.1</span></p>
   </div>
 </section>
 <div id="shell" hidden>
@@ -68,7 +68,7 @@
       </section>
     </section>
     <section id="reviewLoadsView" class="view" hidden>
-      <div class="page-heading"><button type="button" data-back="home" class="back-button">← Volver</button><h1>Verificación física</h1><p class="muted">Solo aparecen preparaciones finalizadas por otra persona. Selecciona una carga para comprobarla línea por línea.</p></div>
+      <div class="page-heading"><button type="button" data-back="home" class="back-button">← Volver</button><h1>Verificación física</h1><p class="muted">Aparecen cargas preparadas por otra persona, incluso si su reloj sigue abierto. Selecciona una para comprobarla línea por línea.</p></div>
       <div id="reviewWarehouseTabs" class="warehouse-tabs" role="tablist" aria-label="Almacén"></div>
       <div class="toolbar"><label class="search-wrap">Buscar carga<input id="reviewSearch" type="search" placeholder="Nº de carga, ruta, matrícula o repartidor"></label><button type="button" id="reloadReviewLoads" class="secondary">Actualizar</button></div>
       <div id="reviewLoadsList" class="loads-list" aria-live="polite"></div>

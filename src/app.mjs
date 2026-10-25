@@ -8,6 +8,7 @@ let client=null,user=null,profile=null,loads=[],current=null,currentPreparation=
 let reviewLoads=[],currentVerification=null,verificationLines=[];
 let warehouses=[],selectedWarehouse=localStorage.getItem("kontrola-warehouse")||"COR_01_COR",adminController=null;
 $("appVersion").textContent=APP_VERSION;
+$("loginVersion").textContent=APP_VERSION;
 const visible=(element,show)=>{element.hidden=!show;};
 const status=(id,message="",level="")=>{const el=$(id);el.textContent=message;el.className="status "+level;};
 const global=(message="",level="")=>status("globalMessage",message,level);
