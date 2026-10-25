@@ -45,7 +45,7 @@ test("La versión y el caché están preparados para instalar nuevas pantallas",
   assert.equal(version,"0.3.3");
   assert.equal(JSON.parse(read("package.json")).version,version);
   assert.equal(JSON.parse(read("package-lock.json")).version,version);
-  assert.match(read("src/config.mjs"),/APP_VERSION="0\.3\.2"/);
-  assert.match(html,/id="appVersion">0\.3\.2</);
+  assert.match(read("src/config.mjs"),/APP_VERSION="0\.3\.3"/);
+  assert.match(html,/id="appVersion">0\.3\.3</);
   assert.match(read("sw.js"),/kontrola-integral-v034/);
 });
