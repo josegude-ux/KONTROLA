@@ -5,7 +5,7 @@
 **Rama principal del desarrollo en curso:** cursor/verificacion-fisica-cargas-8ba0
 **PR de trabajo:** https://github.com/josegude-ux/KONTROLA/pull/2
 **PR de Fase 1:** https://github.com/josegude-ux/KONTROLA/pull/1
-**Versión del código de esta rama:** 0.3.8
+**Versión del código de esta rama:** 0.3.11
 
 > La aplicación funcional vive en ramas de desarrollo: main no debe tomarse como punto de partida para rehacerla. No fusionar a main ni aplicar migraciones a producción sin autorización.
 
@@ -122,3 +122,13 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 - Se elaboraron [24+ casos de aceptación](PRUEBAS_ACEPTACION.md), [matriz de cierre](MATRIZ_CIERRE_DESARROLLO.md) y [borrador de manual para operarios](MANUAL_USUARIO_BORRADOR.md).
 - **Límites no resueltos:** estadísticas por operario con perfiles, impresión por lotes de PDF originales, planificación/ejecución autorizada de migración de historiales locales y datos en OneDrive, pruebas auténticas de Supabase Auth/Storage, validación AirPrint e iPhone y manual PDF con capturas reales. No afirmar fin integral hasta cerrarlos.
 - Las cuatro migraciones siguen exclusivamente en control de versiones; **no se aplicaron a Supabase de producción**. Se mantienen sin cambios INVENTA, Control de Cargas original y Tanques, que permanece oculto.
+
+
+## Fase integral: v0.3.9–0.3.11 (25/10/2026)
+
+- **v0.3.9:** estadísticas por trabajador mediante la nueva RPC `kontrola_estadisticas_operarios(text,date)`, `src/admin-stats.mjs` y panel Administración. Solo el rol administrador consulta nombres y tiempos; el servidor valida roles, fecha local Europe/Madrid y almacén. Tareas abiertas se muestran sin agregar segundos no confirmados. Probadas cinco migraciones SQL y permiso denegado a operarios.
+- **v0.3.10:** `src/legacy-audit.mjs` y `src/admin-legacy.mjs` permiten analizar un backup JSON original de Control de Cargas **exclusivamente en navegador** y sin mutar bases. Detectan duplicados de código/hash, ausencias de fecha, tiempos incompletos y comprobaciones pendientes. Los PDF originales NO van incluidos en el backup y permanecen localmente en IndexedDB; no se autoriza ninguna migración todavía.
+- **v0.3.11:** `src/admin-print-batch.mjs` imprime en un solo documento hasta diez **hojas de preparación procesadas** autorizadas por almacén, sin alterar PDF originales ni iniciar relojes. La **impresión conjunta de PDF originales** permanece pendiente: no confundir ambos resultados.
+- **Pruebas verificadas:** v0.3.9 run `40185693214` con 84 tests JS y cinco migraciones aprobadas; v0.3.10 run `40186172545` con 89 tests JS y cinco migraciones aprobadas. Comprobar la CI final de v0.3.11 antes de declararla validada.
+- **Pendientes de finalización:** impresiones vectoriales de PDF originales por lote, inventario y comparación con los historiales del teléfono/OneDrive, verificación Supabase Auth/Storage en entorno autorizado, AirPrint real, manual PDF con capturas reales y aceptación funcional.
+- **Inviolables:** no tocar Supabase de producción, no fusionar `main`, no generar servicios de pago, no activar Tanques, no editar INVENTA ni Control de Cargas original. Las nuevas migraciones se quedan en la PR hasta aprobación expresa.
