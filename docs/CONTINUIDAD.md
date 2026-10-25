@@ -455,3 +455,6 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 
 ### Pruebas estáticas de contrato del archivo
 - `tests/archive-sql-contract.test.mjs` verifica restricciones declaradas del SQL de propuesta. No ejecuta SQL ni sustituye integración con PostgreSQL/Supabase.
+
+### CI de PR #11
+- El workflow `.github/workflows/ci.yml` ejecuta tests en pull requests dirigidos a la rama operativa, no necesariamente en cada push de rama feature. Para validar el commit, comprobar ejecución de PR (merge ref) o solicitar revisión sin fusionar.
