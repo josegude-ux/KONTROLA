@@ -20,6 +20,10 @@
 .archive-cover td,.archive-cover th{text-align:left;border:1px solid #c7d0d9;padding:9px}
 .archive-cover th{background:#eef2f5}
 .archive-disclaimer{font-size:11px;color:#586776;margin-top:26px!important}
+/* Mantener cabeceras y líneas íntegras al imprimir hojas extensas. */
+.preparation-report thead,.archive-cover thead{display:table-header-group}
+.preparation-report tr,.archive-cover tr{break-inside:avoid;page-break-inside:avoid}
+.preparation-report h2{break-after:avoid;page-break-after:avoid}
 @page{size:A4 portrait;margin:10mm}@media print{.archive-cover{break-after:page;page-break-after:always;min-height:0}.report-batch-sheet{break-after:page;page-break-after:always}.report-batch-sheet:last-child{break-after:auto;page-break-after:auto}body>*:not(#reportView){display:none!important}#reportView{display:block!important;position:static!important}.report-controls{display:none!important}.preparation-report{font-size:10px}.preparation-report tr{break-inside:avoid}}
 </style>
 </head>
