@@ -1,5 +1,6 @@
 import {fechaAlmacen} from "./business-date.mjs";
 import {validarLotePdf,resumenLotePdf} from "./import-batch.mjs";
+import {configurarEstadisticasOperarios} from "./admin-stats.mjs";
 import {analyzeDocument,applyLineCorrection,publicationReadiness,warehouseZone} from "./document-review.mjs";
 import {fechaISO} from "./logic.mjs";
 import {parsePdfFile} from "./pdf.mjs";
@@ -34,6 +35,7 @@ export function buildReportDownloadHtml(title,styles,content){
 
 export function createAdminController({client,getUser,bucket,global,errorText,onPublished}){
   configureRevisionHistory({client,getUser,bucket,errorText});
+  const operatorStats=configurarEstadisticasOperarios({client,getUser,errorText,getWarehouse:()=>document.getElementById("adminWarehouse").value});
   let busy=false,draft=null;
   const setStatus=(message="",level="")=>{
     const target=$("importStatus");target.textContent=message;target.className="status "+level;
@@ -329,13 +331,13 @@ export function createAdminController({client,getUser,bucket,global,errorText,on
     }
   }
   async function open(){
-    await Promise.all([refreshAttention(),refreshSummary(),refreshIncidents()]);
+    await Promise.all([refreshAttention(),refreshSummary(),refreshIncidents(),operatorStats.refresh()]);
   }
   $("processPdf").addEventListener("click",processPdf);
   $("saveDocumentReview").addEventListener("click",saveReview);
   $("generateSheet").addEventListener("click",showReport);
   $("publishReviewedLoad").addEventListener("click",publish);
-  $("adminWarehouse").addEventListener("change",()=>Promise.all([refreshAttention(),refreshSummary()]));
+  $("adminWarehouse").addEventListener("change",()=>Promise.all([refreshAttention(),refreshSummary(),operatorStats.refresh()]));
   $("reloadAttention").addEventListener("click",refreshAttention);
   $("reloadIncidents").addEventListener("click",refreshIncidents);
   $("printReport").addEventListener("click",()=>window.print());
