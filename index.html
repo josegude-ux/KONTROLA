@@ -138,6 +138,10 @@
         <p class="muted">Selecciona una copia JSON exportada desde la aplicación original. Se analizará solo en este móvil, sin subirla ni modificar cargas. Los PDF originales deben revisarse por separado.</p>
         <label>Archivo de copia de seguridad JSON<input id="legacyBackupFile" type="file" accept=".json,application/json"></label>
         <button id="legacyAuditStart" type="button" class="secondary">Analizar copia (solo lectura)</button>
+        <button id="legacyCompareStart" type="button" class="secondary">Comparar con KONTROLA (solo lectura)</button>
+        <p class="hint">La comparación solo consulta el almacén seleccionado. No comprueba si los PDF originales son iguales ni migra registros.</p>
+        <div id="legacyCompareStatus" class="status" role="status" aria-live="polite"></div>
+        <div id="legacyCompareResults" class="legacy-audit-results"></div>
         <div id="legacyAuditStatus" class="status" role="status" aria-live="polite"></div>
         <div id="legacyAuditResults" class="legacy-audit-results"></div>
       </section>
