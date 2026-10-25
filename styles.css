@@ -199,3 +199,5 @@ footer{padding:18px;text-align:center;background:#fff;border-top:1px solid #e6e8
 .prep-clock{margin:-3px 0 15px;padding:12px 15px;border-radius:12px;border:1px solid #a6d8ba;background:#eaf8ef;color:#155c36;font-variant-numeric:tabular-nums;font-weight:800;font-size:18px}
 @media(max-width:600px){#shell .topbar{gap:7px;padding-inline:8px}#shell .topbar .brand-button img{width:94px}#shell .topbar .top-actions{gap:6px}#shell .topbar .top-actions .icon-button{padding:8px 9px;min-height:42px;font-size:20px}#shell .topbar .top-actions .icon-button span{display:none}#shell .topbar .connection-status{font-size:10px}#shell .topbar .topbar-back{padding:9px 9px;font-size:13px}}
 @media print{#shell .topbar .topbar-back{display:none!important}.report-view .report-controls{display:none!important}}
+
+.active-warehouse-hint{margin:8px 0 14px;padding:10px 14px;background:#f0f7fb;color:#355e79;border-radius:11px;font-size:13px;font-weight:700}

@@ -1,4 +1,4 @@
 {
-  "version": "0.3.28",
-  "notes": "Preparación automática y cronómetro con hora de servidor, diagnóstico de almacén y botón Volver fijo arriba a la izquierda."
+  "version": "0.3.29",
+  "notes": "Aclaración de almacén y mensajes sin cargas, con Preparación automática"
 }
