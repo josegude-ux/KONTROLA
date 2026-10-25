@@ -121,3 +121,11 @@ footer{padding:18px;text-align:center;background:#fff;border-top:1px solid #e6e8
 
 /* Ajustes de revisión en pantallas estrechas */
 #adminView .review-heading{display:flex;flex-wrap:wrap;align-items:center;gap:10px;min-width:0}#adminView .review-heading h3{min-width:0;overflow-wrap:anywhere;flex:1 1 160px}#adminView .review-heading .warehouse-select{min-width:0;max-width:100%;flex:1 1 160px}#adminView .state-badge{max-width:100%;overflow-wrap:anywhere;white-space:normal}#adminView .document-review,#adminView .panel{min-width:0;max-width:100%}@media(max-width:480px){#adminView .review-heading{align-items:stretch}#adminView .review-heading h3{flex-basis:100%;margin-bottom:0}#adminView .review-heading .warehouse-select{flex-basis:100%}}
+
+/* Informe de incidencias para corrección manual en Business Central */
+.report-paper>table{width:100%;border-collapse:collapse;table-layout:fixed;margin-top:14px;font-size:12px}
+.report-paper>table th,.report-paper>table td{border:1px solid #cbd5e1;padding:7px 5px;text-align:left;vertical-align:top;overflow-wrap:anywhere}
+.report-paper>table th{background:#edf2f7;color:#17324f}
+.report-paper>table th:last-child{width:24%}
+@media(max-width:720px){.report-paper>table{font-size:10px}.report-paper>table th,.report-paper>table td{padding:5px 3px}}
+@media print{.report-paper>table{font-size:9pt;table-layout:auto}.report-paper>table thead{display:table-header-group}.report-paper>table tr{break-inside:avoid;page-break-inside:avoid}.report-paper>table th,.report-paper>table td{padding:5px 4px}.report-paper>table th{background:#f1f1f1!important;color:#000!important}}

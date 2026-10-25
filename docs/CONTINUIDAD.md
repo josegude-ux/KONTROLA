@@ -325,3 +325,8 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 - Avisos de ubicaciones agrupados en una única confirmación; se conservan todos los hallazgos originales para trazabilidad y la validación de publicación.
 - Nuevo botón «Informe ubicaciones BC»: tabla imprimible y descargable en HTML con línea, SKU, descripción, cantidad, unidad y espacio para anotaciones. Corrección exclusivamente manual en Business Central.
 - No se modifica BC, ni se publican cargas, ni se alteran datos ya guardados. Pruebas/despliegue pendientes.
+
+## 2026-10-25 — Informe BC imprimible
+- Tabla de incidencias con bordes, columnas legibles, encabezados repetidos y filas no partidas al imprimir varias páginas.
+- Se oculta el aviso de archivado OneDrive de hojas operativas cuando se muestra el informe de correcciones de BC; se restaura para hojas de preparación.
+- Sin cambios en datos ni publicación. Pendiente validación CI.

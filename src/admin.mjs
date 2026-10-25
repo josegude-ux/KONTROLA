@@ -287,12 +287,14 @@ export function createAdminController({client,getUser,bucket,global,errorText,on
     table.appendChild(body);paper.appendChild(table);
     if(!issues.length){const p=document.createElement("p");p.textContent="No hay ubicaciones pendientes en esta revisión.";paper.appendChild(p);}
     $("reportTitle").textContent="Ubicaciones pendientes · "+draft.parsed.id;
+    $("onedriveArchiveHelp").hidden=true;
     $("reportView").hidden=false;document.body.classList.add("report-open");window.scrollTo(0,0);
   }
   function showReport(){
     if(!draft)return;
     $("reportPaper").innerHTML=buildPreparationReport(asPayload(draft.parsed));
     $("reportTitle").textContent="Hoja procesada · "+draft.parsed.id;
+    $("onedriveArchiveHelp").hidden=false;
     $("reportView").hidden=false;document.body.classList.add("report-open");window.scrollTo(0,0);
   }
   async function publish(){
@@ -419,6 +421,7 @@ export function createAdminController({client,getUser,bucket,global,errorText,on
     }
     $("pdfInput").value="";
     $("reportView").hidden=true;document.body.classList.remove("report-open");
+    $("onedriveArchiveHelp").hidden=false;
     setStatus("");updateActions();
   }
   $("processPdf").addEventListener("click",processPdf);
