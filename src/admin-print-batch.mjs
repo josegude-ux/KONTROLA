@@ -64,5 +64,8 @@ export function configurarLoteImpresion({client,getUser,getWarehouse,errorText})
   }
   $("batchPrintRefresh").addEventListener("click",refresh);
   button.addEventListener("click",preview);
-  return {refresh};
+  return {refresh,clear:()=>{
+    seq++;reset();status.textContent="";currentWarehouse="";currentSession=null;
+    $("batchPrintRefresh").disabled=false;
+  }};
 }
