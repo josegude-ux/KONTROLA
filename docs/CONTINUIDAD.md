@@ -264,3 +264,6 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 ## 2026-10-25 — Actualización de pruebas de impresión
 - Ajustados tests obsoletos de filtros Desde/Hasta a impresión exclusivamente del día; comprobación del control Reimprimir y agrupación máxima 20.
 - Antes: CI fallaba por expectativas antiguas y escapes erróneos en expresiones regulares; después: pruebas actualizadas. Pendiente resultado CI.
+
+## 2026-10-25 — Prueba de fecha de impresión robusta
+- Sustituidas dos expresiones regulares mal escapadas por verificaciones literales `includes` en test de impresión diaria; sin cambios funcionales.
