@@ -137,6 +137,23 @@
         <p id="reviewReadiness" class="status"></p>
         <div class="actions"><button id="saveDocumentReview" type="button" class="secondary" disabled>Guardar revisión</button><button id="generateSheet" type="button" class="secondary" disabled>Generar hoja</button><button id="publishReviewedLoad" type="button" class="primary" disabled>Publicar carga</button></div>
       </section>
+      <section class="panel" id="adminRevisionsPanel">
+        <h2>Historial de revisiones de PDF</h2>
+        <p class="muted">Consulta las versiones publicadas de una carga y compara cambios. Solo lectura; los originales se abren mediante enlaces privados temporales.</p>
+        <div class="toolbar">
+          <label class="search-wrap">Número de carga<input id="revisionCode" type="search" placeholder="LP26-12345" autocomplete="off" maxlength="10"></label>
+          <button id="revisionSearch" type="button" class="secondary">Consultar revisiones</button>
+        </div>
+        <div id="revisionStatus" class="status" role="status" aria-live="polite"></div>
+        <div id="revisionList" class="revision-list" aria-live="polite"></div>
+        <div id="revisionControls" hidden>
+          <div class="revision-selectors">
+            <label>Comparar desde<select id="revisionBefore" class="warehouse-select"></select></label>
+            <label>Hasta<select id="revisionAfter" class="warehouse-select"></select></label>
+          </div>
+          <div id="revisionDiff" class="revision-diff" aria-live="polite"></div>
+        </div>
+      </section>
       <section class="panel">
         <div class="line"><div><h2>Incidencias pendientes</h2><p class="muted">Agrupadas por carga. Confirma aquí únicamente una regularización ya realizada manualmente en Business Central.</p></div><button id="reloadIncidents" type="button" class="secondary">Actualizar</button></div>
         <div id="incidentList" class="incident-list" aria-live="polite"></div>
