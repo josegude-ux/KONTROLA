@@ -458,3 +458,6 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 
 ### CI de PR #11
 - El workflow `.github/workflows/ci.yml` ejecuta tests en pull requests dirigidos a la rama operativa, no necesariamente en cada push de rama feature. Para validar el commit, comprobar ejecución de PR (merge ref) o solicitar revisión sin fusionar.
+
+### 2026-10-25 — Requisito de verificación real
+- La propuesta SQL bloquea archivo cuando una verificación se marcó finalizada sin ninguna línea verificada. No se ha ejecutado en Supabase.
