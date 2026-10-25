@@ -347,3 +347,8 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 - No se importan datos automáticamente ni se alteran registros existentes. Pendiente CI.
 
 - Ajuste adicional: prioridad de año de cuatro cifras en fecha BC para evitar interpretar 2026 como 20.
+
+## 2026-10-25 — Resultado de importación compacto
+- `src/admin.mjs` e `index.html`: tras procesar varios PDF, el resumen queda visible y los mensajes completos de error se muestran bajo demanda en un desplegable, con nombre de archivo y motivo.
+- Evita listas rojas enormes en Safari iPhone, sin ocultar información ni modificar validaciones o datos.
+- Pendiente CI y despliegue.

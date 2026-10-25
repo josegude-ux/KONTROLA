@@ -142,7 +142,7 @@
         <h2>Importar → procesar → revisar → publicar</h2><p class="muted">Carga manual desde Business Central. KONTROLA conserva el original y usa el motor v0.5.26 de Control de Cargas.</p>
         <label>PDF de cargas de Business Central (hasta 20 archivos)<input type="file" accept=".pdf,application/pdf" id="pdfInput" multiple></label><p class="hint">Puedes seleccionar varios documentos. Se analizan uno a uno, quedan para revisión y nunca se publican automáticamente.</p>
         <button id="processPdf" type="button" class="primary">Importar y procesar</button>
-        <div class="status" id="importStatus" role="status" aria-live="polite"></div>
+        <div class="status" id="importStatus" role="status" aria-live="polite"></div><details id="importResultDetails" hidden><summary>Ver archivos con error</summary><div id="importResultList"></div></details>
         <div id="documentReview" class="document-review">Procesa un PDF para iniciar la revisión.</div>
         <p id="reviewReadiness" class="status"></p>
         <div class="actions"><button id="saveDocumentReview" type="button" class="secondary" disabled>Guardar revisión</button><button id="generateSheet" type="button" class="secondary" disabled>Generar hoja</button><button id="locationReport" type="button" class="secondary" disabled>Informe ubicaciones BC</button><button id="publishReviewedLoad" type="button" class="primary" disabled>Publicar carga</button></div>

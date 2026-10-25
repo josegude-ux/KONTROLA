@@ -116,6 +116,8 @@ export function createAdminController({client,getUser,bucket,global,errorText,on
       "Los cambios que no hayas guardado se perderán. ¿Continuar con la importación?"
     ))return setStatus("Importación cancelada. Conservas la revisión que estabas consultando.");
     setBusy(true);
+    $("importResultDetails").hidden=true;
+    $("importResultList").replaceChildren();
     const outcomes=[],seenCodes=new Set();
     try{
       for(let i=0;i<files.length;i++){
@@ -133,9 +135,20 @@ export function createAdminController({client,getUser,bucket,global,errorText,on
         " recuperado(s), "+total.repetidos+" repetido(s), "+total.cancelados+
         " cancelado(s), "+total.errores+" error(es)."+
         " Los documentos admitidos quedan pendientes de revisión; ninguno se publica automáticamente.";
-      const issues=outcomes.filter(item=>item.estado==="error")
-        .map(item=>item.archivo+": "+item.mensaje).join("\n");
-      setStatus(summary+(issues?"\n"+issues:""),total.hayErrores?"error":"success");
+      // Resultado compacto: los errores detallados quedan disponibles bajo demanda.
+      setStatus(summary,total.hayErrores?"error":"success");
+      const details=$("importResultDetails"),list=$("importResultList");
+      list.replaceChildren();
+      const errors=outcomes.filter(item=>item.estado==="error");
+      details.hidden=errors.length===0;
+      if(errors.length){
+        details.querySelector("summary").textContent="Ver "+errors.length+" archivo(s) con error";
+        for(const item of errors){
+          const row=document.createElement("p");
+          const name=document.createElement("strong");name.textContent=item.archivo+": ";
+          row.append(name,document.createTextNode(item.mensaje));list.appendChild(row);
+        }
+      }
     }finally{
       setBusy(false);
       $("pdfInput").value="";
@@ -420,6 +433,7 @@ export function createAdminController({client,getUser,bucket,global,errorText,on
       const element=$(id);if(element)element.replaceChildren();
     }
     $("pdfInput").value="";
+    $("importResultDetails").hidden=true;$("importResultList").replaceChildren();
     $("reportView").hidden=true;document.body.classList.remove("report-open");
     $("onedriveArchiveHelp").hidden=false;
     setStatus("");updateActions();
