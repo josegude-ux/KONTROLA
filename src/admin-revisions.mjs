@@ -135,4 +135,9 @@ export function configureRevisionHistory({client,bucket,getUser,errorText}){
   });
   $("revisionBefore").addEventListener("change",renderComparison);
   $("revisionAfter").addEventListener("change",renderComparison);
+  return {clear:()=>{
+    requestId++;requestedUser=null;
+    $("revisionCode").value="";$("revisionSearch").disabled=false;
+    clear();status();
+  }};
 }
