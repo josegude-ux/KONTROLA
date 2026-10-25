@@ -425,3 +425,8 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 ### 2026-10-25 — Inventario de dependencias para retención
 - Se amplía `docs/POLITICA_RETENCION_CARGAS.md` con relaciones verificadas en migraciones y tests: carga cerrada con incidencias pendientes, verificaciones, eventos, preparación, historial documental, impresión y Storage.
 - No se ha acreditado una marca de cierre definitivo: bloquear elegibilidad hasta auditar el esquema real y la RPC de finalización. Sin cambios SQL, datos ni borrados.
+
+### 2026-10-25 — Evaluador conservador aislado (propuesta sin activar)
+- `src/archive-eligibility.mjs`: función pura sin acceso a Supabase que solo evalúa criterios acreditados y 90 días exactos en UTC; ante datos ausentes o ambiguos deniega.
+- `tests/archive-eligibility.test.mjs`: casos de borde, incidencias, fecha ausente/futura/sin zona y dependencias.
+- NO conectado a interfaz, backend ni borrado; los campos de entrada son contrato propuesto, NO columnas verificadas del esquema. No activa archivo ni elimina datos.
