@@ -33,11 +33,18 @@ export function filtrarCargasArchivo(cargas=[],desde="",hasta=""){
     return (!periodo.desde||date>=periodo.desde)&&(!periodo.hasta||date<=periodo.hasta);
   });
 }
-export function nombreSugeridoArchivo(almacen,desde="",hasta="",hoy=""){
+export function nombreSugeridoArchivo(almacen,desde="",hasta="",hoy="",codigos=[]){
   validarPeriodoArchivo(desde,hasta);
   const safe=value=>String(value??"").replace(/[^A-Za-z0-9_-]/g,"_").slice(0,36)||"SIN_DATO";
   const period=desde&&hasta?desde+"_"+hasta:desde?"desde_"+desde:hasta?"hasta_"+hasta:hoy||"sin_fecha";
-  return "KONTROLA_HOJAS_"+safe(almacen)+"_"+safe(period)+".pdf";
+  if(!Array.isArray(codigos)||codigos.length>10)throw Error("El nombre de archivo admite hasta diez códigos de carga.");
+  const ids=codigos.map(value=>String(value??"").trim().toUpperCase());
+  if(ids.some(id=>!/^LP[0-9]{2}-[0-9]{4,6}$/.test(id))||new Set(ids).size!==ids.length)
+    throw Error("Los códigos del lote son inválidos o repetidos.");
+  // Incluimos TODOS los códigos ordenados: dos grupos distintos del mismo
+  // periodo NO reciben el mismo nombre, y tampoco depende del orden de clic.
+  const suffix=ids.length?"_"+ids.sort().join("_"):"";
+  return "KONTROLA_HOJAS_"+safe(almacen)+"_"+safe(period)+suffix+".pdf";
 }
 export function portadaLoteArchivo(cargas,{almacen="",desde="",hasta="",fechaGeneracion=""}={}){
   validarPeriodoArchivo(desde,hasta);
@@ -50,7 +57,7 @@ export function portadaLoteArchivo(cargas,{almacen="",desde="",hasta="",fechaGen
     ids.add(id);
   }
   const range=desde||hasta?[desde||"Inicio",hasta||"Actual"].join(" a "):"Sin filtro de fechas";
-  const filename=nombreSugeridoArchivo(almacen,desde,hasta,fechaGeneracion);
+  const filename=nombreSugeridoArchivo(almacen,desde,hasta,fechaGeneracion,cargas.map(x=>x.codigo));
   const body=cargas.map((row,i)=>'<tr><td>'+String(i+1)+'</td><td>'+esc(row.codigo)+
     '</td><td>'+esc(row.fecha||"Sin fecha")+'</td><td>'+esc(row.ruta||"—")+
     '</td></tr>').join("");
