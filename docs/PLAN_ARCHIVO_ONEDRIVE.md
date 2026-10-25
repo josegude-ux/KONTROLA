@@ -54,3 +54,10 @@ El botón de selección rápida avanza por grupos consecutivos de hasta 20 carga
 **El siguiente grupo no se selecciona automáticamente después de guardar:** vuelve a KONTROLA y pulsa el botón otra vez cuando hayas guardado el PDF anterior. Guardar en Archivos y mover a OneDrive sigue siendo manual. No se registra ninguna carga como archivada sin verificación.
 
 **Prueba pendiente:** revisar en el iPhone un lote real o ficticio con veinte cargas muy extensas antes de aumentar de nuevo el límite.
+
+
+## Comprobación adicional antes de imprimir — v0.3.19
+
+Antes de crear el documento con las veinte cargas, KONTROLA consulta de nuevo los datos vigentes del almacén. Si otra persona ha modificado un producto, una cantidad, la matrícula, la ruta u otra información impresa, se detiene la generación y pide **Actualizar**.
+
+El PDF se compone solo a partir de los datos que el servidor devuelve en esa segunda comprobación. El proceso no publica ni edita cargas, no escribe en OneDrive y no confirma que ya estén archivadas. Se han añadido reglas de impresión para repetir cabeceras y reducir cortes entre páginas.
