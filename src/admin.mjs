@@ -1,3 +1,4 @@
+import {fechaAlmacen} from "./business-date.mjs";
 import {analyzeDocument,applyLineCorrection,publicationReadiness,warehouseZone} from "./document-review.mjs";
 import {fechaISO} from "./logic.mjs";
 import {parsePdfFile} from "./pdf.mjs";
@@ -255,7 +256,7 @@ export function createAdminController({client,getUser,bucket,global,errorText,on
     const warehouse=$("adminWarehouse").value;
     if(!warehouse)return;
     const [{data:summary,error},{data:activity,error:activityError}]=await Promise.all([
-      client.rpc("kontrola_resumen_zona",{p_almacen:warehouse,p_dia:new Date().toISOString().slice(0,10)}),
+      client.rpc("kontrola_resumen_zona",{p_almacen:warehouse,p_dia:fechaAlmacen()}),
       client.from("kontrola_actividad").select("tipo,creado_en,detalle,codigo,actor_id").eq("almacen",warehouse).order("creado_en",{ascending:false}).limit(50)
     ]);
     if(error)global(errorText(error),"error");
