@@ -9,7 +9,7 @@ const pdf=await readFile(new URL("../src/pdf.mjs",import.meta.url),"utf8");
 const icon=await readFile(new URL("../assets/icon.svg",import.meta.url),"utf8");
 
 test("the offline shell caches every local module imported by the application",()=>{
-  for(const module of ["app.mjs","admin.mjs","pdf.mjs","core.mjs","logic.mjs","verification.mjs","document-review.mjs","report.mjs","import-policy.mjs","admin-revisions.mjs","revision-diff.mjs","business-date.mjs","import-batch.mjs","config.mjs"]){
+  for(const module of ["app.mjs","admin.mjs","pdf.mjs","core.mjs","logic.mjs","verification.mjs","document-review.mjs","report.mjs","import-policy.mjs","admin-revisions.mjs","revision-diff.mjs","business-date.mjs","import-batch.mjs","admin-stats.mjs","config.mjs"]){
     assert.match(serviceWorker,new RegExp(`src/${module.replace(".","\\.")}`));
   }
 });
