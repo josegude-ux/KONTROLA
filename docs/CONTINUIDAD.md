@@ -430,3 +430,8 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 - `src/archive-eligibility.mjs`: función pura sin acceso a Supabase que solo evalúa criterios acreditados y 90 días exactos en UTC; ante datos ausentes o ambiguos deniega.
 - `tests/archive-eligibility.test.mjs`: casos de borde, incidencias, fecha ausente/futura/sin zona y dependencias.
 - NO conectado a interfaz, backend ni borrado; los campos de entrada son contrato propuesto, NO columnas verificadas del esquema. No activa archivo ni elimina datos.
+
+### 2026-10-25 — Selector de presentación para futuro archivo lógico (no conectado)
+- `src/archive-view.mjs`: selector puro para vistas activas, archivadas y todas, sin llamadas de red ni escritura. Solo `archivado === true` acredita archivo; campo ausente permanece visible en activas para evitar ocultaciones accidentales.
+- `tests/archive-view.test.mjs`: seis pruebas de filtros, valores ambiguos, vista inválida y ausencia de mutación.
+- `archivado` es un contrato de presentación propuesto, NO una columna de Supabase acreditada. Sin conexión a RPC, interfaz, migraciones, eliminación ni despliegue. El filtrado de permisos debe continuar en el servidor.
