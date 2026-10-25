@@ -414,7 +414,9 @@ begin
  insert into public.kontrola_importaciones(
   id,codigo,documento_hash,documento_ruta,archivo_nombre,archivo_tamano,creado_por,actualizado_por
  ) values(v_id,p_codigo,p_hash,'documentos/'||p_codigo||'/'||p_hash||'.pdf',p_archivo,p_tamano,v_user,v_user)
- on conflict(documento_hash) do nothing returning kontrola_importaciones.id into v_id;
+ -- Dos solicitudes concurrentes pueden chocar tanto en documento_hash como en documento_ruta.
+ -- Omitir el objetivo del conflicto protege las dos restricciones UNIQUE.
+ on conflict do nothing returning kontrola_importaciones.id into v_id;
  if v_id is null then
   select x.* into v_existing from public.kontrola_importaciones x where x.documento_hash=p_hash;
   id:=v_existing.id;documento_ruta:=v_existing.documento_ruta;repetida:=true;estado:=v_existing.estado;return next;return;
