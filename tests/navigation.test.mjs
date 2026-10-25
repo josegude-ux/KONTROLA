@@ -42,12 +42,12 @@ test("La navegación conserva los accesos previos y los regresos al submenú",()
 
 test("La versión y el caché están preparados para instalar nuevas pantallas",()=>{
   const version=JSON.parse(read("version.json")).version;
-  assert.equal(version,"0.3.27");
+  assert.equal(version,"0.3.28");
   assert.equal(JSON.parse(read("package.json")).version,version);
   assert.equal(JSON.parse(read("package-lock.json")).version,version);
-  assert.match(read("src/config.mjs"),/APP_VERSION="0\.3\.27"/);
-  assert.match(html,/id="appVersion">0\.3\.27</);
-  assert.match(read("sw.js"),/kontrola-integral-v058/);
+  assert.match(read("src/config.mjs"),/APP_VERSION="0\.3\.28"/);
+  assert.match(html,/id="appVersion">0\.3\.28</);
+  assert.match(read("sw.js"),/kontrola-integral-v059/);
 });
 
 test("Las consultas descartan respuestas de sesiones o almacenes anteriores",()=>{
@@ -111,4 +111,38 @@ test("KONTROLA usa cuatro imágenes 3D exclusivas, distintas y precargadas sin c
    assert.match(html,new RegExp('id="'+id+'"[^>]*class="feature'));
  }
  assert.match(html,/id="openAdmin"[^>]*hidden/);
+});
+
+test("preparación recupera inicio automático con reloj del servidor y consulta sin mutaciones",()=>{
+  assert.match(html,/id="prepClock"[^>]*role="timer"/);
+  assert.match(app,/async function startCurrentPreparation\(\)/);
+  assert.match(app,/p_request_id:crypto\.randomUUID\(\)/);
+  assert.match(app,/if\(!currentReadOnly&&!currentPreparation\.active&&!currentPreparation\.finalized&&load\.estado==="publicada"\)/);
+  assert.match(app,/await startCurrentPreparation\(\)/);
+  assert.match(app,/currentReadOnly=readOnly\|\|assignedToOther/);
+  assert.match(app,/formatPreparationDuration\(current\.preparacion_inicio/);
+  assert.match(app,/setInterval\(\(\)=>/);
+  assert.match(app,/if\(id!=="detailView"\)stopPreparationClock\(\)/);
+  assert.match(app,/function openLoadsMenu\(parent="homeView",mode="preparacion"\)/);
+  assert.match(app,/openLoadsMenu\("cargasMenuView","consulta"\)/);
+});
+test("Volver fijo arriba a la izquierda es común a todas las vistas operativas",()=>{
+  assert.match(html,/id="globalBack"[^>]*hidden/);
+  assert.match(css,/#shell \.topbar \.topbar-back/);
+  assert.match(css,/#shell \.view \.page-heading>\.back-button\{display:none\}/);
+  assert.match(css,/\.report-view \.report-controls\{position:sticky/);
+  for(const id of ["cargasHistoryView","loadsView","detailView","reviewLoadsView","reviewDetailView"]){
+    assert.match(app,new RegExp(id+':"back'));
+  }
+  assert.match(app,/view==="adminView"\)switchView\(adminParent\)/);
+  assert.match(app,/\$\("globalBack"\)\.hidden=id==="homeView"/);
+});
+test("las cargas nunca se indican como borradas cuando falla el resumen o se cambia de almacén",()=>{
+  assert.match(html,/id="operatorSummaryStatus"/);
+  assert.match(html,/id="homeWarehouse"/);
+  assert.match(html,/id="refreshHomeSummary"/);
+  assert.match(app,/No se han podido consultar las cargas de/);
+  assert.match(app,/Los datos del servidor no se han borrado/);
+  assert.match(app,/mostrar cero no significa que los datos se hayan eliminado/);
+  assert.match(app,/warehouses\.find\(item=>item\.codigo===warehouse\)/);
 });
