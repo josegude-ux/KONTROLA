@@ -137,7 +137,14 @@
     </section>
     <section id="adminView" class="view" hidden>
       <div class="page-heading"><button type="button" data-back="home" class="back-button">← Volver</button><h1>Administración</h1><p class="muted">Documentos, operación, tiempos e incidencias por almacén.</p></div>
+      <section class="panel"><div class="line"><div><h2>Necesitan atención</h2><p class="muted">Documentos, clasificaciones, verificaciones e incidencias pendientes.</p></div><button id="reloadAttention" type="button" class="secondary">Actualizar</button></div><div id="attentionList" class="attention-list"></div></section>
       <section class="panel"><div class="line"><h2>Resumen diario por zona</h2><select id="adminWarehouse" class="warehouse-select" aria-label="Almacén administrativo"></select></div><div id="adminSummary" class="facts"></div><div id="adminActivity" class="activity-list"></div></section>
+      <section class="panel" id="operatorStatsPanel">
+        <div class="line"><div><h2>Actividad por operario</h2><p class="muted">Estadísticas del almacén seleccionado. Solo visibles para administración.</p></div><button id="operatorStatsRefresh" type="button" class="secondary">Actualizar</button></div>
+        <label>Fecha de inicio de la operación<input id="operatorStatsDate" type="date"></label>
+        <div id="operatorStatsStatus" class="status" role="status" aria-live="polite"></div>
+        <div id="operatorStatsList" aria-live="polite"></div>
+      </section>
       <section class="panel" id="archiveOneDrivePanel">
         <h2>Archivo periódico en OneDrive</h2>
         <p class="muted">Partimos de cero: no hace falta incorporar los PDF generados antes de iniciar KONTROLA. Conservaremos las revisiones nuevas que produzca la aplicación.</p>
@@ -154,13 +161,6 @@
         <button id="batchPrintSelectVisible" type="button" class="secondary">Seleccionar siguiente grupo de hasta 20 cargas</button>
         <button id="batchPrintOpen" type="button" class="primary" disabled>Preparar impresión de hojas seleccionadas</button>
       </section>
-      <section class="panel" id="operatorStatsPanel">
-        <div class="line"><div><h2>Actividad por operario</h2><p class="muted">Estadísticas del almacén seleccionado. Solo visibles para administración.</p></div><button id="operatorStatsRefresh" type="button" class="secondary">Actualizar</button></div>
-        <label>Fecha de inicio de la operación<input id="operatorStatsDate" type="date"></label>
-        <div id="operatorStatsStatus" class="status" role="status" aria-live="polite"></div>
-        <div id="operatorStatsList" aria-live="polite"></div>
-      </section>
-      <section class="panel"><div class="line"><div><h2>Necesitan atención</h2><p class="muted">Documentos, clasificaciones, verificaciones e incidencias pendientes.</p></div><button id="reloadAttention" type="button" class="secondary">Actualizar</button></div><div id="attentionList" class="attention-list"></div></section>
       <section class="panel">
         <h2>Importar → procesar → revisar → publicar</h2><p class="muted">Carga manual desde Business Central. KONTROLA conserva el original y usa el motor v0.5.26 de Control de Cargas.</p>
         <label>PDF de cargas de Business Central (hasta 20 archivos)<input type="file" accept=".pdf,application/pdf" id="pdfInput" multiple></label><p class="hint">Puedes seleccionar varios documentos. Se analizan uno a uno, quedan para revisión y nunca se publican automáticamente.</p>
@@ -169,6 +169,10 @@
         <div id="documentReview" class="document-review">Procesa un PDF para iniciar la revisión.</div>
         <p id="reviewReadiness" class="status"></p>
         <div class="actions"><button id="saveDocumentReview" type="button" class="secondary" disabled>Guardar revisión</button><button id="generateSheet" type="button" class="secondary" disabled>Generar hoja</button><button id="publishReviewedLoad" type="button" class="primary" disabled>Publicar carga</button></div>
+      </section>
+      <section class="panel">
+        <div class="line"><div><h2>Incidencias pendientes</h2><p class="muted">Agrupadas por carga. Confirma aquí únicamente una regularización ya realizada manualmente en Business Central.</p></div><button id="reloadIncidents" type="button" class="secondary">Actualizar</button></div>
+        <div id="incidentList" class="incident-list" aria-live="polite"></div>
       </section>
       <section class="panel" id="adminRevisionsPanel">
         <h2>Historial de revisiones de PDF</h2>
@@ -186,10 +190,6 @@
           </div>
           <div id="revisionDiff" class="revision-diff" aria-live="polite"></div>
         </div>
-      </section>
-      <section class="panel">
-        <div class="line"><div><h2>Incidencias pendientes</h2><p class="muted">Agrupadas por carga. Confirma aquí únicamente una regularización ya realizada manualmente en Business Central.</p></div><button id="reloadIncidents" type="button" class="secondary">Actualizar</button></div>
-        <div id="incidentList" class="incident-list" aria-live="polite"></div>
       </section>
     </section>
     <section id="settingsView" class="view" hidden>

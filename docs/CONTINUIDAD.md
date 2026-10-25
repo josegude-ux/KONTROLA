@@ -281,3 +281,8 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 - `sw.js` cambia clave de caché v050 a v051 y pasa a network-first con fallback offline para recursos de mismo origen, incluidos módulos dinámicos; antes era cache-first y conservaba módulos antiguos indefinidamente.
 - Actualizados `src/config.mjs`, `version.json`, `index.html` a 0.3.20 para distinguir despliegue nuevo. Sin cambios de base de datos.
 - Pendiente CI y prueba manual en Safari de importación de un PDF.
+
+## 2026-10-25 — Orden operativo de Administración
+- Solicitud: importación de PDF como primera acción visible al entrar a Administración, y paneles ordenados según flujo de trabajo.
+- `index.html`: se reordena únicamente el DOM de las ocho secciones, sin cambiar IDs, botones, funciones ni datos. Orden: Importar/procesar/revisar/publicar, Resumen y almacén, Necesitan atención, Archivo periódico, Imprimir hojas, Actividad operario, Incidencias, Historial revisiones. Los controles de importación aparecen primero.
+- Pruebas CI y despliegue pendientes.
