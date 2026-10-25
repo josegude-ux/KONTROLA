@@ -358,3 +358,5 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 - `src/admin.mjs`: guardar revisión confirma administrativamente los avisos no críticos para cumplir el contrato RPC, sin afirmar que estén corregidos en BC; los errores graves siguen bloqueando.
 - `src/app.mjs`: matrícula destacada y campo Bultos; muestra guion cuando no existe cifra explícita fiable, sin confundir referencias ni unidades con bultos.
 - Pendiente añadir extracción fiable de bultos a la cadena PDF→Supabase→panel; no inventar cantidades.
+
+- `styles.css`: matrícula en pastilla de alto contraste y bultos como dato secundario en las tarjetas.
