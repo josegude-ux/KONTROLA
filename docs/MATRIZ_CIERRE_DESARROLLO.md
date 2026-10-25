@@ -17,7 +17,7 @@ El código de la aplicación se mantiene y evoluciona sobre la PR #2; no se ha d
 | Nuevas revisiones, historial y SHA-256 | Programado | Probar únicamente con documentos generados tras el arranque |
 | Consulta y estadísticas de operarios | Programado | Privacidad de nombres, RPC y fecha local |
 | Resumen y CSV compatible con Excel | Programado | Excel real y permisos por almacén |
-| Impresión de hojas procesadas por fechas (hasta 20, con carátula) | **Programado v0.3.18** | Verificar impresión y memoria con 20 hojas extensas, índice, paginación y PDF auténtico en iPhone |
+| Impresión de hojas procesadas por fechas (hasta 20, con carátula) | **Programado v0.3.19 con nueva comprobación en servidor** | Validar cambios concurrentes, permisos y memoria con 20 hojas extensas; probar PDF auténtico en iPhone |
 | Impresión en lote de PDF originales de BC | Pendiente | Decidir alcance; no confundir con hojas procesadas |
 | **Archivo periódico en OneDrive** | **Grupos consecutivos de 20 y guía manual v0.3.18** | Comprobar Safari → PDF → Archivos → OneDrive, incluido periodo de 45 cargas (20+20+5) |
 | Migración/conciliación de datos y PDF antiguos | **Fuera del alcance** | Ninguna: no necesaria para este nuevo arranque |
