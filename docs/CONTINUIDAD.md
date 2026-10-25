@@ -518,3 +518,6 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 - Sin modificaciones de base de datos: actualiza `package.json`, `version.json`, los indicadores de versión de `index.html` y el identificador de caché de `sw.js` a `kontrola-integral-v052` para invalidar recursos antiguos.
 - Objetivo: que la instalación PWA del **mismo origen de GitHub Pages** pueda recibir la interfaz de archivo y sus correcciones. Despliegue controlado por `.github/workflows/pages.yml` en la rama operativa, sujeto a configuración de GitHub Pages y a validación de la URL real.
 - No se cambia el alcance ni la política del archivo, no se realiza borrado ni se despliega a `main`.
+
+### 2026-10-25 — Alineación versión 0.3.21
+- Actualizado `src/config.mjs` y test `tests/navigation.test.mjs` para que versión interna, manifiesto, package y caché SW coincidan. CI inicial del PR #18 detectó inconsistencia; se corrige antes de publicar.
