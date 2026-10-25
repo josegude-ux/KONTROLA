@@ -460,3 +460,6 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 ### CI archivo — corrección de permisos ejecutables
 - GitHub Actions del commit `b384f8e` falló con salida 126 al iniciar pruebas de base de datos: el archivo `tests/integration/run.sh` fue reemplazado con modo no ejecutable `100644`.
 - Restaurado modo ejecutable `100755`. Aún no se considera validada la integración hasta ejecución CI correcta.
+
+### Corrección del test de auditoría
+- CI detectó denegación de lectura directa de `kontrola_archivo_eventos` bajo rol `authenticated`, que es la restricción buscada. El test pasa a `reset role` únicamente para comprobar la auditoría con privilegios del runner local, y vuelve al rol autenticado antes de probar la API. No se conceden permisos nuevos.

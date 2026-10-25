@@ -2,7 +2,9 @@
 -- Solo en la BD de prueba local del runner; no acceder a datos de Supabase.
 set role authenticated;
 select set_config('request.jwt.claim.sub','00000000-0000-0000-0000-000000000001',false);
+reset role;
 select test.assert((select count(*)=0 from public.kontrola_archivo_eventos),'sin eventos de archivo al inicio');
+set role authenticated;
 do $$begin
  perform public.kontrola_cambiar_archivo('LP26-10001',true);
  raise exception 'ASSERTION FAILED: no puede archivar carga reciente';
@@ -21,7 +23,9 @@ select test.assert((select count(*)=1 from public.kontrola_listar_archivadas() w
 select test.assert(not public.kontrola_cambiar_archivo('LP26-10001',true),'segundo archivo es idempotente');
 select test.assert(public.kontrola_cambiar_archivo('LP26-10001',false),'admin restaura');
 select test.assert((select archivado=false from public.kontrola_cargas where codigo='LP26-10001'),'restaurada visible');
+reset role;
 select test.assert((select count(*)=2 from public.kontrola_archivo_eventos where codigo='LP26-10001'),'dos eventos de auditoría');
+set role authenticated;
 select test.assert((select count(*)=0 from public.kontrola_listar_archivadas() where codigo='LP26-10001'),'restaurada sale del archivo');
 select set_config('request.jwt.claim.sub','00000000-0000-0000-0000-000000000002',false);
 do $$begin
