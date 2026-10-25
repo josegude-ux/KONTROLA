@@ -240,8 +240,11 @@ export function createAdminController({client,getUser,bucket,global,errorText,on
     finally{setBusy(false);updateActions();}
   }
   async function refreshAttention(){
-    const {data,error}=await client.rpc("kontrola_necesitan_atencion",{p_almacen:$("adminWarehouse").value||null});
-    const target=$("attentionList");target.replaceChildren();
+    const warehouse=$("adminWarehouse").value||null,session=getUser()?.id;
+    const target=$("attentionList");target.textContent="Consultando avisos…";
+    const {data,error}=await client.rpc("kontrola_necesitan_atencion",{p_almacen:warehouse});
+    if($("adminWarehouse").value!==warehouse||getUser()?.id!==session)return;
+    target.replaceChildren();
     if(error){target.textContent=errorText(error);return;}
     if(!data?.length){target.textContent="No hay elementos pendientes.";return;}
     for(const item of data){
@@ -253,19 +256,22 @@ export function createAdminController({client,getUser,bucket,global,errorText,on
     }
   }
   async function refreshSummary(){
-    const warehouse=$("adminWarehouse").value;
-    if(!warehouse)return;
+    const warehouse=$("adminWarehouse").value,session=getUser()?.id;
+    if(!warehouse||!session)return;
+    const target=$("adminSummary"),log=$("adminActivity");
+    target.textContent="Actualizando resumen…";log.replaceChildren();
     const [{data:summary,error},{data:activity,error:activityError}]=await Promise.all([
       client.rpc("kontrola_resumen_zona",{p_almacen:warehouse,p_dia:fechaAlmacen()}),
       client.from("kontrola_actividad").select("tipo,creado_en,detalle,codigo,actor_id").eq("almacen",warehouse).order("creado_en",{ascending:false}).limit(50)
     ]);
-    if(error)global(errorText(error),"error");
+    if($("adminWarehouse").value!==warehouse||getUser()?.id!==session)return;
+    if(error){target.textContent="No se pudo cargar el resumen.";global(errorText(error),"error");return;}
     const values=Array.isArray(summary)?summary[0]:summary;
-    const target=$("adminSummary");target.replaceChildren();
+    target.replaceChildren();
     for(const [label,key] of [["Publicadas","publicadas"],["En preparación","en_preparacion"],["Pendientes verificación","pendientes_verificacion"],["En verificación","en_verificacion"],["Cerradas","cerradas"],["Incidencias","incidencias_pendientes"],["Días anteriores","anteriores_pendientes"]]){
       const card=document.createElement("div");card.className="fact";card.innerHTML="<small>"+label+"</small><b>"+Number(values?.[key]||0)+"</b>";target.appendChild(card);
     }
-    const log=$("adminActivity");log.replaceChildren();
+    log.replaceChildren();
     if(activityError){log.textContent=errorText(activityError);return;}
     for(const event of activity||[]){
       const row=document.createElement("p");row.textContent=new Date(event.creado_en).toLocaleString("es-ES")+" · "+event.tipo+" · "+(event.codigo||"");log.appendChild(row);
