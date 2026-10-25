@@ -129,9 +129,16 @@ En **Administración → Actividad por operario**, elige la fecha y el almacén.
 
 ### 12. Imprimir varias hojas procesadas
 
-En **Administración → Imprimir varias hojas procesadas**, pulsa **Actualizar**, selecciona hasta 10 cargas y luego **Preparar impresión de hojas seleccionadas**. Desde la vista de informe utiliza **Imprimir / Guardar PDF**.
+En **Administración → Imprimir varias hojas procesadas**:
 
-Estas son **hojas procesadas por KONTROLA**, no copias de los PDF originales de Business Central. La impresión conjunta de originales sigue pendiente.
+1. Selecciona el almacén correcto y pulsa **Actualizar**.
+2. En **Desde** y **Hasta**, elige las fechas del periodo que quieres archivar. Si los dejas vacíos, se muestran todas las cargas consultables.
+3. Selecciona las cargas una a una o pulsa **Seleccionar hasta 10 cargas del periodo**.
+4. Pulsa **Preparar impresión de hojas seleccionadas**.
+5. Comprueba la **carátula**: almacén, fechas, total de cargas y códigos incluidos.
+6. Pulsa **Imprimir / Guardar PDF** y guarda el archivo en Archivos. Si quedan cargas del periodo, prepara un segundo lote.
+
+La primera página presenta la relación de cargas y después aparece cada hoja procesada. Son documentos generados por KONTROLA, no copias de los PDF originales de Business Central.
 
 **Captura pendiente:** selector de cargas e informe multipágina real.
 
@@ -140,10 +147,11 @@ Estas son **hojas procesadas por KONTROLA**, no copias de los PDF originales de 
 Partimos con documentos nuevos: **no vamos a importar los PDF generados antes de poner en marcha KONTROLA**.
 
 1. Genera la hoja procesada o el resumen nuevo que quieres guardar.
-2. Pulsa **Imprimir / Guardar PDF**. La opción **Descargar** genera HTML, no un PDF real.
+2. Pulsa **Imprimir / Guardar PDF**. La opción **Descargar HTML** genera HTML, no un PDF real.
 3. En el iPhone, usa las opciones de impresión/compartir para **Guardar en Archivos** como documento PDF.
 4. Cuando toque el archivo periódico, **mueve los PDF a la carpeta de OneDrive que haya designado la empresa**.
-5. Abre el archivo desde OneDrive para comprobar que se ha guardado correctamente.
+5. Al guardar, puedes usar el **nombre sugerido** que aparece en la carátula del lote.
+6. Abre el archivo desde OneDrive para comprobar que se ha guardado correctamente.
 
 El movimiento a OneDrive es **manual**. KONTROLA no sube ni borra documentos por su cuenta. Los PDF originales de Business Central siguen protegidos dentro del flujo de la aplicación.
 
