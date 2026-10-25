@@ -1,4 +1,4 @@
 {
-  "version": "0.3.10",
-  "notes": "Auditoría local, no destructiva, de copias JSON antiguas de Control de Cargas; estadísticas por operario protegidas."
+  "version": "0.3.11",
+  "notes": "Impresión conjunta de hasta diez hojas procesadas, estadísticas privadas por operario y auditoría de copias originales."
 }
