@@ -1,16 +1,30 @@
 import {buildPreparationReport} from "./report.mjs";
+import {fechaAlmacen} from "./business-date.mjs";
+import {filtrarCargasArchivo,validarPeriodoArchivo,nombreSugeridoArchivo,portadaLoteArchivo} from "./archive-period.mjs";
 
 // Solo lectura; crea una vista imprimible a partir de las cargas autorizadas.
 // No incluye los PDF originales ni publica/actualiza documentos.
 const $=id=>document.getElementById(id);
 export function configurarLoteImpresion({client,getUser,getWarehouse,errorText}){
-  let rows=[],selected=new Set(),currentWarehouse="",currentSession=null,seq=0;
+  let rows=[],allRows=[],selected=new Set(),currentWarehouse="",currentSession=null,seq=0;
   const status=$("batchPrintStatus"),list=$("batchPrintList"),button=$("batchPrintOpen");
   function reset(){
-    rows=[];selected.clear();list.replaceChildren();button.disabled=true;
+    rows=[];allRows=[];selected.clear();list.replaceChildren();button.disabled=true;
+    $("batchArchiveName").textContent="";
   }
   function render(){
     list.replaceChildren();
+    const from=$("batchPrintFrom").value,to=$("batchPrintTo").value;
+    try{rows=filtrarCargasArchivo(allRows,from,to);}
+    catch(error){
+      rows=[];selected.clear();button.disabled=true;
+      status.textContent=error.message;return;
+    }
+    selected=new Set([...selected].filter(id=>rows.some(row=>row.codigo===id)));
+    button.disabled=selected.size===0;
+    $("batchArchiveName").textContent=rows.length
+      ?"Nombre sugerido para guardar el PDF: "+nombreSugeridoArchivo(currentWarehouse,from,to,fechaAlmacen())
+      :"No hay hojas para el periodo seleccionado.";
     for(const load of rows){
       const label=document.createElement("label");label.className="batch-print-row";
       const check=document.createElement("input");check.type="checkbox";
@@ -39,9 +53,9 @@ export function configurarLoteImpresion({client,getUser,getWarehouse,errorText})
       const {data,error}=await client.rpc("kontrola_panel_cargas",{p_almacen:warehouse});
       if(req!==seq||getUser()?.id!==session||getWarehouse()!==warehouse)return;
       if(error)throw error;
-      rows=(data||[]).filter(x=>x&&x.codigo&&Array.isArray(x.productos));
-      status.textContent=rows.length+" carga(s) disponibles. Selecciona las hojas que necesites.";
+      allRows=(data||[]).filter(x=>x&&x.codigo&&Array.isArray(x.productos));
       render();
+      status.textContent=rows.length+" carga(s) en el periodo seleccionado. Selecciona las hojas para guardar.";
     }catch(error){
       if(req!==seq||getUser()?.id!==session)return;
       reset();status.textContent="No se pudieron consultar las cargas: "+errorText(error);
@@ -55,14 +69,34 @@ export function configurarLoteImpresion({client,getUser,getWarehouse,errorText})
       status.textContent="Actualiza la lista antes de preparar la impresión.";return;
     }
     const chosen=rows.filter(row=>selected.has(row.codigo));
-    if(chosen.length>10){status.textContent="El lote supera 10 hojas.";return;}
-    $("reportPaper").innerHTML=chosen
+    if(!chosen.length||chosen.length>10){status.textContent="Elige entre 1 y 10 hojas.";return;}
+    const from=$("batchPrintFrom").value,to=$("batchPrintTo").value;
+    try{validarPeriodoArchivo(from,to);}catch(error){status.textContent=error.message;return;}
+    const date=fechaAlmacen();
+    const cover=portadaLoteArchivo(chosen,{almacen:currentWarehouse,desde:from,hasta:to,fechaGeneracion:date});
+    $("reportPaper").innerHTML=cover+chosen
       .map(row=>'<section class="report-batch-sheet">'+buildPreparationReport(row)+"</section>").join("");
-    $("reportTitle").textContent="Hojas procesadas · "+currentWarehouse+" · "+chosen.length+" cargas";
+    $("reportTitle").textContent="Archivo OneDrive · "+chosen.length+" hojas · "+currentWarehouse;
+    status.textContent="Informe preparado. Usa «Imprimir / Guardar PDF» y después muévelo a OneDrive desde Archivos.";
     $("reportView").hidden=false;document.body.classList.add("report-open");
     window.scrollTo(0,0);
   }
   $("batchPrintRefresh").addEventListener("click",refresh);
+  for(const id of ["batchPrintFrom","batchPrintTo"]){
+    $(id).addEventListener("change",()=>{
+      if(allRows.length){
+        render();
+        status.textContent=rows.length+" carga(s) en el periodo seleccionado.";
+      }
+    });
+  }
+  $("batchPrintSelectVisible").addEventListener("click",()=>{
+    if(!rows.length){status.textContent="No hay hojas visibles para seleccionar.";return;}
+    selected=new Set(rows.slice(0,10).map(row=>row.codigo));
+    render();
+    status.textContent=selected.size+" hoja(s) seleccionada(s)."+
+      (rows.length>10?" Prepara otro lote para las "+(rows.length-10)+" restantes.":"");
+  });
   button.addEventListener("click",preview);
   return {refresh,clear:()=>{
     seq++;reset();status.textContent="";currentWarehouse="";currentSession=null;
