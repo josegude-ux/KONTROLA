@@ -127,6 +127,14 @@
     <section id="adminView" class="view" hidden>
       <div class="page-heading"><button type="button" data-back="home" class="back-button">← Volver</button><h1>Administración</h1><p class="muted">Documentos, operación, tiempos e incidencias por almacén.</p></div>
       <section class="panel"><div class="line"><h2>Resumen diario por zona</h2><select id="adminWarehouse" class="warehouse-select" aria-label="Almacén administrativo"></select></div><div id="adminSummary" class="facts"></div><div id="adminActivity" class="activity-list"></div></section>
+      <section class="panel" id="legacyAuditPanel">
+        <h2>Auditar copia antigua de Control de Cargas</h2>
+        <p class="muted">Selecciona una copia JSON exportada desde la aplicación original. Se analizará solo en este móvil, sin subirla ni modificar cargas. Los PDF originales deben revisarse por separado.</p>
+        <label>Archivo de copia de seguridad JSON<input id="legacyBackupFile" type="file" accept=".json,application/json"></label>
+        <button id="legacyAuditStart" type="button" class="secondary">Analizar copia (solo lectura)</button>
+        <div id="legacyAuditStatus" class="status" role="status" aria-live="polite"></div>
+        <div id="legacyAuditResults" class="legacy-audit-results"></div>
+      </section>
       <section class="panel" id="operatorStatsPanel">
         <div class="line"><div><h2>Actividad por operario</h2><p class="muted">Estadísticas del almacén seleccionado. Solo visibles para administración.</p></div><button id="operatorStatsRefresh" type="button" class="secondary">Actualizar</button></div>
         <label>Fecha de inicio de la operación<input id="operatorStatsDate" type="date"></label>
