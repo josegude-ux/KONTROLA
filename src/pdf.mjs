@@ -11,7 +11,8 @@ async function pdfEngine(){
 
 export async function parsePdfFile(file,options={}){
   const engine=await pdfEngine();
-  const pdf=await engine.getDocument({data:new Uint8Array(await file.arrayBuffer())}).promise;
+  const loadingTask=engine.getDocument({data:new Uint8Array(await file.arrayBuffer())});
+  const pdf=await loadingTask.promise;
   const pages=[];
   try{
     for(let number=1;number<=pdf.numPages;number++){
@@ -25,6 +26,7 @@ export async function parsePdfFile(file,options={}){
     }
     return parseDocumentPages(pages,file.name,options);
   }finally{
-    await pdf.destroy();
+    // PDF.js expone destroy() en PDFDocumentLoadingTask, no necesariamente en PDFDocumentProxy.
+    await loadingTask.destroy();
   }
 }

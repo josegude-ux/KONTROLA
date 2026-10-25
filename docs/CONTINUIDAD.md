@@ -267,3 +267,8 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 
 ## 2026-10-25 — Prueba de fecha de impresión robusta
 - Sustituidas dos expresiones regulares mal escapadas por verificaciones literales `includes` en test de impresión diaria; sin cambios funcionales.
+
+## 2026-10-25 — Corrección de lectura de PDF en Safari
+- Error real reportado con 18 PDFs: `pdf.destroy is not a function`.
+- `src/pdf.mjs`: conservar `PDFDocumentLoadingTask` de PDF.js y destruir el loading task en `finally` en lugar del documento proxy. Evita transformar una lectura correcta en fallo al liberar recursos.
+- No se importan automáticamente documentos ni se publican cargas; datos existentes sin cambios. Pruebas de GitHub pendientes.
