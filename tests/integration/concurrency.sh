@@ -73,7 +73,31 @@ set -e
 
 [[ $import_status_one -eq 0 && $import_status_two -eq 0 ]]
 [[ $("${PSQL[@]}" -qAt -c "select count(*) from public.kontrola_importaciones where documento_hash=repeat('f',64)") == "1" ]]
-[[ $(cat /tmp/kontrola-import-race-one.log /tmp/kontrola-import-race-two.log | rg -c '^[ft]$') == "2" ]]
+[[ $(cat /tmp/kontrola-import-race-one.log /tmp/kontrola-import-race-two.log | grep -cE '^[ft]) == "2" ]]
+[[ $(cat /tmp/kontrola-import-race-one.log /tmp/kontrola-import-race-two.log | grep -c '^f) == "1" ]]
+[[ $(cat /tmp/kontrola-import-race-one.log /tmp/kontrola-import-race-two.log | grep -c '^t) == "1" ]]
+echo "KONTROLA_CONCURRENCY_OK preparer=$winner import_reservation=serialized"
+) == "2" ]]
+[[ $(cat /tmp/kontrola-import-race-one.log /tmp/kontrola-import-race-two.log | rg -c '^f$') == "1" ]]
+[[ $(cat /tmp/kontrola-import-race-one.log /tmp/kontrola-import-race-two.log | rg -c '^t$') == "1" ]]
+echo "KONTROLA_CONCURRENCY_OK preparer=$winner import_reservation=serialized"
+) == "1" ]]
+[[ $(cat /tmp/kontrola-import-race-one.log /tmp/kontrola-import-race-two.log | rg -c '^t$') == "1" ]]
+echo "KONTROLA_CONCURRENCY_OK preparer=$winner import_reservation=serialized"
+) == "2" ]]
+[[ $(cat /tmp/kontrola-import-race-one.log /tmp/kontrola-import-race-two.log | rg -c '^f$') == "1" ]]
+[[ $(cat /tmp/kontrola-import-race-one.log /tmp/kontrola-import-race-two.log | rg -c '^t$') == "1" ]]
+echo "KONTROLA_CONCURRENCY_OK preparer=$winner import_reservation=serialized"
+) == "1" ]]
+echo "KONTROLA_CONCURRENCY_OK preparer=$winner import_reservation=serialized"
+) == "2" ]]
+[[ $(cat /tmp/kontrola-import-race-one.log /tmp/kontrola-import-race-two.log | rg -c '^f$') == "1" ]]
+[[ $(cat /tmp/kontrola-import-race-one.log /tmp/kontrola-import-race-two.log | rg -c '^t$') == "1" ]]
+echo "KONTROLA_CONCURRENCY_OK preparer=$winner import_reservation=serialized"
+) == "1" ]]
+[[ $(cat /tmp/kontrola-import-race-one.log /tmp/kontrola-import-race-two.log | rg -c '^t$') == "1" ]]
+echo "KONTROLA_CONCURRENCY_OK preparer=$winner import_reservation=serialized"
+) == "2" ]]
 [[ $(cat /tmp/kontrola-import-race-one.log /tmp/kontrola-import-race-two.log | rg -c '^f$') == "1" ]]
 [[ $(cat /tmp/kontrola-import-race-one.log /tmp/kontrola-import-race-two.log | rg -c '^t$') == "1" ]]
 echo "KONTROLA_CONCURRENCY_OK preparer=$winner import_reservation=serialized"
