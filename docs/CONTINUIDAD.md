@@ -330,3 +330,9 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 - Tabla de incidencias con bordes, columnas legibles, encabezados repetidos y filas no partidas al imprimir varias páginas.
 - Se oculta el aviso de archivado OneDrive de hojas operativas cuando se muestra el informe de correcciones de BC; se restaura para hojas de preparación.
 - Sin cambios en datos ni publicación. Pendiente validación CI.
+
+## 2026-10-25 — Estado vacío de impresión en iPhone
+- Confirmado en Supabase que hay cero cargas publicadas; la lista vacía es correcta y no implica pérdida de PDF pendientes.
+- `src/admin-print-batch.mjs`: estado vacío explicativo y ocultación de botones de selección, impresión y reimpresión sin cargas disponibles.
+- `index.html`: explicación abreviada, con referencia al apartado Pendientes.
+- Sin saltar revisión ni publicar automáticamente. Pendiente CI y despliegue.

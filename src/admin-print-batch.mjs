@@ -12,6 +12,9 @@ export function configurarLoteImpresion({client,getUser,getWarehouse,errorText})
   function reset(){
     rows=[];allRows=[];selected.clear();printCounts.clear();reprintMode=false;$("batchPrintReprint").checked=false;nextGroupStart=0;list.replaceChildren();button.disabled=true;
     $("batchArchiveName").textContent="";
+    $("batchPrintSelectVisible").hidden=true;
+    $("batchPrintOpen").hidden=true;
+    $("batchPrintReprint").closest("label").hidden=true;
   }
   function render(){
     list.replaceChildren();
@@ -24,11 +27,14 @@ export function configurarLoteImpresion({client,getUser,getWarehouse,errorText})
     selected=new Set([...selected].filter(id=>rows.some(row=>row.codigo===id)));
     button.disabled=selected.size===0;
     $("batchArchiveName").textContent=!rows.length
-      ?"No hay hojas procesadas para hoy."
+      ?""
       :!selected.size?"Selecciona las cargas para ver el nombre recomendado del PDF."
       :"Nombre sugerido para guardar el PDF: "+nombreSugeridoArchivo(
         currentWarehouse,today,today,today,[...selected]
       );
+    $("batchPrintSelectVisible").hidden=rows.length===0;
+    $("batchPrintOpen").hidden=rows.length===0;
+    $("batchPrintReprint").closest("label").hidden=rows.length===0&&!reprintMode;
     for(const load of rows){
       const label=document.createElement("label");label.className="batch-print-row";
       const check=document.createElement("input");check.type="checkbox";
@@ -67,7 +73,7 @@ export function configurarLoteImpresion({client,getUser,getWarehouse,errorText})
       printCounts=new Map((prints||[]).map(x=>[x.codigo,Number(x.intentos)]));
       allRows=(data||[]).filter(x=>x&&x.codigo&&Array.isArray(x.productos));
       render();
-      status.textContent=rows.length+" carga(s) de hoy. Selecciona las hojas para guardar.";
+      status.textContent=rows.length?rows.length+" carga(s) de hoy disponibles para impresión.":"No hay cargas publicadas de hoy disponibles para imprimir. Las importaciones pendientes de revisión no aparecen aquí.";
     }catch(error){
       if(req!==seq||getUser()?.id!==session)return;
       reset();status.textContent="No se pudieron consultar las cargas: "+errorText(error);
