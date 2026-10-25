@@ -5,7 +5,7 @@
 **Rama principal del desarrollo en curso:** cursor/verificacion-fisica-cargas-8ba0
 **PR de trabajo:** https://github.com/josegude-ux/KONTROLA/pull/2
 **PR de Fase 1:** https://github.com/josegude-ux/KONTROLA/pull/1
-**Versión del código de esta rama:** 0.3.3
+**Versión del código de esta rama:** 0.3.4
 
 > La aplicación funcional vive en ramas de desarrollo: main no debe tomarse como punto de partida para rehacerla. No fusionar a main ni aplicar migraciones a producción sin autorización.
 
@@ -92,3 +92,13 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 
 - Se descartan respuestas asíncronas obsoletas en listas de preparación, listas de verificación, resumen del operario e historial si cambia almacén o usuario durante la solicitud.
 - La CI incluye un test de regresión para evitar que los resultados de una zona se muestren después de pasar a otra.
+
+## Hito v0.3.4 — Exportar e imprimir resúmenes de Control de Cargas
+
+- Se han comparado funciones de Control de Cargas original v0.5.26 con KONTROLA. Se mantiene el motor documental y KONTROLA no incorpora controles manuales de picking ni cambios de estado desde las consultas.
+- En **Historial y resumen**, el operario puede descargar un CSV para Excel con las cargas filtradas del almacén autorizado; codificación UTF-8 con BOM, separador punto y coma, comillas escapadas y neutralización de fórmulas de celdas. No incluye los PDF originales.
+- Puede abrir un informe imprimible con totales, filtros y filas autorizadas; impresión mediante el navegador o guardar PDF, sin editar los documentos originales.
+- Exportación e impresión desactivadas hasta concluir la lectura y cuando el filtro no devuelve resultados.
+- No se han creado tablas nuevas ni se han ejecutado migraciones en producción.
+- **Prueba confirmada**: GitHub Actions `40179638638` en commit `d649da8e34e87f5d8e80f9f72af3a2878ce3fbe1`: **62 pruebas JavaScript correctas, 0 fallidas**, migraciones SQL en entorno descartable y concurrencia verificadas. Las pruebas sobre PostgreSQL temporal no sustituyen pruebas reales con Supabase Auth, Storage ni impresoras iPhone.
+- La versión 0.3.4 está guardada en la rama de PR #2; **no se ha fusionado ni publicado como actualización de la aplicación instalada**.
