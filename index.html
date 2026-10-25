@@ -130,7 +130,7 @@
       <section class="panel"><div class="line"><div><h2>Necesitan atención</h2><p class="muted">Documentos, clasificaciones, verificaciones e incidencias pendientes.</p></div><button id="reloadAttention" type="button" class="secondary">Actualizar</button></div><div id="attentionList" class="attention-list"></div></section>
       <section class="panel">
         <h2>Importar → procesar → revisar → publicar</h2><p class="muted">Carga manual desde Business Central. KONTROLA conserva el original y usa el motor v0.5.26 de Control de Cargas.</p>
-        <label>Hoja de carga de Business Central<input type="file" accept=".pdf,application/pdf" id="pdfInput"></label>
+        <label>PDF de cargas de Business Central (hasta 20 archivos)<input type="file" accept=".pdf,application/pdf" id="pdfInput" multiple></label><p class="hint">Puedes seleccionar varios documentos. Se analizan uno a uno, quedan para revisión y nunca se publican automáticamente.</p>
         <button id="processPdf" type="button" class="primary">Importar y procesar</button>
         <div class="status" id="importStatus" role="status" aria-live="polite"></div>
         <div id="documentReview" class="document-review">Procesa un PDF para iniciar la revisión.</div>
