@@ -336,7 +336,17 @@ export function createAdminController({client,getUser,bucket,global,errorText,on
       target.appendChild(group);
     }
   }
+  function selectAdminTab(index){
+    for(const button of document.querySelectorAll("[data-admin-tab]")){
+      const active=Number(button.dataset.adminTab)===index;
+      button.classList.toggle("active",active);
+      button.setAttribute("aria-selected",String(active));
+      $("adminSection"+button.dataset.adminTab).hidden=!active;
+    }
+  }
+  for(const button of document.querySelectorAll("[data-admin-tab]"))button.addEventListener("click",()=>selectAdminTab(Number(button.dataset.adminTab)));
   async function open(){
+    selectAdminTab(0);
     await Promise.all([refreshAttention(),refreshSummary(),refreshIncidents(),operatorStats.refresh(),printBatch.refresh()]);
   }
   function clearSensitive(){

@@ -288,3 +288,9 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 - Pruebas CI y despliegue pendientes.
 
 - Ajuste final de orden: Importación primero, Resumen segundo, Necesitan atención tercero, Impresión cuarto, Actividad quinto, Incidencias sexto, Historial séptimo y Archivo OneDrive al final.
+
+## 2026-10-25 — Administración compacta por botones
+- `index.html`: navegación con ocho botones, Importar PDF seleccionado por defecto; cada panel mantiene IDs y funciones, los demás quedan ocultos.
+- `src/admin.mjs`: conmutación de pestañas y restablecimiento a Importar PDF al entrar; no altera datos.
+- `styles.css`: diseño compacto responsive con dos columnas de botones en iPhone.
+- Pendiente CI, despliegue y comprobación visual en Safari.

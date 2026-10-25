@@ -115,3 +115,6 @@ footer{padding:18px;text-align:center;background:#fff;border-top:1px solid #e6e8
 .archive-cover table{table-layout:auto}
 @media(max-width:540px){.archive-range-fields{grid-template-columns:1fr}}
 @media print{.archive-cover{break-after:page;page-break-after:always}}
+
+/* Navegación compacta de Administración para móvil */
+.admin-tabs{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0 18px}.admin-tab{font-size:.9rem;padding:10px 12px;min-height:44px;border:1px solid #b8c8d9;background:#fff;color:#0b2647;border-radius:10px;font-weight:650;flex:1 1 auto}.admin-tab.active{background:#0b2647;color:#fff;border-color:#0b2647}#adminView .panel[hidden]{display:none!important}@media(max-width:480px){.admin-tabs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.admin-tab{width:100%;padding:10px 6px;font-size:.88rem}}
