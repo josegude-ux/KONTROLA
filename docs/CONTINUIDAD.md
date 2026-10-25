@@ -294,3 +294,7 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 - `src/admin.mjs`: conmutación de pestañas y restablecimiento a Importar PDF al entrar; no altera datos.
 - `styles.css`: diseño compacto responsive con dos columnas de botones en iPhone.
 - Pendiente CI, despliegue y comprobación visual en Safari.
+
+## 2026-10-25 — Desbloqueo de publicación 0.3.20
+- Sincronizadas versiones `package.json`, `package-lock.json` y pruebas de navegación con `src/config.mjs`, `version.json` y caché v051.
+- El fallo previo de CI era la versión desincronizada, no el menú compacto. Pendiente verificación final.
