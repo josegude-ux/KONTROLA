@@ -235,10 +235,13 @@ export function createAdminController({client,getUser,bucket,global,errorText,on
   function updateActions(){
     const readiness=draft?publicationReadiness(draft.findings,draft.findings.filter(item=>item.severity==="warning").map(item=>item.id)):{ready:false};
     $("saveDocumentReview").disabled=busy||!draft;
-    $("generateSheet").disabled=busy||!draft;
+    $("generateSheet").disabled=busy||!draft||draft.state!=="publicada";
+    $("postPublishActions").hidden=!draft||draft.state!=="publicada";
     $("locationReport").disabled=busy||!draft;
     $("publishReviewedLoad").disabled=busy||!draft||draft.state!=="aprobada"||!readiness.ready;
-    $("reviewReadiness").textContent=!draft?"":readiness.ready?"Sin errores graves: puedes guardar y publicar.":readiness.errors?.length
+    $("publishReviewedLoad").hidden=!!draft&&draft.state==="publicada";
+    $("saveDocumentReview").hidden=!!draft&&draft.state==="publicada";
+    $("reviewReadiness").textContent=draft?.state==="publicada"?"Carga publicada. Continúa con la hoja de preparación.":!draft?"":readiness.ready?"Sin errores graves: puedes guardar y publicar.":readiness.errors?.length
       ?readiness.errors.length+" error(es) bloqueante(s).":"Confirma todas las advertencias para continuar.";
   }
   async function saveReview(){
@@ -426,6 +429,7 @@ export function createAdminController({client,getUser,bucket,global,errorText,on
   $("processPdf").addEventListener("click",processPdf);
   $("saveDocumentReview").addEventListener("click",saveReview);
   $("generateSheet").addEventListener("click",showReport);
+  $("goToBatchPrint").addEventListener("click",()=>{selectAdminTab(2);printBatch.refresh();});
   $("locationReport").addEventListener("click",showLocationReport);
   $("publishReviewedLoad").addEventListener("click",publish);
   $("adminWarehouse").addEventListener("change",()=>Promise.all([refreshAttention(),refreshSummary(),operatorStats.refresh(),printBatch.refresh()]));

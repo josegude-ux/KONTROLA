@@ -360,3 +360,9 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 - Pendiente añadir extracción fiable de bultos a la cadena PDF→Supabase→panel; no inventar cantidades.
 
 - `styles.css`: matrícula en pastilla de alto contraste y bultos como dato secundario en las tarjetas.
+
+## 2026-10-25 — Siguiente acción inmediatamente después de publicar
+- `index.html`: «Publicar carga» deja paso, justo debajo, a «Generar hoja de preparación» y «Imprimir varias cargas», sin desplazarse a otro menú.
+- `src/admin.mjs`: el bloque posterior solo se muestra cuando la carga está publicada; no permite generar la hoja antes de publicar. El acceso a lotes abre directamente la pestaña de impresión y actualiza las cargas.
+- Se ocultan los botones de guardar/publicar ya ejecutados para evitar confusión. Sin publicación automática ni cambios en BC.
+- Pendiente CI y despliegue.
