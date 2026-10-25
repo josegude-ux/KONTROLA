@@ -1,4 +1,4 @@
 {
-  "version": "0.3.11",
-  "notes": "Impresión conjunta de hasta diez hojas procesadas, estadísticas privadas por operario y auditoría de copias originales."
+  "version": "0.3.12",
+  "notes": "Seguridad al cerrar sesión: limpieza de datos administrativos y respuestas antiguas; paginación de impresión por lotes."
 }
