@@ -4,7 +4,7 @@
 
 PWA móvil de operaciones de almacén para **preparación, consulta, verificación, historial e incidencias de cargas**.
 
-**Versión de esta rama:** 0.3.16. **Estado:** desarrollo probado parcialmente, **no apto aún para producción**.
+**Versión de esta rama:** 0.3.17. **Estado:** desarrollo probado parcialmente, **no apto aún para producción**.
 
 - PR de Fase 1: https://github.com/josegude-ux/KONTROLA/pull/1
 - PR de operación integral: https://github.com/josegude-ux/KONTROLA/pull/2
@@ -142,3 +142,16 @@ Pendiente: pruebas completas con Supabase Auth/Storage real, documentos autoriza
 - **Sin validación real de iPhone, Safari ni recuperación de PDF empresariales**. El uso con documentos reales requiere una autorización específica.
 
 La migración de copias y PDF antiguos ha quedado fuera del alcance por decisión del usuario. El panel de recuperación antigua está oculto. El archivo de PDF nuevos en OneDrive es manual, no automático.
+
+## Archivo periódico por fechas — v0.3.17
+
+En Administración → Imprimir varias hojas procesadas:
+1. Seleccionar almacén autorizado.
+2. Indicar opcionalmente fechas **Desde** y **Hasta** (inclusive). Las cargas sin fecha válida no se incluyen si se usa un filtro.
+3. Actualizar la lista y elegir cargas individualmente, o seleccionar rápidamente las primeras 10 del periodo.
+4. Preparar la impresión. La primera página es una **carátula con la relación de cargas, fechas, almacén y nombre sugerido**, seguida de una hoja procesada por carga.
+5. En **Imprimir / Guardar PDF**, obtener un PDF real con el navegador; guardarlo en Archivos y moverlo manualmente a la carpeta de OneDrive autorizada. La aplicación NO afirma ni registra que esté archivado antes de verificar la copia.
+
+Se han **desconectado y eliminado de la interfaz** los accesos a migración, conciliación y recuperación de PDF anteriores al arranque. Los módulos históricos continúan en el repositorio para trazabilidad, pero no son importados por la aplicación activa ni precargados en el caché.
+
+Pruebas: GitHub Actions `40191583046`, **123 pruebas correctas, 0 fallidas**, cinco migraciones PostgreSQL temporal y concurrencia correctas. Pendientes: Safari/iPhone, permisos Supabase y movimiento real a OneDrive.
