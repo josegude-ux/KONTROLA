@@ -385,3 +385,9 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 - Los cambios sin guardar se advierten antes de abandonar una revisión. La selección nunca publica ni guarda automáticamente. Solo carga el registro elegido y mantiene el resto de flujos.
 - `src/admin.mjs`, `index.html`; selector refrescado al abrir administración y cambiar almacén. No hay cambios en Supabase ni otras aplicaciones.
 - Pendiente CI y despliegue.
+
+## 2026-10-25 — Impresión por día de publicación, no por fecha documental BC
+- Problema confirmado: cargas publicadas el 25/10 tenían fechas BC del 23/10 y 26/10 y la lista de impresión estaba vacía.
+- Migración `kontrola_impresion_por_fecha_publicacion`: RPC `kontrola_panel_cargas_impresion` con `publicado_en`, respetando permisos por almacén, estado publicada y RPC anteriores.
+- `src/admin-print-batch.mjs`: filtra por día de publicación Europe/Madrid, mantiene máximo 20, no duplica impresiones, valida nuevamente la carga en servidor antes de generar hojas procesadas; fecha documental BC sigue visible como dato informativo.
+- Sin modificación de cargas ni otros proyectos. Pendiente CI y despliegue.

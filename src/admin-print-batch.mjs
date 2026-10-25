@@ -1,7 +1,7 @@
 import {buildPreparationReport} from "./report.mjs";
 import {comprobarLoteActualizado} from "./archive-snapshot.mjs";
 import {fechaAlmacen} from "./business-date.mjs";
-import {filtrarCargasArchivo,nombreSugeridoArchivo,portadaLoteArchivo,MAX_HOJAS_ARCHIVO} from "./archive-period.mjs";
+import {nombreSugeridoArchivo,portadaLoteArchivo,MAX_HOJAS_ARCHIVO} from "./archive-period.mjs";
 
 // Solo lectura; crea una vista imprimible a partir de las cargas autorizadas.
 // No incluye los PDF originales ni publica/actualiza documentos.
@@ -16,10 +16,13 @@ export function configurarLoteImpresion({client,getUser,getWarehouse,errorText})
     $("batchPrintOpen").hidden=true;
     $("batchPrintReprint").closest("label").hidden=true;
   }
+  // Fecha operativa: publicación en Madrid, nunca la fecha documental de BC.
+  const publicadaHoy=(row,today)=>row.estado==="publicada"&&row.publicado_en&&
+    new Intl.DateTimeFormat("en-CA",{timeZone:"Europe/Madrid",year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date(row.publicado_en))===today;
   function render(){
     list.replaceChildren();
     const today=fechaAlmacen();
-    try{rows=filtrarCargasArchivo(allRows,today,today).filter(row=>reprintMode?(printCounts.get(row.codigo)||0)>0:!(printCounts.get(row.codigo)||0));}
+    try{rows=allRows.filter(row=>publicadaHoy(row,today)).filter(row=>reprintMode?(printCounts.get(row.codigo)||0)>0:!(printCounts.get(row.codigo)||0));}
     catch(error){
       rows=[];selected.clear();button.disabled=true;
       status.textContent=error.message;return;
@@ -64,7 +67,7 @@ export function configurarLoteImpresion({client,getUser,getWarehouse,errorText})
     if(!warehouse||!session){status.textContent="Selecciona almacén e inicia sesión.";return;}
     $("batchPrintRefresh").disabled=true;status.textContent="Consultando hojas procesadas…";
     try{
-      const {data,error}=await client.rpc("kontrola_panel_cargas_v2",{p_almacen:warehouse});
+      const {data,error}=await client.rpc("kontrola_panel_cargas_impresion",{p_almacen:warehouse});
       if(req!==seq||getUser()?.id!==session||getWarehouse()!==warehouse)return;
       if(error)throw error;
       const {data:prints,error:printError}=await client.rpc("kontrola_estado_impresion",{p_almacen:warehouse});
@@ -73,7 +76,7 @@ export function configurarLoteImpresion({client,getUser,getWarehouse,errorText})
       printCounts=new Map((prints||[]).map(x=>[x.codigo,Number(x.intentos)]));
       allRows=(data||[]).filter(x=>x&&x.codigo&&Array.isArray(x.productos));
       render();
-      status.textContent=rows.length?rows.length+" carga(s) de hoy disponibles para impresión.":"No hay cargas publicadas de hoy disponibles para imprimir. Las importaciones pendientes de revisión no aparecen aquí.";
+      status.textContent=rows.length?rows.length+" carga(s) publicadas hoy disponibles para impresión.":"No hay cargas publicadas hoy disponibles para imprimir. Las importaciones pendientes de revisión no aparecen aquí.";
     }catch(error){
       if(req!==seq||getUser()?.id!==session)return;
       reset();status.textContent="No se pudieron consultar las cargas: "+errorText(error);
@@ -96,7 +99,7 @@ export function configurarLoteImpresion({client,getUser,getWarehouse,errorText})
     previewing=true;button.disabled=true;
     status.textContent="Verificando en el servidor que las "+chosen.length+" cargas no han cambiado…";
     try{
-      const {data,error}=await client.rpc("kontrola_panel_cargas",{p_almacen:warehouse});
+      const {data,error}=await client.rpc("kontrola_panel_cargas_impresion",{p_almacen:warehouse});
       if(request!==seq||getUser()?.id!==session||getWarehouse()!==warehouse
         ||fechaAlmacen()!==today
         ||selected.size!==codes.length||codes.some(id=>!selected.has(id)))return;
