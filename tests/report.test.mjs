@@ -43,3 +43,33 @@ test("Informe impreso respeta cajas antes de botellas y cantidad descendente",()
  assert.ok(html.indexOf("CAJA2")<html.indexOf("BOT1"));
  assert.ok(html.indexOf("BOT1")<html.indexOf("BOT2"));
 });
+
+test("cada pasillo totaliza solo productos de su zona",()=>{
+ const html=buildPreparationReport({...load,productos:[
+  {sku:"A1",location:"A01-P01",qty:7,unit:"CAJA"},
+  {sku:"A2",location:"A02-P02",qty:3,unit:"CAJA"},
+  {sku:"B1",location:"B01-P01",qty:5,unit:"CAJA"}
+ ]});
+ assert.match(html,/TOTAL PASILLO A · 2 referencia\(s\) · 10 CAJA/);
+ assert.match(html,/TOTAL PASILLO B · 1 referencia\(s\) · 5 CAJA/);
+});
+
+test("el total separa unidades y descarta cantidades no preparables",()=>{
+ const html=buildPreparationReport({...load,productos:[
+  {sku:"A1",location:"A01-P01",qty:2,unit:"CAJA"},
+  {sku:"A2",location:"A02-P02",qty:1.5,unit:"CAJA"},
+  {sku:"A3",location:"A03-P03",qty:6,unit:"BOTELLA"},
+  {sku:"A4",location:"A04-P04",qty:0,unit:"CAJA"},
+  {sku:"B1",location:"B01-P01",qty:8,unit:"CAJA"}
+ ]});
+ assert.match(html,/TOTAL PASILLO A · 3 referencia\(s\) · 6 BOTELLA · 3,5 CAJA/);
+ assert.match(html,/TOTAL PASILLO B · 1 referencia\(s\) · 8 CAJA/);
+ assert.doesNotMatch(html,/TOTAL PASILLO A[^<]*17,5/);
+});
+
+test("los totales escapan unidades potencialmente maliciosas",()=>{
+ const html=buildPreparationReport({...load,productos:[{sku:"A1",location:"A01-P01",qty:2,unit:"<script>alert(1)</script>"}]});
+ assert.match(html,/TOTAL PASILLO A/);
+ assert.doesNotMatch(html,/<script>/);
+ assert.match(html,/&lt;SCRIPT&gt;/);
+});

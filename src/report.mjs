@@ -26,11 +26,19 @@ export function buildPreparationReport(load){
   const sortAisle=s=>s==="SIN UBICACIÓN"?"ZZZ":s==="FRÍO"?"ZZY":s;
   const sections=[...grouped.entries()].sort((a,b)=>sortAisle(a[0]).localeCompare(sortAisle(b[0]),"es")).map(([aisle,rawLines])=>{
     const lines=ordenarLineasPasillo(rawLines);
+    // Totalizar cantidades solo cuando comparten unidad; nunca sumar cajas y botellas.
+    const units=new Map();
+    for(const product of lines){
+      const unit=String(product.unit||"SIN UNIDAD").trim().toUpperCase();
+      units.set(unit,(units.get(unit)||0)+Number(product.qty));
+    }
+    const totals=[...units.entries()].sort((a,b)=>a[0].localeCompare(b[0],"es"))
+      .map(([unit,qty])=>number(qty)+" "+escapeHtml(unit)).join(" · ");
     return `
     <section class="report-aisle">
       <h2>Pasillo ${escapeHtml(aisle)}</h2>
       <table><thead><tr><th>Ubicación</th><th>Referencia</th><th>Descripción</th><th>Cantidad</th><th>Unidad</th></tr></thead>
-      <tbody>${lines.map(product=>`<tr><td>${escapeHtml(product.location||"SIN UBICACIÓN")}</td><td>${escapeHtml(product.sku)}</td><td>${escapeHtml(product.description)}</td><td class="number">${number(product.qty)}</td><td>${escapeHtml(product.unit)}</td></tr>`).join("")}</tbody></table>
+      <tbody>${lines.map(product=>`<tr><td>${escapeHtml(product.location||"SIN UBICACIÓN")}</td><td>${escapeHtml(product.sku)}</td><td>${escapeHtml(product.description)}</td><td class="number">${number(product.qty)}</td><td>${escapeHtml(product.unit)}</td></tr>`).join("")}</tbody><tfoot><tr class="report-aisle-total"><th colspan="5" scope="row">TOTAL PASILLO ${escapeHtml(aisle)} · ${lines.length} referencia(s) · ${totals}</th></tr></tfoot></table>
     </section>`;
   }).join("");
   return `<article class="preparation-report">

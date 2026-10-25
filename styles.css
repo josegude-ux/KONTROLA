@@ -132,3 +132,7 @@ footer{padding:18px;text-align:center;background:#fff;border-top:1px solid #e6e8
 
 /* Datos prioritarios en tarjetas de carga */
 .load-plate{display:inline-block;margin-top:8px;padding:5px 10px;border-radius:8px;background:#dceeff;color:#082b52;font-weight:800;font-size:15px;letter-spacing:.035em}.load-bundles{display:block;margin-top:5px;color:#334f6b;font-weight:650;font-size:13px}
+
+/* Subtotales de pasillo visibles en pantalla y en impresión. */
+.preparation-report .report-aisle-total th{font-weight:800;text-align:right;background:#edf3f8;color:#092c50;border-top:2px solid #819bb3;padding:9px 8px;white-space:normal}
+@media print{.preparation-report .report-aisle-total{break-inside:avoid;page-break-inside:avoid}.preparation-report .report-aisle-total th{background:#e9e9e9!important;color:#000!important;border-top:2px solid #555}}
