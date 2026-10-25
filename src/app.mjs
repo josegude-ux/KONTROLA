@@ -3,7 +3,7 @@ import {parseDocumentPages} from "./core.mjs";
 import {agruparPasillos,ordenarCargas,validacionPublicacion,normalizarCarga,rutaArchivo} from "./logic.mjs";
 import {parseCheckedQuantity,summarizeVerification} from "./verification.mjs";
 const $=id=>document.getElementById(id);
-let client=null,user=null,profile=null,loads=[],current=null,groups=[],selectedAisle="TODOS",busy=false,opening=false;
+let client=null,user=null,profile=null,loads=[],current=null,currentPreparation=null,groups=[],selectedAisle="TODOS",busy=false,opening=false;
 let reviewLoads=[],currentVerification=null,verificationLines=[];
 $("appVersion").textContent=APP_VERSION;
 const visible=(element,show)=>{element.hidden=!show;};
@@ -23,7 +23,7 @@ function switchView(id,{force=false}={}){
   return true;
 }
 function loggedOut(message=""){
-  user=null;profile=null;loads=[];current=null;reviewLoads=[];currentVerification=null;verificationLines=[];
+  user=null;profile=null;loads=[];current=null;currentPreparation=null;reviewLoads=[];currentVerification=null;verificationLines=[];
   visible($("shell"),false);visible($("loginView"),true);
   status("authMessage",message,message?"error":"");
 }
@@ -102,7 +102,7 @@ $("loadSearch").addEventListener("input",renderLoadList);
 $("reloadLoads").addEventListener("click",()=>refreshLoads().catch(()=>{}));
 $("openPreparation").addEventListener("click",async()=>{switchView("loadsView");await refreshLoads().catch(()=>{});});
 $("openReview").addEventListener("click",async()=>{switchView("reviewLoadsView");await refreshReviewLoads().catch(()=>{});});
-$("openAdmin").addEventListener("click",()=>{if(profile?.rol==="administrador")switchView("adminView");});
+$("openAdmin").addEventListener("click",async()=>{if(profile?.rol==="administrador"&&switchView("adminView"))await refreshIncidents().catch(()=>{});});
 $("openSettings").addEventListener("click",()=>switchView("settingsView"));
 $("goHome").addEventListener("click",()=>switchView("homeView"));
 document.querySelectorAll("[data-back='home']").forEach(b=>b.addEventListener("click",()=>switchView("homeView")));
@@ -121,8 +121,10 @@ async function openLoad(code){
     const notice=$("prepStatus");
     const result=Array.isArray(data)?data[0]:data;
     const alreadyDone=Boolean(result?.finalizada);
+    currentPreparation={finalized:alreadyDone};
     notice.className="info-bar"+(alreadyDone?" complete":"");
     notice.textContent=alreadyDone?"Preparación ya cerrada. Esta consulta no modifica los horarios.":result?.ya_iniciada?"Preparación en curso. Se conserva la hora de inicio original.":"Preparación iniciada. El cambio a otra carga cerrará automáticamente esta preparación.";
+    visible($("finishPreparation"),!alreadyDone);
     const facts=$("detailFacts");facts.replaceChildren();
     const entries=[["Matrícula",load.matricula||"—"],["Peso",fmt(load.peso_kg)+" kg"],["Referencias",fmt(load.referencias)],["Fecha",load.fecha||"—"]];
     for(const [label,value] of entries){
@@ -133,6 +135,19 @@ async function openLoad(code){
     renderAisles();switchView("detailView",{force:true});
   }catch(err){global("No se pudo abrir esta carga: "+errorText(err),"error");}finally{opening=false;}
 }
+$("finishPreparation").addEventListener("click",async()=>{
+  if(busy||!current||currentPreparation?.finalized)return;
+  busy=true;$("finishPreparation").disabled=true;global("Finalizando la preparación de "+current.codigo+"…");
+  try{
+    const {error}=await client.rpc("kontrola_finalizar_preparacion",{p_codigo:current.codigo});
+    if(error)throw error;
+    currentPreparation.finalized=true;visible($("finishPreparation"),false);
+    $("prepStatus").className="info-bar complete";
+    $("prepStatus").textContent="Preparación finalizada. La carga ya puede ser verificada por otra persona.";
+    global("Preparación finalizada con hora del servidor.","success");
+  }catch(error){global("No se pudo finalizar la preparación: "+errorText(error),"error");}
+  finally{busy=false;$("finishPreparation").disabled=false;}
+});
 function renderAisles(){
   const tabs=$("aisleTabs");tabs.replaceChildren();
   for(const name of ["TODOS",...groups.map(x=>x.nombre)]){
@@ -284,10 +299,54 @@ $("finishVerification").addEventListener("click",async()=>{
     if(error)throw error;
     const result=Array.isArray(data)?data[0]:data;
     currentVerification.finished=true;
+    currentVerification.load.estado="finalizada";
+    currentVerification.load.incidencias_pendientes=Number(result?.incidencias_pendientes||0);
     global("Carga cerrada. Incidencias pendientes: "+Number(result?.incidencias_pendientes||0)+".","success");
   }catch(error){global("No se pudo finalizar: "+errorText(error),"error");}
   finally{busy=false;renderVerification();}
 });
+async function refreshIncidents(){
+  const target=$("incidentList");target.textContent="Consultando incidencias pendientes…";
+  const {data,error}=await client.rpc("kontrola_incidencias_pendientes");
+  if(error){target.textContent="No se pueden consultar las incidencias: "+errorText(error);throw error;}
+  renderIncidents(data||[]);
+}
+function renderIncidents(incidents){
+  const target=$("incidentList");target.replaceChildren();
+  if(!incidents.length){const p=document.createElement("p");p.className="muted";p.textContent="No hay incidencias pendientes de regularización.";target.appendChild(p);return;}
+  const groups=new Map();
+  for(const incident of incidents){
+    if(!groups.has(incident.codigo))groups.set(incident.codigo,[]);
+    groups.get(incident.codigo).push(incident);
+  }
+  for(const [code,items] of groups){
+    const group=document.createElement("section");group.className="incident-group";
+    const title=document.createElement("h3");title.textContent=code+" · "+items.length+" pendiente(s)";group.appendChild(title);
+    for(const incident of items){
+      const row=document.createElement("div");row.className="incident-row";
+      const info=document.createElement("div"),name=document.createElement("b"),detail=document.createElement("p");
+      name.textContent=incident.sku+" · línea "+incident.linea;
+      detail.textContent="Previsto "+fmt(incident.prevista_cantidad)+" · comprobado "+fmt(incident.comprobada_cantidad)+" · diferencia "+(Number(incident.diferencia)>0?"+":"")+fmt(incident.diferencia);
+      info.append(name,detail);
+      const button=document.createElement("button");button.type="button";button.className="secondary";button.textContent="Marcar regularizada";
+      button.addEventListener("click",()=>regularizeIncident(incident.id,button));
+      row.append(info,button);group.appendChild(row);
+    }
+    target.appendChild(group);
+  }
+}
+async function regularizeIncident(id,button){
+  if(busy||profile?.rol!=="administrador")return;
+  busy=true;button.disabled=true;global("Confirmando regularización manual…");
+  try{
+    const {error}=await client.rpc("kontrola_regularizar_incidencia",{p_incidencia:id});
+    if(error)throw error;
+    global("Incidencia marcada como regularizada. KONTROLA no ha modificado Business Central.","success");
+    await refreshIncidents();
+  }catch(error){global("No se pudo actualizar la incidencia: "+errorText(error),"error");}
+  finally{busy=false;button.disabled=false;}
+}
+$("reloadIncidents").addEventListener("click",()=>refreshIncidents().catch(()=>{}));
 $("viewPdf").addEventListener("click",async()=>{
   if(!current?.documento_ruta)return global("No existe un PDF publicado para esta carga.","error");
   // Abrir la pestaña como consecuencia directa del clic, antes de solicitar la URL firmada.

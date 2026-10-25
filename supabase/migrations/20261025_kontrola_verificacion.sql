@@ -151,7 +151,7 @@ begin
  left join public.kontrola_incidencias i
   on i.verificacion_id = v.id and i.linea = l.linea
  where p.operario_id <> v_user
-  and (v.id is null or v.verificador_id = v_user or public.kontrola_es_administrador())
+  and (v.id is null or v.verificador_id = v_user)
  group by c.codigo,c.fecha,c.matricula,c.ruta,c.repartidor,c.peso_kg,c.referencias,v.estado;
 end;
 $$;
@@ -326,5 +326,60 @@ end;
 $$;
 revoke all on function public.kontrola_finalizar_verificacion(uuid) from public, anon;
 grant execute on function public.kontrola_finalizar_verificacion(uuid) to authenticated;
+
+create or replace function public.kontrola_incidencias_pendientes()
+returns table(
+ id uuid, codigo text, linea integer, sku text, prevista_cantidad numeric,
+ comprobada_cantidad numeric, diferencia numeric, detectada_en timestamptz
+)
+language plpgsql stable security definer set search_path = ''
+as $$
+begin
+ if auth.uid() is null or not public.kontrola_es_administrador() then
+  raise exception 'Solo administración puede consultar las regularizaciones' using errcode = '42501';
+ end if;
+ return query
+ select i.id,i.codigo,i.linea,i.sku,i.prevista_cantidad,
+  i.comprobada_cantidad,i.diferencia,i.detectada_en
+ from public.kontrola_incidencias i
+ where i.estado = 'pendiente'
+ order by i.codigo,i.linea;
+end;
+$$;
+revoke all on function public.kontrola_incidencias_pendientes() from public, anon;
+grant execute on function public.kontrola_incidencias_pendientes() to authenticated;
+
+create or replace function public.kontrola_regularizar_incidencia(p_incidencia uuid)
+returns timestamptz
+language plpgsql security definer set search_path = ''
+as $$
+declare
+ v_user uuid := auth.uid();
+ v_now timestamptz := now();
+ v_incidencia public.kontrola_incidencias%rowtype;
+begin
+ if v_user is null or not public.kontrola_es_administrador() then
+  raise exception 'Solo administración puede confirmar regularizaciones' using errcode = '42501';
+ end if;
+ select i.* into v_incidencia from public.kontrola_incidencias i
+ where i.id = p_incidencia for update;
+ if not found then
+  raise exception 'Incidencia inexistente' using errcode = '22023';
+ end if;
+ if v_incidencia.estado = 'regularizada' then
+  return v_incidencia.actualizada_en;
+ end if;
+ if v_incidencia.estado <> 'pendiente' then
+  raise exception 'La incidencia no está pendiente' using errcode = '22023';
+ end if;
+ -- Esta confirmación solo documenta una regularización manual ya hecha en Business Central.
+ update public.kontrola_incidencias i
+ set estado = 'regularizada', actualizada_por = v_user, actualizada_en = v_now
+ where i.id = p_incidencia;
+ return v_now;
+end;
+$$;
+revoke all on function public.kontrola_regularizar_incidencia(uuid) from public, anon;
+grant execute on function public.kontrola_regularizar_incidencia(uuid) to authenticated;
 
 commit;

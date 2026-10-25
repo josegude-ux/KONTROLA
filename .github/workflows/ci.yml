@@ -3,7 +3,7 @@ on:
   push:
     branches: [desarrollo/fase-1-operario]
   pull_request:
-    branches: [main]
+    branches: [main, desarrollo/fase-1-operario]
 permissions:
   contents: read
 jobs:
@@ -19,5 +19,6 @@ jobs:
           node --check src/app.mjs
           node --check src/core.mjs
           node --check src/logic.mjs
+          node --check src/verification.mjs
       - name: Pruebas de regresión
         run: node --test tests/*.test.mjs

@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0B2647">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="KONTROLA">
 <title>KONTROLA · MOVENTA</title>
 <link rel="icon" href="./assets/kontrola.svg" type="image/svg+xml">
@@ -50,6 +51,7 @@
     <section id="detailView" class="view" hidden>
       <div class="page-heading"><button type="button" id="backToLoads" class="back-button">← Volver a cargas</button><p class="eyebrow">CONSULTA DE PREPARACIÓN</p><h1 id="detailTitle"></h1><p class="muted" id="detailSubtitle"></p></div>
       <div id="prepStatus" class="info-bar" aria-live="polite"></div>
+      <button id="finishPreparation" class="primary full" type="button" hidden>Finalizar preparación</button>
       <div class="facts" id="detailFacts"></div>
       <section class="panel">
         <div class="line"><div><h2>Mercancía por pasillos</h2><p class="muted">Solo consulta. El picking se registra con la pistola y Business Central.</p></div><button id="viewPdf" class="secondary" type="button">Ver PDF original</button></div>
@@ -84,11 +86,15 @@
         <div class="status" id="importStatus" role="status" aria-live="polite"></div>
         <p class="hint">Este procedimiento no modifica los registros originales de Control de Cargas. La conexión automática entre ambos programas se desarrollará por separado.</p>
       </section>
+      <section class="panel">
+        <div class="line"><div><h2>Incidencias pendientes</h2><p class="muted">Agrupadas por carga. Confirma aquí únicamente una regularización ya realizada manualmente en Business Central.</p></div><button id="reloadIncidents" type="button" class="secondary">Actualizar</button></div>
+        <div id="incidentList" class="incident-list" aria-live="polite"></div>
+      </section>
     </section>
     <section id="settingsView" class="view" hidden>
       <div class="page-heading"><button type="button" data-back="home" class="back-button">← Volver</button><h1>Ajustes</h1></div>
       <section class="panel">
-        <p><b>Aplicación:</b> KONTROLA</p><p><b>Versión:</b> <span id="appVersion">0.1.0</span></p>
+        <p><b>Aplicación:</b> KONTROLA</p><p><b>Versión:</b> <span id="appVersion">0.2.0</span></p>
         <p><b>Usuario:</b> <span id="profileName"></span></p><p><b>Perfil:</b> <span id="profileRole"></span></p>
         <div class="actions"><button type="button" id="checkUpdates" class="secondary">Buscar actualización</button><button id="logout" type="button" class="ghost-danger">Cerrar sesión</button></div>
         <div class="status" id="settingsStatus" role="status" aria-live="polite"></div>

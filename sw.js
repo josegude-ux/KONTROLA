@@ -1,4 +1,4 @@
-const CACHE="kontrola-fase1-v010";const ASSETS=["./","./index.html","./styles.css","./src/app.mjs","./src/core.mjs","./src/daily-import.mjs","./src/logic.mjs","./src/config.mjs","./assets/kontrola.svg","./manifest.webmanifest","./version.json"];
+const CACHE="kontrola-verificacion-v020";const ASSETS=["./","./index.html","./styles.css","./src/app.mjs","./src/core.mjs","./src/daily-import.mjs","./src/logic.mjs","./src/verification.mjs","./src/config.mjs","./assets/kontrola.svg","./manifest.webmanifest","./version.json"];
 self.addEventListener("install",e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)).then(()=>self.skipWaiting())));
 self.addEventListener("activate",e=>e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k.startsWith("kontrola-")&&k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));
 self.addEventListener("message",e=>{if(e.data?.type==="SKIP_WAITING")self.skipWaiting()});
