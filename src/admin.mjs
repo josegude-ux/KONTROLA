@@ -36,7 +36,7 @@ export function buildReportDownloadHtml(title,styles,content){
 }
 
 export function createAdminController({client,getUser,bucket,global,errorText,onPublished}){
-  configureRevisionHistory({client,getUser,bucket,errorText});
+  const revisionControl=configureRevisionHistory({client,getUser,bucket,errorText});
   const operatorStats=configurarEstadisticasOperarios({client,getUser,errorText,getWarehouse:()=>document.getElementById("adminWarehouse").value});
   const legacyAudit=configurarAuditoriaLegacy({getUser,errorText});
   const printBatch=configurarLoteImpresion({client,getUser,errorText,getWarehouse:()=>document.getElementById("adminWarehouse").value});
@@ -141,9 +141,11 @@ export function createAdminController({client,getUser,bucket,global,errorText,on
     }
   }
   async function loadImport(id){
+    const session=getUser()?.id;
     const {data,error}=await client.from("kontrola_importaciones")
       .select("id,documento_hash,documento_ruta,estado,carga_datos,hallazgos,correcciones,advertencias_confirmadas")
       .eq("id",id).single();
+    if(getUser()?.id!==session)return;
     if(error)throw error;
     if(!data.carga_datos)return setStatus("La importación está reservada pero todavía no fue procesada.","error");
     const payload=data.carga_datos;
@@ -310,8 +312,10 @@ export function createAdminController({client,getUser,bucket,global,errorText,on
     }
   }
   async function refreshIncidents(){
-    const target=$("incidentList");target.textContent="Consultando incidencias…";
+    const session=getUser()?.id,target=$("incidentList");
+    target.textContent="Consultando incidencias…";
     const {data,error}=await client.rpc("kontrola_incidencias_pendientes");
+    if(getUser()?.id!==session)return;
     target.replaceChildren();if(error){target.textContent=errorText(error);return;}
     const groups=new Map();
     for(const incident of data||[]){if(!groups.has(incident.codigo))groups.set(incident.codigo,[]);groups.get(incident.codigo).push(incident);}
@@ -338,6 +342,17 @@ export function createAdminController({client,getUser,bucket,global,errorText,on
     legacyAudit.clear();
     await Promise.all([refreshAttention(),refreshSummary(),refreshIncidents(),operatorStats.refresh(),printBatch.refresh()]);
   }
+  function clearSensitive(){
+    draft=null;busy=false;
+    revisionControl.clear();operatorStats.clear();printBatch.clear();legacyAudit.clear();
+    for(const id of ["documentReview","attentionList","adminSummary","adminActivity",
+      "incidentList","reviewReadiness","reportPaper"]){
+      const element=$(id);if(element)element.replaceChildren();
+    }
+    $("pdfInput").value="";
+    $("reportView").hidden=true;document.body.classList.remove("report-open");
+    setStatus("");updateActions();
+  }
   $("processPdf").addEventListener("click",processPdf);
   $("saveDocumentReview").addEventListener("click",saveReview);
   $("generateSheet").addEventListener("click",showReport);
@@ -352,5 +367,5 @@ export function createAdminController({client,getUser,bucket,global,errorText,on
     const link=document.createElement("a");link.href=URL.createObjectURL(blob);link.download=(safeName||"kontrola")+".html";link.click();setTimeout(()=>URL.revokeObjectURL(link.href),1000);
   });
   $("closeReport").addEventListener("click",()=>{$("reportView").hidden=true;document.body.classList.remove("report-open");});
-  return {open,refreshSummary,refreshAttention};
+  return {open,refreshSummary,refreshAttention,clearSensitive,isBusy:()=>busy};
 }
