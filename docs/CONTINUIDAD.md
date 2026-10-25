@@ -440,3 +440,7 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 - `src/app.mjs`: conecta `filtrarArchivoLogico` a las respuestas de los RPC ya existentes: cargas operativas usa `activas`; historial usa `todas`.
 - Sin columna `archivado` confirmada, las cargas existentes mantienen la misma visibilidad; solo `archivado === true` en respuesta autorizada excluye una carga del listado activo.
 - No crea selector visual de archivadas ni escribe en Supabase; el historial sigue sujeto al RPC y permisos existentes. No equivale a archivo lógico operativo completo.
+
+### 2026-10-25 — Plan de archivo real pendiente de aplicación
+- Auditoría y requisitos en docs/ARCHIVO_LOGICO_IMPLEMENTACION.md.
+- La migración de metadatos fue bloqueada; sin cambios SQL aplicados ni archivo persistente operativo.
