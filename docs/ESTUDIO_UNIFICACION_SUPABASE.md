@@ -123,3 +123,6 @@ Control de Cargas v0.5.26 también usa información local del dispositivo. Las 3
 **Sí es viable usar una sola base de datos Supabase y un inicio de sesión unificado, manteniendo los módulos operativos.** La ruta probablemente menos disruptiva es incorporar las funciones y datos de Control de Cargas/KONTROLA en el proyecto INVENTA, ya que INVENTA contiene el catálogo, las ubicaciones, la auditoría y la mayoría de claves foráneas.
 
 **Pero no es seguro ejecutar la fusión todavía.** Deben resolverse las correspondencias de identidad y permisos, conservación de datos locales/PDF y la dependencia de Tanques. La preparación técnica y los ensayos de PostgreSQL descartable pueden avanzar sin nuevas tarifas de Supabase.
+## Aclaración de navegación acordada posteriormente (25/10/2026)
+
+La **interfaz móvil principal será KONTROLA**, con **Control de Cargas** y **Control de Tanques** como submenús internos. Esta decisión concreta el apartado anterior de «interfaz unificada»; no significa fusionar INVENTA como pantalla ni aprobar todavía migraciones. Tanques permanece en pausa y su submenú será futuro. Acceso único previsto por diseño, pendiente de implementación y pruebas. Véase [plan de navegación modular](PLAN_NAVEGACION_MODULAR.md).
