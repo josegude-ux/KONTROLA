@@ -12,7 +12,7 @@ test("cerrar sesión purga los paneles y descarta importaciones pendientes de fi
  assert.match(admin,/revisionControl\.clear\(\)/);
  assert.match(admin,/operatorStats\.clear\(\)/);
  assert.match(admin,/printBatch\.clear\(\)/);
- assert.match(admin,/legacyAudit\.clear\(\)/);
+ assert.doesNotMatch(admin,/configurarAuditoriaLegacy|legacyAudit|configurarConciliacionLegacy/);
  assert.match(admin,/\$\("reportView"\)\.hidden=true/);
 });
 test("la recuperación asíncrona no restablece un documento tras cambiar de usuario",()=>{
@@ -24,7 +24,7 @@ test("la recuperación asíncrona no restablece un documento tras cambiar de usu
  assert.match(incidents,/if\(getUser\(\)\?\.id!==session\)return/);
 });
 test("los módulos invalidan solicitudes y eliminan datos confidenciales al limpiar",()=>{
- for(const path of ["src/admin-revisions.mjs","src/admin-stats.mjs","src/admin-print-batch.mjs","src/admin-legacy.mjs"]){
+ for(const path of ["src/admin-revisions.mjs","src/admin-stats.mjs","src/admin-print-batch.mjs"]){
   const s=read(path);
   assert.match(s,/clear:/);
  }
