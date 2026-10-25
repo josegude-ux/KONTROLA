@@ -1,4 +1,4 @@
-import {inventariarOriginalesLocales} from "./legacy-originals.mjs";
+import {inventariarOriginalesLocales,recuperarPdfOriginalLocal} from "./legacy-originals.mjs";
 const $=id=>document.getElementById(id);
 const line=(label,value)=>{
   const p=document.createElement("p");p.className="legacy-audit-line";
@@ -33,6 +33,38 @@ export function configurarInventarioOriginales({getUser,errorText}){
           " · "+item.versiones+" clave(s) histórica(s)"));
       }
       results.append(line("Aviso",inventory.aviso));
+      // Nunca descargar nada sin clic explícito del administrador.
+      // Los archivos se copian a Descargas; los originales permanecen intactos.
+      const eligible=inventory.claves.slice(0,25);
+      for(const item of eligible){
+        const download=document.createElement("button");
+        download.type="button";download.className="secondary";
+        download.textContent="Guardar PDF "+item.codigo+(item.tipo==="version"?" (revisión histórica)":" (vigente)");
+        download.addEventListener("click",async()=>{
+          if(download.disabled||active!==current||getUser()?.id!==session)return;
+          download.disabled=true;
+          status.textContent="Verificando SHA-256 del PDF "+item.codigo+" antes de guardar una copia…";
+          try{
+            const file=await recuperarPdfOriginalLocal(item.clave);
+            if(active!==current||getUser()?.id!==session)return;
+            const url=URL.createObjectURL(file.blob);
+            const link=document.createElement("a");
+            link.href=url;link.download="Control_Cargas_original_"+file.codigo+"_"+file.hash.slice(0,12)+".pdf";
+            document.body.appendChild(link);link.click();link.remove();
+            setTimeout(()=>URL.revokeObjectURL(url),120000);
+            status.textContent="Copia local solicitada de "+item.codigo+". El PDF original sigue intacto en el almacenamiento anterior.";
+          }catch(error){
+            if(active===current&&getUser()?.id===session)
+              status.textContent="No se ha descargado el PDF: "+errorText(error);
+          }finally{
+            if(active===current)download.disabled=false;
+          }
+        });
+        results.appendChild(download);
+      }
+      if(inventory.claves.length>eligible.length){
+        results.append(line("Límite","Se muestran los primeros 25 botones de guardado; los demás PDF siguen intactos."));
+      }
       status.textContent="Inventario local de claves terminado. No se ha abierto, descargado ni modificado ningún PDF.";
     }catch(error){
       if(active!==current||getUser()?.id!==session)return;
