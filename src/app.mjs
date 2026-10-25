@@ -1,4 +1,5 @@
 import {fechaAlmacen} from "./business-date.mjs";
+import {filtrarArchivoLogico} from "./archive-view.mjs";
 import {SUPABASE_URL,SUPABASE_KEY,PDF_BUCKET,APP_VERSION} from "./config.mjs";
 import {agruparPasillos,ordenarCargas} from "./logic.mjs";
 import {buildVerificationLines,parseCheckedQuantity,summarizeVerification} from "./verification.mjs";
@@ -159,7 +160,7 @@ async function refreshLoads(){
   const {data,error}=await client.rpc("kontrola_panel_cargas_v2",{p_almacen:warehouse});
   if(!validRequest(warehouse,userId))return;
   if(error){$("loadsList").textContent="No se pueden cargar los documentos: "+errorText(error);throw error;}
-  loads=ordenarCargas(data||[]);
+  loads=ordenarCargas(filtrarArchivoLogico(data||[],{vista:"activas"}));
   renderLoadList();
 }
 function renderLoadList(){
@@ -197,7 +198,7 @@ async function refreshHistory(){
     const {data,error}=await client.rpc("kontrola_panel_cargas",{p_almacen:warehouse});
     if(error)throw error;
     if(!validRequest(warehouse,requestUser))return;
-    historyRows=data||[];historyReady=true;
+    historyRows=filtrarArchivoLogico(data||[],{vista:"todas"});historyReady=true;
     renderHistory();
   }catch(error){
     if(!validRequest(warehouse,requestUser))return;
