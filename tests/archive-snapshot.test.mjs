@@ -40,7 +40,7 @@ test("acepta 20 y rechaza 21 sin convertir la verificación en una escritura",()
  assert.equal(comprobarLoteActualizado(selected,structuredClone(selected),"COR_01_COR").length,20);
  assert.throws(()=>comprobarLoteActualizado([...selected,doc("LP26-10022")],selected,"COR_01_COR"),/entre 1 y 20/);
  const script=readFileSync(new URL("../src/admin-print-batch.mjs",import.meta.url),"utf8");
- assert.match(script,/const \{data,error\}=await client\.rpc\("kontrola_panel_cargas",\{p_almacen:warehouse\}\)/);
+ assert.match(script,/const \{data,error\}=await client\.rpc\("kontrola_panel_cargas_impresion",\{p_almacen:warehouse\}\)/);
  assert.match(script,/comprobarLoteActualizado\(chosen,data\|\|\[\],warehouse\)/);
  assert.match(script,/selected\.size!==codes\.length\|\|codes\.some/);
  assert.match(script,/status\.textContent="No se ha generado el PDF:/);
