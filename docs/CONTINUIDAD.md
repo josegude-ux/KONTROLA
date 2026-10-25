@@ -535,3 +535,9 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 - `refreshOperatorDashboard` deja de consultar `kontrola_actividad` en esa pantalla. No se borra ni altera ningún evento almacenado ni el historial administrativo.
 - `tests/navigation.test.mjs` comprueba que solo queda el resumen y se eliminó la consulta de eventos del inicio.
 - Versión 0.3.23 y caché v054 para publicar la mejora, junto a los subtotales ya integrados, en los dispositivos instalados.
+
+### 2026-10-25 — Portada KONTROLA visualmente alineada con INVENTA (v0.3.24)
+- Estilo inspirado en la portada actual de INVENTA (`josegude-ux/INVENTA-`), con tarjetas amplias apiladas, fondos pastel, ilustraciones grandes basadas en símbolos del sistema, flechas circulares y bienvenida clara. No se copian recursos externos ni se modifica INVENTA.
+- Solo modifica la estructura visual de `#homeView`: conserva IDs y eventos de Preparación, Verificación, Control de Cargas y Administración, sus permisos, selección de almacén y estadísticas. Otras pantallas operativas no se alteran.
+- `styles.css` añade reglas confinadas a `#homeView`, accesibilidad de foco y responsive; prueba de contrato nueva para navegación y permisos.
+- Publicación de PWA v0.3.24 mediante actualización de versión y caché v055; sin migraciones de Supabase ni pérdida de datos.

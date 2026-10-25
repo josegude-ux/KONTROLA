@@ -42,12 +42,12 @@ test("La navegación conserva los accesos previos y los regresos al submenú",()
 
 test("La versión y el caché están preparados para instalar nuevas pantallas",()=>{
   const version=JSON.parse(read("version.json")).version;
-  assert.equal(version,"0.3.23");
+  assert.equal(version,"0.3.24");
   assert.equal(JSON.parse(read("package.json")).version,version);
   assert.equal(JSON.parse(read("package-lock.json")).version,version);
-  assert.match(read("src/config.mjs"),/APP_VERSION="0\.3\.23"/);
-  assert.match(html,/id="appVersion">0\.3\.23</);
-  assert.match(read("sw.js"),/kontrola-integral-v054/);
+  assert.match(read("src/config.mjs"),/APP_VERSION="0\.3\.24"/);
+  assert.match(html,/id="appVersion">0\.3\.24</);
+  assert.match(read("sw.js"),/kontrola-integral-v055/);
 });
 
 test("Las consultas descartan respuestas de sesiones o almacenes anteriores",()=>{
@@ -78,4 +78,16 @@ test("Mi actividad muestra solo contadores, sin listado de eventos con fecha y h
  const dashboard=app.slice(start,end);
  assert.match(dashboard,/kontrola_resumen_zona/);
  assert.doesNotMatch(dashboard,/kontrola_actividad|creado_en|toLocaleString/);
+});
+
+test("inicio visual inspirado en INVENTA conserva rutas, permisos y estados",()=>{
+  assert.match(html,/class="home-grid inventa-inspired-home"/);
+  for(const id of ["openPreparation","openReview","openCargas","openAdmin"]){
+    assert.match(html,new RegExp('id="'+id+'"[^>]*class="feature'));
+    assert.match(app,new RegExp('\\$\\("'+id+'"\\)\\.addEventListener'));
+  }
+  assert.match(html,/id="openAdmin"[^>]*hidden/);
+  assert.match(html,/id="operatorSummary"/);
+  assert.match(html,/id="homeWarehouse"/);
+  assert.match(css,/inventa-inspired-home/);
 });
