@@ -3,6 +3,7 @@ import {fechaISO} from "./logic.mjs";
 import {parsePdfFile} from "./pdf.mjs";
 import {buildPreparationReport} from "./report.mjs";
 import {revisarSustitucion} from "./import-policy.mjs";
+import {configureRevisionHistory} from "./admin-revisions.mjs";
 
 const $=id=>document.getElementById(id);
 const fmt=value=>value==null?"—":Number(value).toLocaleString("es-ES",{maximumFractionDigits:3});
@@ -30,6 +31,7 @@ export function buildReportDownloadHtml(title,styles,content){
 }
 
 export function createAdminController({client,getUser,bucket,global,errorText,onPublished}){
+  configureRevisionHistory({client,getUser,bucket,errorText});
   let busy=false,draft=null;
   const setStatus=(message="",level="")=>{
     const target=$("importStatus");target.textContent=message;target.className="status "+level;
