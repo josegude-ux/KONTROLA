@@ -1,5 +1,7 @@
 # KONTROLA · MOVENTA
 
+> **Alcance actual (25/10/2026):** se comienza con documentos y cargas **nuevos**; no se migran ni recuperan PDFs y registros antiguos de Control de Cargas. Los PDF **generados a partir de ahora** se archivarán periódicamente **de forma manual en una carpeta de OneDrive** elegida por la empresa. No existe sincronización automática ni borrado de datos. Ver [plan de archivo de PDF](docs/PLAN_ARCHIVO_ONEDRIVE.md). El código preexistente se conserva.
+
 PWA móvil de operaciones de almacén para **preparación, consulta, verificación, historial e incidencias de cargas**.
 
 **Versión de esta rama:** 0.3.15. **Estado:** desarrollo probado parcialmente, **no apto aún para producción**.
