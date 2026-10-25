@@ -133,10 +133,10 @@ En **Administración → Imprimir varias hojas procesadas**:
 
 1. Selecciona el almacén correcto y pulsa **Actualizar**.
 2. En **Desde** y **Hasta**, elige las fechas del periodo que quieres archivar. Si los dejas vacíos, se muestran todas las cargas consultables.
-3. Selecciona las cargas una a una o pulsa **Seleccionar hasta 10 cargas del periodo**.
+3. Selecciona las cargas una a una o pulsa **Seleccionar siguiente grupo de hasta 20 cargas**.
 4. Pulsa **Preparar impresión de hojas seleccionadas**.
 5. Comprueba la **carátula**: almacén, fechas, total de cargas y códigos incluidos.
-6. Pulsa **Imprimir / Guardar PDF** y guarda el archivo en Archivos. Si quedan cargas del periodo, prepara un segundo lote.
+6. Pulsa **Imprimir / Guardar PDF** y guarda el archivo en Archivos. Si quedan cargas del periodo, vuelve a la pantalla y pulsa otra vez **Seleccionar siguiente grupo de hasta 20 cargas**. Por ejemplo, 45 cargas se guardan en lotes de 20, 20 y 5.
 
 La primera página presenta la relación de cargas y después aparece cada hoja procesada. Son documentos generados por KONTROLA, no copias de los PDF originales de Business Central.
 
