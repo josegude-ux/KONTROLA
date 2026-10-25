@@ -51,3 +51,16 @@ test("no toma ubicación de una fila distinta",()=>{
   const parsed=parseDocumentPages([page],"LP26-12348.pdf");
   assert.equal(parsed.products[0].location,"");
 });
+
+
+test("reconstruye LP desde fragmentos separados del texto",()=>{
+ const page=pageFor("COR_01_COR");
+ page.items.push({text:"LP",x:10,y:30},{text:"26",x:35,y:30},{text:"-",x:55,y:30},{text:"19663",x:65,y:30});
+ const parsed=parseDocumentPages([page],"19663.pdf");
+ assert.equal(parsed.id,"LP26-19663");
+});
+
+test("no inventa LP con un nombre numérico sin referencia verificable",()=>{
+ const parsed=parseDocumentPages([pageFor("COR_01_COR")],"19663.pdf");
+ assert.equal(parsed.id,"19663");
+});

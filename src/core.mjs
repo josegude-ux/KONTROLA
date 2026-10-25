@@ -46,9 +46,21 @@ export function parseDocumentPages(pages, fileName='Documento.pdf', options={}) 
  const every=pages.flatMap(p=>p.items.map(it=>({...it,page:p.number})));
  const textAll=every.map(i=>i.text).join(' ').replace(/\s+/g,' ');
  const extract=(regexp,source=textAll)=>source.match(regexp)?.[1]??null;
- let id=extract(/\b(LP\s*\d{2}\s*[-–]\s*\d{4,6})\b/i);
+ // El texto de PDF.js puede fragmentar LP, año, guion y número.
+ let id=extract(/\b(LP\s*\d{2}\s*[-–_ ]\s*\d{4,6})\b/i);
  if(!id)id=(fileName.match(/LP\d{2}[-_ ]\d{4,6}/i)||[])[0];
- id=(id||fileName.replace(/\.pdf$/i,'')).replace(/\s+/g,'').replace('_','-');
+ if(id)id=id.toUpperCase().replace(/\s+/g,'').replace(/[-–_]/g,'-');
+ // Los PDF de BC se descargan a veces como 19663.pdf. Reconstruir LP
+ // únicamente si la fecha de carga explícita determina el año y el
+ // documento contiene la misma numeración de carga.
+ if(!id&&/^\d{4,6}\.pdf$/i.test(fileName)){
+   const number=fileName.replace(/\.pdf$/i,'');
+   const dateMatch=textAll.match(/Fecha\s*carga\s*:?\s*(\d{2}\/\d{2}\/(\d{2}|\d{4}))/i);
+   const year=dateMatch?.[2]?.slice(-2);
+   const numberInDocument=new RegExp('(?:N[º°o.]?\\s*(?:carga|documento)|N[uú]mero\\s*(?:carga|documento)|Carga)\\s*:?\\s*'+number+'\\b','i').test(textAll);
+   if(year&&numberInDocument)id='LP'+year+'-'+number;
+ }
+ id=id||fileName.replace(/\.pdf$/i,'');
  const weight=numeric(extract(/Peso\s*carga\s*:?\s*([\d.]+,\d+|\d+(?:\.\d+)?)/i));
  const refs=numeric(extract(/Total\s*referencias\s*prod\.?\s*:?\s*(\d+)/i));
  const visits=numeric(extract(/N[º°o.]?\s*visitas\s*:?\s*(\d+)/i));

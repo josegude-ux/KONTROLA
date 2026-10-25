@@ -340,3 +340,8 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 ## 2026-10-25 — Corrección de prueba CI
 - `tests/archive-period.test.mjs`: se actualiza la expectativa del texto de ayuda de impresión («Máximo 20 hojas por grupo»), conservando las comprobaciones funcionales de agrupación.
 - La prueba de despliegue fallaba por el texto antiguo tras compactar la interfaz; sin cambios de lógica de negocio.
+
+## 2026-10-25 — Identificación de códigos LP fragmentados
+- `src/core.mjs`: admite códigos LP que PDF.js divide en fragmentos, guiones y espacios; para archivos solo numéricos exige fecha de carga y número explícito en el contenido antes de reconstruir el código.
+- `tests/core-warehouse.test.mjs`: pruebas para LP fragmentado y rechazo de identificadores deducidos sin evidencia.
+- No se importan datos automáticamente ni se alteran registros existentes. Pendiente CI.
