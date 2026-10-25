@@ -240,9 +240,9 @@ export function createAdminController({client,getUser,bucket,global,errorText,on
     finally{setBusy(false);updateActions();}
   }
   async function refreshAttention(){
-    const warehouse=$("adminWarehouse").value||null,session=getUser()?.id;
+    const warehouse=$("adminWarehouse").value,session=getUser()?.id;
     const target=$("attentionList");target.textContent="Consultando avisos…";
-    const {data,error}=await client.rpc("kontrola_necesitan_atencion",{p_almacen:warehouse});
+    const {data,error}=await client.rpc("kontrola_necesitan_atencion",{p_almacen:warehouse||null});
     if($("adminWarehouse").value!==warehouse||getUser()?.id!==session)return;
     target.replaceChildren();
     if(error){target.textContent=errorText(error);return;}
