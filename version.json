@@ -1,4 +1,4 @@
 {
-  "version": "0.3.23",
-  "notes": "Inicio más claro: Mi actividad conserva contadores, sin lista de eventos con fechas y horas. Totales por pasillo en hojas de preparación."
+  "version": "0.3.24",
+  "notes": "Inicio con tarjetas grandes y estilo visual inspirado en INVENTA, sin modificar accesos ni operaciones."
 }
