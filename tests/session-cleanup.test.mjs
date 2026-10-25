@@ -31,3 +31,23 @@ test("los módulos invalidan solicitudes y eliminan datos confidenciales al limp
  assert.match(read("src/admin-revisions.mjs"),/requestId\+\+;requestedUser=null/);
  assert.match(read("src/admin-print-batch.mjs"),/seq\+\+;reset\(\)/);
 });
+
+test("salir del usuario purga datos ocultos y contraseñas retenidas",()=>{
+ const app=read("src/app.mjs"),begin=app.indexOf("function loggedOut(message="),end=app.indexOf("async function authorize(",begin);
+ assert.ok(begin>0&&end>begin);
+ const block=app.slice(begin,end);
+ for(const id of ["operatorSummary","operatorActivity","historyList","historySummary",
+  "detailTitle","productList","verificationLines","reviewDetailTitle","reportPaper","globalMessage"]){
+  assert.ok(block.includes('"'+id+'"'),"No se vacía "+id);
+ }
+ assert.match(block,/\$\("loginPassword"\)\.value=""/);
+ assert.match(block,/\$\("historyPrint"\)\.disabled=true/);
+});
+test("un error al cerrar sesión nunca comunica al usuario que el cierre fue correcto",()=>{
+ const app=read("src/app.mjs");
+ const body=app.slice(app.indexOf('$("logout").addEventListener('));
+ assert.match(body,/const \{error\}=await client\.auth\.signOut\(\)/);
+ assert.match(body,/if\(error\)throw error/);
+ assert.match(body,/No se pudo cerrar la sesión en el servidor/);
+ assert.doesNotMatch(body,/signOut\(\)\.catch/);
+});
