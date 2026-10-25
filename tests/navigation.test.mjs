@@ -49,3 +49,12 @@ test("La versión y el caché están preparados para instalar nuevas pantallas",
   assert.match(html,/id="appVersion">0\.3\.3</);
   assert.match(read("sw.js"),/kontrola-integral-v034/);
 });
+
+test("Las consultas descartan respuestas de sesiones o almacenes anteriores",()=>{
+  assert.match(app,/const validRequest=\(warehouse,userId\)=>selectedWarehouse===warehouse&&user\?\.id===userId/);
+  for(const marker of ["async function refreshLoads()","async function refreshReviewLoads()","async function refreshOperatorDashboard()"]){
+    const start=app.indexOf(marker);
+    assert.ok(start>=0,"Falta función "+marker);
+    assert.match(app.slice(start,start+1200),/if\(!validRequest\(warehouse,userId\)\)return;/);
+  }
+});
