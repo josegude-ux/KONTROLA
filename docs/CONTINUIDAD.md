@@ -303,3 +303,10 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 - `src/admin.mjs`: cada botón de menú ahora inicia su acción: Importar abre selector de archivos iPhone; Pendientes, Impresión, Operarios, Incidencias y Resumen actualizan datos; Historial enfoca búsqueda. Archivo OneDrive muestra instrucciones, sin conexión automática.
 - Seguridad: no se importa sin selección y pulsar Procesar, no se publica ni imprime automáticamente; preserva autorizaciones y revisión.
 - Pendiente CI y publicación.
+
+## 2026-10-25 — Diagnóstico de errores de importación y visualización móvil
+- Confirmado en la función Supabase `kontrola_reservar_importacion`: el mensaje «Metadatos de importación inválidos» se produce por código LP, SHA-256 o tamaño fuera de límites. El parser puede devolver el nombre del archivo cuando no detecta LP.
+- `src/admin.mjs`: comprobación explícita del formato LP antes de reservar, con mensaje útil y sin modificar registros existentes; evita errores genéricos en PDFs no identificables.
+- `styles.css`: cabecera de revisión flexible, evita desbordamiento de almacén/estado en iPhone.
+- `assets/kontrola.svg`: reduce el espacio excesivo antes de la A final.
+- No se rellenan ubicaciones ni se publican cargas automáticamente. Pruebas y despliegue pendientes.

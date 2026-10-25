@@ -118,3 +118,6 @@ footer{padding:18px;text-align:center;background:#fff;border-top:1px solid #e6e8
 
 /* Navegación compacta de Administración para móvil */
 .admin-tabs{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0 18px}.admin-tab{font-size:.9rem;padding:10px 12px;min-height:44px;border:1px solid #b8c8d9;background:#fff;color:#0b2647;border-radius:10px;font-weight:650;flex:1 1 auto}.admin-tab.active{background:#0b2647;color:#fff;border-color:#0b2647}#adminView .panel[hidden]{display:none!important}@media(max-width:480px){.admin-tabs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.admin-tab{width:100%;padding:10px 6px;font-size:.88rem}}
+
+/* Ajustes de revisión en pantallas estrechas */
+#adminView .review-heading{display:flex;flex-wrap:wrap;align-items:center;gap:10px;min-width:0}#adminView .review-heading h3{min-width:0;overflow-wrap:anywhere;flex:1 1 160px}#adminView .review-heading .warehouse-select{min-width:0;max-width:100%;flex:1 1 160px}#adminView .state-badge{max-width:100%;overflow-wrap:anywhere;white-space:normal}#adminView .document-review,#adminView .panel{min-width:0;max-width:100%}@media(max-width:480px){#adminView .review-heading{align-items:stretch}#adminView .review-heading h3{flex-basis:100%;margin-bottom:0}#adminView .review-heading .warehouse-select{flex-basis:100%}}

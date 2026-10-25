@@ -73,6 +73,9 @@ export function createAdminController({client,getUser,bucket,global,errorText,on
   async function processSinglePdf(file,seenCodes){
     setStatus("Analizando "+file.name+"…");
     const parsed=await parsePdfFile(file);
+    if(!/^LP\d{2}-\d{4,6}$/.test(parsed.id)){
+      throw Error("No se pudo identificar el código LP de este PDF ("+file.name+"). Comprueba que el documento incluye un código LP válido y que no está escaneado; no se reservará una importación con un identificador deducido del nombre.");
+    }
     if(seenCodes.has(parsed.id))throw Error("El lote contiene más de un PDF para la carga "+parsed.id+". Importa las revisiones de esa carga por separado.");
     seenCodes.add(parsed.id);
     const hash=await hashFile(file);
