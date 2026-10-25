@@ -1,4 +1,4 @@
 {
-  "version": "0.3.12",
-  "notes": "Seguridad al cerrar sesión: limpieza de datos administrativos y respuestas antiguas; paginación de impresión por lotes."
+  "version": "0.3.13",
+  "notes": "Conciliación local de copias JSON antiguas con el panel autorizado, sin migraciones ni modificaciones de datos."
 }
