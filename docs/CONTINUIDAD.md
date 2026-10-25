@@ -403,3 +403,9 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 - Se añade `src/moventa-integration.mjs` como contrato de seguridad preliminar y `tests/moventa-integration.test.mjs` para validar origen, ruta e identidad. NO conecta aún las sesiones reales ni supone SSO funcional.
 - KONTROLA utiliza Supabase `oevetnszmfxeukcncwji`, distinto del de INVENTA/MOVENTA. No compartir JWT entre proyectos ni suponer que UUID iguales representan a la misma persona. La comprobación de identidad real necesita unificar Auth o una solución de confianza verificable por servidor.
 - Mantener `kontrola_mi_perfil`, roles, almacenes y RLS como controles propios de KONTROLA. Sin cambios en base de datos, aplicación publicada ni versiones instaladas.
+
+## 2026-10-25 — Pruebas MOVENTA y refuerzo de límites
+- Se ejecutaron localmente las seis pruebas iniciales del contrato de integración: 6 correctas, 0 fallidas. No equivale a E2E con Supabase.
+- Revisión de seguridad: la ruta de KONTROLA debe quedar dentro del directorio MOVENTA, no basta con terminar en `/kontrola/`.
+- Se exige `sharedAuthVerified === true` antes de aceptar igualdad de UUID; la verificación de identidad común debe implementarse en un servicio confiable o tras unificación de Auth, no inferirse en el navegador.
+- Se amplían pruebas para rutas hermanas/anidadas e igualdad de UUID sin prueba de identidad común. Sin cambios en base de datos o aplicación publicada.
