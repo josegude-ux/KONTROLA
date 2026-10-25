@@ -5,7 +5,7 @@
 **Rama principal del desarrollo en curso:** cursor/verificacion-fisica-cargas-8ba0
 **PR de trabajo:** https://github.com/josegude-ux/KONTROLA/pull/2
 **PR de Fase 1:** https://github.com/josegude-ux/KONTROLA/pull/1
-**Versión del código de esta rama:** 0.3.12
+**Versión del código de esta rama:** 0.3.13
 
 > La aplicación funcional vive en ramas de desarrollo: main no debe tomarse como punto de partida para rehacerla. No fusionar a main ni aplicar migraciones a producción sin autorización.
 
@@ -141,3 +141,13 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 - `tests/session-cleanup.test.mjs` incluye regresiones de limpieza de datos e incidencias de cierre.
 - GitHub Actions validó **97 pruebas correctas y 0 fallidas** en la ejecución `40187723603` (commit `bda5f2df7b01ac71cbef496e9ce13aaa4f677d74`), incluidas cinco migraciones aisladas y concurrencia. Son pruebas de CI, no validación de Safari/Supabase reales.
 - **Pendiente:** prueba con dos cuentas distintas en el mismo iPhone y sesión invalidada remotamente; no se ha desplegado la rama ni cambiado datos empresariales.
+
+
+## Conciliación legacy sin escritura — v0.3.13
+
+- `src/legacy-reconcile.mjs`: comparador puro por códigos del backup antiguo con metadatos del panel actual; clasifica duplicados, ausencias en almacén, coincidencias parciales, campos diferentes e información incompleta.
+- `src/admin-reconcile.mjs`: botón de Administración que lee el JSON local (12 MB máximo), valida el formato con el auditor preexistente y consulta **solo** `kontrola_panel_cargas` con `p_almacen` seleccionado y autorización RLS/RPC. Invalida resultados si cambia usuario o almacén. El JSON no se envía al backend ni se guarda automáticamente en KONTROLA.
+- **Prohibido asumir identidad de PDF por coincidencia de código y metadatos**: el panel no devuelve SHA-256. Faltan además datos de historiales horarios y PDF en IndexedDB de cada móvil. Los códigos no encontrados pueden existir en otro almacén no consultado.
+- La nueva interfaz es de consulta y no ofrece botones de migración, restauración ni sobrescritura. La auditoría de copias preexistente continúa igual.
+- Pruebas `tests/legacy-reconcile.test.mjs` incluidas. **CI confirmada**: ejecución `40188458388`, commit `17c2d732bea75275d7996fea30bfe3c6f200e553`; 104 pruebas JS correctas, 0 fallidas, cinco migraciones en PostgreSQL temporal y prueba de concurrencia aprobada.
+- Pendientes: cotejo con una copia autorizada real, inventario del contenido local de cada dispositivo, pruebas con Supabase Auth/Storage y plan de restauración/migración con autorización y reversión. La PR #2 permanece sin fusionar; **no se tocó producción**.
