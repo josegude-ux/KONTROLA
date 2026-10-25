@@ -449,3 +449,7 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 ### 2026-10-25 — UI de consulta de archivadas
 - Añadido botón `Consultar archivadas` y tabla con código, fecha, almacén y momento de archivo. Consume RPC administrativa `kontrola_listar_archivadas` y muestra error si no existe o no autoriza.
 - Pendiente CI, revisión visual y backend Supabase aún no aplicado.
+
+### Corrección de navegación del archivo administrativo
+- La pestaña Archivo de cargas dispara ahora la consulta `kontrola_listar_archivadas` al abrirse, además del botón de actualización manual.
+- Pendiente CI; la RPC aún no existe en Supabase porque la migración no se ha aplicado.
