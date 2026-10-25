@@ -14,7 +14,7 @@ test("el archivo periódico de PDFs nuevos en OneDrive se presenta como acción 
   assert.match(html,/id="archiveOneDrivePanel"/);
   assert.match(html,/id="onedriveArchiveHelp"/);
   assert.match(html,/Imprimir \/ Guardar PDF/);
-  assert.match(html,/muévelo a la carpeta de OneDrive elegida/);
+  assert.match(html,/muévela? a la carpeta de OneDrive elegida/);
   assert.match(html,/El traslado no es automático/);
   assert.match(policy,/ningún PDF se borra automáticamente/i);
   assert.match(css,/@media print\{#onedriveArchiveHelp\{display:none!important\}\}/);
