@@ -1,4 +1,4 @@
 {
-  "version": "0.3.16",
-  "notes": "Inicio documental con PDF nuevos; sin migración de históricos y con archivado periódico manual en OneDrive."
+  "version": "0.3.17",
+  "notes": "Archivo por periodo con carátula de cargas y nombre sugerido de PDF; herramientas de migración antigua retiradas de la aplicación."
 }
