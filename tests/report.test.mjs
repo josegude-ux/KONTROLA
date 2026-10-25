@@ -31,3 +31,15 @@ test("report output escapes untrusted document text",()=>{
   assert.doesNotMatch(html,/<img/);
   assert.match(html,/&lt;img/);
 });
+
+test("Informe impreso respeta cajas antes de botellas y cantidad descendente",()=>{
+ const html=buildPreparationReport({...load,productos:[
+  {sku:"BOT1",location:"A101-1",qty:20,unit:"BOTELLA"},
+  {sku:"CAJA2",location:"A101-2",qty:2,unit:"CAJA"},
+  {sku:"CAJA1",location:"A101-3",qty:9,unit:"CAJA"},
+  {sku:"BOT2",location:"A101-4",qty:4,unit:"BOTELLA"}
+ ]});
+ assert.ok(html.indexOf("CAJA1")<html.indexOf("CAJA2"));
+ assert.ok(html.indexOf("CAJA2")<html.indexOf("BOT1"));
+ assert.ok(html.indexOf("BOT1")<html.indexOf("BOT2"));
+});

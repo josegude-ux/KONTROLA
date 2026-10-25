@@ -373,3 +373,9 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 - `src/core.mjs`: `bultos` explícitos a partir de `declaredTotal` calculado por coordenadas en el bloque MERCANCÍA; `src/admin.mjs`: se transporta al JSON de importación; `src/app.mjs` y `src/admin-print-batch.mjs`: consulta de RPC v2, con bultos visibles en tarjetas.
 - No se cambian PDF originales, cantidades, revisiones, estados ni procesos de otras aplicaciones. Sin datos contrastados se muestra «—».
 - Verificar CI y publicación GitHub Pages.
+
+## 2026-10-25 — Orden de productos por pasillo y formato
+- En la consulta de preparación, cada pasillo ordena primero CAJA/CJ y después BOTELLA/BOT, con cantidad de bultos descendente dentro de cada formato. Otros formatos aparecen a continuación. En empates, ubicación y referencia para estabilidad.
+- `src/logic.mjs`: función compartida `ordenarLineasPasillo` y aplicación en `agruparPasillos`; `src/report.mjs`: el informe impreso aplica exactamente el mismo orden.
+- Pruebas en `tests/logic.test.mjs` y `tests/report.test.mjs`. No se alteran cantidades, pasillos, estados, BC ni Supabase.
+- Pendiente CI y despliegue.

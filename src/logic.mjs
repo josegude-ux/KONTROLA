@@ -2,6 +2,20 @@
 export function ordenarCargas(rows) {
   return [...rows].sort((a,b)=>Number(b.peso_kg||0)-Number(a.peso_kg||0)||String(a.codigo).localeCompare(String(b.codigo),"es"));
 }
+// Dentro de cada pasillo: primero cajas, después botellas; en cada formato,
+// más bultos primero. Otros formatos se mantienen a continuación.
+export function ordenarLineasPasillo(lines=[]){
+  const formato=line=>{
+    const unit=String(line?.unit||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").trim().toUpperCase();
+    if(/^(CAJA|CAJAS|CJ|CJA|BOX|BOXES)$/.test(unit))return 0;
+    if(/^(BOTELLA|BOTELLAS|BOT|BT|BTS|BOTTLE|BOTTLES)$/.test(unit))return 1;
+    return 2;
+  };
+  return [...lines].sort((a,b)=>formato(a)-formato(b)
+    ||Number(b.qty||0)-Number(a.qty||0)
+    ||String(a.location||"").localeCompare(String(b.location||""),"es",{numeric:true})
+    ||String(a.sku||"").localeCompare(String(b.sku||""),"es"));
+}
 export function agruparPasillos(products = []) {
   const grupos = new Map();
   for (const p of products) {
@@ -17,7 +31,7 @@ export function agruparPasillos(products = []) {
     });
   }
   const sortKey = (s) => s==="SIN UBICACIÓN" ? "ZZZ" : s==="FRÍO" ? "ZZY" : s;
-  return [...grupos.entries()].sort((a,b)=>sortKey(a[0]).localeCompare(sortKey(b[0]),"es")).map(([nombre,lineas])=>({nombre,lineas}));
+  return [...grupos.entries()].sort((a,b)=>sortKey(a[0]).localeCompare(sortKey(b[0]),"es")).map(([nombre,lineas])=>({nombre,lineas:ordenarLineasPasillo(lineas)}));
 }
 export function validacionPublicacion(parsed) {
   if(!parsed || !parsed.id || !Array.isArray(parsed.products)||!parsed.products.length) return "El PDF no contiene líneas de mercancía reconocidas.";

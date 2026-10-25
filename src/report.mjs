@@ -1,3 +1,4 @@
+import {ordenarLineasPasillo} from "./logic.mjs";
 const escapeHtml=value=>String(value??"").replace(/[&<>"']/g,char=>({
   "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
 }[char]));
@@ -22,12 +23,16 @@ export function buildPreparationReport(load){
     if(!grouped.has(aisle))grouped.set(aisle,[]);
     grouped.get(aisle).push(product);
   }
-  const sections=[...grouped.entries()].map(([aisle,lines])=>`
+  const sortAisle=s=>s==="SIN UBICACIÓN"?"ZZZ":s==="FRÍO"?"ZZY":s;
+  const sections=[...grouped.entries()].sort((a,b)=>sortAisle(a[0]).localeCompare(sortAisle(b[0]),"es")).map(([aisle,rawLines])=>{
+    const lines=ordenarLineasPasillo(rawLines);
+    return `
     <section class="report-aisle">
       <h2>Pasillo ${escapeHtml(aisle)}</h2>
       <table><thead><tr><th>Ubicación</th><th>Referencia</th><th>Descripción</th><th>Cantidad</th><th>Unidad</th></tr></thead>
       <tbody>${lines.map(product=>`<tr><td>${escapeHtml(product.location||"SIN UBICACIÓN")}</td><td>${escapeHtml(product.sku)}</td><td>${escapeHtml(product.description)}</td><td class="number">${number(product.qty)}</td><td>${escapeHtml(product.unit)}</td></tr>`).join("")}</tbody></table>
-    </section>`).join("");
+    </section>`;
+  }).join("");
   return `<article class="preparation-report">
     <header><h1>HOJA DE PREPARACIÓN POR PASILLOS</h1><p>KONTROLA · Exclusivamente mercancía procesada</p></header>
     <dl>

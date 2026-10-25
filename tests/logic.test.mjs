@@ -29,3 +29,16 @@ test("Storage routes are validated",()=>{
  assert.equal(rutaArchivo("LP01-000001","a".repeat(64)),"documentos/LP01-000001/"+"a".repeat(64)+".pdf");
  assert.throws(()=>rutaArchivo("../escape","a".repeat(64)));
 });
+
+test("Pasillos: cajas primero, botellas después y bultos descendentes por formato",()=>{
+ const lines=[
+  {sku:"BOT2",location:"A102-1",qty:8,unit:"BOTELLA"},
+  {sku:"CAJA2",location:"A101-2",qty:3,unit:"CAJA"},
+  {sku:"BOT1",location:"A102-2",qty:15,unit:"BOT"},
+  {sku:"CAJA1",location:"A101-1",qty:12,unit:"CJ"},
+  {sku:"OTRO",location:"A103-1",qty:100,unit:"PACK"}
+ ];
+ const ordered=agruparPasillos(lines)[0].lineas;
+ assert.deepEqual(ordered.map(x=>x.sku),["CAJA1","CAJA2","BOT1","BOT2","OTRO"]);
+ assert.deepEqual(lines.map(x=>x.sku),["BOT2","CAJA2","BOT1","CAJA1","OTRO"]);
+});
