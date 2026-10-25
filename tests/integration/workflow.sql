@@ -12,11 +12,11 @@ insert into storage.objects(bucket_id,name,owner_id) values(
 );
 select public.kontrola_completar_importacion(
  :'cor_id',
- '{"codigo":"LP26-10001","fecha":"2026-10-25","matricula":"1111AAA","ruta":"Coruña Norte","repartidor":"Reparto Uno","peso_kg":1200,"referencias":2,"almacen":"COR_01_COR","productos":[{"sku":"PRD0000001","description":"Caja uno","location":"A101-1","qty":2,"unit":"CAJA"},{"sku":"PRD0000002","description":"Caja dos","location":"B101-1","qty":3,"unit":"CAJA"}]}'::jsonb,
+ '{"codigo":"LP26-10001","fecha":"2026-10-25","matricula":"1111AAA","ruta":"Coruña Norte","repartidor":"Reparto Uno","peso_kg":1200,"referencias":2,"almacen":"COR_01_COR","declared_total":5,"actual_total":5,"parser_metadata":{"verified":true,"warnings":[],"mixed_warehouse":false,"available_warehouses":["COR_01_COR"]},"productos":[{"sku":"PRD0000001","description":"Caja uno","location":"A101-1","qty":2,"unit":"CAJA"},{"sku":"PRD0000002","description":"Caja dos","location":"B101-1","qty":3,"unit":"CAJA"}]}'::jsonb,
  '[]'::jsonb
 );
 select public.kontrola_corregir_importacion(:'cor_id',
- '{"codigo":"LP26-10001","fecha":"2026-10-25","matricula":"1111AAA","ruta":"Coruña Norte","repartidor":"Reparto Uno","peso_kg":1200,"referencias":2,"almacen":"COR_01_COR","productos":[{"sku":"PRD0000001","description":"Caja uno","location":"A101-1","qty":2,"unit":"CAJA"},{"sku":"PRD0000002","description":"Caja dos","location":"B101-1","qty":3,"unit":"CAJA"}]}'::jsonb,
+ '{"codigo":"LP26-10001","fecha":"2026-10-25","matricula":"1111AAA","ruta":"Coruña Norte","repartidor":"Reparto Uno","peso_kg":1200,"referencias":2,"almacen":"COR_01_COR","declared_total":5,"actual_total":5,"parser_metadata":{"verified":true,"warnings":[],"mixed_warehouse":false,"available_warehouses":["COR_01_COR"]},"productos":[{"sku":"PRD0000001","description":"Caja uno","location":"A101-1","qty":2,"unit":"CAJA"},{"sku":"PRD0000002","description":"Caja dos","location":"B101-1","qty":3,"unit":"CAJA"}]}'::jsonb,
  '[]'::jsonb,'[]'::jsonb,true
 );
 select * from public.kontrola_publicar_importacion(:'cor_id');
@@ -29,21 +29,25 @@ insert into storage.objects(bucket_id,name,owner_id) values(
 );
 select public.kontrola_completar_importacion(
  :'fer_id',
- '{"codigo":"LP26-20001","fecha":"2026-10-25","matricula":"2222BBB","ruta":"Ferrol Centro","repartidor":"Reparto Dos","peso_kg":900,"referencias":2,"almacen":"COR_02_NAR","productos":[{"sku":"PRD0000003","description":"Pack uno","location":"C101-1","qty":4,"unit":"PACK"},{"sku":"PRD0000004","description":"Pack dos","location":"D101-1","qty":5,"unit":"PACK"}]}'::jsonb,
+ '{"codigo":"LP26-20001","fecha":"2026-10-25","matricula":"2222BBB","ruta":"Ferrol Centro","repartidor":"Reparto Dos","peso_kg":900,"referencias":2,"almacen":"COR_99_XYZ","declared_total":9,"actual_total":9,"parser_metadata":{"verified":false,"warnings":["Almacén desconocido"],"mixed_warehouse":false,"available_warehouses":["COR_99_XYZ"]},"productos":[{"sku":"PRD0000003","description":"Pack uno","location":"C101-1","qty":4,"unit":"PACK"},{"sku":"PRD0000004","description":"Pack dos","location":"D101-1","qty":5,"unit":"PACK"}]}'::jsonb,
  '[]'::jsonb
 );
 select public.kontrola_corregir_importacion(:'fer_id',
- '{"codigo":"LP26-20001","fecha":"2026-10-25","matricula":"2222BBB","ruta":"Ferrol Centro","repartidor":"Reparto Dos","peso_kg":900,"referencias":2,"almacen":"COR_02_NAR","productos":[{"sku":"PRD0000003","description":"Pack uno","location":"C101-1","qty":4,"unit":"PACK"},{"sku":"PRD0000004","description":"Pack dos","location":"D101-1","qty":5,"unit":"PACK"}]}'::jsonb,
+ '{"codigo":"LP26-20001","fecha":"2026-10-25","matricula":"2222BBB","ruta":"Ferrol Centro","repartidor":"Reparto Dos","peso_kg":900,"referencias":2,"almacen":"COR_02_NAR","declared_total":9,"actual_total":9,"parser_metadata":{"verified":true,"warnings":[],"mixed_warehouse":false,"available_warehouses":["COR_02_NAR"]},"productos":[{"sku":"PRD0000003","description":"Pack uno","location":"C101-1","qty":4,"unit":"PACK"},{"sku":"PRD0000004","description":"Pack dos","location":"D101-1","qty":5,"unit":"PACK"}]}'::jsonb,
  '[]'::jsonb,'[]'::jsonb,true
 );
+select test.assert((select almacen_detectado='COR_02_NAR' from public.kontrola_importaciones where id=:'fer_id'),'la corrección administrativa debe persistir el almacén');
 select * from public.kontrola_publicar_importacion(:'fer_id');
 
 select test.assert((select count(*)=1 from public.kontrola_panel_cargas('COR_01_COR')),'Coruña debe contener una carga');
 select test.assert((select count(*)=1 from public.kontrola_panel_cargas('COR_02_NAR')),'Ferrol debe contener una carga');
 select test.assert((select count(*)=0 from public.kontrola_preparaciones),'consultar no debe iniciar relojes');
 select test.assert((select count(*)=2 from public.kontrola_carga_revisiones where vigente),'cada carga debe conservar su revisión documental');
+select * from public.kontrola_reservar_importacion('LP26-10001',repeat('a',64),'renamed.pdf',12000)\gset duplicate_
+select test.assert(:'duplicate_repetida'='t','el mismo contenido con otro nombre debe detectarse como repetido');
 
 select set_config('request.jwt.claim.sub','00000000-0000-0000-0000-000000000002',false);
+select test.assert((select count(*)=0 from public.kontrola_importaciones),'un operario no debe leer importaciones administrativas');
 select * from public.kontrola_iniciar_preparacion(
  'LP26-10001','10000000-0000-0000-0000-000000000001'
 );
@@ -100,6 +104,23 @@ begin
 exception when insufficient_privilege then null;
 end$$;
 select test.assert((select count(*)=1 from public.kontrola_panel_cargas('COR_02_NAR')),'el permiso configurable debe permitir Ferrol');
+select set_config('request.jwt.claim.sub','00000000-0000-0000-0000-000000000001',false);
+select public.kontrola_configurar_acceso_almacen(
+ '00000000-0000-0000-0000-000000000004','COR_02_NAR',false
+);
+select set_config('request.jwt.claim.sub','00000000-0000-0000-0000-000000000004',false);
+do $$
+begin
+ perform * from public.kontrola_panel_cargas('COR_01_COR');
+ raise exception 'ASSERTION FAILED: una asignación inactiva abrió acceso por defecto a Coruña';
+exception when insufficient_privilege then null;
+end$$;
+do $$
+begin
+ perform * from public.kontrola_panel_cargas('COR_02_NAR');
+ raise exception 'ASSERTION FAILED: una asignación inactiva conservó acceso a Ferrol';
+exception when insufficient_privilege then null;
+end$$;
 
 reset role;
 select 'KONTROLA_INTEGRATION_OK' as result;

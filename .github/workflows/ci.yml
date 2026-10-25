@@ -31,6 +31,11 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+          cache: npm
+      - name: Instalar dependencias bloqueadas
+        run: npm ci
+      - name: Verificar dependencias de navegador
+        run: npm run build:vendor && git diff --exit-code -- vendor
       - name: Comprobar sintaxis
         run: |
           node --check src/app.mjs

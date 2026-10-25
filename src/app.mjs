@@ -95,7 +95,7 @@ async function refreshOperatorDashboard(){
 async function initialize(){
   status("authMessage","Conectando con el servidor…");
   try{
-    const {createClient}=await import("https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm");
+    const {createClient}=await import("../vendor/supabase.mjs");
     client=createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
     adminController=createAdminController({
       client,getUser:()=>user,bucket:PDF_BUCKET,global,errorText,
@@ -262,7 +262,7 @@ function renderReviewLoads(){
   const target=$("reviewLoadsList");target.replaceChildren();
   const search=$("reviewSearch").value.trim().toLocaleLowerCase("es-ES");
   const records=reviewLoads.filter(r=>[r.codigo,r.ruta,r.matricula,r.repartidor].some(v=>String(v||"").toLocaleLowerCase("es-ES").includes(search)));
-  if(!records.length){const p=document.createElement("p");p.className="muted";p.textContent="No hay preparaciones ajenas finalizadas disponibles para verificar.";target.appendChild(p);return;}
+  if(!records.length){const p=document.createElement("p");p.className="muted";p.textContent="No hay cargas ajenas disponibles para verificar.";target.appendChild(p);return;}
   for(const load of records){
     const button=document.createElement("button");button.type="button";button.className="load-card";
     const left=document.createElement("span"),title=document.createElement("strong"),meta=document.createElement("span");

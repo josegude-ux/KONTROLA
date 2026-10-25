@@ -21,6 +21,13 @@ export function analyzeDocument(parsed={}){
   if(!warehouse.known)findings.push(finding(
     "unknown_warehouse","error","El almacén no es COR_01_COR ni COR_02_NAR.",null,warehouse.code||"No indicado"
   ));
+  if(parsed.mixedWarehouse)findings.push(finding(
+    "mixed_warehouse","error","El documento contiene varios almacenes; debe dividirse y reprocesarse.",null,
+    (parsed.availableWarehouses||[]).join(", ")
+  ));
+  for(const [index,message] of (Array.isArray(parsed.warnings)?parsed.warnings:[]).entries()){
+    findings.push(finding("parser_warning","error","El motor no pudo validar completamente el PDF.",index+1,clean(message)));
+  }
   const products=Array.isArray(parsed.products)?parsed.products:[];
   if(!products.length)findings.push(finding("no_products","error","No se reconocieron líneas de mercancía."));
   products.forEach((product,index)=>{
@@ -37,9 +44,18 @@ export function analyzeDocument(parsed={}){
     "reference_total_mismatch","error","El número de referencias no coincide con el total documental.",null,
     `${products.length}/${parsed.refs}`
   ));
+  if(parsed.refs==null)findings.push(finding(
+    "missing_reference_total","error","No se pudo contrastar el número total de referencias del PDF."
+  ));
   if(parsed.declaredTotal!=null&&Math.abs(Number(parsed.declaredTotal)-Number(parsed.actualTotal))>0.000001)findings.push(finding(
     "quantity_total_mismatch","error","La suma extraída no coincide con el total documental.",null,
     `${parsed.actualTotal}/${parsed.declaredTotal}`
+  ));
+  if(parsed.declaredTotal==null)findings.push(finding(
+    "missing_quantity_total","error","No se pudo contrastar la cantidad total del PDF."
+  ));
+  if(parsed.verified===false)findings.push(finding(
+    "unverified_document","error","El documento no ha superado las comprobaciones del motor."
   ));
   return findings;
 }
@@ -64,7 +80,15 @@ export function applyLineCorrection(parsed,lineNumber,changes,userId,at=new Date
     product[field]=next;
   }
   products[index]=product;
-  return {...parsed,products,corrections};
+  const actualTotal=products.reduce((sum,item)=>sum+Number(item.qty||0),0);
+  const structurallyValid=products.length>0
+    && Number(parsed.refs)===products.length
+    && parsed.declaredTotal!=null
+    && Math.abs(Number(parsed.declaredTotal)-actualTotal)<0.000001
+    && products.every(item=>/^PRD\d{7}$/i.test(clean(item.sku))
+      && Number.isFinite(Number(item.qty))&&Number(item.qty)>=0
+      && (Number(item.qty)===0||clean(item.unit)));
+  return {...parsed,products,actualTotal,verified:structurallyValid&&!parsed.mixedWarehouse,warnings:[],corrections};
 }
 
 export function publicationReadiness(findings=[],acknowledgedIds=[]){

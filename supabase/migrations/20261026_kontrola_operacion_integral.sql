@@ -12,6 +12,9 @@ insert into public.kontrola_almacenes(codigo,nombre) values
  ('COR_01_COR','A Coruña'),
  ('COR_02_NAR','Ferrol')
 on conflict(codigo) do update set nombre=excluded.nombre,activo=true;
+insert into public.kontrola_almacenes(codigo,nombre,activo) values
+ ('PEND_00_CLAS','Pendiente de clasificar',false)
+on conflict(codigo) do update set nombre=excluded.nombre,activo=false;
 
 create table if not exists public.kontrola_usuario_almacenes (
  usuario_id uuid not null references auth.users(id) on delete cascade,
@@ -29,7 +32,7 @@ alter table public.kontrola_cargas
  add column if not exists correcciones jsonb not null default '[]'::jsonb,
  add column if not exists hoja_generada_en timestamptz,
  add column if not exists actualizado_en timestamptz not null default now();
-update public.kontrola_cargas set almacen='COR_01_COR' where almacen is null;
+update public.kontrola_cargas set almacen='PEND_00_CLAS' where almacen is null;
 update public.kontrola_cargas set estado=case
  when cerrada_en is not null then 'cerrada'
  when exists(select 1 from public.kontrola_verificaciones v where v.codigo=kontrola_cargas.codigo and v.fin is null) then 'verificacion_en_curso'
@@ -156,7 +159,7 @@ as $$
   public.kontrola_usuario_activo()
   and exists(select 1 from public.kontrola_almacenes a where a.codigo=p_almacen and a.activo)
   and (
-   not exists(select 1 from public.kontrola_usuario_almacenes ua where ua.usuario_id=(select auth.uid()) and ua.activo)
+   not exists(select 1 from public.kontrola_usuario_almacenes ua where ua.usuario_id=(select auth.uid()))
    or exists(select 1 from public.kontrola_usuario_almacenes ua where ua.usuario_id=(select auth.uid()) and ua.almacen=p_almacen and ua.activo)
   )
  );
@@ -215,6 +218,18 @@ create policy "kontrola_pdf_lectura_autorizada" on storage.objects for select to
   bucket_id='kontrola-pdfs' and exists(
    select 1 from public.kontrola_cargas c
    where c.documento_ruta=name and public.kontrola_puede_almacen(c.almacen)
+  )
+  or bucket_id='kontrola-pdfs' and public.kontrola_es_administrador() and exists(
+   select 1 from public.kontrola_importaciones i where i.documento_ruta=name
+  )
+ );
+drop policy if exists "kontrola_pdf_publicar_admin" on storage.objects;
+create policy "kontrola_pdf_publicar_admin" on storage.objects for insert to authenticated
+ with check (
+  bucket_id='kontrola-pdfs' and public.kontrola_es_administrador()
+  and exists(
+   select 1 from public.kontrola_importaciones i
+   where i.documento_ruta=name and i.estado='reservada' and i.creado_por=(select auth.uid())
   )
  );
 revoke execute on function public.kontrola_cargas_para_verificar() from authenticated;
@@ -370,14 +385,19 @@ create or replace function public.kontrola_corregir_importacion(
 )
 returns text language plpgsql security definer set search_path=''
 as $$
-declare v_user uuid:=auth.uid();v_row public.kontrola_importaciones%rowtype;v_has_errors boolean;
+declare v_user uuid:=auth.uid();v_row public.kontrola_importaciones%rowtype;v_has_errors boolean;v_almacen text;
 begin
  if v_user is null or not public.kontrola_es_administrador() then raise exception 'Solo administración puede corregir' using errcode='42501';end if;
  select i.* into v_row from public.kontrola_importaciones i where i.id=p_importacion for update;
  if not found or v_row.estado not in ('revision_requerida','aprobada') then raise exception 'Importación no editable' using errcode='22023';end if;
+ if jsonb_typeof(p_carga)<>'object' or jsonb_typeof(p_carga->'productos')<>'array'
+  or jsonb_typeof(p_hallazgos)<>'array' or jsonb_typeof(p_correcciones)<>'array' then
+  raise exception 'Contenido corregido inválido' using errcode='22023';
+ end if;
+ v_almacen:=upper(nullif(p_carga->>'almacen',''));
  v_has_errors:=exists(select 1 from jsonb_array_elements(p_hallazgos) h where h->>'severity'='error');
  update public.kontrola_importaciones set carga_datos=p_carga,hallazgos=p_hallazgos,
-  correcciones=p_correcciones,advertencias_confirmadas=p_confirmar_advertencias,
+  almacen_detectado=v_almacen,correcciones=p_correcciones,advertencias_confirmadas=p_confirmar_advertencias,
   estado=case when not v_has_errors and p_confirmar_advertencias then 'aprobada' else 'revision_requerida' end,
   actualizado_por=v_user,actualizado_en=now()
  where id=p_importacion;
@@ -409,6 +429,26 @@ begin
   raise exception 'Persisten errores bloqueantes' using errcode='22023';
  end if;
  v_data:=v_i.carga_datos;
+ if v_data->>'codigo'<>v_i.codigo or v_data->>'almacen'<>v_i.almacen_detectado
+  or jsonb_array_length(v_data->'productos')=0
+  or nullif(v_data->>'referencias','')::integer<>jsonb_array_length(v_data->'productos')
+  or coalesce(v_data->>'actual_total','') !~ '^[0-9]+([.][0-9]{1,3})?$'
+  or coalesce(v_data->>'declared_total','') !~ '^[0-9]+([.][0-9]{1,3})?$'
+  or abs((v_data->>'actual_total')::numeric-(v_data->>'declared_total')::numeric)>0.000001
+  or abs((v_data->>'actual_total')::numeric-coalesce((
+   select sum((p->>'qty')::numeric) from jsonb_array_elements(v_data->'productos') p
+  ),0))>0.000001
+  or coalesce(v_data#>>'{parser_metadata,verified}','false')<>'true'
+  or coalesce(v_data#>>'{parser_metadata,mixed_warehouse}','false')<>'false'
+  or exists(
+   select 1 from jsonb_array_elements(v_data->'productos') p
+   where coalesce(p->>'sku','') !~ '^PRD[0-9]{7}$'
+    or coalesce(p->>'qty','') !~ '^[0-9]+([.][0-9]{1,3})?$'
+    or (p->>'qty')::numeric<0
+    or ((p->>'qty')::numeric>0 and nullif(p->>'unit','') is null)
+  ) then
+  raise exception 'Los datos revisados no cumplen el contrato de publicación' using errcode='22023';
+ end if;
  perform pg_catalog.pg_advisory_xact_lock(pg_catalog.hashtextextended('carga:'||v_i.codigo,0));
  select c.* into v_existing from public.kontrola_cargas c where c.codigo=v_i.codigo for update;
  if found and exists(select 1 from public.kontrola_preparaciones p where p.codigo=v_i.codigo) then
@@ -607,6 +647,10 @@ begin
  from public.kontrola_importaciones i
  where i.estado in ('reservada','revision_requerida','fallida')
   and (p_almacen is null or i.almacen_detectado=p_almacen or i.almacen_detectado is null)
+ union all
+ select 'carga',c.codigo,c.codigo,'Pendiente de clasificar','Carga anterior sin almacén documental confirmado',c.actualizado_en
+ from public.kontrola_cargas c
+ where c.almacen='PEND_00_CLAS' and p_almacen is null
  union all
  select 'verificacion',v.id::text,v.codigo,'Verificación incompleta','Continuar la comprobación línea por línea',v.inicio
  from public.kontrola_verificaciones v join public.kontrola_cargas c on c.codigo=v.codigo

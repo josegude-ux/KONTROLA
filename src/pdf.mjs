@@ -2,8 +2,8 @@ import {parseDocumentPages} from "./core.mjs";
 
 let pdfjsPromise;
 async function pdfEngine(){
-  if(!pdfjsPromise)pdfjsPromise=import("https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.min.mjs").then(module=>{
-    module.GlobalWorkerOptions.workerSrc="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.worker.min.mjs";
+  if(!pdfjsPromise)pdfjsPromise=import("../vendor/pdf.min.mjs").then(module=>{
+    module.GlobalWorkerOptions.workerSrc=new URL("../vendor/pdf.worker.min.mjs",import.meta.url).href;
     return module;
   }).catch(error=>{pdfjsPromise=null;throw error;});
   return pdfjsPromise;

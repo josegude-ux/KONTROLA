@@ -8,7 +8,7 @@
   "theme_color": "#0B2647",
   "icons": [
     {
-      "src": "./assets/kontrola.svg",
+      "src": "./assets/icon.svg",
       "sizes": "any",
       "type": "image/svg+xml",
       "purpose": "any maskable"

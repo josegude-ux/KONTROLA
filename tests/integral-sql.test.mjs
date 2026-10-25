@@ -27,6 +27,18 @@ test("document import keeps immutable revisions and blocks replacement after wor
   assert.match(sql,/documento_hash text not null unique/i);
 });
 
+test("warehouse restrictions fail closed once any membership is configured",()=>{
+  assert.match(sql,/not exists\s*\(\s*select 1 from public\.kontrola_usuario_almacenes ua\s*where ua\.usuario_id=\(select auth\.uid\(\)\)\s*\)/i);
+  assert.match(sql,/exists\s*\(\s*select 1 from public\.kontrola_usuario_almacenes ua[\s\S]*ua\.activo\s*\)/i);
+});
+
+test("review corrections persist warehouse and publication validates documentary totals",()=>{
+  assert.match(sql,/kontrola_corregir_importacion[\s\S]*almacen_detectado\s*=\s*v_almacen/i);
+  assert.match(sql,/v_data->>'actual_total'/i);
+  assert.match(sql,/v_data->>'declared_total'/i);
+  assert.match(sql,/sum\(\(p->>'qty'\)::numeric\)/i);
+});
+
 test("verification closure also closes an open preparation transactionally",()=>{
   assert.match(sql,/cierre_motivo='Finalización de verificación'/i);
   assert.match(sql,/estado='cerrada'/i);

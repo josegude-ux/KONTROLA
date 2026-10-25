@@ -10,12 +10,23 @@ const hashFile=async file=>[...new Uint8Array(await crypto.subtle.digest("SHA-25
 const asPayload=parsed=>({
   codigo:parsed.id,fecha:fechaISO(parsed.date),matricula:parsed.plate||null,ruta:parsed.route||null,
   repartidor:parsed.driver||null,peso_kg:parsed.weight??null,referencias:parsed.refs??null,
-  almacen:parsed.warehouse,productos:(parsed.products||[]).map(product=>({
+  almacen:parsed.warehouse,declared_total:parsed.declaredTotal??null,actual_total:parsed.actualTotal??null,
+  parser_metadata:{
+    verified:parsed.verified===true,warnings:Array.isArray(parsed.warnings)?parsed.warnings:[],
+    mixed_warehouse:parsed.mixedWarehouse===true,available_warehouses:parsed.availableWarehouses||[]
+  },productos:(parsed.products||[]).map(product=>({
     sku:String(product.sku||""),description:String(product.description||""),
     location:String(product.location||""),qty:Number(product.qty),unit:String(product.unit||""),
     sourceContext:String(product.sourceContext||""),pdfOriginal:product.pdfOriginal||null
   }))
 });
+const escapeHtml=value=>String(value??"").replace(/[&<>"']/g,character=>({
+  "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+}[character]));
+
+export function buildReportDownloadHtml(title,styles,content){
+  return "<!doctype html><meta charset=utf-8><title>"+escapeHtml(title)+"</title><style>"+styles+"</style>"+content;
+}
 
 export function createAdminController({client,getUser,bucket,global,errorText,onPublished}){
   let busy=false,draft=null;
@@ -28,6 +39,28 @@ export function createAdminController({client,getUser,bucket,global,errorText,on
       const button=$(id);if(button)button.disabled=value;
     }
   };
+  async function persistParsedImport(reservation,file,parsed,findings,hash){
+    const {error:uploadError}=await client.storage.from(bucket).upload(reservation.documento_ruta,file,{
+      contentType:"application/pdf",upsert:false
+    });
+    if(uploadError&&!/already exists|duplicate/i.test(String(uploadError.message||uploadError))
+      &&Number(uploadError.statusCode||uploadError.status)!==409)throw uploadError;
+    const {error:completeError}=await client.rpc("kontrola_completar_importacion",{
+      p_importacion:reservation.id,p_carga:asPayload(parsed),p_hallazgos:findings
+    });
+    if(completeError)throw completeError;
+    draft={id:reservation.id,file,hash,path:reservation.documento_ruta,parsed,findings,acknowledged:[],state:"revision_requerida"};
+    renderDraft();
+    setStatus("PDF conservado y procesado. Revisa los hallazgos antes de publicar.","success");
+    await refreshAttention();
+  }
+  async function downloadDraftFile(){
+    if(draft.file)return draft.file;
+    const {data,error}=await client.storage.from(bucket).download(draft.path);
+    if(error)throw error;
+    draft.file=new File([data],draft.parsed.id+".pdf",{type:"application/pdf"});
+    return draft.file;
+  }
   async function processPdf(){
     if(busy)return;
     const file=$("pdfInput").files?.[0];
@@ -46,23 +79,16 @@ export function createAdminController({client,getUser,bucket,global,errorText,on
       if(error)throw error;
       const reservation=Array.isArray(data)?data[0]:data;
       if(reservation?.repetida){
+        if(reservation.estado==="reservada"){
+          setStatus("Recuperando la importación interrumpida…");
+          await persistParsedImport(reservation,file,parsed,findings,hash);
+          return;
+        }
         setStatus("Este documento ya fue importado. Se conserva la importación existente ("+reservation.estado+").","success");
         await loadImport(reservation.id);
         return;
       }
-      const {error:uploadError}=await client.storage.from(bucket).upload(reservation.documento_ruta,file,{
-        contentType:"application/pdf",upsert:false
-      });
-      if(uploadError)throw uploadError;
-      const payload=asPayload(parsed);
-      const {error:completeError}=await client.rpc("kontrola_completar_importacion",{
-        p_importacion:reservation.id,p_carga:payload,p_hallazgos:findings
-      });
-      if(completeError)throw completeError;
-      draft={id:reservation.id,file,hash,path:reservation.documento_ruta,parsed,findings,acknowledged:[],state:"revision_requerida"};
-      renderDraft();
-      setStatus("PDF conservado y procesado. Revisa los hallazgos antes de publicar.","success");
-      await refreshAttention();
+      await persistParsedImport(reservation,file,parsed,findings,hash);
     }catch(error){
       setStatus("No se pudo completar la importación: "+errorText(error),"error");
     }finally{setBusy(false);}
@@ -79,6 +105,10 @@ export function createAdminController({client,getUser,bucket,global,errorText,on
       parsed:{
         id:payload.codigo,date:payload.fecha,plate:payload.matricula,route:payload.ruta,driver:payload.repartidor,
         weight:payload.peso_kg,refs:payload.referencias,warehouse:payload.almacen,products:payload.productos,
+        declaredTotal:payload.declared_total,actualTotal:payload.actual_total,
+        verified:payload.parser_metadata?.verified,warnings:payload.parser_metadata?.warnings||[],
+        mixedWarehouse:payload.parser_metadata?.mixed_warehouse,
+        availableWarehouses:payload.parser_metadata?.available_warehouses||[],
         corrections:data.correcciones||[]
       },
       findings:data.hallazgos||[],acknowledged:data.advertencias_confirmadas?(data.hallazgos||[]).filter(item=>item.severity==="warning").map(item=>item.id):[]
@@ -92,7 +122,21 @@ export function createAdminController({client,getUser,bucket,global,errorText,on
     const heading=document.createElement("div");heading.className="review-heading";
     const title=document.createElement("h3");title.textContent=draft.parsed.id+" · "+zone.label;
     const state=document.createElement("span");state.className="state-badge";state.textContent=draft.state;
-    heading.append(title,state);root.appendChild(heading);
+    const warehouse=document.createElement("select");warehouse.className="warehouse-select";warehouse.setAttribute("aria-label","Clasificar almacén");
+    for(const [value,label] of [["","Pendiente de clasificar"],["COR_01_COR","A Coruña"],["COR_02_NAR","Ferrol"]]){
+      const option=document.createElement("option");option.value=value;option.textContent=label;warehouse.appendChild(option);
+    }
+    warehouse.value=zone.known?zone.code:"";
+    warehouse.addEventListener("change",async()=>{
+      const before=draft.parsed.warehouse||"";
+      try{
+        const file=await downloadDraftFile();
+        const next=await parsePdfFile(file,{warehouse:warehouse.value});
+        next.corrections=[...(draft.parsed.corrections||[]),{line:null,field:"warehouse",before,after:warehouse.value,by:getUser().id,at:new Date().toISOString()}];
+        draft.parsed=next;draft.findings=analyzeDocument(next);draft.state="revision_requerida";renderDraft();
+      }catch(error){setStatus("No se pudo reclasificar: "+errorText(error),"error");}
+    });
+    heading.append(title,warehouse,state);root.appendChild(heading);
     const findings=document.createElement("div");findings.className="findings";
     if(!draft.findings.length){const ok=document.createElement("p");ok.className="status success";ok.textContent="Sin hallazgos.";findings.appendChild(ok);}
     for(const item of draft.findings){
@@ -243,7 +287,7 @@ export function createAdminController({client,getUser,bucket,global,errorText,on
   $("reloadIncidents").addEventListener("click",refreshIncidents);
   $("printReport").addEventListener("click",()=>window.print());
   $("downloadReport").addEventListener("click",()=>{
-    const blob=new Blob(["<!doctype html><meta charset=utf-8><title>"+$("reportTitle").textContent+"</title><style>"+$("printStyles").textContent+"</style>"+$("reportPaper").outerHTML],{type:"text/html;charset=utf-8"});
+    const blob=new Blob([buildReportDownloadHtml($("reportTitle").textContent,$("printStyles").textContent,$("reportPaper").outerHTML)],{type:"text/html;charset=utf-8"});
     const safeName=$("reportTitle").textContent.replace(/[^A-Za-z0-9_-]+/g,"_");
     const link=document.createElement("a");link.href=URL.createObjectURL(blob);link.download=(safeName||"kontrola")+".html";link.click();setTimeout(()=>URL.revokeObjectURL(link.href),1000);
   });

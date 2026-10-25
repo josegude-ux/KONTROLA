@@ -44,6 +44,30 @@ test("corrections preserve PDF values and append actor/time audit",()=>{
   assert.equal(parsed.products[1].unit,"");
 });
 
+test("quantity corrections recalculate the extracted total",()=>{
+  const result=applyLineCorrection(parsed,1,{qty:"5"},"admin-1","2026-10-25T01:00:00Z");
+  assert.equal(result.actualTotal,6);
+  assert.ok(analyzeDocument(result).some(item=>item.code==="quantity_total_mismatch"));
+});
+
+test("unverified parser output and parser warnings block publication",()=>{
+  const findings=analyzeDocument({...parsed,verified:false,warnings:["Fila ilegible"]});
+  assert.ok(findings.some(item=>item.code==="parser_warning"&&item.severity==="error"));
+  assert.ok(findings.some(item=>item.code==="unverified_document"&&item.severity==="error"));
+  assert.equal(publicationReadiness(findings,findings.map(item=>item.id)).ready,false);
+});
+
+test("missing documentary totals block publication",()=>{
+  const findings=analyzeDocument({...parsed,refs:null,declaredTotal:null,verified:false});
+  assert.ok(findings.some(item=>item.code==="missing_reference_total"&&item.severity==="error"));
+  assert.ok(findings.some(item=>item.code==="missing_quantity_total"&&item.severity==="error"));
+});
+
+test("mixed warehouse documents must be split and reprocessed",()=>{
+  const findings=analyzeDocument({...parsed,mixedWarehouse:true,availableWarehouses:["COR_01_COR","COR_02_NAR"]});
+  assert.ok(findings.some(item=>item.code==="mixed_warehouse"&&item.severity==="error"));
+});
+
 test("publication blocks errors and requires acknowledgement for warnings",()=>{
   const findings=analyzeDocument(parsed);
   assert.equal(publicationReadiness(findings,[]).ready,false);
