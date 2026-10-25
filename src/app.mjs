@@ -31,6 +31,11 @@ function switchView(id,{force=false}={}){
 }
 function loggedOut(message=""){
   user=null;profile=null;loads=[];historyRows=[];historyReady=false;current=null;currentPreparation=null;currentReadOnly=false;reviewLoads=[];currentVerification=null;verificationLines=[];
+  adminController?.clearSensitive?.();
+  for(const id of ["userName","profileName","profileRole","loadsList","reviewLoadsList",
+    "historyList","historySummary","productList","verificationLines","detailFacts"]){
+    const node=$(id);if(node)node.replaceChildren();
+  }
   visible($("shell"),false);visible($("loginView"),true);
   status("authMessage",message,message?"error":"");
 }
@@ -567,7 +572,7 @@ $("checkUpdates").addEventListener("click",async()=>{
   }catch(e){status("settingsStatus",errorText(e),"error");}
 });
 $("logout").addEventListener("click",async()=>{
-  if(busy||opening)return status("settingsStatus","Espera a que finalice la operación en curso antes de cerrar sesión.","error");
+  if(busy||opening||adminController?.isBusy?.())return status("settingsStatus","Espera a que finalice la operación en curso antes de cerrar sesión.","error");
   if(!client)return;
   await client.auth.signOut().catch(e=>status("settingsStatus",errorText(e),"error"));
   loggedOut();
