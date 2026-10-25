@@ -1,4 +1,4 @@
 {
-  "version": "0.3.18",
-  "notes": "Impresión y archivo por grupos consecutivos de hasta 20 cargas por PDF, con carátula y nombre único apto para OneDrive."
+  "version": "0.3.19",
+  "notes": "Revalidación en el servidor de hasta 20 cargas antes de imprimir; bloquea documentos modificados o de otro almacén."
 }
