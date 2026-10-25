@@ -2,7 +2,7 @@
 
 PWA móvil de operaciones de almacén para **preparación, consulta, verificación, historial e incidencias de cargas**.
 
-**Versión de esta rama:** 0.3.4. **Estado:** desarrollo probado parcialmente, **no apto aún para producción**.
+**Versión de esta rama:** 0.3.5. **Estado:** desarrollo probado parcialmente, **no apto aún para producción**.
 
 - PR de Fase 1: https://github.com/josegude-ux/KONTROLA/pull/1
 - PR de operación integral: https://github.com/josegude-ux/KONTROLA/pull/2
@@ -79,3 +79,16 @@ Para detalles del estado comprobado, las decisiones aprobadas y los siguientes p
 - **Imprimir resumen**: muestra un informe de lectura con totales, filtros y tabla de cargas; puede imprimirse o guardarse a PDF desde el navegador. No imprime ni altera los PDF originales de Business Central.
 - Ambas acciones se deshabilitan hasta que haya terminado la consulta o cuando el filtro no devuelve registros.
 - **No se escriben registros ni se requieren migraciones adicionales**. No se ha aplicado ningún cambio a Supabase de producción y sigue pendiente la prueba con cuentas y dispositivos reales.
+
+## Revisión segura de PDF (v0.3.5)
+
+- Al seleccionar un PDF, el administrador consulta primero si ya existe una carga con ese código. Si el contenido es diferente, solicita confirmación explícita antes de reservar la importación.
+- Si el documento vigente ya está en preparación, preparado, en verificación o cerrado, la interfaz indica que no se puede sustituir. La regla definitiva se vuelve a comprobar en la base de datos al publicar.
+- La importación usa SHA-256 para reconocer documentos idénticos, incluso si se ha cambiado el nombre del archivo.
+- Una nueva revisión conserva el PDF y la revisión previos; **no reinicia el reloj de preparación**.
+- El servidor impide asociar el mismo hash de PDF a dos números de carga distintos.
+- Un PDF de revisión histórica no puede declararse de nuevo vigente mediante la RPC de publicación.
+- La migración incremental está en `supabase/migrations/20261027_kontrola_revision_documental_segura.sql`. **No ejecutarla en producción sin aprobación y respaldo verificado**.
+- `tests/integration/revisions.sql` comprueba en PostgreSQL descartable las revisiones 1 y 2, PDF renombrado, duplicado entre cargas y bloqueo de la revisión 3 tras iniciar preparación.
+
+Pendiente: pruebas completas con Supabase Auth/Storage real, documentos autorizados y móviles. El resultado de GitHub Actions no implica despliegue.
