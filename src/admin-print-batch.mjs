@@ -1,4 +1,5 @@
 import {buildPreparationReport} from "./report.mjs";
+import {comprobarLoteActualizado} from "./archive-snapshot.mjs";
 import {fechaAlmacen} from "./business-date.mjs";
 import {filtrarCargasArchivo,validarPeriodoArchivo,nombreSugeridoArchivo,portadaLoteArchivo,MAX_HOJAS_ARCHIVO} from "./archive-period.mjs";
 
@@ -6,7 +7,7 @@ import {filtrarCargasArchivo,validarPeriodoArchivo,nombreSugeridoArchivo,portada
 // No incluye los PDF originales ni publica/actualiza documentos.
 const $=id=>document.getElementById(id);
 export function configurarLoteImpresion({client,getUser,getWarehouse,errorText}){
-  let rows=[],allRows=[],selected=new Set(),currentWarehouse="",currentSession=null,seq=0,nextGroupStart=0;
+  let rows=[],allRows=[],selected=new Set(),currentWarehouse="",currentSession=null,seq=0,nextGroupStart=0,previewing=false;
   const status=$("batchPrintStatus"),list=$("batchPrintList"),button=$("batchPrintOpen");
   function reset(){
     rows=[];allRows=[];selected.clear();nextGroupStart=0;list.replaceChildren();button.disabled=true;
@@ -70,23 +71,49 @@ export function configurarLoteImpresion({client,getUser,getWarehouse,errorText})
       if(req===seq)$("batchPrintRefresh").disabled=false;
     }
   }
-  function preview(){
+  async function preview(){
+    if(previewing)return;
     if(!selected.size||!rows.length||getUser()?.id!==currentSession
       ||getWarehouse()!==currentWarehouse){
       status.textContent="Actualiza la lista antes de preparar la impresión.";return;
     }
-    const chosen=rows.filter(row=>selected.has(row.codigo));
-    if(!chosen.length||chosen.length>MAX_HOJAS_ARCHIVO){status.textContent="Elige entre 1 y "+MAX_HOJAS_ARCHIVO+" hojas.";return;}
+    const warehouse=currentWarehouse,session=currentSession,request=seq;
+    const codes=[...selected],chosen=rows.filter(row=>selected.has(row.codigo));
+    if(chosen.length!==codes.length||!chosen.length||chosen.length>MAX_HOJAS_ARCHIVO){
+      status.textContent="Elige entre 1 y "+MAX_HOJAS_ARCHIVO+" hojas válidas.";return;
+    }
     const from=$("batchPrintFrom").value,to=$("batchPrintTo").value;
     try{validarPeriodoArchivo(from,to);}catch(error){status.textContent=error.message;return;}
-    const date=fechaAlmacen();
-    const cover=portadaLoteArchivo(chosen,{almacen:currentWarehouse,desde:from,hasta:to,fechaGeneracion:date});
-    $("reportPaper").innerHTML=cover+chosen
-      .map(row=>'<section class="report-batch-sheet">'+buildPreparationReport(row)+"</section>").join("");
-    $("reportTitle").textContent="Lote preparado para archivo · "+chosen.length+" hojas · "+currentWarehouse;
-    status.textContent="Informe preparado. Usa «Imprimir / Guardar PDF» y después muévelo a OneDrive desde Archivos.";
-    $("reportView").hidden=false;document.body.classList.add("report-open");
-    window.scrollTo(0,0);
+    previewing=true;button.disabled=true;
+    status.textContent="Verificando en el servidor que las "+chosen.length+" cargas no han cambiado…";
+    try{
+      const {data,error}=await client.rpc("kontrola_panel_cargas",{p_almacen:warehouse});
+      if(request!==seq||getUser()?.id!==session||getWarehouse()!==warehouse
+        ||$("batchPrintFrom").value!==from||$("batchPrintTo").value!==to
+        ||selected.size!==codes.length||codes.some(id=>!selected.has(id)))return;
+      if(error)throw error;
+      const verified=comprobarLoteActualizado(chosen,data||[],warehouse);
+      const date=fechaAlmacen();
+      const cover=portadaLoteArchivo(verified,{
+        almacen:warehouse,desde:from,hasta:to,fechaGeneracion:date
+      });
+      $("reportPaper").innerHTML=cover+verified
+        .map(row=>'<section class="report-batch-sheet">'+buildPreparationReport(row)+"</section>").join("");
+      $("reportTitle").textContent="Lote verificado para archivo · "+verified.length+" hojas · "+warehouse;
+      status.textContent="Lote comprobado contra el servidor. Usa «Imprimir / Guardar PDF» y después muévelo a OneDrive desde Archivos.";
+      $("reportView").hidden=false;document.body.classList.add("report-open");
+      window.scrollTo(0,0);
+    }catch(error){
+      if(request!==seq||getUser()?.id!==session||getWarehouse()!==warehouse)return;
+      $("reportPaper").replaceChildren();
+      selected.clear();
+      render();
+      status.textContent="No se ha generado el PDF: "+errorText(error)+
+        " Pulsa Actualizar y selecciona de nuevo las cargas.";
+    }finally{
+      previewing=false;
+      if(request===seq)button.disabled=selected.size===0;
+    }
   }
   $("batchPrintRefresh").addEventListener("click",refresh);
   for(const id of ["batchPrintFrom","batchPrintTo"]){
