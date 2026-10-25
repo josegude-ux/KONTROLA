@@ -54,7 +54,7 @@ create table if not exists public.kontrola_incidencias (
  detectada_en timestamptz not null default now(),
  actualizada_por uuid not null references auth.users(id),
  actualizada_en timestamptz not null default now(),
- unique (verificacion_id,linea),
+ constraint kontrola_incidencia_linea_unica unique (verificacion_id,linea),
  foreign key (verificacion_id,linea)
    references public.kontrola_verificacion_lineas(verificacion_id,linea) on delete restrict
 );
@@ -259,7 +259,7 @@ begin
    v_verificacion.codigo,p_verificacion,p_linea,v_linea.sku,v_linea.prevista_cantidad,
    p_cantidad,p_cantidad-v_linea.prevista_cantidad,'pendiente',v_user,v_now,v_user,v_now
   )
-  on conflict(verificacion_id,linea) do update set
+  on conflict on constraint kontrola_incidencia_linea_unica do update set
    comprobada_cantidad = excluded.comprobada_cantidad,
    diferencia = excluded.diferencia,
    estado = 'pendiente',

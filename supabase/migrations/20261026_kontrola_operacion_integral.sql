@@ -209,6 +209,15 @@ create policy "kontrola_avisos_lectura" on public.kontrola_avisos
 drop policy if exists "kontrola_cargas_lectura" on public.kontrola_cargas;
 create policy "kontrola_cargas_lectura" on public.kontrola_cargas
  for select to authenticated using (public.kontrola_puede_almacen(almacen));
+drop policy if exists "kontrola_pdf_lectura_autorizada" on storage.objects;
+create policy "kontrola_pdf_lectura_autorizada" on storage.objects for select to authenticated
+ using (
+  bucket_id='kontrola-pdfs' and exists(
+   select 1 from public.kontrola_cargas c
+   where c.documento_ruta=name and public.kontrola_puede_almacen(c.almacen)
+  )
+ );
+revoke execute on function public.kontrola_cargas_para_verificar() from authenticated;
 
 create or replace function public.kontrola_mis_almacenes()
 returns table(codigo text,nombre text)
@@ -220,6 +229,29 @@ as $$
 $$;
 revoke all on function public.kontrola_mis_almacenes() from public,anon;
 grant execute on function public.kontrola_mis_almacenes() to authenticated;
+
+create or replace function public.kontrola_configurar_acceso_almacen(
+ p_usuario uuid,p_almacen text,p_activo boolean
+)
+returns void language plpgsql security definer set search_path=''
+as $$
+begin
+ if auth.uid() is null or not public.kontrola_es_administrador() then
+  raise exception 'Solo administración puede configurar almacenes' using errcode='42501';
+ end if;
+ if not exists(select 1 from public.usuarios_app u where u.id=p_usuario and u.activo) then
+  raise exception 'Usuario no habilitado' using errcode='22023';
+ end if;
+ if not exists(select 1 from public.kontrola_almacenes a where a.codigo=p_almacen and a.activo) then
+  raise exception 'Almacén no disponible' using errcode='22023';
+ end if;
+ insert into public.kontrola_usuario_almacenes(usuario_id,almacen,activo)
+ values(p_usuario,p_almacen,p_activo)
+ on conflict(usuario_id,almacen) do update set activo=excluded.activo,asignado_en=now();
+end;
+$$;
+revoke all on function public.kontrola_configurar_acceso_almacen(uuid,text,boolean) from public,anon;
+grant execute on function public.kontrola_configurar_acceso_almacen(uuid,text,boolean) to authenticated;
 
 create or replace function public.kontrola_panel_cargas(p_almacen text)
 returns table(
