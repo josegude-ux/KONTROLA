@@ -456,3 +456,7 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 - `tests/integration/archive.sql` crea casos de archivo temprano rechazado, archivo tras 92 días simulados en BD aislada, listado, idempotencia, restauración, auditoría y denegación a operario.
 - `tests/integration/run.sh` aplica exclusivamente en su BD efímera de pruebas la propuesta de `supabase/proposals/` después de las pruebas existentes. No despliega en Supabase.
 - Pendiente comprobar que esta nueva ejecución de GitHub Actions pase; ninguna migración real aplicada.
+
+### CI archivo — corrección de permisos ejecutables
+- GitHub Actions del commit `b384f8e` falló con salida 126 al iniciar pruebas de base de datos: el archivo `tests/integration/run.sh` fue reemplazado con modo no ejecutable `100644`.
+- Restaurado modo ejecutable `100755`. Aún no se considera validada la integración hasta ejecución CI correcta.
