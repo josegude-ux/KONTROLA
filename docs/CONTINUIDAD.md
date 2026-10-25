@@ -229,3 +229,12 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 - **Condición externa:** el administrador del repositorio debe seleccionar `Settings → Pages → Build and deployment → Source: GitHub Actions` si todavía no está configurado. La publicación puede fallar hasta entonces.
 - **Sin cambios:** no se ha fusionado `main`, ni ejecutado migraciones, ni modificado INVENTA, Control de Cargas, Tanques o Business Central.
 - **Siguiente paso:** comprobar ejecución de Pages, obtener URL real, abrir en Safari, añadir a pantalla de inicio y verificar primero navegación; después revisar cuentas, esquema KONTROLA y cargas PDF de prueba antes de ejecutar operaciones persistentes.
+
+
+## Diagnóstico de GitHub Pages (25/10/2026)
+
+- **Rama/PR:** `cursor/verificacion-fisica-cargas-8ba0`, PR #2. **Versión:** 0.3.19 (sin cambios de aplicación).
+- **Motivo:** workflow Pages `40195392936` falló dos veces antes de ejecutar pasos; CI `40195396194` terminó correctamente. GitHub informa cero pasos ejecutados, sin aprobaciones de despliegue pendientes. No hay causa raíz confirmada.
+- **Cambio:** `.github/workflows/pages.yml` divide el trabajo original en `build` (sin entorno protegido: checkout, npm ci, check, vendor, dist, artefacto) y `deploy` (dependiente de build, entorno `github-pages`, deploy-pages). Se elimina `configure-pages`, que requiere acceso de configuración y no es imprescindible cuando Pages ya está habilitado.
+- **Validación:** pendiente del nuevo run de Actions; verificar que `build` arranca y si `deploy` falla por protección de entorno, rama autorizada o permisos.
+- **Límites:** no se tocan Supabase, datos, otras aplicaciones, ni ramas base; no hay migraciones ni publicación confirmada.
