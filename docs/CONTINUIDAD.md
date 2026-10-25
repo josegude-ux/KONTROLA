@@ -589,3 +589,10 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 - Corrección de coherencia: v0.3.30 sincronizada entre package/lock/config/interfaz y test de navegación; caché independiente `kontrola-integral-visura-v061` para actualizar PWA. CI de PR pendiente tras el commit.
 
 - Prueba adicional: referencias regex con puntos escapados en `tests/navigation.test.mjs` también sincronizadas con 0.3.30; queda pendiente confirmación de CI de GitHub.
+
+
+### 2026-10-26 — Recursos 3D aprobados incorporados a la rama VISURA PREPARA
+- Incorporada **la imagen exclusiva VISURA PREPARA**, derivada del paquete visual aprobado por el usuario, en `assets/brand/visura-prepara-3d.webp` (768 px). Aparece en la pantalla de acceso sin alterar botones ni funcionalidad.
+- Iconos PNG 192/512 integrados y enlazados al manifest; iPhone usa apple-touch-icon PNG. La imagen de VISURA MATRIZ se conserva por separado en `assets/brand/visura-matriz-3d.webp` como recurso reservado: **no se muestra ni comparte imagen principal con PREPARA**.
+- Caché actualizado a `kontrola-integral-visura-v062` para asegurar disponibilidad de los nuevos archivos en PWA. Continúan intactos los módulos de operario, administración, Supabase y BC.
+- Pendientes: confirmar CI de este commit, instalación/actualización iPhone y Android, validación visual real. No fusionado ni desplegado.

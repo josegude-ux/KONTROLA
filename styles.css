@@ -201,3 +201,9 @@ footer{padding:18px;text-align:center;background:#fff;border-top:1px solid #e6e8
 @media print{#shell .topbar .topbar-back{display:none!important}.report-view .report-controls{display:none!important}}
 
 .active-warehouse-hint{margin:8px 0 14px;padding:10px 14px;background:#f0f7fb;color:#355e79;border-radius:11px;font-size:13px;font-weight:700}
+
+/* VISURA PREPARA: recurso 3D exclusivo en acceso, sin alterar menús operativos. */
+.visura-brand-intro{display:grid;grid-template-columns:minmax(0,1fr) minmax(90px,118px);align-items:center;gap:12px;margin-bottom:25px}
+.visura-brand-intro .app-brand{min-width:0;margin:0}.visura-brand-intro .app-brand img{width:100%;max-width:240px;height:auto}
+.visura-brand-intro .visura-identity-image{display:block;width:100%;height:auto;aspect-ratio:1;object-fit:contain;border-radius:22px;box-shadow:0 9px 20px #0b26471a}
+@media(max-width:380px){.visura-brand-intro{grid-template-columns:minmax(0,1fr) 95px;gap:9px}}
