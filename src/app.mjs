@@ -1,3 +1,4 @@
+import {fechaAlmacen} from "./business-date.mjs";
 import {SUPABASE_URL,SUPABASE_KEY,PDF_BUCKET,APP_VERSION} from "./config.mjs";
 import {agruparPasillos,ordenarCargas} from "./logic.mjs";
 import {buildVerificationLines,parseCheckedQuantity,summarizeVerification} from "./verification.mjs";
@@ -85,7 +86,7 @@ async function refreshOperatorDashboard(){
   if(!client||!user||!selectedWarehouse)return;
   const warehouse=selectedWarehouse,userId=user.id;
   const [{data:summary,error},{data:activity,error:activityError}]=await Promise.all([
-    client.rpc("kontrola_resumen_zona",{p_almacen:warehouse,p_dia:new Date().toISOString().slice(0,10)}),
+    client.rpc("kontrola_resumen_zona",{p_almacen:warehouse,p_dia:fechaAlmacen()}),
     client.from("kontrola_actividad").select("tipo,codigo,creado_en,detalle").eq("almacen",warehouse).order("creado_en",{ascending:false}).limit(20)
   ]);
   if(!validRequest(warehouse,userId))return;
