@@ -1,4 +1,4 @@
 {
-  "version": "0.3.2",
-  "notes": "Vista de submenú Control de Cargas integrada; navegación móvil y funciones anteriores conservadas."
+  "version": "0.3.3",
+  "notes": "Historial y resumen diario de cargas, filtros, consulta de solo lectura y navegación modular."
 }
