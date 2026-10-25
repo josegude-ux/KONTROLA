@@ -83,6 +83,12 @@ async function loadWarehouses(){
   }
   renderWarehouseTabs("prepWarehouseTabs");
   renderWarehouseTabs("reviewWarehouseTabs");
+  updateWarehouseLabels();
+}
+function warehouseLabel(){return warehouses.find(w=>w.codigo===selectedWarehouse)?.nombre||selectedWarehouse;}
+function updateWarehouseLabels(){
+  $("loadsWarehouseHint").textContent="Almacén seleccionado: "+warehouseLabel()+". Solo se muestran las cargas de este almacén.";
+  $("reviewWarehouseHint").textContent="Almacén seleccionado: "+warehouseLabel()+". Se muestran cargas preparadas por otro operario.";
 }
 function renderWarehouseTabs(id){
   const target=$(id);target.replaceChildren();
@@ -98,6 +104,7 @@ async function selectWarehouse(code,context="home"){
   selectedWarehouse=code;localStorage.setItem("kontrola-warehouse",code);
   $("homeWarehouse").value=code;$("adminWarehouse").value=code;$("historyWarehouse").value=code;
   renderWarehouseTabs("prepWarehouseTabs");renderWarehouseTabs("reviewWarehouseTabs");
+  updateWarehouseLabels();
   if(context==="review")await refreshReviewLoads();
   else if(context==="preparation")await refreshLoads();
   else if(context==="history")await refreshHistory();
@@ -190,7 +197,7 @@ function renderLoadList(){
   const target=$("loadsList");target.replaceChildren();
   const search=$("loadSearch").value.trim().toLocaleLowerCase("es-ES");
   const records=loads.filter(r=>[r.codigo,r.ruta,r.matricula,r.repartidor].some(v=>String(v||"").toLocaleLowerCase("es-ES").includes(search)));
-  if(!records.length){const p=document.createElement("p");p.className="muted";p.textContent="No hay cargas publicadas que coincidan con la búsqueda.";target.appendChild(p);return;}
+  if(!records.length){const p=document.createElement("p");p.className="muted";p.textContent=!loads.length?"No hay cargas publicadas en "+warehouseLabel()+". Comprueba el almacén seleccionado arriba.":"No hay cargas de "+warehouseLabel()+" que coincidan con el filtro. Borra la búsqueda.";target.appendChild(p);return;}
   for(const r of records){
     const b=document.createElement("button");b.type="button";b.className="load-card";
     const a=document.createElement("span"),id=document.createElement("strong"),meta=document.createElement("span");
@@ -308,15 +315,17 @@ $("reloadLoads").addEventListener("click",()=>refreshLoads().catch(()=>{}));
 function openLoadsMenu(parent="homeView",mode="preparacion"){
   if(!switchView("loadsView"))return;
   loadsParent=parent;loadsMode=mode;
+  $("loadSearch").value="";
   $("loadsHeading").textContent=mode==="consulta"?"Consulta de cargas":"Preparación de cargas";
   $("loadsDescription").textContent=mode==="consulta"
     ?"Modo de solo lectura: consulta la mercancía y los PDF sin modificar los tiempos de preparación."
-    :"Consultar una carga no inicia el reloj. Inícialo únicamente al comenzar la preparación física.";
+    :"Al seleccionar una carga publicada, la preparación y el reloj comienzan automáticamente. Para consultar sin iniciar, utiliza Control de Cargas → Consultar cargas.";
   refreshLoads().catch(()=>{});
 }
 function openReviewMenu(parent="homeView"){
   if(!switchView("reviewLoadsView"))return;
   reviewLoadsParent=parent;
+  $("reviewSearch").value="";
   refreshReviewLoads().catch(()=>{});
 }
 async function openAdminMenu(parent="homeView"){
@@ -522,7 +531,7 @@ function renderReviewLoads(){
   const target=$("reviewLoadsList");target.replaceChildren();
   const search=$("reviewSearch").value.trim().toLocaleLowerCase("es-ES");
   const records=reviewLoads.filter(r=>[r.codigo,r.ruta,r.matricula,r.repartidor].some(v=>String(v||"").toLocaleLowerCase("es-ES").includes(search)));
-  if(!records.length){const p=document.createElement("p");p.className="muted";p.textContent="No hay cargas ajenas disponibles para verificar.";target.appendChild(p);return;}
+  if(!records.length){const p=document.createElement("p");p.className="muted";p.textContent=!reviewLoads.length?"No hay cargas verificables por este usuario en "+warehouseLabel()+". Selecciona otro almacén si corresponde.":"Ninguna carga verificable coincide con el filtro de búsqueda.";target.appendChild(p);return;}
   for(const load of records){
     const button=document.createElement("button");button.type="button";button.className="load-card";
     const left=document.createElement("span"),title=document.createElement("strong"),meta=document.createElement("span");

@@ -42,12 +42,12 @@ test("La navegación conserva los accesos previos y los regresos al submenú",()
 
 test("La versión y el caché están preparados para instalar nuevas pantallas",()=>{
   const version=JSON.parse(read("version.json")).version;
-  assert.equal(version,"0.3.28");
+  assert.equal(version,"0.3.29");
   assert.equal(JSON.parse(read("package.json")).version,version);
   assert.equal(JSON.parse(read("package-lock.json")).version,version);
-  assert.match(read("src/config.mjs"),/APP_VERSION="0\.3\.28"/);
-  assert.match(html,/id="appVersion">0\.3\.28</);
-  assert.match(read("sw.js"),/kontrola-integral-v059/);
+  assert.match(read("src/config.mjs"),/APP_VERSION="0\.3\.29"/);
+  assert.match(html,/id="appVersion">0\.3\.29</);
+  assert.match(read("sw.js"),/kontrola-integral-v060/);
 });
 
 test("Las consultas descartan respuestas de sesiones o almacenes anteriores",()=>{
@@ -145,4 +145,14 @@ test("las cargas nunca se indican como borradas cuando falla el resumen o se cam
   assert.match(app,/Los datos del servidor no se han borrado/);
   assert.match(app,/mostrar cero no significa que los datos se hayan eliminado/);
   assert.match(app,/warehouses\.find\(item=>item\.codigo===warehouse\)/);
+});
+
+test("almacenes visibles y filtros claros",()=>{
+ for(const id of ["loadsWarehouseHint","reviewWarehouseHint"])assert.match(html,new RegExp('id="'+id+'"'));
+ assert.match(app,/function updateWarehouseLabels/);
+ assert.match(app,/No hay cargas publicadas en /);
+ assert.match(app,/No hay cargas verificables por este usuario en /);
+ assert.match(html,/Al seleccionar una carga publicada se inicia automáticamente/);
+ assert.match(app,/\$\("loadSearch"\)\.value=""/);
+ assert.match(app,/\$\("reviewSearch"\)\.value=""/);
 });

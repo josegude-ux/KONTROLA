@@ -570,3 +570,9 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 - `Mi actividad` especifica siempre el almacén consultado, expone errores de RPC en lugar de enseñar falsos ceros, avisa cuando el almacén seleccionado no tiene cargas y añade control para actualizar. Sin acceso legítimo a un almacén no se muestran sus datos.
 - Se crea un solo botón **«← Volver»** fijo arriba a la izquierda en `topbar`, visible en todas las vistas operativas salvo inicio. Conserva las rutas de retorno existentes: cargas, detalle, verificación, historial, administración (padre correcto) y ajustes. Los botones anteriores se mantienen internamente, ocultos para evitar duplicación. El visor de hoja procesada mantiene su propio Volver, ahora sticky.
 - Sin SQL ni migraciones ni modificaciones a INVENTA o Business Central. `docs/CONTINUIDAD.md` y pruebas de contrato se actualizan en el mismo commit; release coherente v0.3.28, SW v059. Pendiente validación manual en Android/iOS de navegación, reloj y cambio de almacén.
+
+### 2026-10-26 — Corregir confusión de almacenes y Preparación (v0.3.29)
+- Fotos recibidas: Ferrol seleccionado en Preparación y Verificación; comprobación SQL confirma 14 cargas de A Coruña y ninguna de Ferrol. No se perdió la base de datos.
+- Ambas pantallas muestran el almacén activo, distinguen un almacén vacío de una búsqueda sin coincidencias y reinician filtros antiguos al reabrir.
+- El texto de Preparación indica el inicio automático del reloj al seleccionar una carga publicada; Consulta sigue sin mutaciones.
+- Actualización PWA 0.3.29, caché v060, pruebas y continuidad en el mismo commit. Sin modificaciones de Supabase ni INVENTA.
