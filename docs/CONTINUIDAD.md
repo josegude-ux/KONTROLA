@@ -201,3 +201,18 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 - `tests/archive-snapshot.test.mjs`: regresiones de lote vigente, cantidades, transporte, desaparición, almacenes, cero mercancía y formato de impresión.
 - No se cambia ni escribe información empresarial; el origen de los datos sigue siendo una RPC con comprobación de permisos. No se autoriza ninguna migración o despliegue.
 - Validar físicamente en iPhone tras la publicación autorizada de una versión de prueba, especialmente rendimiento con 20 cargas extensas y correcto archivado en OneDrive.
+
+
+## Protocolo obligatorio de actualización continua de esta ficha (25/10/2026)
+
+**Decisión expresa del responsable:** cada modificación de KONTROLA debe dejar esta ficha maestra actualizada **en el mismo cambio de GitHub**, sin esperar al final de una fase, sesión o conversación.
+
+1. Antes de modificar código, SQL, configuración, interfaz, pruebas o documentación funcional, leer esta ficha en la rama de trabajo y comprobar el último commit, PR y estado de CI. Respetar las decisiones vigentes, incluidas las posteriores que prevalezcan sobre notas históricas.
+2. Por **cada modificación**, actualizar `docs/CONTINUIDAD.md` en el **mismo commit** que los archivos afectados, o en una operación inseparable de la misma PR antes de darla por terminada. No declarar completado un cambio sin ficha actualizada y comprobada en GitHub.
+3. Añadir una entrada cronológica con: fecha; versión si cambia; rama y PR; objetivo y decisión de negocio; archivos/componentes alterados; comportamiento anterior y nuevo; pruebas realizadas y resultado (distinguiendo CI de pruebas reales); riesgos y limitaciones; lo pendiente y siguiente paso. Incorporar el SHA final del commit mediante enlace o referencia posterior si no puede conocerse dentro del propio commit.
+4. Si un intento falla, se revierte o queda incompleto, documentarlo también claramente, indicando qué se ha revertido, qué permanece y cómo recuperarlo. Nunca presentar pruebas pendientes como superadas.
+5. Si se modifica el alcance o una decisión aprobada, registrar explícitamente qué regla sustituye, desde cuándo y por qué. Conservar la trazabilidad; no sobrescribir silenciosamente acuerdos anteriores.
+6. Al cerrar cada intervención, comprobar en GitHub que el código y la ficha están sincronizados y comunicar el commit, el resultado de pruebas y los pendientes. Si falla la actualización de la ficha, el trabajo no se considera cerrado.
+7. Mantener la ficha **solo en KONTROLA**, en la rama/PR de desarrollo correspondiente. No alterar INVENTA, Control de Cargas, Tanques, Business Central, `main` ni producción sin autorización específica. No introducir secretos, PDF empresariales ni datos personales en la ficha pública.
+
+**Aplicación inmediata:** este protocolo rige para todas las modificaciones posteriores a su incorporación, incluyendo las realizadas por agentes Cursor u otros asistentes. La ficha no sustituye las pruebas ni la revisión humana.
