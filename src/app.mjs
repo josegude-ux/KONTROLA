@@ -171,8 +171,14 @@ function renderLoadList(){
     const b=document.createElement("button");b.type="button";b.className="load-card";
     const a=document.createElement("span"),id=document.createElement("strong"),meta=document.createElement("span");
     id.className="load-title";id.textContent=r.codigo;
-    meta.className="load-meta";meta.textContent=[r.repartidor,r.ruta,r.matricula,r.estado].filter(Boolean).join(" · ")||"Sin datos de ruta";
-    a.append(id,meta);
+    meta.className="load-meta";meta.textContent=[r.repartidor,r.ruta,r.estado].filter(Boolean).join(" · ")||"Sin datos de ruta";
+    const plate=document.createElement("span");plate.className="load-plate";
+    plate.textContent="Matrícula: "+(r.matricula||"—");
+    const bundles=document.createElement("span");bundles.className="load-bundles";
+    // Solo mostrar bultos si la carga trae un campo explícito y fiable.
+    bundles.textContent="Bultos: "+(Number.isFinite(Number(r.bultos))&&r.bultos!=null?Number(r.bultos).toLocaleString("es-ES"):"—");
+
+    a.append(id,meta,plate,bundles);
     const weight=document.createElement("span");weight.className="load-weight";weight.textContent=fmt(r.peso_kg)+" kg";
     b.append(a,weight);
     b.addEventListener("click",()=>openLoad(r.codigo));

@@ -214,53 +214,38 @@ export function createAdminController({client,getUser,bucket,global,errorText,on
     root.appendChild(summary);
     if(locationIssues.length){
       const notice=document.createElement("p");notice.className="hint";
-      notice.textContent="Las ubicaciones se corrigen en Business Central, no aquí. Consulta el informe de incidencias cuando lo necesites.";
+      notice.textContent="Ubicaciones pendientes de corregir en Business Central. No bloquean la operativa; disponibles en el informe bajo demanda.";
       root.appendChild(notice);
-      const confirm=document.createElement("label");confirm.className="finding warning";
-      const checkbox=document.createElement("input");checkbox.type="checkbox";
-      checkbox.checked=locationIssues.every(item=>draft.acknowledged.includes(item.id));
-      checkbox.addEventListener("change",()=>{
-        const ids=new Set(locationIssues.map(item=>item.id));
-        draft.acknowledged=draft.acknowledged.filter(id=>!ids.has(id));
-        if(checkbox.checked)draft.acknowledged.push(...ids);
-        updateActions();
-      });
-      const caption=document.createElement("span");
-      caption.textContent="He revisado el aviso de "+locationIssues.length+" ubicación(es) pendiente(s) en BC.";
-      confirm.append(checkbox,caption);root.appendChild(confirm);
     }
     const findings=document.createElement("div");findings.className="findings";
-    if(!otherFindings.length&&!locationIssues.length){
-      const ok=document.createElement("p");ok.className="status success";ok.textContent="Sin hallazgos.";findings.appendChild(ok);
+    const critical=otherFindings.filter(item=>item.severity==="error");
+    if(!critical.length){
+      const ok=document.createElement("p");ok.className="status success";
+      ok.textContent="Sin errores bloqueantes. Los avisos no críticos quedan registrados para su revisión posterior.";
+      findings.appendChild(ok);
     }
-    for(const item of otherFindings){
-      const row=document.createElement("label");row.className="finding "+item.severity;
-      const checkbox=document.createElement("input");checkbox.type="checkbox";checkbox.disabled=item.severity==="error";
-      checkbox.checked=draft.acknowledged.includes(item.id);
-      checkbox.addEventListener("change",()=>{
-        draft.acknowledged=checkbox.checked?[...new Set([...draft.acknowledged,item.id])]:draft.acknowledged.filter(id=>id!==item.id);
-        updateActions();
-      });
-      const text=document.createElement("span");text.textContent=(item.line?"Línea "+item.line+" · ":"")+item.message+(item.context?" · "+item.context:"");
-      row.append(checkbox,text);findings.appendChild(row);
+    for(const item of critical){
+      const row=document.createElement("p");row.className="finding error";
+      row.textContent=(item.line?"Línea "+item.line+" · ":"")+item.message+(item.context?" · "+item.context:"");
+      findings.appendChild(row);
     }
     root.appendChild(findings);
     updateActions();
   }
   function updateActions(){
-    const readiness=draft?publicationReadiness(draft.findings,draft.acknowledged):{ready:false};
+    const readiness=draft?publicationReadiness(draft.findings,draft.findings.filter(item=>item.severity==="warning").map(item=>item.id)):{ready:false};
     $("saveDocumentReview").disabled=busy||!draft;
     $("generateSheet").disabled=busy||!draft;
     $("locationReport").disabled=busy||!draft;
     $("publishReviewedLoad").disabled=busy||!draft||draft.state!=="aprobada"||!readiness.ready;
-    $("reviewReadiness").textContent=!draft?"":readiness.ready?"Documento listo para aprobar y publicar.":readiness.errors?.length
+    $("reviewReadiness").textContent=!draft?"":readiness.ready?"Sin errores graves: puedes guardar y publicar.":readiness.errors?.length
       ?readiness.errors.length+" error(es) bloqueante(s).":"Confirma todas las advertencias para continuar.";
   }
   async function saveReview(){
     if(busy||!draft)return;
-    const readiness=publicationReadiness(draft.findings,draft.acknowledged);
-    const warnings=draft.findings.filter(item=>item.severity==="warning");
-    const confirmed=warnings.every(item=>draft.acknowledged.includes(item.id));
+    const readiness=publicationReadiness(draft.findings,draft.findings.filter(item=>item.severity==="warning").map(item=>item.id));
+    // Los avisos no críticos se registran sin requerir confirmación línea a línea.
+    const confirmed=true;
     setBusy(true);
     try{
       const {data,error}=await client.rpc("kontrola_corregir_importacion",{
