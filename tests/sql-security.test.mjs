@@ -48,6 +48,11 @@ test("finishing closes the load even when unresolved incidents exist",()=>{
   assert.doesNotMatch(verificationSql,/where not exists\s*\([^;]*kontrola_incidencias/i);
 });
 
+test("the client reads current server state before enabling a verification",()=>{
+  assert.match(app,/from\(["']kontrola_verificaciones["']\)\.select\(["']estado["']\)/);
+  assert.match(app,/finished:verification\.estado===["']finalizada["']/);
+});
+
 test("only an active administrator can mark a pending incident as regularized",()=>{
   assert.match(verificationSql,/create or replace function public\.kontrola_regularizar_incidencia\(p_incidencia uuid\)/i);
   assert.match(verificationSql,/not public\.kontrola_es_administrador\(\)/i);

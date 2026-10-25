@@ -210,11 +210,16 @@ async function openVerification(code){
   try{
     const {data:id,error}=await client.rpc("kontrola_abrir_verificacion",{p_codigo:code});
     if(error)throw error;
-    const {data:lines,error:linesError}=await client.from("kontrola_verificacion_lineas")
-      .select("linea,sku,descripcion,ubicacion,prevista_cantidad,unidad,comprobada_cantidad,comprobada_en")
-      .eq("verificacion_id",id).order("linea",{ascending:true});
+    const [{data:verification,error:verificationError},{data:lines,error:linesError}]=await Promise.all([
+      client.from("kontrola_verificaciones").select("estado").eq("id",id).single(),
+      client.from("kontrola_verificacion_lineas")
+        .select("linea,sku,descripcion,ubicacion,prevista_cantidad,unidad,comprobada_cantidad,comprobada_en")
+        .eq("verificacion_id",id).order("linea",{ascending:true})
+    ]);
+    if(verificationError)throw verificationError;
     if(linesError)throw linesError;
-    currentVerification={id,load,finished:load.estado==="finalizada"};
+    load.estado=verification.estado;
+    currentVerification={id,load,finished:verification.estado==="finalizada"};
     verificationLines=(lines||[]).map(line=>({
       lineNumber:Number(line.linea),sku:line.sku,description:line.descripcion,location:line.ubicacion,
       expectedQuantity:Number(line.prevista_cantidad),unit:line.unidad,
