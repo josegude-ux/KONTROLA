@@ -13,7 +13,7 @@ export function auditarCopiaCargas(source){
   if(data.loads.length>50000||data.operators.length>5000){
     throw Error("La copia supera el límite de auditoría segura.");
   }
-  const codes=new Map(),hashes=new Map(),states={};
+  const codes=new Map(),hashes=new Map(),states=Object.create(null);
   let invalidCode=0,missingDate=0,unverified=0,incompleteTimes=0,missingHash=0,unknownRows=0;
   for(const row of data.loads){
     if(!row||typeof row!=="object"||Array.isArray(row)){unknownRows++;continue;}
