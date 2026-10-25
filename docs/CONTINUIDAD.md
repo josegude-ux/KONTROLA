@@ -463,3 +463,6 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 
 ### Corrección del test de auditoría
 - CI detectó denegación de lectura directa de `kontrola_archivo_eventos` bajo rol `authenticated`, que es la restricción buscada. El test pasa a `reset role` únicamente para comprobar la auditoría con privilegios del runner local, y vuelve al rol autenticado antes de probar la API. No se conceden permisos nuevos.
+
+### CI archivo — confirmación de modo ejecutable
+- El commit de test reintrodujo accidentalmente `100644` en `tests/integration/run.sh` por utilizar una base de árbol antigua; se vuelve a forzar `100755` junto con el test y documentación actuales.
