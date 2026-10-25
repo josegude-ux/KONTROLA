@@ -102,7 +102,16 @@ footer{padding:18px;text-align:center;background:#fff;border-top:1px solid #e6e8
 @media(max-width:600px){.batch-print-list{grid-template-columns:1fr}}
 @media print{.report-batch-sheet{break-after:page;page-break-after:always}.report-batch-sheet:last-child{break-after:auto;page-break-after:auto}}
 
-/* Inicio documental nuevo: no mostrar funciones de migración de PDF antiguos. */
-#legacyAuditPanel[hidden]{display:none!important}
 .archive-info{max-width:760px;margin:12px auto 18px;padding:12px;border:1px solid #cfdce7;border-radius:10px}
 @media print{#onedriveArchiveHelp{display:none!important}}
+
+/* Archivo periódico: filtro de fechas para las nuevas hojas y carátula impresa. */
+.archive-range-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:14px 0}
+.archive-range-fields label{min-width:0}
+.archive-range-fields input{width:100%;box-sizing:border-box}
+#batchArchiveName{overflow-wrap:anywhere;margin:10px 0}
+#batchPrintSelectVisible{width:100%;margin-bottom:10px}
+.archive-cover{max-width:100%;background:#fff}
+.archive-cover table{table-layout:auto}
+@media(max-width:540px){.archive-range-fields{grid-template-columns:1fr}}
+@media print{.archive-cover{break-after:page;page-break-after:always}}
