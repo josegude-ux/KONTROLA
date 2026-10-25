@@ -461,3 +461,6 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 
 ### 2026-10-25 — Requisito de verificación real
 - La propuesta SQL bloquea archivo cuando una verificación se marcó finalizada sin ninguna línea verificada. No se ha ejecutado en Supabase.
+
+### 2026-10-25 — Ampliación de contrato SQL
+- Añadidas comprobaciones estáticas de verificación sin líneas, preparaciones abiertas, avisos activos y auditoría de restauración. Pendiente CI y pruebas SQL reales.

@@ -11,3 +11,8 @@ test("archivo bloquea incidencias sin regularizar",()=>assert.match(sql,/i\.esta
 test("archivo registra eventos",()=>assert.match(sql,/insert into public\.kontrola_archivo_eventos/));
 test("archivo no contiene borrado automatico",()=>assert.doesNotMatch(sql,/\bdelete\s+from\b/i));
 test("archivo no concede RPC a anon",()=>assert.match(sql,/revoke all on function public\.kontrola_cambiar_archivo\(text,boolean\) from public,anon/));
+
+test("archivo rechaza verificacion sin lineas",()=>assert.match(sql,/not exists\(select 1 from public\.kontrola_verificacion_lineas/));
+test("archivo comprueba preparaciones abiertas",()=>assert.match(sql,/p\.fin is null/));
+test("archivo comprueba avisos activos",()=>assert.match(sql,/a\.activo=true/));
+test("archivo conserva eventos al restaurar",()=>assert.match(sql,/case when p_archivar then 'archivar' else 'restaurar' end/));
