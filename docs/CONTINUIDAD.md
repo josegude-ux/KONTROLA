@@ -315,3 +315,7 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 - `src/core.mjs`: reconoce ubicaciones fragmentadas en varios textos PDF.js, admite sufijos de más de un dígito y conserva la regla de buscar solo en la misma fila, a la izquierda del SKU. No asigna ubicaciones de otras filas.
 - `tests/core-warehouse.test.mjs`: pruebas para ubicación fragmentada y prevención de asignación de otra fila.
 - Las cargas existentes no se alteran automáticamente. Pendiente CI y despliegue.
+
+## 2026-10-25 — Pendientes abre revisión real
+- `src/admin.mjs`: al pulsar una importación pendiente, cambia automáticamente a Importar PDF, carga la revisión seleccionada y desplaza la pantalla a ella. Antes se cargaba en un panel oculto, sin feedback visible.
+- No publica ni aprueba documentos. Pendiente CI/despliegue.

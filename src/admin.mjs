@@ -286,7 +286,15 @@ export function createAdminController({client,getUser,bucket,global,errorText,on
       const button=document.createElement("button");button.type="button";button.className="attention-card";
       const title=document.createElement("b");title.textContent=item.titulo+" · "+(item.codigo||"");
       const detail=document.createElement("span");detail.textContent=item.detalle;button.append(title,detail);
-      if(item.tipo==="importacion")button.addEventListener("click",()=>loadImport(item.entidad_id).catch(error=>setStatus(errorText(error),"error")));
+      if(item.tipo==="importacion")button.addEventListener("click",async()=>{
+        // Abrir realmente la revisión seleccionada; no dejarla oculta en otra pestaña.
+        selectAdminTab(0);
+        setStatus("Cargando revisión de "+(item.codigo||"la carga")+"…");
+        try{
+          await loadImport(item.entidad_id);
+          $("documentReview").scrollIntoView({behavior:"smooth",block:"start"});
+        }catch(error){setStatus("No se pudo abrir la revisión: "+errorText(error),"error");}
+      });
       target.appendChild(button);
     }
   }
