@@ -1,4 +1,4 @@
 {
-  "version": "0.3.8",
-  "notes": "Importación múltiple secuencial de hasta 20 PDF, sin publicación automática, con protección de revisiones y resumen de incidencias."
+  "version": "0.3.9",
+  "notes": "Estadísticas por operario para administración, filtradas por fecha y almacén con permisos servidor; impresión múltiple pendiente de validar."
 }
