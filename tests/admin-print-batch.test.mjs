@@ -44,3 +44,11 @@ test("la impresión de lotes usa únicamente la fecha del almacén sin filtros d
  assert.doesNotMatch(code,/batchPrintFrom|batchPrintTo/);
  assert.doesNotMatch(html,/id="batchPrintFrom"|id="batchPrintTo"/);
 });
+
+// Regresión: si todas las cargas del día ya se imprimieron, debe poder activarse Reimprimir.
+test("permite activar reimpresión aunque no queden hojas nuevas por imprimir",()=>{
+ const code=read("src/admin-print-batch.mjs");
+ assert.match(code,/batchPrintReprint"\)\.closest\("label"\)\.hidden=!allRows\.some\(row=>publicadaHoy\(row,today\)/);
+ assert.match(code,/\(printCounts\.get\(row\.codigo\)\|\|0\)>0/);
+ assert.doesNotMatch(code,/batchPrintReprint"\)\.closest\("label"\)\.hidden=rows\.length===0&&!reprintMode/);
+});

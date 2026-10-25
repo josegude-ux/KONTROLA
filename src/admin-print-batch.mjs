@@ -37,7 +37,7 @@ export function configurarLoteImpresion({client,getUser,getWarehouse,errorText})
       );
     $("batchPrintSelectVisible").hidden=rows.length===0;
     $("batchPrintOpen").hidden=rows.length===0;
-    $("batchPrintReprint").closest("label").hidden=rows.length===0&&!reprintMode;
+    $("batchPrintReprint").closest("label").hidden=!allRows.some(row=>publicadaHoy(row,today)&&(printCounts.get(row.codigo)||0)>0);
     for(const load of rows){
       const label=document.createElement("label");label.className="batch-print-row";
       const check=document.createElement("input");check.type="checkbox";
