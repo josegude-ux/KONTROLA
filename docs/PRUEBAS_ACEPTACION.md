@@ -50,11 +50,14 @@
 | A34 | Archivo y retención | Comprobar después de mover el documento nuevo a OneDrive | Sin borrados automáticos del original BC, las revisiones en KONTROLA o la copia guardada |
 | A35 | Alcance documental | Entrar en Administración tras iniciar la app con documentos nuevos | Ningún menú de migración de PDFs antiguos; las revisiones nuevas siguen funcionando |
 
+| A36 | Archivo por fecha | Filtrar del 21 al 24 de octubre con cargas dentro, fuera y sin fecha | Solo se incluyen cargas con fecha válida dentro del intervalo y se informa si el rango es incorrecto |
+| A37 | Carátula PDF OneDrive | Seleccionar diez cargas, preparar el documento y guardarlo desde Safari | Primera página con índice/códigos/fecha/almacén, luego hojas separadas; sugerencia de nombre sin declarar subida realizada |
+
 ## Condiciones de salida
 
 **Desarrollo:** funciones implementadas, pruebas unitarias y SQL temporales superadas.
 
-**Validación real:** todas las pruebas A01–A35 ejecutadas y registradas con evidencias, sin errores bloqueantes.
+**Validación real:** todas las pruebas A01–A37 ejecutadas y registradas con evidencias, sin errores bloqueantes.
 
 **Puesta en producción:** únicamente tras definir el inicio documental nuevo sin borrado de datos, validar la privacidad y permisos, probar el guardado PDF y movimiento manual a OneDrive, obtener aprobación explícita y realizar un despliegue controlado.
 
