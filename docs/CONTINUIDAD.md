@@ -5,7 +5,7 @@
 **Rama principal del desarrollo en curso:** cursor/verificacion-fisica-cargas-8ba0
 **PR de trabajo:** https://github.com/josegude-ux/KONTROLA/pull/2
 **PR de Fase 1:** https://github.com/josegude-ux/KONTROLA/pull/1
-**Versión del código de esta rama:** 0.3.11
+**Versión del código de esta rama:** 0.3.12
 
 > La aplicación funcional vive en ramas de desarrollo: main no debe tomarse como punto de partida para rehacerla. No fusionar a main ni aplicar migraciones a producción sin autorización.
 
@@ -132,3 +132,12 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 - **Pruebas verificadas:** v0.3.9 run `40185693214` con 84 tests JS y cinco migraciones aprobadas; v0.3.10 run `40186172545` con 89 tests JS y cinco migraciones aprobadas. Comprobar la CI final de v0.3.11 antes de declararla validada.
 - **Pendientes de finalización:** impresiones vectoriales de PDF originales por lote, inventario y comparación con los historiales del teléfono/OneDrive, verificación Supabase Auth/Storage en entorno autorizado, AirPrint real, manual PDF con capturas reales y aceptación funcional.
 - **Inviolables:** no tocar Supabase de producción, no fusionar `main`, no generar servicios de pago, no activar Tanques, no editar INVENTA ni Control de Cargas original. Las nuevas migraciones se quedan en la PR hasta aprobación expresa.
+
+
+## Seguridad de cierre de sesión — v0.3.12
+- Se vacían también vistas ocultas al salir: datos de operarios, actividad, detalle, productos, resultados de verificación, estados, formularios e informe mostrado.
+- `createAdminController().clearSensitive()` limpia revisión documental, historial de versiones, estadísticas, impresión por lotes y auditoría de JSON. Invalida solicitudes asíncronas de esos módulos.
+- Se bloquea la salida manual durante importaciones en curso; el cierre de Supabase se comprueba por `error` antes de comunicar éxito. Si falla, se mantiene la sesión y se muestra el error.
+- `tests/session-cleanup.test.mjs` incluye regresiones de limpieza de datos e incidencias de cierre.
+- GitHub Actions validó **97 pruebas correctas y 0 fallidas** en la ejecución `40187723603` (commit `bda5f2df7b01ac71cbef496e9ce13aaa4f677d74`), incluidas cinco migraciones aisladas y concurrencia. Son pruebas de CI, no validación de Safari/Supabase reales.
+- **Pendiente:** prueba con dos cuentas distintas en el mismo iPhone y sesión invalidada remotamente; no se ha desplegado la rama ni cambiado datos empresariales.
