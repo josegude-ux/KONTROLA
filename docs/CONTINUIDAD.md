@@ -5,7 +5,7 @@
 **Rama principal del desarrollo en curso:** cursor/verificacion-fisica-cargas-8ba0
 **PR de trabajo:** https://github.com/josegude-ux/KONTROLA/pull/2
 **PR de Fase 1:** https://github.com/josegude-ux/KONTROLA/pull/1
-**Versión del código de esta rama:** 0.3.1
+**Versión del código de esta rama:** 0.3.3
 
 > La aplicación funcional vive en ramas de desarrollo: main no debe tomarse como punto de partida para rehacerla. No fusionar a main ni aplicar migraciones a producción sin autorización.
 
@@ -76,3 +76,14 @@ Continuar trabajando directamente en GitHub sobre la PR #2, priorizando correcci
 El usuario ha definido **KONTROLA como aplicación principal de operarios**: **Control de Cargas** y **Control de Tanques** serán submenús de KONTROLA, no accesos separados. INVENTA mantiene interfaz propia aunque se estudie un Supabase y autenticación comunes. Tanques sigue en pausa; no se activa ni se migra todavía. **Decisión expresa del usuario: ocultar completamente Control de Tanques en la interfaz y en los menús, sin siquiera mostrar «Próximamente», hasta que esté operativo y se apruebe su incorporación.** Antes de implementar menús hay que revisar el detalle de las pantallas, y conservar el diseño y lógica existentes.
 
 Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_MODULAR.md). Ninguna base real se modifica por esta decisión.
+
+## Hito de desarrollo v0.3.3 (25/10/2026)
+
+- Control de Cargas añade un **Historial y resumen** en el submenú, utilizando el RPC de lectura `kontrola_panel_cargas` y los permisos de almacén vigentes.
+- Filtros por fecha, estado, búsqueda de ruta/repartidor/matrícula/código. Orden por fecha de carga descendente, peso y código; fechas ausentes en último lugar.
+- Resumen de cargas, peso, referencias, cargas cerradas e incidencias pendientes, siempre calculado sobre los resultados filtrados.
+- «Consultar cargas» y detalles desde el historial quedan en **modo de solo lectura**, sin botones de iniciar/finalizar preparación y con salvaguardas en los manejadores del cliente. Las operaciones de preparación siguen en su acceso específico.
+- El submenú de Tanques continúa **completamente oculto**.
+- Se añadieron `src/history.mjs`, pruebas unitarias, controles de navegación y recursos al caché PWA. Versión prevista 0.3.3.
+- La CI debe comprobar sintaxis, JS, migraciones aisladas, RLS y concurrencia; **confirmar su resultado antes de dar por validada esta entrega**.
+- **No fusionado a `main` ni desplegado en Supabase.** El modo de consulta es una protección de interfaz, no sustituye RLS y validaciones de servidor.
