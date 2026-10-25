@@ -7,7 +7,7 @@
 **Rama principal del desarrollo en curso:** cursor/verificacion-fisica-cargas-8ba0
 **PR de trabajo:** https://github.com/josegude-ux/KONTROLA/pull/2
 **PR de Fase 1:** https://github.com/josegude-ux/KONTROLA/pull/1
-**Versión del código de esta rama:** 0.3.16
+**Versión del código de esta rama:** 0.3.17
 
 > La aplicación funcional vive en ramas de desarrollo: main no debe tomarse como punto de partida para rehacerla. No fusionar a main ni aplicar migraciones a producción sin autorización.
 
@@ -170,3 +170,14 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 - La impresión conjunta de hojas procesadas seguirá disponible para preparar lotes de PDF, sin confundirlos con originales BC.
 - El documento normativo es `docs/PLAN_ARCHIVO_ONEDRIVE.md`. El protocolo de aceptación se ha ajustado para dejar fuera migraciones y exigir pruebas del archivo OneDrive.
 - No se modificó ninguna base ni se ejecutaron migraciones de producción.
+
+
+## Hito operativo — v0.3.17: archivo periódico de PDF nuevos
+
+- `src/archive-period.mjs` aplica filtros opcionales por fecha, valida periodos y crea la carátula de relación de cargas con textos escapados. No guarda archivos ni marca un traslado a OneDrive como efectuado.
+- `src/admin-print-batch.mjs` incorpora selección de periodo, nombre propuesto, selección rápida de diez cargas y carátula como primera página antes de las hojas procesadas; impresión manual a PDF.
+- La descarga alternativa de la barra se etiqueta **Descargar HTML** para no confundirla con un PDF real.
+- Se eliminó el panel legacy del HTML y sus inicializadores del controlador activo, así como los seis módulos obsoletos del precaché. Las implementaciones antiguas se conservan en el repositorio, sin activación desde la app.
+- Las pruebas históricas ahora verifican que esas pantallas NO se puedan abrir desde la app.
+- **CI validada:** GitHub Actions `40191583046` (commit `d81d88403b27e698e9c9d9cbb2d1d57c00548000`): **123 tests, 123 OK, 0 fallidos**; cinco migraciones PostgreSQL de prueba y concurrencia superadas.
+- **Sin cambios en Supabase real, OneDrive real, INVENTA, Control de Cargas original, Tanques o rama main.** El archivado por iPhone/Archivos/OneDrive necesita validación física.
