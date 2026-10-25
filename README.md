@@ -2,7 +2,7 @@
 
 PWA móvil de operaciones de almacén para **preparación, consulta, verificación, historial e incidencias de cargas**.
 
-**Versión de esta rama:** 0.3.13. **Estado:** desarrollo probado parcialmente, **no apto aún para producción**.
+**Versión de esta rama:** 0.3.15. **Estado:** desarrollo probado parcialmente, **no apto aún para producción**.
 
 - PR de Fase 1: https://github.com/josegude-ux/KONTROLA/pull/1
 - PR de operación integral: https://github.com/josegude-ux/KONTROLA/pull/2
@@ -128,3 +128,13 @@ Pendiente: pruebas completas con Supabase Auth/Storage real, documentos autoriza
 - No se migran, fusionan, eliminan, reescriben ni actualizan datos. Los PDF originales continúan en IndexedDB de cada dispositivo antiguo: hay que inventariarlos de manera independiente.
 - La ejecución `40188458388` de GitHub Actions verificó **104 pruebas JavaScript, 0 fallidas** y las cinco migraciones/operaciones/concurrencia en PostgreSQL temporal.
 - **No hay validación E2E de iPhone/Supabase real**, ni despliegue de producción autorizado.
+
+
+## Inventario y recuperación local de PDF antiguos (v0.3.14–0.3.15)
+
+- La herramienta de Administración inspecciona, solo si se pulsa el botón, las **claves** de `control_cargas_movil_originales/originales`, según el esquema real del módulo `printing.mjs` del sistema antiguo.
+- Consulta con transacción `readonly` y `openKeyCursor`. Si la BD no existe, **aborta su creación**; nunca borra ni escribe nada.
+- v0.3.15 ofrece botones para **guardar copias locales PDF una a una** (hasta 25 entradas visibles); solo en respuesta al clic del administrador. Se valida cabecera PDF y SHA-256; las revisiones con `LP..::hash` se rechazan si el contenido no coincide con la huella.
+- La operación no se conecta a Supabase, no transmite documentos y **no modifica los originales**. Los archivos recuperados van al mecanismo de descarga/Archivos del navegador utilizado.
+- Limitación fundamental: IndexedDB está aislada por **origen y contenedor de almacenamiento**, no se puede leer un contenedor diferente de una PWA de inicio de iOS desde Safari/otra PWA. Si no aparecen documentos, **no significa que estén perdidos**. No borrar ni desinstalar el sistema antiguo.
+- **Sin validación real de iPhone, Safari ni recuperación de PDF empresariales**. El uso con documentos reales requiere una autorización específica.
