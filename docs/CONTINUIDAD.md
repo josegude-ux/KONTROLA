@@ -5,7 +5,7 @@
 **Rama principal del desarrollo en curso:** cursor/verificacion-fisica-cargas-8ba0
 **PR de trabajo:** https://github.com/josegude-ux/KONTROLA/pull/2
 **PR de Fase 1:** https://github.com/josegude-ux/KONTROLA/pull/1
-**Versión del código de esta rama:** 0.3.4
+**Versión del código de esta rama:** 0.3.5
 
 > La aplicación funcional vive en ramas de desarrollo: main no debe tomarse como punto de partida para rehacerla. No fusionar a main ni aplicar migraciones a producción sin autorización.
 
@@ -102,3 +102,13 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 - No se han creado tablas nuevas ni se han ejecutado migraciones en producción.
 - **Prueba confirmada**: GitHub Actions `40179638638` en commit `d649da8e34e87f5d8e80f9f72af3a2878ce3fbe1`: **62 pruebas JavaScript correctas, 0 fallidas**, migraciones SQL en entorno descartable y concurrencia verificadas. Las pruebas sobre PostgreSQL temporal no sustituyen pruebas reales con Supabase Auth, Storage ni impresoras iPhone.
 - La versión 0.3.4 está guardada en la rama de PR #2; **no se ha fusionado ni publicado como actualización de la aplicación instalada**.
+
+## Revisión documental v0.3.5 (25/10/2026)
+
+- En la importación desde administración, KONTROLA consulta la carga vigente y pide confirmación antes de reservar un PDF distinto para el mismo código si la carga aún no ha comenzado; la carga en curso, preparada, verificada o cerrada no se ofrece como sustituible.
+- Un SHA-256 de PDF previamente reservado para otro código se rechaza directamente en la nueva migración `20261027_kontrola_revision_documental_segura.sql`.
+- Reutilizar una importación de un documento histórico no puede anunciarlo como revisión vigente; la publicación de revisión nueva conserva la revisión anterior en `kontrola_carga_revisiones`.
+- Mantiene la validación en la función servidor contra sustituciones con preparación iniciada, independientemente del navegador.
+- El módulo `src/import-policy.mjs` está precargado en el Service Worker, con caché nuevo `kontrola-integral-v036`.
+- Pruebas añadidas: `tests/integration/revisions.sql` (revisiones 1 y 2, archivo renombrado, documento cruzado y bloqueo al comenzar preparación) y `tests/import-policy.test.mjs`.
+- **No se ha desplegado ninguna migración en Supabase empresarial**, ni se ha fusionado a `main`. Todavía faltan pruebas sobre Auth, Storage y dispositivos reales.
