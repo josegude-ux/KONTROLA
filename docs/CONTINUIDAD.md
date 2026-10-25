@@ -585,3 +585,5 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 - **Pendiente de integración de activos oficiales**: el usuario facilitó `VISURA_Identidad_3D(1).zip` con imágenes tridimensionales definitivas de VISURA MATRIZ, INVENTA y PREPARA. Las imágenes binarias aprobadas no están incorporadas a este commit; no presentar la migración visual como terminada hasta copiarlas, referenciarlas y verificar formato PWA.
 - Verificación ejecutada antes de commit: comprobaciones de cadenas y preservación de rutas técnicas; pendiente CI completa y revisión móvil. Este avance no autoriza fusionar ni desplegar.
 - Próximo paso: incorporar PNG/WebP aprobados (uno exclusivo por producto), comprobar instalación/actualización PWA y revisión en iPhone/Android/Windows.
+
+- Corrección de coherencia: v0.3.30 sincronizada entre package/lock/config/interfaz y test de navegación; caché independiente `kontrola-integral-visura-v061` para actualizar PWA. CI de PR pendiente tras el commit.
