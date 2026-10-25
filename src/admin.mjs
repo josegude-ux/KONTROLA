@@ -505,13 +505,29 @@ export function createAdminController({client,getUser,bucket,global,errorText,on
     ()=>refreshIncidents(),
     ()=>{$("revisionCode").focus();},
     ()=>{},
-    ()=>refreshSummary()
+    ()=>refreshSummary(),
+    ()=>{}
   ];
   for(const button of document.querySelectorAll("[data-admin-tab]"))button.addEventListener("click",async()=>{
     const index=Number(button.dataset.adminTab);
     selectAdminTab(index);
     try{await adminActions[index]();}catch(error){global(errorText(error),"error");}
   });
+  async function changeArchive(archivar){
+    const code=$("archiveCode").value.trim();
+    const status=$("archiveStatus");
+    if(!code){status.textContent="Introduce un código de carga.";return;}
+    if(!window.confirm(archivar?"¿Archivar esta carga? No se eliminará.":"¿Restaurar esta carga al listado activo?"))return;
+    const buttons=[$("archiveLoad"),$("restoreLoad")];buttons.forEach(b=>b.disabled=true);
+    try{
+      const {data,error}=await client.rpc("kontrola_cambiar_archivo",{p_codigo:code,p_archivar:archivar});
+      if(error)throw error;
+      status.textContent=data===false?"La carga ya estaba en ese estado.":archivar?"Carga archivada correctamente.":"Carga restaurada correctamente.";
+    }catch(error){status.textContent="No se ha realizado la operación: "+errorText(error);}
+    finally{buttons.forEach(b=>b.disabled=false);}
+  }
+  $("archiveLoad").addEventListener("click",()=>changeArchive(true));
+  $("restoreLoad").addEventListener("click",()=>changeArchive(false));
   async function open(){
     selectAdminTab(0);
     await Promise.all([refreshAttention(),refreshPendingPublish(),refreshReviewSelector(),refreshSummary(),refreshIncidents(),operatorStats.refresh(),printBatch.refresh()]);
