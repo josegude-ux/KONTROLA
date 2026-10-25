@@ -2,13 +2,13 @@ import {SUPABASE_URL,SUPABASE_KEY,PDF_BUCKET,APP_VERSION} from "./config.mjs";
 import {agruparPasillos,ordenarCargas} from "./logic.mjs";
 import {buildVerificationLines,parseCheckedQuantity,summarizeVerification} from "./verification.mjs";
 import {buildPreparationReport,filterProducts} from "./report.mjs";
-import {filtrarHistorial,resumenHistorial,formatoFechaCarga} from "./history.mjs";
+import {filtrarHistorial,resumenHistorial,formatoFechaCarga,csvHistorial,htmlResumenHistorial} from "./history.mjs";
 import {createAdminController} from "./admin.mjs";
 const $=id=>document.getElementById(id);
 let client=null,user=null,profile=null,loads=[],current=null,currentPreparation=null,groups=[],selectedAisle="TODOS",busy=false,opening=false;
 let reviewLoads=[],currentVerification=null,verificationLines=[];
 let warehouses=[],selectedWarehouse=localStorage.getItem("kontrola-warehouse")||"COR_01_COR",adminController=null;
-let loadsParent="homeView",reviewLoadsParent="homeView",loadsMode="preparacion",currentReadOnly=false,detailBackView="loadsView",historyRows=[];
+let loadsParent="homeView",reviewLoadsParent="homeView",loadsMode="preparacion",currentReadOnly=false,detailBackView="loadsView",historyRows=[],historyReady=false;
 $("appVersion").textContent=APP_VERSION;
 $("loginVersion").textContent=APP_VERSION;
 const visible=(element,show)=>{element.hidden=!show;};
@@ -29,7 +29,7 @@ function switchView(id,{force=false}={}){
   return true;
 }
 function loggedOut(message=""){
-  user=null;profile=null;loads=[];historyRows=[];current=null;currentPreparation=null;currentReadOnly=false;reviewLoads=[];currentVerification=null;verificationLines=[];
+  user=null;profile=null;loads=[];historyRows=[];historyReady=false;current=null;currentPreparation=null;currentReadOnly=false;reviewLoads=[];currentVerification=null;verificationLines=[];
   visible($("shell"),false);visible($("loginView"),true);
   status("authMessage",message,message?"error":"");
 }
@@ -167,25 +167,28 @@ function renderLoadList(){
 async function refreshHistory(){
   if(!client||!user)return;
   const warehouse=selectedWarehouse,requestUser=user.id;
-  historyRows=[];
+  historyRows=[];historyReady=false;
+  $("historyDownload").disabled=true;$("historyPrint").disabled=true;
   $("historyList").replaceChildren();$("historySummary").replaceChildren();
   status("historyStatusMessage","Cargando el historial autorizado…");
   try{
     const {data,error}=await client.rpc("kontrola_panel_cargas",{p_almacen:warehouse});
     if(error)throw error;
     if(!validRequest(warehouse,requestUser))return;
-    historyRows=data||[];
+    historyRows=data||[];historyReady=true;
     renderHistory();
   }catch(error){
     if(!validRequest(warehouse,requestUser))return;
-    historyRows=[];
+    historyRows=[];historyReady=false;
     status("historyStatusMessage","No se pudo consultar el historial: "+errorText(error),"error");
   }
 }
+const historyFilters=()=>({fecha:$("historyDate").value,estado:$("historyStatus").value,busqueda:$("historySearch").value});
+function filteredHistory(){return filtrarHistorial(historyRows,historyFilters());}
 function renderHistory(){
-  const filtered=filtrarHistorial(historyRows,{
-    fecha:$("historyDate").value,estado:$("historyStatus").value,busqueda:$("historySearch").value
-  });
+  const filtered=filteredHistory();
+  $("historyDownload").disabled=!historyReady||!filtered.length;
+  $("historyPrint").disabled=!historyReady||!filtered.length;
   const summary=resumenHistorial(filtered),stats=$("historySummary");stats.replaceChildren();
   for(const [label,value] of [
     ["Cargas",summary.cargas],["Peso total",fmt(summary.pesoKg)+" kg"],
@@ -231,6 +234,26 @@ $("historyClear").addEventListener("click",()=>{
   renderHistory();
 });
 $("historyRefresh").addEventListener("click",()=>refreshHistory().catch(()=>{}));
+$("historyDownload").addEventListener("click",()=>{
+  if(!historyReady||!historyRows.length)return;
+  const records=filteredHistory();if(!records.length)return;
+  const text=csvHistorial(records,selectedWarehouse);
+  const blob=new Blob([text],{type:"text/csv;charset=utf-8"});
+  const url=URL.createObjectURL(blob),link=document.createElement("a");
+  link.href=url;link.download="KONTROLA_Cargas_"+selectedWarehouse+"_"+(historyFilters().fecha||"historial")+".csv";
+  document.body.appendChild(link);link.click();link.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),1000);
+});
+$("historyPrint").addEventListener("click",()=>{
+  if(!historyReady||!historyRows.length)return;
+  const records=filteredHistory();if(!records.length)return;
+  $("reportPaper").innerHTML=htmlResumenHistorial(records,{
+    almacen:warehouses.find(w=>w.codigo===selectedWarehouse)?.nombre||selectedWarehouse,...historyFilters()
+  });
+  $("reportTitle").textContent="Resumen de cargas · "+selectedWarehouse;
+  $("reportView").hidden=false;document.body.classList.add("report-open");window.scrollTo(0,0);
+});
+
 $("historyWarehouse").addEventListener("change",event=>selectWarehouse(event.target.value,"history").catch(err=>status("historyStatusMessage",errorText(err),"error")));
 
 $("loadSearch").addEventListener("input",renderLoadList);
