@@ -127,19 +127,7 @@ En **Administración → Actividad por operario**, elige la fecha y el almacén.
 
 **Captura pendiente:** tabla real de operarios con cuentas ficticias.
 
-### 12. Auditar una copia antigua
-
-Desde el Control de Cargas original, guarda una copia JSON. En **Administración → Auditar copia antigua de Control de Cargas**, selecciona ese archivo y pulsa **Analizar copia**. La aplicación mostrará duplicados y datos incompletos, pero **no importará ni enviará el JSON a la nube**.
-
-Recuerda que los PDF originales están guardados aparte en el móvil antiguo; conserva ese teléfono y no borres su almacenamiento hasta completar una migración autorizada.
-
-Para **comparar esa copia con KONTROLA**, selecciona el mismo archivo JSON (si ya se ha limpiado el selector, vuelve a elegirlo), comprueba el almacén de Administración y pulsa **Comparar con KONTROLA (solo lectura)**. Aparecerán las coincidencias, los datos diferentes y las cargas que no se encuentran en ese almacén.
-
-**Importante:** aunque los datos coincidan, eso no confirma que sean el mismo PDF. No borres datos del móvil anterior ni realices ninguna migración.
-
-**Captura pendiente:** análisis y conciliación con copias ficticias.
-
-### 13. Imprimir varias hojas procesadas
+### 12. Imprimir varias hojas procesadas
 
 En **Administración → Imprimir varias hojas procesadas**, pulsa **Actualizar**, selecciona hasta 10 cargas y luego **Preparar impresión de hojas seleccionadas**. Desde la vista de informe utiliza **Imprimir / Guardar PDF**.
 
@@ -147,17 +135,19 @@ Estas son **hojas procesadas por KONTROLA**, no copias de los PDF originales de 
 
 **Captura pendiente:** selector de cargas e informe multipágina real.
 
-### 14. Buscar y conservar PDF originales del móvil antiguo
+### 13. Archivar los nuevos PDF en OneDrive
 
-1. No elimines ni desinstales la aplicación antigua de Control de Cargas.
-2. Desde la misma instalación/navegador que contiene los PDF (si KONTROLA comparte ese contenedor), abre **Administración → Auditar copia antigua**.
-3. Pulsa **Buscar claves de PDF locales (solo lectura)**. La herramienta muestra qué originales o revisiones puede localizar sin abrir su contenido.
-4. Si aparece un botón **Guardar PDF**, púlsalo únicamente para la carga/revisión que necesitas. Antes de guardar, KONTROLA verifica que la cabecera corresponde a PDF y comprueba el SHA-256.
-5. Conserva el archivo descargado en un lugar seguro; el original almacenado permanece intacto.
+Partimos con documentos nuevos: **no vamos a importar los PDF generados antes de poner en marcha KONTROLA**.
 
-**Importante:** las aplicaciones instaladas de iPhone pueden tener almacenamientos separados. Si no aparecen documentos, no significa que se hayan perdido. No se realiza recuperación automática desde otro contenedor ni se suben PDF al servidor. No borres nunca el almacenamiento antiguo antes de una copia de seguridad y una migración autorizada.
+1. Genera la hoja procesada o el resumen nuevo que quieres guardar.
+2. Pulsa **Imprimir / Guardar PDF**. La opción **Descargar** genera HTML, no un PDF real.
+3. En el iPhone, usa las opciones de impresión/compartir para **Guardar en Archivos** como documento PDF.
+4. Cuando toque el archivo periódico, **mueve los PDF a la carpeta de OneDrive que haya designado la empresa**.
+5. Abre el archivo desde OneDrive para comprobar que se ha guardado correctamente.
 
-**Capturas pendientes:** prueba real en Safari/PWA con archivos ficticios y guardado en Archivos.
+El movimiento a OneDrive es **manual**. KONTROLA no sube ni borra documentos por su cuenta. Los PDF originales de Business Central siguen protegidos dentro del flujo de la aplicación.
+
+**Capturas pendientes:** guardar PDF desde Safari/iPhone, mover en Archivos a OneDrive y verificar que el documento se abre desde OneDrive.
 
 ## Capturas y entrega definitiva
 
