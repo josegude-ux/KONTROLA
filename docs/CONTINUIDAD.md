@@ -457,3 +457,7 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 ### CI confirmado — PR #13
 - Commit `11de4c1b34eb61b3ec04cd41063392754abc70cd`: workflow `test` completado correctamente; 153 pruebas pasadas, 0 fallidas.
 - Esta CI valida la suite existente de la interfaz, no el despliegue SQL de archivo; PR #11 no tiene ejecución CI confirmada en el último commit.
+
+### Reconciliación PR #13 — consulta al abrir la pestaña
+- `adminActions[8]` queda conectado a `refreshArchivedLoads()` para que al entrar en Archivo de cargas se consulte la RPC administrativa.
+- Verificado en el archivo de rama tras el guardado; falta confirmar que la cabecera del PR refleje este commit y que CI vuelva a pasar.
