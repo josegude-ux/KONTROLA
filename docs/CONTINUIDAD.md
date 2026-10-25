@@ -73,6 +73,6 @@ Continuar trabajando directamente en GitHub sobre la PR #2, priorizando correcci
 
 ## Decisión posterior sobre navegación (25/10/2026)
 
-El usuario ha definido **KONTROLA como aplicación principal de operarios**: **Control de Cargas** y **Control de Tanques** serán submenús de KONTROLA, no accesos separados. INVENTA mantiene interfaz propia aunque se estudie un Supabase y autenticación comunes. Tanques sigue en pausa; no se activa ni se migra todavía. Antes de implementar menús hay que revisar el detalle de las pantallas, y conservar el diseño y lógica existentes.
+El usuario ha definido **KONTROLA como aplicación principal de operarios**: **Control de Cargas** y **Control de Tanques** serán submenús de KONTROLA, no accesos separados. INVENTA mantiene interfaz propia aunque se estudie un Supabase y autenticación comunes. Tanques sigue en pausa; no se activa ni se migra todavía. **Decisión expresa del usuario: ocultar completamente Control de Tanques en la interfaz y en los menús, sin siquiera mostrar «Próximamente», hasta que esté operativo y se apruebe su incorporación.** Antes de implementar menús hay que revisar el detalle de las pantallas, y conservar el diseño y lógica existentes.
 
 Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_MODULAR.md). Ninguna base real se modifica por esta decisión.
