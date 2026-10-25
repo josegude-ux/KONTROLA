@@ -587,3 +587,5 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 - Próximo paso: incorporar PNG/WebP aprobados (uno exclusivo por producto), comprobar instalación/actualización PWA y revisión en iPhone/Android/Windows.
 
 - Corrección de coherencia: v0.3.30 sincronizada entre package/lock/config/interfaz y test de navegación; caché independiente `kontrola-integral-visura-v061` para actualizar PWA. CI de PR pendiente tras el commit.
+
+- Prueba adicional: referencias regex con puntos escapados en `tests/navigation.test.mjs` también sincronizadas con 0.3.30; queda pendiente confirmación de CI de GitHub.
