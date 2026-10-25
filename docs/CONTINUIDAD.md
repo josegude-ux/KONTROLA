@@ -238,3 +238,10 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 - **Cambio:** `.github/workflows/pages.yml` divide el trabajo original en `build` (sin entorno protegido: checkout, npm ci, check, vendor, dist, artefacto) y `deploy` (dependiente de build, entorno `github-pages`, deploy-pages). Se elimina `configure-pages`, que requiere acceso de configuración y no es imprescindible cuando Pages ya está habilitado.
 - **Validación:** pendiente del nuevo run de Actions; verificar que `build` arranca y si `deploy` falla por protección de entorno, rama autorizada o permisos.
 - **Límites:** no se tocan Supabase, datos, otras aplicaciones, ni ramas base; no hay migraciones ni publicación confirmada.
+
+## 2026-10-25 — Corrección de pendientes de atención (GitHub Pages)
+- Rama: `cursor/verificacion-fisica-cargas-8ba0`; versión de interfaz: 0.3.19.
+- Error observado en iPhone, Administración: `invalid UNION/INTERSECT/EXCEPT ORDER BY clause`.
+- Antes: RPC `kontrola_necesitan_atencion` ordenaba un UNION ALL por `creado_en` (nombre de columna no admitido en ese contexto).
+- Después: migración incremental `20261029_kontrola_fix_orden_atencion.sql` sustituye únicamente la RPC, ordenando por la posición de salida `ORDER BY 6`.
+- Validación pendiente: aplicar migración a Supabase compartido y comprobar RPC desde sesión autenticada; no se modifica ningún dato de otras aplicaciones.
