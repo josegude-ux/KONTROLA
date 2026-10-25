@@ -347,11 +347,74 @@ export function createAdminController({client,getUser,bucket,global,errorText,on
       const result=Array.isArray(data)?data[0]:data;
       draft.state="publicada";renderDraft();
       setStatus("Carga "+result.codigo+" publicada en "+result.almacen+".","success");
-      await Promise.all([refreshAttention(),refreshSummary()]);
+      await Promise.all([refreshAttention(),refreshPendingPublish(),refreshSummary()]);
       onPublished?.();
     }catch(error){setStatus("No se pudo publicar: "+errorText(error),"error");}
     finally{setBusy(false);updateActions();}
   }
+  let pendingRows=[],pendingSelected=new Set();
+  function updatePendingSelection(){
+    $("pendingPublishSelected").disabled=busy||pendingSelected.size===0;
+    $("pendingPublishSelected").textContent="Publicar seleccionadas ("+pendingSelected.size+")";
+  }
+  async function refreshPendingPublish(){
+    const warehouse=$("adminWarehouse").value,session=getUser()?.id;
+    const target=$("pendingPublishList");
+    target.textContent="Consultando cargas sin publicar…";
+    const {data,error}=await client.from("kontrola_importaciones")
+      .select("id,codigo,estado,almacen_detectado,carga_datos,hallazgos")
+      .in("estado",["revision_requerida","aprobada"])
+      .order("codigo",{ascending:true}).limit(500);
+    if(getUser()?.id!==session||$("adminWarehouse").value!==warehouse)return;
+    target.replaceChildren();pendingSelected.clear();pendingRows=[];
+    if(error){$("pendingPublishSummary").textContent="No se pudieron consultar las pendientes: "+errorText(error);return;}
+    pendingRows=(data||[]).filter(row=>row.almacen_detectado===warehouse);
+    const approved=pendingRows.filter(row=>row.estado==="aprobada"&&!(row.hallazgos||[]).some(f=>f.severity==="error"));
+    $("pendingPublishSummary").textContent=pendingRows.length+" carga(s) pendientes de publicar, de cualquier fecha · "+approved.length+" lista(s).";
+    const notice=$("pendingPrintNotice");
+    notice.hidden=pendingRows.length===0;
+    notice.textContent=pendingRows.length+" carga(s) pendientes de publicar · Revisar";
+    notice.onclick=()=>{selectAdminTab(1);refreshPendingPublish();};
+    for(const row of pendingRows){
+      const ready=approved.some(item=>item.id===row.id);
+      const label=document.createElement("label");label.className="batch-print-row";
+      const check=document.createElement("input");check.type="checkbox";check.disabled=!ready;
+      check.addEventListener("change",()=>{if(check.checked)pendingSelected.add(row.id);else pendingSelected.delete(row.id);updatePendingSelection();});
+      const info=document.createElement("span");
+      const title=document.createElement("b");title.textContent=row.codigo+" · "+(ready?"Lista para publicar":"Necesita revisión");
+      const detail=document.createElement("small");detail.textContent="Fecha BC: "+(row.carga_datos?.fecha||"—")+(ready?"":" · "+(row.hallazgos||[]).filter(f=>f.severity==="error").map(f=>f.message||f.id).join(", "));
+      const open=document.createElement("button");open.type="button";open.className="secondary";open.textContent="Revisar";
+      open.addEventListener("click",async()=>{selectAdminTab(0);try{await loadImport(row.id);$("documentReview").scrollIntoView({behavior:"smooth",block:"start"});}catch(e){setStatus(errorText(e),"error");}});
+      info.append(title,detail,open);label.append(check,info);target.appendChild(label);
+    }
+    updatePendingSelection();
+  }
+  $("pendingSelectAll").addEventListener("click",()=>{
+    const ready=pendingRows.filter(row=>row.estado==="aprobada"&&!(row.hallazgos||[]).some(f=>f.severity==="error"));
+    const allSelected=ready.length>0&&ready.every(row=>pendingSelected.has(row.id));
+    pendingSelected=new Set(allSelected?[]:ready.map(row=>row.id));
+    $("pendingPublishList").querySelectorAll('input[type="checkbox"]').forEach(input=>{
+      if(!input.disabled)input.checked=!allSelected;
+    });
+    updatePendingSelection();
+  });
+  $("pendingPublishSelected").addEventListener("click",async()=>{
+    if(busy||!pendingSelected.size)return;
+    const chosen=pendingRows.filter(row=>pendingSelected.has(row.id)&&row.estado==="aprobada"&&!(row.hallazgos||[]).some(f=>f.severity==="error"));
+    if(!chosen.length)return;
+    if(!window.confirm("¿Publicar "+chosen.length+" carga(s) aprobadas seleccionadas?"))return;
+    setBusy(true);$("pendingPublishSelected").disabled=true;
+    const results=[];
+    try{
+      for(const row of chosen){
+        const {error}=await client.rpc("kontrola_publicar_importacion",{p_importacion:row.id});
+        results.push(row.codigo+": "+(error?"No publicada: "+errorText(error):"Publicada"));
+      }
+      $("pendingPublishResult").textContent=results.join(" · ");
+      await Promise.all([refreshPendingPublish(),refreshAttention(),refreshSummary(),refreshReviewSelector(),printBatch.refresh()]);
+      if(results.some(r=>r.endsWith(": Publicada")))onPublished?.();
+    }finally{setBusy(false);updatePendingSelection();}
+  });
   async function refreshAttention(){
     const warehouse=$("adminWarehouse").value,session=getUser()?.id;
     const target=$("attentionList");target.textContent="Consultando avisos…";
@@ -436,7 +499,7 @@ export function createAdminController({client,getUser,bucket,global,errorText,on
   // Cada acceso inicia su acción de consulta; importar abre Archivos, nunca publica automáticamente.
   const adminActions=[
     ()=>{if(!busy)$("pdfInput").click();},
-    ()=>refreshAttention(),
+    ()=>Promise.all([refreshAttention(),refreshPendingPublish()]),
     ()=>printBatch.refresh(),
     ()=>operatorStats.refresh(),
     ()=>refreshIncidents(),
@@ -451,7 +514,7 @@ export function createAdminController({client,getUser,bucket,global,errorText,on
   });
   async function open(){
     selectAdminTab(0);
-    await Promise.all([refreshAttention(),refreshReviewSelector(),refreshSummary(),refreshIncidents(),operatorStats.refresh(),printBatch.refresh()]);
+    await Promise.all([refreshAttention(),refreshPendingPublish(),refreshReviewSelector(),refreshSummary(),refreshIncidents(),operatorStats.refresh(),printBatch.refresh()]);
   }
   function clearSensitive(){
     draft=null;busy=false;
@@ -472,8 +535,8 @@ export function createAdminController({client,getUser,bucket,global,errorText,on
   $("goToBatchPrint").addEventListener("click",()=>{selectAdminTab(2);printBatch.refresh();});
   $("locationReport").addEventListener("click",showLocationReport);
   $("publishReviewedLoad").addEventListener("click",publish);
-  $("adminWarehouse").addEventListener("change",()=>Promise.all([refreshAttention(),refreshReviewSelector(),refreshSummary(),operatorStats.refresh(),printBatch.refresh()]));
-  $("reloadAttention").addEventListener("click",()=>Promise.all([refreshAttention(),refreshReviewSelector()]));
+  $("adminWarehouse").addEventListener("change",()=>Promise.all([refreshAttention(),refreshPendingPublish(),refreshReviewSelector(),refreshSummary(),operatorStats.refresh(),printBatch.refresh()]));
+  $("reloadAttention").addEventListener("click",()=>Promise.all([refreshAttention(),refreshPendingPublish(),refreshReviewSelector()]));
   $("reloadIncidents").addEventListener("click",refreshIncidents);
   $("printReport").addEventListener("click",()=>window.print());
   $("downloadReport").addEventListener("click",()=>{

@@ -391,3 +391,8 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 - Migración `kontrola_impresion_por_fecha_publicacion`: RPC `kontrola_panel_cargas_impresion` con `publicado_en`, respetando permisos por almacén, estado publicada y RPC anteriores.
 - `src/admin-print-batch.mjs`: filtra por día de publicación Europe/Madrid, mantiene máximo 20, no duplica impresiones, valida nuevamente la carga en servidor antes de generar hojas procesadas; fecha documental BC sigue visible como dato informativo.
 - Sin modificación de cargas ni otros proyectos. Pendiente CI y despliegue.
+
+## 2026-10-25 — Selección y publicación manual de cargas pendientes de cualquier fecha
+- En Administración → Pendientes se consultan todas las importaciones en revisión/aprobadas del almacén, independientemente de la fecha BC. Contador, selección de aprobadas, selección total y publicación explícita tras confirmación.
+- Cada carga con errores permanece sin publicar y ofrece acceso a revisión. Publicación individual mediante RPC existente, errores por carga no bloquean las demás. Aviso con acceso directo desde Impresión.
+- Archivos: `src/admin.mjs`, `index.html`; sin cambios en otras aplicaciones ni publicación automática. Pendiente CI.
