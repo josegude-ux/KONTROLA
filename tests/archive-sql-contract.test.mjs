@@ -23,3 +23,6 @@ test("archivo no archiva verificaciones en curso",()=>assert.match(sql,/v\.estad
 test("restauracion queda auditada",()=>assert.match(sql,/restaurado_en=now\(\),restaurado_por=v_user/));
 
 test("90 días también desde última regularización de incidencias",()=>assert.match(sql,/i\.actualizada_en>now\(\)-interval '90 days'/));
+
+test("identificadores archivados requieren autorización por almacén",()=>assert.match(sql,/kontrola_codigos_archivados[\s\S]*?kontrola_puede_almacen\(p_almacen\)/));
+test("lista de identificadores excluye cargas activas",()=>assert.match(sql,/c\.almacen=p_almacen and c\.archivado=true/));

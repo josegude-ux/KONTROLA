@@ -67,3 +67,18 @@ begin
 end $fn$;
 revoke all on function public.kontrola_listar_archivadas() from public,anon;
 grant execute on function public.kontrola_listar_archivadas() to authenticated;
+
+-- Identificadores archivados accesibles a usuarios autorizados del almacén.
+-- No modificar la firma existente de las RPC de panel; las vistas aplican el estado en el cliente.
+create or replace function public.kontrola_codigos_archivados(p_almacen text)
+returns table(codigo text)
+language plpgsql security definer set search_path = '' as $fn$
+begin
+ if auth.uid() is null or p_almacen is null or not public.kontrola_puede_almacen(p_almacen) then
+  raise exception 'Almacén no autorizado' using errcode='42501';
+ end if;
+ return query select c.codigo from public.kontrola_cargas c
+ where c.almacen=p_almacen and c.archivado=true;
+end $fn$;
+revoke all on function public.kontrola_codigos_archivados(text) from public,anon;
+grant execute on function public.kontrola_codigos_archivados(text) to authenticated;

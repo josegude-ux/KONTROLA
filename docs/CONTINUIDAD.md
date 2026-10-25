@@ -476,3 +476,9 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 
 ### Corrección definitiva de delimitadores SQL del test
 - El reemplazo JavaScript anterior interpretó `$$` en la cadena de sustitución como un solo `$`. Ahora el reemplazo se realiza mediante función para conservar los dos caracteres literales. Pendiente CI.
+
+### 2026-10-25 — Integración de estados archivados en listados
+- La RPC propuesta `kontrola_codigos_archivados(p_almacen)` devuelve solo códigos archivados del almacén permitido a usuario autenticado. Se revoca a anon y PUBLIC.
+- `src/app.mjs` consulta este estado junto con las RPC de panel existentes, superpone `archivado` por código y filtra cargas activas. Historial conserva todas y marca cuáles están archivadas.
+- Si falla alguna RPC, los listados fallan de forma segura, evitando mostrar cargas archivadas como activas. Requiere aplicar backend antes de fusionar desplegar esta interfaz.
+- Pendiente CI aislado; Supabase real sin modificar.
