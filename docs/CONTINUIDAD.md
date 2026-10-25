@@ -473,3 +473,6 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 
 ### Corrección del test de incidencias (PL/pgSQL)
 - La ejecución de GitHub Actions detectó dos bloques DO escritos con delimitadores `$` en vez de `$$`. Se han corregido en `tests/integration/archive.sql`. Pendiente CI del nuevo commit.
+
+### Corrección definitiva de delimitadores SQL del test
+- El reemplazo JavaScript anterior interpretó `$$` en la cadena de sustitución como un solo `$`. Ahora el reemplazo se realiza mediante función para conservar los dos caracteres literales. Pendiente CI.

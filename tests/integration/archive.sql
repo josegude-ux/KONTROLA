@@ -21,19 +21,19 @@ select set_config('request.jwt.claim.sub','00000000-0000-0000-0000-000000000001'
 reset role;
 update public.kontrola_incidencias set actualizada_en=now()-interval '2 days' where codigo='LP26-10001';
 set role authenticated;
-do $begin
+do $$begin
  perform public.kontrola_cambiar_archivo('LP26-10001',true);
  raise exception 'ASSERTION FAILED: incidencia reciente permite archivo';
 exception when sqlstate '22023' then null;
-end$;
+end$$;
 reset role;
 update public.kontrola_incidencias set actualizada_en=now()-interval '92 days',estado='pendiente' where codigo='LP26-10001';
 set role authenticated;
-do $begin
+do $$begin
  perform public.kontrola_cambiar_archivo('LP26-10001',true);
  raise exception 'ASSERTION FAILED: incidencia pendiente permite archivo';
 exception when sqlstate '22023' then null;
-end$;
+end$$;
 reset role;
 update public.kontrola_incidencias set estado='regularizada' where codigo='LP26-10001';
 set role authenticated;
