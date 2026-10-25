@@ -101,3 +101,8 @@ footer{padding:18px;text-align:center;background:#fff;border-top:1px solid #e6e8
 .batch-print-row span{min-width:0}.batch-print-row b{display:block;font-size:14px}.batch-print-row small{display:block;font-size:12px;color:#667b90;overflow-wrap:anywhere}
 @media(max-width:600px){.batch-print-list{grid-template-columns:1fr}}
 @media print{.report-batch-sheet{break-after:page;page-break-after:always}.report-batch-sheet:last-child{break-after:auto;page-break-after:auto}}
+
+/* Inicio documental nuevo: no mostrar funciones de migración de PDF antiguos. */
+#legacyAuditPanel[hidden]{display:none!important}
+.archive-info{max-width:760px;margin:12px auto 18px;padding:12px;border:1px solid #cfdce7;border-radius:10px}
+@media print{#onedriveArchiveHelp{display:none!important}}
