@@ -2,7 +2,7 @@
 
 PWA móvil de operaciones de almacén para **preparación, consulta, verificación, historial e incidencias de cargas**.
 
-**Versión de esta rama:** 0.3.5. **Estado:** desarrollo probado parcialmente, **no apto aún para producción**.
+**Versión de esta rama:** 0.3.8. **Estado:** desarrollo probado parcialmente, **no apto aún para producción**.
 
 - PR de Fase 1: https://github.com/josegude-ux/KONTROLA/pull/1
 - PR de operación integral: https://github.com/josegude-ux/KONTROLA/pull/2
@@ -92,3 +92,12 @@ Para detalles del estado comprobado, las decisiones aprobadas y los siguientes p
 - `tests/integration/revisions.sql` comprueba en PostgreSQL descartable las revisiones 1 y 2, PDF renombrado, duplicado entre cargas y bloqueo de la revisión 3 tras iniciar preparación.
 
 Pendiente: pruebas completas con Supabase Auth/Storage real, documentos autorizados y móviles. El resultado de GitHub Actions no implica despliegue.
+
+
+## Hitos 0.3.6–0.3.8
+- **0.3.6:** consulta visual de versiones documentales desde Administración, acceso por URL firmada temporal al PDF original y comparaciones de datos, productos añadidos/eliminados/modificados. Mantiene revisiones históricas sin permitir restaurarlas desde la interfaz.
+- **0.3.7:** resumen diario según la fecha real del almacén (Europe/Madrid, incluido horario de verano), descarte de respuestas asíncronas obsoletas cuando cambia el almacén o usuario.
+- **0.3.8:** selección de hasta 20 PDF desde Archivos/OneDrive, análisis secuencial y resumen por archivo. Nunca publica automáticamente; cada importación se conserva por separado para revisión. Se rechazan dos PDF del mismo número de carga dentro del mismo lote y se exige confirmar antes de abandonar una revisión abierta.
+- **Validación:** ejecución GitHub Actions `40182749152`, commit `11de1cfd161d66d32a4e6c5e32021c820855e7d7`, 81 pruebas JavaScript correctas y 0 fallidas; migraciones y concurrencia sobre PostgreSQL temporal superadas.
+- **Documentos de cierre:** [Matriz funcional](docs/MATRIZ_CIERRE_DESARROLLO.md), [pruebas de aceptación](docs/PRUEBAS_ACEPTACION.md) y [borrador de manual](docs/MANUAL_USUARIO_BORRADOR.md).
+- **No se ha publicado la app, fusionado la PR ni aplicado migraciones a producción.** Faltan las pruebas de Supabase real, impresoras, dispositivos y migración de datos antiguos, todas sujetas a autorización.
