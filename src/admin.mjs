@@ -3,6 +3,7 @@ import {validarLotePdf,resumenLotePdf} from "./import-batch.mjs";
 import {configurarEstadisticasOperarios} from "./admin-stats.mjs";
 import {configurarAuditoriaLegacy} from "./admin-legacy.mjs";
 import {configurarConciliacionLegacy} from "./admin-reconcile.mjs";
+import {configurarInventarioOriginales} from "./admin-originals.mjs";
 import {configurarLoteImpresion} from "./admin-print-batch.mjs";
 import {analyzeDocument,applyLineCorrection,publicationReadiness,warehouseZone} from "./document-review.mjs";
 import {fechaISO} from "./logic.mjs";
@@ -41,6 +42,7 @@ export function createAdminController({client,getUser,bucket,global,errorText,on
   const operatorStats=configurarEstadisticasOperarios({client,getUser,errorText,getWarehouse:()=>document.getElementById("adminWarehouse").value});
   const legacyAudit=configurarAuditoriaLegacy({getUser,errorText});
   const legacyReconcile=configurarConciliacionLegacy({client,getUser,getWarehouse:()=>document.getElementById("adminWarehouse").value,errorText});
+  const legacyOriginals=configurarInventarioOriginales({getUser,errorText});
   const printBatch=configurarLoteImpresion({client,getUser,errorText,getWarehouse:()=>document.getElementById("adminWarehouse").value});
   let busy=false,draft=null;
   const setStatus=(message="",level="")=>{
@@ -341,12 +343,12 @@ export function createAdminController({client,getUser,bucket,global,errorText,on
     }
   }
   async function open(){
-    legacyAudit.clear();legacyReconcile.clear();
+    legacyAudit.clear();legacyReconcile.clear();legacyOriginals.clear();
     await Promise.all([refreshAttention(),refreshSummary(),refreshIncidents(),operatorStats.refresh(),printBatch.refresh()]);
   }
   function clearSensitive(){
     draft=null;busy=false;
-    revisionControl.clear();operatorStats.clear();printBatch.clear();legacyAudit.clear();legacyReconcile.clear();
+    revisionControl.clear();operatorStats.clear();printBatch.clear();legacyAudit.clear();legacyReconcile.clear();legacyOriginals.clear();
     for(const id of ["documentReview","attentionList","adminSummary","adminActivity",
       "incidentList","reviewReadiness","reportPaper"]){
       const element=$(id);if(element)element.replaceChildren();
