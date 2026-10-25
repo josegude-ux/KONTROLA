@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import {filtrarHistorial,resumenHistorial,formatoFechaCarga} from "../src/history.mjs";
+import {filtrarHistorial,resumenHistorial,formatoFechaCarga,csvHistorial,htmlResumenHistorial} from "../src/history.mjs";
 
 const rows=[
   {codigo:"LP26-001",fecha:"2026-10-25",estado:"publicada",peso_kg:120,referencias:3,incidencias_pendientes:0,ruta:"R1",repartidor:"Jose",matricula:"1234ABC"},
@@ -33,4 +33,38 @@ test("Suma únicamente las filas filtradas y no convierte datos ausentes en NaN"
 test("Fecha mostrada como día/mes/año sin desfase horario",()=>{
   assert.equal(formatoFechaCarga("2026-10-25"),"25/10/2026");
   assert.equal(formatoFechaCarga(null),"Sin fecha");
+});
+
+test("CSV incluye BOM, separador español, encabezados y solo las filas seleccionadas",()=>{
+  const filtered=filtrarHistorial(rows,{estado:"cerrada"});
+  const csv=csvHistorial(filtered,"COR_01_COR");
+  assert.ok(csv.startsWith("\uFEFF"));
+  assert.match(csv,/"Almacén";"Código";"Fecha de carga";"Estado"/);
+  assert.match(csv,/"COR_01_COR";"LP26-004"/);
+  assert.doesNotMatch(csv,/LP26-001/);
+  assert.equal(csv.split("\r\n").length,4);
+});
+test("CSV neutraliza fórmulas maliciosas, comillas y saltos de línea",()=>{
+  const csv=csvHistorial([{
+    codigo:'=WEBSERVICE("https://example.test")',
+    ruta:'-1+2',repartidor:'  @SUM(1;2)',matricula:'"+1',
+    estado:'a";"b',fecha:"2026-10-25",peso_kg:0
+  }],"COR_01_COR");
+  assert.match(csv,/'=WEBSERVICE\(""https:\/\/example\.test""\)/);
+  assert.match(csv,/"'-1\+2"/);
+  assert.match(csv,/"'  @SUM\(1;2\)"/);
+  assert.match(csv,/"a"";""b"/);
+});
+test("Informe imprimible escapa texto no confiable y respeta filtros recibidos",()=>{
+  const html=htmlResumenHistorial([{
+    codigo:'<img src=x onerror=alert(1)>',ruta:"R&L",estado:"publicada",
+    fecha:"2026-10-25",repartidor:"<Operario>",matricula:'"1234"',
+    peso_kg:150,referencias:3,incidencias_pendientes:0
+  }],{almacen:"COR_01_COR",busqueda:"<script>"});
+  assert.doesNotMatch(html,/<img|<script>/);
+  assert.match(html,/&lt;img/);
+  assert.match(html,/R&amp;L/);
+  assert.match(html,/&lt;Operario&gt;/);
+  assert.match(html,/&lt;script&gt;/);
+  assert.match(html,/Resumen de cargas/);
 });
