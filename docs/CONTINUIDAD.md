@@ -546,3 +546,9 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 - Se reemplazan los cuatro emojis de Preparación, Verificación, Control de Cargas y Administración por ilustraciones 3D propias de mercancías/palet y lector, checklist, documentos y almacén, respectivamente.
 - SVG locales en `assets/home/*-3d.svg`, incluidos en la precaché PWA para uso sin conexión. Conservan los cuatro IDs, los manejadores, los permisos por perfil y el diseño responsive.
 - Versionado 0.3.25 y caché v056 con pruebas de existencia y de rutas de imágenes. Sin tocar INVENTA, Supabase, lógica de mercancías ni documentación original de Business Central.
+
+### 2026-10-25 — Portada con recursos 3D reales de INVENTA (v0.3.26)
+- Decisión del usuario: usar exactamente los recursos gráficos diseñados previamente en INVENTA, no recreaciones SVG. Fuente verificada en `josegude-ux/INVENTA-/main/assets/menu/{inventory-3d,consult-3d,management-3d,settings-3d}.webp`.
+- KONTROLA referencia esos archivos públicos directamente sin modificarlos: Preparación inventario, Verificación consulta, Control de Cargas gestión de almacén y Administración gestión más engranaje. El código de INVENTA no se modifica.
+- CSS replica la proporción de las tarjetas de INVENTA. La caché SW v057 intenta conservar los recursos externos para uso sin conexión después de la primera carga; si la red impide precargarlos, no bloquea la instalación. NOTA: las ilustraciones dependen de su URL pública original; pendiente de copia binaria local si se requiere independencia total.
+- Preservados los ID, funciones, permisos y datos. PWA v0.3.26, pruebas y documentación actualizadas en mismo commit.

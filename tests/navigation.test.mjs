@@ -42,12 +42,12 @@ test("La navegación conserva los accesos previos y los regresos al submenú",()
 
 test("La versión y el caché están preparados para instalar nuevas pantallas",()=>{
   const version=JSON.parse(read("version.json")).version;
-  assert.equal(version,"0.3.25");
+  assert.equal(version,"0.3.26");
   assert.equal(JSON.parse(read("package.json")).version,version);
   assert.equal(JSON.parse(read("package-lock.json")).version,version);
-  assert.match(read("src/config.mjs"),/APP_VERSION="0\.3\.25"/);
-  assert.match(html,/id="appVersion">0\.3\.25</);
-  assert.match(read("sw.js"),/kontrola-integral-v056/);
+  assert.match(read("src/config.mjs"),/APP_VERSION="0\.3\.26"/);
+  assert.match(html,/id="appVersion">0\.3\.26</);
+  assert.match(read("sw.js"),/kontrola-integral-v057/);
 });
 
 test("Las consultas descartan respuestas de sesiones o almacenes anteriores",()=>{
@@ -92,14 +92,16 @@ test("inicio visual inspirado en INVENTA conserva rutas, permisos y estados",()=
   assert.match(css,/inventa-inspired-home/);
 });
 
-test("las cuatro tarjetas mantienen sus accesos y cargan ilustraciones 3D locales",()=>{
-  for(const [id,name] of [["openPreparation","preparacion"],["openReview","verificacion"],["openCargas","control-cargas"],["openAdmin","administracion"]]){
-    assert.match(html,new RegExp('id="'+id+'"[^>]*>[^]*?assets/home/'+name+'-3d\\.svg'));
-    assert.match(read("sw.js"),new RegExp('assets/home/'+name+'-3d\\.svg'));
-    const image=read("assets/home/"+name+"-3d.svg");
-    assert.match(image,/<svg[^>]*viewBox="0 0 400 320"/);
-    assert.match(image,/linearGradient|filter/);
-  }
-  assert.match(html,/id="openAdmin"[^>]*hidden/);
-  assert.doesNotMatch(html,/class="feature-icon"[^>]*>[📦✅📋🗂️]/u);
+test("las cuatro tarjetas reutilizan imágenes originales 3D de INVENTA",()=>{
+ const originals=["inventory-3d.webp","consult-3d.webp","management-3d.webp","settings-3d.webp"];
+ for(const image of originals){
+   assert.match(html,new RegExp('raw\\.githubusercontent\\.com/josegude-ux/INVENTA-/main/assets/menu/'+image.replace('.','\\.') ));
+   assert.match(read("sw.js"),new RegExp(image.replace('.','\\.')));
+ }
+ for(const id of ["openPreparation","openReview","openCargas","openAdmin"]){
+   assert.match(html,new RegExp('id="'+id+'"[^>]*class="feature'));
+ }
+ assert.match(html,/id="openAdmin"[^>]*hidden/);
+ assert.match(read("sw.js"),/Promise\.allSettled\(ORIGINAL_INVENTA_IMAGES/);
+ assert.match(read("sw.js"),/caches\.match\(r\)/);
 });
