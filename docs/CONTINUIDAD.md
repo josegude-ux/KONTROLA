@@ -468,3 +468,7 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 ### 2026-10-25 — Consulta administrativa de archivadas preparada
 - Añadida a la propuesta SQL la RPC `kontrola_listar_archivadas()`, solo administración y filtrada por almacenes autorizados.
 - Aún no aplicada en Supabase; debe probarse junto con la migración antes de usarla.
+
+### Revisión de estados de incidencias
+- El esquema real limita estados a `pendiente`, `descartada` y `regularizada`. La política de archivo bloquea incidencias `pendiente`; las descartadas se consideran resueltas y no deben bloquear archivo por sí solas.
+- SQL y prueba estática ajustados en la rama propuesta. No aplicado en Supabase.

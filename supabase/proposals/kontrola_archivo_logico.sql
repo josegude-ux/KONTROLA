@@ -36,7 +36,7 @@ begin
     exists(select 1 from public.kontrola_verificaciones v where v.codigo=p_codigo and (v.estado is distinct from 'finalizada' or v.fin is null)) or
     not exists(select 1 from public.kontrola_verificacion_lineas l join public.kontrola_verificaciones v on v.id=l.verificacion_id where v.codigo=p_codigo) or
     exists(select 1 from public.kontrola_verificacion_lineas l join public.kontrola_verificaciones v on v.id=l.verificacion_id where v.codigo=p_codigo and l.comprobada_cantidad is null) or
-    exists(select 1 from public.kontrola_incidencias i where i.codigo=p_codigo and i.estado is distinct from 'regularizada') or
+    exists(select 1 from public.kontrola_incidencias i where i.codigo=p_codigo and i.estado='pendiente') or
     exists(select 1 from public.kontrola_preparaciones p where p.codigo=p_codigo and p.fin is null) or
     exists(select 1 from public.kontrola_avisos a where a.entidad_id=p_codigo and a.activo=true) then
     raise exception 'Dependencias o incidencias sin resolver' using errcode='22023';
