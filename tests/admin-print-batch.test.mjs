@@ -18,7 +18,7 @@ test("la impresión selecciona cargas autorizadas del almacén sin alterar docum
  const code=read("src/admin-print-batch.mjs");
  const html=read("index.html");
  const css=read("styles.css");
- assert.match(code,/client\.rpc\("kontrola_panel_cargas",\{p_almacen:warehouse\}\)/);
+ assert.match(code,/client\.rpc\("kontrola_panel_cargas_impresion",\{p_almacen:warehouse\}\)/);
  assert.match(code,/getWarehouse\(\)!==warehouse/);
  assert.match(code,/getUser\(\)\?\.id!==session/);
  assert.match(code,/selected\.size>=MAX_HOJAS_ARCHIVO/);
@@ -37,7 +37,9 @@ test("la impresión por lotes se actualiza al cambiar el almacén administrativo
 test("la impresión de lotes usa únicamente la fecha del almacén sin filtros de periodo",()=>{
  const code=read("src/admin-print-batch.mjs");
  const html=read("index.html");
- assert.ok(code.includes("filtrarCargasArchivo(allRows,today,today)"));
+ assert.match(code,/row\.estado==="publicada"&&row\.publicado_en/);
+ assert.match(code,/timeZone:"Europe\/Madrid"/);
+ assert.match(code,/allRows\.filter\(row=>publicadaHoy\(row,today\)\)/);
  assert.ok(code.includes("const today=fechaAlmacen()"));
  assert.doesNotMatch(code,/batchPrintFrom|batchPrintTo/);
  assert.doesNotMatch(html,/id="batchPrintFrom"|id="batchPrintTo"/);

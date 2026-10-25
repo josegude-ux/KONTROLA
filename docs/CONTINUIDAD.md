@@ -396,3 +396,8 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 - En Administración → Pendientes se consultan todas las importaciones en revisión/aprobadas del almacén, independientemente de la fecha BC. Contador, selección de aprobadas, selección total y publicación explícita tras confirmación.
 - Cada carga con errores permanece sin publicar y ofrece acceso a revisión. Publicación individual mediante RPC existente, errores por carga no bloquean las demás. Aviso con acceso directo desde Impresión.
 - Archivos: `src/admin.mjs`, `index.html`; sin cambios en otras aplicaciones ni publicación automática. Pendiente CI.
+
+## 2026-10-25 — Corrección aislada de regresión CI de impresión
+- Actualizadas únicamente las pruebas `tests/admin-print-batch.test.mjs`, `tests/archive-period.test.mjs` y `tests/archive-snapshot.test.mjs` para reconocer la RPC `kontrola_panel_cargas_impresion` y el filtro de cargas publicadas por `publicado_en` en `Europe/Madrid`.
+- Se mantienen las comprobaciones de autorización, almacén, límite de 20 hojas, revalidación de lotes y ausencia de escrituras sobre documentos originales.
+- No se modifica código de aplicación, Supabase, INVENTA, MOVENTA ni despliegue. Rama aislada de corrección; CI pendiente de verificar después del commit.
