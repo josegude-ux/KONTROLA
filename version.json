@@ -1,4 +1,4 @@
 {
-  "version": "0.3.3",
-  "notes": "Historial y resumen diario de cargas, filtros, consulta de solo lectura y navegación modular."
+  "version": "0.3.4",
+  "notes": "Historial de Control de Cargas con exportación CSV segura para Excel e impresión de resúmenes filtrados."
 }
