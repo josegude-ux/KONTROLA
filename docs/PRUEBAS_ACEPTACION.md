@@ -42,7 +42,7 @@
 | A26 | Lote conflictivo | Dos PDF distintos con el mismo número de carga dentro del lote | Se bloquea el segundo para revisión individual, sin sobrescribir el primero |
 | A27 | Estadísticas operarios | Administrador filtra A Coruña y Ferrol por fecha | No se mezclan almacenes ni se cuentan tiempos abiertos como finalizados |
 | A28 | Privacidad de estadísticas | Operario intenta RPC nominal de estadísticas | Acceso denegado por servidor |
-| A29 | Imprimir lote procesado | Seleccionar 10 cargas autorizadas, imprimir y guardar desde iPhone | Un documento paginado por carga, sin modificar originales ni mezclar almacenes |
+| A29 | Imprimir lote procesado | Seleccionar 20 cargas autorizadas, imprimir y guardar desde iPhone | Un documento paginado por carga, sin modificar originales ni mezclar almacenes |
 | A30 | Cambio de usuario | Operario A cierra sesión y operario B entra en el mismo iPhone | No aparecen datos, PDFs ni información de la sesión A en vistas ocultas o informes |
 | A31 | Error de salida | Simular cierre de sesión fallido en Supabase | La aplicación comunica error y no anuncia falsamente la sesión como cerrada |
 | A32 | Archivo periódico | Generar un informe nuevo desde KONTROLA y guardarlo como PDF con Safari/iPhone | PDF válido, distinto del HTML de descarga, listo para mover a OneDrive |
@@ -51,13 +51,17 @@
 | A35 | Alcance documental | Entrar en Administración tras iniciar la app con documentos nuevos | Ningún menú de migración de PDFs antiguos; las revisiones nuevas siguen funcionando |
 
 | A36 | Archivo por fecha | Filtrar del 21 al 24 de octubre con cargas dentro, fuera y sin fecha | Solo se incluyen cargas con fecha válida dentro del intervalo y se informa si el rango es incorrecto |
-| A37 | Carátula PDF OneDrive | Seleccionar diez cargas, preparar el documento y guardarlo desde Safari | Primera página con índice/códigos/fecha/almacén, luego hojas separadas; sugerencia de nombre sin declarar subida realizada |
+| A37 | Carátula PDF OneDrive | Seleccionar veinte cargas, preparar el documento y guardarlo desde Safari | Primera página con índice/códigos/fecha/almacén, luego hojas separadas; sugerencia de nombre sin declarar subida realizada |
+
+
+| A38 | Grupos consecutivos | Filtrar 45 cargas y pulsar sucesivamente la selección rápida | Primer grupo 20, segundo 20, tercero 5; cada carátula corresponde a las cargas correctas |
+| A39 | Impresión grande iPhone | Imprimir un grupo de 20 cargas con muchas líneas por hoja | Sin bloqueos de memoria ni páginas cortadas; PDF legible y guardable en Archivos/OneDrive |
 
 ## Condiciones de salida
 
 **Desarrollo:** funciones implementadas, pruebas unitarias y SQL temporales superadas.
 
-**Validación real:** todas las pruebas A01–A37 ejecutadas y registradas con evidencias, sin errores bloqueantes.
+**Validación real:** todas las pruebas A01–A39 ejecutadas y registradas con evidencias, sin errores bloqueantes.
 
 **Puesta en producción:** únicamente tras definir el inicio documental nuevo sin borrado de datos, validar la privacidad y permisos, probar el guardado PDF y movimiento manual a OneDrive, obtener aprobación explícita y realizar un despliegue controlado.
 
