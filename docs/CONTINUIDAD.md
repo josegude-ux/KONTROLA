@@ -5,7 +5,7 @@
 **Rama principal del desarrollo en curso:** cursor/verificacion-fisica-cargas-8ba0
 **PR de trabajo:** https://github.com/josegude-ux/KONTROLA/pull/2
 **PR de Fase 1:** https://github.com/josegude-ux/KONTROLA/pull/1
-**Versión del código de esta rama:** 0.3.5
+**Versión del código de esta rama:** 0.3.8
 
 > La aplicación funcional vive en ramas de desarrollo: main no debe tomarse como punto de partida para rehacerla. No fusionar a main ni aplicar migraciones a producción sin autorización.
 
@@ -112,3 +112,13 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 - El módulo `src/import-policy.mjs` está precargado en el Service Worker, con caché nuevo `kontrola-integral-v036`.
 - Pruebas añadidas: `tests/integration/revisions.sql` (revisiones 1 y 2, archivo renombrado, documento cruzado y bloqueo al comenzar preparación) y `tests/import-policy.test.mjs`.
 - **No se ha desplegado ninguna migración en Supabase empresarial**, ni se ha fusionado a `main`. Todavía faltan pruebas sobre Auth, Storage y dispositivos reales.
+
+
+## Continuación integral: versiones 0.3.6–0.3.8 (25/10/2026)
+- **v0.3.6:** `src/admin-revisions.mjs` y `src/revision-diff.mjs`; historial visual de revisiones, comparación de datos de transporte y referencias incluso duplicadas, PDF históricos mediante enlaces privados de duración limitada.
+- **v0.3.7:** `src/business-date.mjs`; informes de zona según fecha local Europe/Madrid, evitando desfases UTC y contemplando el horario de verano. Las peticiones de Administración ignoran resultados obsoletos tras cambiar de almacén o sesión.
+- **v0.3.8:** `src/import-batch.mjs` e importación secuencial de hasta 20 documentos PDF; cada resultado se informa, los duplicados SHA siguen protegidos por RPC, las revisiones quedan pendientes y no hay publicación automática. Un mismo código repetido dentro de un lote se rechaza para revisión individual. Debe validarse la experiencia iPhone y los límites de memoria reales.
+- **CI verificada:** run `40182749152`, commit `11de1cfd161d66d32a4e6c5e32021c820855e7d7`, **81 tests JS correctos, 0 fallidos**, cuatro migraciones en PostgreSQL temporal, workflow documental y concurrencia aprobados.
+- Se elaboraron [24+ casos de aceptación](PRUEBAS_ACEPTACION.md), [matriz de cierre](MATRIZ_CIERRE_DESARROLLO.md) y [borrador de manual para operarios](MANUAL_USUARIO_BORRADOR.md).
+- **Límites no resueltos:** estadísticas por operario con perfiles, impresión por lotes de PDF originales, planificación/ejecución autorizada de migración de historiales locales y datos en OneDrive, pruebas auténticas de Supabase Auth/Storage, validación AirPrint e iPhone y manual PDF con capturas reales. No afirmar fin integral hasta cerrarlos.
+- Las cuatro migraciones siguen exclusivamente en control de versiones; **no se aplicaron a Supabase de producción**. Se mantienen sin cambios INVENTA, Control de Cargas original y Tanques, que permanece oculto.
