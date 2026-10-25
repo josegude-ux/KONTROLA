@@ -85,5 +85,10 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 - «Consultar cargas» y detalles desde el historial quedan en **modo de solo lectura**, sin botones de iniciar/finalizar preparación y con salvaguardas en los manejadores del cliente. Las operaciones de preparación siguen en su acceso específico.
 - El submenú de Tanques continúa **completamente oculto**.
 - Se añadieron `src/history.mjs`, pruebas unitarias, controles de navegación y recursos al caché PWA. Versión prevista 0.3.3.
-- La CI debe comprobar sintaxis, JS, migraciones aisladas, RLS y concurrencia; **confirmar su resultado antes de dar por validada esta entrega**.
+- **GitHub Actions validado** en ejecución `40178757357`, commit `22c3e106def7863a547bd90cd4e47fb6beb87dc2`: **58 pruebas JavaScript correctas y 0 fallidas**; migraciones SQL aisladas y prueba de concurrencia completadas. No sustituye pruebas E2E móviles/Supabase real.
 - **No fusionado a `main` ni desplegado en Supabase.** El modo de consulta es una protección de interfaz, no sustituye RLS y validaciones de servidor.
+
+### Seguridad de selección de almacén (v0.3.3)
+
+- Se descartan respuestas asíncronas obsoletas en listas de preparación, listas de verificación, resumen del operario e historial si cambia almacén o usuario durante la solicitud.
+- La CI incluye un test de regresión para evitar que los resultados de una zona se muestren después de pasar a otra.
