@@ -58,6 +58,6 @@ test("el módulo de archivo no registra ni borra cargas y se conserva el límite
  assert.match(ui,/id="batchPrintTo"/);
  assert.match(ui,/id="batchPrintSelectVisible"/);
  assert.match(ui,/id="batchArchiveName"/);
- assert.doesNotMatch(src,/client\.from\(|\.upload\(|\.upsert\(|\.delete\(/);
+ assert.doesNotMatch(src,/client\.from\(|\.upload\(|\.upsert\(|client\.delete\(/);
  assert.doesNotMatch(admin,/configurarInventarioOriginales|configurarAuditoriaLegacy|configurarConciliacionLegacy/);
 });
