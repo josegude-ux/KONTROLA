@@ -444,3 +444,7 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 ### 2026-10-25 — Migración de archivo propuesta, NO aplicada
 - `supabase/proposals/kontrola_archivo_logico.sql`: metadatos, auditoría, RPC administrativa transaccional con bloqueo de fila, plazo de 90 días y validaciones de incidencias/dependencias.
 - Es propuesta pendiente de revisión y aplicación; no cambia las RPC de lectura ni la interfaz. La herramienta de migración ha sido bloqueada.
+
+### Revisión SQL defensiva
+- Rechazar explícitamente `p_archivar IS NULL` para evitar restauración accidental.
+- La propuesta no se ha aplicado ni validado en Supabase.

@@ -26,6 +26,7 @@ begin
  if not public.kontrola_puede_almacen(v_c.almacen) then
   raise exception 'Almacén no autorizado' using errcode='42501';
  end if;
+ if p_archivar is null then raise exception 'Acción inválida' using errcode='22023'; end if;
  if v_c.archivado=p_archivar then return false; end if;
  if p_archivar then
   if v_c.estado is distinct from 'cerrada' or v_c.cerrada_en is null or v_c.cerrada_en>now()-interval '90 days' then
