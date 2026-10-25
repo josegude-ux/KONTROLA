@@ -11,26 +11,37 @@ const numericQty = raw => {
 };
 const isQty = text => /^\d+(?:[,.]\d+)?$/.test(String(text).trim());
 const validQty = val => typeof val==='number' && Number.isFinite(val) && val>=0;
-export function parseDocumentPages(pages, fileName='Documento.pdf') {
+export const normalizeWarehouseCode=raw=>{
+ const cleaned=String(raw||'').toUpperCase().trim().replace(/[\s-]+/g,'_').replace(/_+/g,'_');
+ return cleaned.replace(/^COR_1_/,'COR_01_').replace(/^COR_2_/,'COR_02_')||null;
+};
+const KNOWN_WAREHOUSES=new Set(['COR_01_COR','COR_02_NAR']);
+export function parseDocumentPages(pages, fileName='Documento.pdf', options={}) {
  // Business Central puede incluir varios almacenes dentro del MISMO LP.
- // La preparación de Coruña corresponde exclusivamente a COR_01_COR.
  const warehouseOf=page=>{
   const line=page.items.map(it=>it.text||'').join(' ');
-  const hit=line.match(/Almac[eé]n\s*:\s*(COR[\s_-]*0?\d{1,2}[\s_-]*[A-Z]{2,})/i);
+  const hit=line.match(/Almac[eé]n\s*:\s*([A-Z]{2,8}[\s_-]*0?\d{1,3}[\s_-]*[A-Z0-9]{2,12})/i);
   if(!hit)return null;
-  const cleaned=hit[1].toUpperCase().replace(/[\s-]+/g,'_').replace(/_+/g,'_');
-  return cleaned.replace(/^COR_1_/,'COR_01_').replace(/^COR_2_/,'COR_02_');
+  return normalizeWarehouseCode(hit[1]);
  };
  const identified=pages.map(warehouseOf);
  const warehouses=[...new Set(identified.filter(Boolean))];
  const mixedWarehouse=warehouses.length>1;
- if(warehouses.length&&!warehouses.includes('COR_01_COR'))throw new Error('El PDF no contiene el bloque de mercancía COR_01_COR');
- if(warehouses.length){
+ const requestedWarehouse=normalizeWarehouseCode(options.warehouse);
+ const warehouse=requestedWarehouse||(warehouses.length===1?warehouses[0]:null);
+ const warehouseWarnings=[];
+ if(requestedWarehouse&&!warehouses.includes(requestedWarehouse))warehouseWarnings.push('El almacén seleccionado no aparece en el documento');
+ if(mixedWarehouse&&!warehouse)warehouseWarnings.push('El documento contiene varios almacenes; debe seleccionarse uno antes de revisar');
+ if(!warehouses.length)warehouseWarnings.push('El documento no indica un almacén reconocible; queda pendiente de clasificar');
+ if(warehouse&&!KNOWN_WAREHOUSES.has(warehouse))warehouseWarnings.push('Almacén '+warehouse+' pendiente de clasificar');
+ if(warehouses.length&&warehouse){
   let active=null;
   pages=pages.filter((page,index)=>{
    if(identified[index])active=identified[index];
-   return active==='COR_01_COR';
+   return active===warehouse;
   });
+ }else if(mixedWarehouse){
+  pages=[];
  }
  const every=pages.flatMap(p=>p.items.map(it=>({...it,page:p.number})));
  const textAll=every.map(i=>i.text).join(' ').replace(/\s+/g,' ');
@@ -51,7 +62,7 @@ export function parseDocumentPages(pages, fileName='Documento.pdf') {
  const date=extract(/Fecha\s*carga\s*:\s*(\d{2}\/\d{2}\/\d{2,4})/i);
  const route=(extract(/Ruta\s*:\s*(.{1,60}?)(?=\s+(?:Repartidor|Matr[ií]cula|Cami[oó]n|Fecha|Peso|Almac[eé]n|N[º°o.]?\s*(?:copias|visitas))\s*:|$)/i)||'').trim();
  let merchandise=false,declaredTotal=null;
- const products=[],warnings=[];
+ const products=[],warnings=[...warehouseWarnings];
  for(const page of pages){
   const items=page.items.filter(it=>it.text&&it.text.trim()).sort((a,b)=>a.y-b.y||a.x-b.x);
   const goodsTitle=items.find(it=>/M\s*E\s*R\s*C\s*A\s*N\s*C\s*[IÍ]\s*A/i.test(it.text));
@@ -99,7 +110,8 @@ export function parseDocumentPages(pages, fileName='Documento.pdf') {
    else if(/^PALETS?$/.test(rawUnit))unit='PALET';
    else if(/^KGS?$|^KILOS?$|^KILOGRAMOS?$/.test(rawUnit))unit='KG';
    const description=cells.filter(i=>i.x>page.width*.18&&i.x<page.width*.67).sort((a,b)=>a.y-b.y||a.x-b.x).map(i=>i.text.trim()).filter(Boolean).join(' ').replace(/\s+/g,' ');
-   const product={...r,qty,unit,description};
+   const sourceContext=cells.sort((a,b)=>a.x-b.x||a.y-b.y).map(i=>i.text.trim()).filter(Boolean).join(' ');
+   const product={...r,qty,unit,description,sourceContext};
    if(!validQty(qty)||(qty>0&&!unit))warnings.push('Cantidad o unidad sin reconocer en '+r.sku);
    products.push(product);
   }
@@ -109,7 +121,7 @@ export function parseDocumentPages(pages, fileName='Documento.pdf') {
    merchandise=false;
   }else if(controlLabel||palletsLabel){merchandise=false}
  }
- if(warehouses.length&&!pages.length)warnings.push('El PDF no contiene mercancía de COR_01_COR');
+ if(warehouse&&warehouses.length&&!pages.length)warnings.push('El PDF no contiene mercancía del almacén '+warehouse);
  const sum=products.reduce((a,p)=>a+Number(p.qty||0),0);
  const countOK=refs!==null&&refs===products.length;
  const amountOK=declaredTotal===null?null:Math.abs(declaredTotal-sum)<0.000001;
@@ -117,7 +129,7 @@ export function parseDocumentPages(pages, fileName='Documento.pdf') {
  if(amountOK===false)warnings.push('Suma detectada: '+sum.toFixed(3)+' / declarada: '+declaredTotal);
  if(declaredTotal===null)warnings.push('No se pudo contrastar el total del PDF');
  const verified=countOK&&amountOK===true&&warnings.length===0;
- return {id,weight,refs,visits,driver,plate,palletsLarge,palletsSmall,date,route,source:fileName,products,declaredTotal,actualTotal:sum,verified,warnings,warehouse:warehouses.length?'COR_01_COR':null,mixedWarehouse,availableWarehouses:warehouses};
+ return {id,weight,refs,visits,driver,plate,palletsLarge,palletsSmall,date,route,source:fileName,products,declaredTotal,actualTotal:sum,verified,warnings,warehouse,warehouseKnown:KNOWN_WAREHOUSES.has(warehouse),mixedWarehouse,availableWarehouses:warehouses};
 }
 export function summarize(products){
  const units={},aisles={},unlocated=[];

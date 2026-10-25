@@ -6,7 +6,7 @@ const serviceWorker=await readFile(new URL("../sw.js",import.meta.url),"utf8");
 const workflow=await readFile(new URL("../.github/workflows/ci.yml",import.meta.url),"utf8");
 
 test("the offline shell caches every local module imported by the application",()=>{
-  for(const module of ["app.mjs","core.mjs","logic.mjs","verification.mjs","config.mjs"]){
+  for(const module of ["app.mjs","core.mjs","logic.mjs","verification.mjs","document-review.mjs","report.mjs","config.mjs"]){
     assert.match(serviceWorker,new RegExp(`src/${module.replace(".","\\.")}`));
   }
 });
@@ -14,4 +14,6 @@ test("the offline shell caches every local module imported by the application",(
 test("CI validates pull requests targeting the Phase 1 branch",()=>{
   assert.match(workflow,/pull_request:\s*\n\s*branches:\s*\[[^\]]*desarrollo\/fase-1-operario[^\]]*\]/);
   assert.match(workflow,/node --check src\/verification\.mjs/);
+  assert.match(workflow,/node --check src\/document-review\.mjs/);
+  assert.match(workflow,/node --check src\/report\.mjs/);
 });

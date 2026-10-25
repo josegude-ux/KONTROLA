@@ -20,5 +20,7 @@ jobs:
           node --check src/core.mjs
           node --check src/logic.mjs
           node --check src/verification.mjs
+          node --check src/document-review.mjs
+          node --check src/report.mjs
       - name: Pruebas de regresión
         run: node --test tests/*.test.mjs
