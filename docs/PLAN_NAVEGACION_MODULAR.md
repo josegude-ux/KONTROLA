@@ -3,13 +3,13 @@
 Fecha: 25-10-2026. Plan de diseño, sin cambios de produccion.
 
 ## Decision funcional
-KONTROLA sera la aplicacion principal para los operarios, con Control de Cargas y Control de Tanques como submenus internos. INVENTA mantiene su propia interfaz, aunque en el futuro pueda compartir Supabase y autenticacion. Control de Tanques sigue en pausa.
+KONTROLA sera la aplicacion principal para los operarios. Control de Cargas sera un submenu integrado y Control de Tanques sera un submenu **solo cuando este operativo**; mientras tanto permanece totalmente oculto. INVENTA mantiene su propia interfaz, aunque en el futuro pueda compartir Supabase y autenticacion. Control de Tanques sigue en pausa.
 
 ## Propuesta para el menu movil
 - Preparacion: funcionalidad ya programada en PR #2.
 - Verificacion: funcionalidad ya programada en PR #2.
 - Control de Cargas: nuevo submenu para integrar gradualmente funciones del sistema actual, sin duplicar la preparacion ni el importador PDF ya existentes.
-- Control de Tanques: submenu futuro, no operativo todavia.
+- Control de Tanques: modulo futuro **completamente oculto** en el menu para todos los usuarios hasta que se implemente, pruebe y autorice su activacion. No mostrar «Proximamente», accesos deshabilitados ni enlaces.
 - Administracion: acceso solo a perfiles autorizados.
 - Ajustes, perfil y version.
 
