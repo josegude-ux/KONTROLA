@@ -79,7 +79,7 @@
           <label>Estado<select id="historyStatus" class="warehouse-select"><option value="">Todos los estados</option><option value="publicada">Publicada</option><option value="preparacion_en_curso">En preparación</option><option value="preparada">Preparada</option><option value="verificacion_en_curso">En verificación</option><option value="cerrada">Cerrada</option></select></label>
           <label class="history-search">Buscar carga, ruta, matrícula o repartidor<input id="historySearch" type="search" placeholder="Código, ruta, matrícula o repartidor"></label>
         </div>
-        <div class="actions"><button id="historyClear" type="button" class="secondary">Limpiar filtros</button><button id="historyRefresh" type="button" class="secondary">Actualizar</button></div>
+        <div class="actions history-actions"><button id="historyClear" type="button" class="secondary">Limpiar filtros</button><button id="historyRefresh" type="button" class="secondary">Actualizar</button><button id="historyDownload" type="button" class="secondary" disabled>Exportar Excel (CSV)</button><button id="historyPrint" type="button" class="primary" disabled>Imprimir resumen</button></div>
       </section>
       <div id="historySummary" class="facts" aria-live="polite"></div>
       <div id="historyStatusMessage" class="status" role="status" aria-live="polite"></div>
