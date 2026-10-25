@@ -7,7 +7,7 @@
 **Rama principal del desarrollo en curso:** cursor/verificacion-fisica-cargas-8ba0
 **PR de trabajo:** https://github.com/josegude-ux/KONTROLA/pull/2
 **PR de Fase 1:** https://github.com/josegude-ux/KONTROLA/pull/1
-**Versión del código de esta rama:** 0.3.15
+**Versión del código de esta rama:** 0.3.16
 
 > La aplicación funcional vive en ramas de desarrollo: main no debe tomarse como punto de partida para rehacerla. No fusionar a main ni aplicar migraciones a producción sin autorización.
 
@@ -161,3 +161,12 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 - v0.3.15: `recuperarPdfOriginalLocal` lee solo un archivo elegido explícitamente y comprueba su cabecera PDF y SHA-256; rechaza revisiones históricas si su huella no coincide. `src/admin-originals.mjs` ofrece botones individuales para guardar copia mediante enlace temporal de descarga, sin eliminar o transmitir datos.
 - **Limitación iPhone:** origen/partición de almacenamiento distinta entre Safari y PWA instalada; un escaneo vacío no acredita pérdida de originales. Quedan pendientes pruebas físicas y copia independiente desde el contenedor del Control de Cargas original.
 - Los PDF siguen sin trasladarse automáticamente a KONTROLA y **no hay migraciones de datos ni aplicaciones desplegadas**. Cualquier recuperación real requiere intervención/consentimiento explícito del administrador.
+
+## Cambio de alcance vigente — KONTROLA 0.3.16
+
+- Se inicia con documentos y operaciones **nuevos**. No se arrastra el historial antiguo ni se exige migrarlo o conciliarlo.
+- El panel legacy de migración y recuperación queda **oculto en la interfaz**; los módulos anteriores permanecen en control de versiones, sin utilizar para el nuevo arranque.
+- Los PDF nuevos generados por KONTROLA se archivarán **periódicamente** en la carpeta de OneDrive que la empresa elija. Por ahora el movimiento es manual desde Archivos del iPhone tras **Imprimir / Guardar PDF**; no hay integración automática ni eliminaciones de documentos.
+- La impresión conjunta de hojas procesadas seguirá disponible para preparar lotes de PDF, sin confundirlos con originales BC.
+- El documento normativo es `docs/PLAN_ARCHIVO_ONEDRIVE.md`. El protocolo de aceptación se ha ajustado para dejar fuera migraciones y exigir pruebas del archivo OneDrive.
+- No se modificó ninguna base ni se ejecutaron migraciones de producción.
