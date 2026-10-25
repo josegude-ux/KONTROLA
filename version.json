@@ -1,4 +1,4 @@
 {
-  "version": "0.3.7",
-  "notes": "Historial de versiones y comparación de PDF; fecha operativa de Galicia y consultas de Administración seguras ante cambios de almacén."
+  "version": "0.3.8",
+  "notes": "Importación múltiple secuencial de hasta 20 PDF, sin publicación automática, con protección de revisiones y resumen de incidencias."
 }
