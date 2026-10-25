@@ -47,12 +47,15 @@
 | A31 | Imprimir lote procesado | Seleccionar 10 cargas autorizadas, imprimir y guardar desde iPhone | Un documento paginado por carga, sin modificar originales ni mezclar almacenes |
 | A32 | Cambio de usuario | Operario A cierra sesión y operario B entra en el mismo iPhone | No aparecen datos, PDFs ni información de la sesión A en vistas ocultas o informes |
 | A33 | Error de salida | Simular cierre de sesión fallido en Supabase | La aplicación comunica error y no anuncia falsamente la sesión como cerrada |
+| A34 | Conciliación local | Seleccionar JSON legacy y comparar contra almacén autorizado | Coincidencias, faltantes y diferencias visibles sin subir el backup ni escribir en KONTROLA |
+| A35 | Conciliación por almacén | Cambiar Coruña/Ferrol durante la consulta | Ignorar respuesta anterior; no presentar datos de otra zona |
+| A36 | Integridad documental | Copias con PDF renombrado o metadatos coincidentes sin hash conocido | No declarar PDF idéntico; exigir cotejo de originales y horarios antes de migrar |
 
 ## Condiciones de salida
 
 **Desarrollo:** funciones implementadas, pruebas unitarias y SQL temporales superadas.
 
-**Validación real:** todas las pruebas A01–A33 ejecutadas y registradas con evidencias, sin errores bloqueantes.
+**Validación real:** todas las pruebas A01–A36 ejecutadas y registradas con evidencias, sin errores bloqueantes.
 
 **Puesta en producción:** únicamente tras inventario de datos locales y nube, copia verificada, migración autorizada con reversión, revisión de permisos, aprobación explícita y despliegue controlado.
 
