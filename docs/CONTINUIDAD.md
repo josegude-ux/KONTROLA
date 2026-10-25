@@ -7,7 +7,7 @@
 **Rama principal del desarrollo en curso:** cursor/verificacion-fisica-cargas-8ba0
 **PR de trabajo:** https://github.com/josegude-ux/KONTROLA/pull/2
 **PR de Fase 1:** https://github.com/josegude-ux/KONTROLA/pull/1
-**Versión del código de esta rama:** 0.3.17
+**Versión del código de esta rama:** 0.3.18
 
 > La aplicación funcional vive en ramas de desarrollo: main no debe tomarse como punto de partida para rehacerla. No fusionar a main ni aplicar migraciones a producción sin autorización.
 
@@ -181,3 +181,13 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 - Las pruebas históricas ahora verifican que esas pantallas NO se puedan abrir desde la app.
 - **CI validada:** GitHub Actions `40191583046` (commit `d81d88403b27e698e9c9d9cbb2d1d57c00548000`): **123 tests, 123 OK, 0 fallidos**; cinco migraciones PostgreSQL de prueba y concurrencia superadas.
 - **Sin cambios en Supabase real, OneDrive real, INVENTA, Control de Cargas original, Tanques o rama main.** El archivado por iPhone/Archivos/OneDrive necesita validación física.
+
+
+## Ampliación del archivo por lotes — v0.3.18
+
+- Petición expresa: **grupos de al menos veinte** hojas cuando existan suficientes cargas. Se establece capacidad de **hasta 20 por PDF**, generando tantos grupos consecutivos como haga falta. El último puede tener menos.
+- `MAX_HOJAS_ARCHIVO=20` centraliza los límites de la carátula, el nombre de archivo y los botones.
+- `admin-print-batch.mjs`: al pulsar varias veces «Seleccionar siguiente grupo de hasta 20 cargas», avanza 20 posiciones en la lista filtrada y luego vuelve al principio; **no registra que se hayan archivado**.
+- `archive-period.mjs`: los nombres codifican de forma reversible todos los números de carga del grupo sin el prefijo `LP` ni el guion. Se ordenan, se validan y caben dentro de los 255 caracteres.
+- Los PDF son informes de **hojas procesadas**, no el original de Business Central. Los archivos aún deben guardarse manualmente en Archivos y trasladarse a la carpeta OneDrive autorizada, sin borrado automático.
+- Riesgo pendiente de prueba física: la impresión de 20 hojas con muchos productos podría ocupar más páginas o memoria en Safari. No declarar garantizada la impresión real hasta comprobarlo.
