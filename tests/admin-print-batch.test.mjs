@@ -23,7 +23,7 @@ test("la impresión selecciona cargas autorizadas del almacén sin alterar docum
  assert.match(code,/getUser\(\)\?\.id!==session/);
  assert.match(code,/selected\.size>=10/);
  assert.match(code,/buildPreparationReport\(row\)/);
- assert.doesNotMatch(code,/\.upload\(|\.insert\(|\.update\(|\.delete\(|createSignedUrl/);
+ assert.doesNotMatch(code,/\.upload\(|\.insert\(|\.update\(|client\.from\(|createSignedUrl/);
  assert.match(html,/id="batchPrintPanel"/);
  assert.match(html,/id="batchPrintOpen"[^>]*disabled/);
  assert.match(css,/report-batch-sheet:last-child/);
