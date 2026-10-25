@@ -134,3 +134,45 @@ test("la recuperación solo se inicia desde botón y nunca sube PDF",()=>{
  assert.doesNotMatch(source,/\.put\(|\.delete\(|\.clear\(|"readwrite"/);
  assert.doesNotMatch(view,/\.upload\(|\.upsert\(|\.rpc\(|fetch\(/);
 });
+
+test("inventario real simulado de IndexedDB enumera claves con transacción readonly",async()=>{
+  const keys=["LP26-12345","LP26-12345::"+"a".repeat(64),"clave desconocida"];
+  const modes=[];let closed=false;
+  const fake={open(){
+    const request={};
+    queueMicrotask(()=>{
+      request.result={
+        objectStoreNames:{contains:name=>name==="originales"},
+        close(){closed=true;},
+        transaction(name,mode){
+          assert.equal(name,"originales");modes.push(mode);
+          const tx={
+            objectStore(){
+              return {openKeyCursor(){
+                const req={};let index=0;
+                const next=()=>queueMicrotask(()=>{
+                  if(index>=keys.length){
+                    req.result=null;req.onsuccess();
+                    queueMicrotask(()=>tx.oncomplete());
+                  }else{
+                    req.result={key:keys[index++],continue:next};
+                    req.onsuccess();
+                  }
+                });
+                next();return req;
+              }};
+            }
+          };
+          return tx;
+        }
+      };
+      request.onsuccess();
+    });return request;
+  }};
+  const result=await inventariarOriginalesLocales(fake);
+  assert.equal(result.disponible,true);assert.equal(result.cantidad,3);
+  assert.equal(result.vigentes,1);assert.equal(result.versiones,1);
+  assert.equal(result.desconocidas,1);
+  assert.deepEqual(result.claves.map(item=>item.tipo),["vigente","version"]);
+  assert.deepEqual(modes,["readonly"]);assert.equal(closed,true);
+});
