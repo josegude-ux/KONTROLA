@@ -193,9 +193,34 @@ export function createAdminController({client,getUser,bucket,global,errorText,on
       }catch(error){setStatus("No se pudo reclasificar: "+errorText(error),"error");}
     });
     heading.append(title,warehouse,state);root.appendChild(heading);
+    const locationIssues=draft.findings.filter(item=>item.code==="missing_location");
+    const otherFindings=draft.findings.filter(item=>item.code!=="missing_location");
+    const summary=document.createElement("p");summary.className="muted";
+    summary.textContent=draft.parsed.products.length+" referencias detectadas · "+
+      locationIssues.length+" sin ubicación · "+otherFindings.length+" otros avisos.";
+    root.appendChild(summary);
+    if(locationIssues.length){
+      const notice=document.createElement("p");notice.className="hint";
+      notice.textContent="Las ubicaciones se corrigen en Business Central, no aquí. Consulta el informe de incidencias cuando lo necesites.";
+      root.appendChild(notice);
+      const confirm=document.createElement("label");confirm.className="finding warning";
+      const checkbox=document.createElement("input");checkbox.type="checkbox";
+      checkbox.checked=locationIssues.every(item=>draft.acknowledged.includes(item.id));
+      checkbox.addEventListener("change",()=>{
+        const ids=new Set(locationIssues.map(item=>item.id));
+        draft.acknowledged=draft.acknowledged.filter(id=>!ids.has(id));
+        if(checkbox.checked)draft.acknowledged.push(...ids);
+        updateActions();
+      });
+      const caption=document.createElement("span");
+      caption.textContent="He revisado el aviso de "+locationIssues.length+" ubicación(es) pendiente(s) en BC.";
+      confirm.append(checkbox,caption);root.appendChild(confirm);
+    }
     const findings=document.createElement("div");findings.className="findings";
-    if(!draft.findings.length){const ok=document.createElement("p");ok.className="status success";ok.textContent="Sin hallazgos.";findings.appendChild(ok);}
-    for(const item of draft.findings){
+    if(!otherFindings.length&&!locationIssues.length){
+      const ok=document.createElement("p");ok.className="status success";ok.textContent="Sin hallazgos.";findings.appendChild(ok);
+    }
+    for(const item of otherFindings){
       const row=document.createElement("label");row.className="finding "+item.severity;
       const checkbox=document.createElement("input");checkbox.type="checkbox";checkbox.disabled=item.severity==="error";
       checkbox.checked=draft.acknowledged.includes(item.id);
@@ -207,31 +232,13 @@ export function createAdminController({client,getUser,bucket,global,errorText,on
       row.append(checkbox,text);findings.appendChild(row);
     }
     root.appendChild(findings);
-    const table=document.createElement("div");table.className="review-lines";
-    draft.parsed.products.forEach((product,index)=>{
-      const line=document.createElement("article");line.className="review-line";
-      const code=document.createElement("b");code.textContent=(index+1)+" · "+product.sku;
-      line.appendChild(code);
-      for(const [field,label,type] of [["description","Descripción","text"],["location","Ubicación","text"],["qty","Cantidad","number"],["unit","Unidad","text"]]){
-        const wrapper=document.createElement("label");wrapper.textContent=label;
-        const input=document.createElement("input");input.type=type;input.value=product[field]??"";
-        if(type==="number"){input.min="0";input.step="0.001";input.inputMode="decimal";}
-        input.addEventListener("change",()=>{
-          try{
-            draft.parsed=applyLineCorrection(draft.parsed,index+1,{[field]:input.value},getUser().id);
-            draft.findings=analyzeDocument(draft.parsed);draft.state="revision_requerida";renderDraft();
-          }catch(error){setStatus(errorText(error),"error");}
-        });
-        wrapper.appendChild(input);line.appendChild(wrapper);
-      }
-      table.appendChild(line);
-    });
-    root.appendChild(table);updateActions();
+    updateActions();
   }
   function updateActions(){
     const readiness=draft?publicationReadiness(draft.findings,draft.acknowledged):{ready:false};
     $("saveDocumentReview").disabled=busy||!draft;
     $("generateSheet").disabled=busy||!draft;
+    $("locationReport").disabled=busy||!draft;
     $("publishReviewedLoad").disabled=busy||!draft||draft.state!=="aprobada"||!readiness.ready;
     $("reviewReadiness").textContent=!draft?"":readiness.ready?"Documento listo para aprobar y publicar.":readiness.errors?.length
       ?readiness.errors.length+" error(es) bloqueante(s).":"Confirma todas las advertencias para continuar.";
@@ -253,6 +260,34 @@ export function createAdminController({client,getUser,bucket,global,errorText,on
       await refreshAttention();
     }catch(error){setStatus("No se pudo guardar la revisión: "+errorText(error),"error");}
     finally{setBusy(false);updateActions();}
+  }
+  function showLocationReport(){
+    if(!draft)return;
+    const issues=draft.findings.filter(item=>item.code==="missing_location");
+    const paper=$("reportPaper");paper.replaceChildren();
+    const heading=document.createElement("h2");heading.textContent="Incidencias de ubicación · "+draft.parsed.id;
+    const note=document.createElement("p");note.textContent="Informe para revisar y corregir manualmente en Business Central. KONTROLA no modifica BC.";
+    const count=document.createElement("p");count.textContent="Almacén: "+warehouseZone(draft.parsed.warehouse).label+" · Referencias sin ubicación: "+issues.length;
+    paper.append(heading,note,count);
+    const table=document.createElement("table");
+    const head=document.createElement("thead"),hr=document.createElement("tr");
+    for(const label of ["Línea","Referencia","Descripción","Cantidad","Unidad","Ubicación en BC / observaciones"]){
+      const th=document.createElement("th");th.textContent=label;hr.appendChild(th);
+    }
+    head.appendChild(hr);table.appendChild(head);
+    const body=document.createElement("tbody");
+    for(const issue of issues){
+      const product=draft.parsed.products[issue.line-1]||{};
+      const tr=document.createElement("tr");
+      for(const value of [issue.line,product.sku||"",product.description||"",product.qty??"",product.unit||"","________________"]){
+        const td=document.createElement("td");td.textContent=String(value);tr.appendChild(td);
+      }
+      body.appendChild(tr);
+    }
+    table.appendChild(body);paper.appendChild(table);
+    if(!issues.length){const p=document.createElement("p");p.textContent="No hay ubicaciones pendientes en esta revisión.";paper.appendChild(p);}
+    $("reportTitle").textContent="Ubicaciones pendientes · "+draft.parsed.id;
+    $("reportView").hidden=false;document.body.classList.add("report-open");window.scrollTo(0,0);
   }
   function showReport(){
     if(!draft)return;
@@ -389,6 +424,7 @@ export function createAdminController({client,getUser,bucket,global,errorText,on
   $("processPdf").addEventListener("click",processPdf);
   $("saveDocumentReview").addEventListener("click",saveReview);
   $("generateSheet").addEventListener("click",showReport);
+  $("locationReport").addEventListener("click",showLocationReport);
   $("publishReviewedLoad").addEventListener("click",publish);
   $("adminWarehouse").addEventListener("change",()=>Promise.all([refreshAttention(),refreshSummary(),operatorStats.refresh(),printBatch.refresh()]));
   $("reloadAttention").addEventListener("click",refreshAttention);

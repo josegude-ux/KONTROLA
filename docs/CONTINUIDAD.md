@@ -319,3 +319,9 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 ## 2026-10-25 — Pendientes abre revisión real
 - `src/admin.mjs`: al pulsar una importación pendiente, cambia automáticamente a Importar PDF, carga la revisión seleccionada y desplaza la pantalla a ella. Antes se cargaba en un panel oculto, sin feedback visible.
 - No publica ni aprueba documentos. Pendiente CI/despliegue.
+
+## 2026-10-25 — Revisión compacta e informe BC bajo demanda
+- Se eliminan las fichas y campos de edición de líneas en la pantalla de revisión. Se muestra un resumen de referencias, ubicaciones pendientes y otros avisos.
+- Avisos de ubicaciones agrupados en una única confirmación; se conservan todos los hallazgos originales para trazabilidad y la validación de publicación.
+- Nuevo botón «Informe ubicaciones BC»: tabla imprimible y descargable en HTML con línea, SKU, descripción, cantidad, unidad y espacio para anotaciones. Corrección exclusivamente manual en Business Central.
+- No se modifica BC, ni se publican cargas, ni se alteran datos ya guardados. Pruebas/despliegue pendientes.
