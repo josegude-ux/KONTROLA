@@ -16,3 +16,8 @@ test("archivo rechaza verificacion sin lineas",()=>assert.match(sql,/not exists\
 test("archivo comprueba preparaciones abiertas",()=>assert.match(sql,/p\.fin is null/));
 test("archivo comprueba avisos activos",()=>assert.match(sql,/a\.activo=true/));
 test("archivo conserva eventos al restaurar",()=>assert.match(sql,/case when p_archivar then 'archivar' else 'restaurar' end/));
+
+test("archivo solo acepta cargas cerradas",()=>assert.match(sql,/v_c\.estado is distinct from 'cerrada'/));
+test("archivo requiere fecha de cierre",()=>assert.match(sql,/v_c\.cerrada_en is null/));
+test("archivo no archiva verificaciones en curso",()=>assert.match(sql,/v\.estado is distinct from 'finalizada' or v\.fin is null/));
+test("restauracion queda auditada",()=>assert.match(sql,/restaurado_en=now\(\),restaurado_por=v_user/));

@@ -472,3 +472,7 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 ### Revisión de estados de incidencias
 - El esquema real limita estados a `pendiente`, `descartada` y `regularizada`. La política de archivo bloquea incidencias `pendiente`; las descartadas se consideran resueltas y no deben bloquear archivo por sí solas.
 - SQL y prueba estática ajustados en la rama propuesta. No aplicado en Supabase.
+
+### Validación de estados reales de verificación
+- Confirmado en las restricciones de Supabase que los únicos estados son `en_curso` y `finalizada`, con `fin` obligatorio para finalizada. Coinciden con las comprobaciones de la propuesta SQL.
+- Añadidas pruebas estáticas para carga cerrada, fecha de cierre, verificaciones en curso y auditoría de restauración. Pendiente CI y ejecución SQL real.
