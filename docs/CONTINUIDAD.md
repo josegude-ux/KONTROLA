@@ -552,3 +552,10 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 - KONTROLA referencia esos archivos públicos directamente sin modificarlos: Preparación inventario, Verificación consulta, Control de Cargas gestión de almacén y Administración gestión más engranaje. El código de INVENTA no se modifica.
 - CSS replica la proporción de las tarjetas de INVENTA. La caché SW v057 intenta conservar los recursos externos para uso sin conexión después de la primera carga; si la red impide precargarlos, no bloquea la instalación. NOTA: las ilustraciones dependen de su URL pública original; pendiente de copia binaria local si se requiere independencia total.
 - Preservados los ID, funciones, permisos y datos. PWA v0.3.26, pruebas y documentación actualizadas en mismo commit.
+
+### 2026-10-25 — Ilustraciones 3D exclusivas KONTROLA v0.3.27
+- Por decisión del usuario, no se reutilizan imágenes de INVENTA ni se repite la misma ilustración en diferentes tarjetas: se han creado cuatro escenas 3D nuevas y distintas.
+- Nuevas ilustraciones WebP con transparencia en `assets/home/kontrola-{preparacion,verificacion,control-cargas,administracion}-3d.webp`: picking con escáner, inspección de mercancía, expedición con camión y panel administrativo.
+- Se elimina del HTML toda referencia a los recursos WebP remotos de INVENTA; en la PWA se sustituye la precarga remota por precarga local en la caché `kontrola-integral-v058`. Las cuatro imágenes se sirven sin conexión tras la instalación.
+- Se conservan identificadores de botones, control de permisos, selección de almacén, rutas y operaciones. Tests exigen cuatro archivos WebP reales con contenido diferente y precarga en el Service Worker.
+- Actualización v0.3.27 de `version.json`, `src/config.mjs`, `index.html`, `package.json` y `package-lock.json` y documentación en el mismo commit. Supabase e INVENTA no se modifican.

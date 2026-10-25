@@ -163,12 +163,12 @@ footer{padding:18px;text-align:center;background:#fff;border-top:1px solid #e6e8
 @media(max-width:540px){#homeView .inventa-inspired-home .feature{min-height:165px;padding:19px 20px;border-radius:21px}#homeView .inventa-inspired-home .feature b{font-size:24px}#homeView .inventa-inspired-home .feature small{font-size:13px}#homeView .inventa-inspired-home .feature-icon{font-size:78px}#homeView .inventa-inspired-home .feature-copy{max-width:60%}#homeView .inventa-inspired-home .feature-art{flex-basis:35%}}
 @media(prefers-reduced-motion:reduce){#homeView .inventa-inspired-home .feature{transition:none}}
 
-/* Objetos tridimensionales locales en lugar de emojis; portada al estilo de INVENTA. */
+/* Ilustraciones 3D locales de almacén, sin iconos emoji. */
 #homeView .inventa-inspired-home .feature-art-glow{display:none}
 #homeView .inventa-inspired-home .feature-illustration{position:relative;z-index:2;width:min(100%,285px);height:auto;aspect-ratio:5/4;object-fit:contain;filter:drop-shadow(0 8px 5px #24314318);pointer-events:none;user-select:none}
 @media(max-width:540px){#homeView .inventa-inspired-home .feature-illustration{width:100%;min-width:110px}}
 
-/* Reutilizar los WEBP originales de INVENTA: proporciones y acabados coincidentes. */
+/* Portada con proporciones visuales coherentes con INVENTA e ilustraciones propias de KONTROLA. */
 #homeView .inventa-inspired-home{max-width:720px;gap:17px}
 #homeView .inventa-inspired-home .feature{min-height:194px;border-radius:25px;padding:24px;box-shadow:0 12px 24px #18304a0b}
 #homeView .inventa-inspired-home .feature-pink{background:linear-gradient(115deg,#fff1ef,#f9d9da)}
@@ -180,3 +180,9 @@ footer{padding:18px;text-align:center;background:#fff;border-top:1px solid #e6e8
 #homeView .inventa-inspired-home .feature-illustration{position:absolute;inset:0;width:100%;height:100%;aspect-ratio:auto;object-fit:contain;filter:drop-shadow(0 12px 12px #18263a12)}
 #homeView .inventa-inspired-home .feature-management-gear{position:absolute;z-index:3;right:8%;bottom:3%;width:22%;height:auto;filter:drop-shadow(0 7px 5px #18263a25);pointer-events:none}
 @media(max-width:540px){#homeView .inventa-inspired-home .feature{min-height:175px;padding:20px}#homeView .inventa-inspired-home .feature-copy{max-width:55%;width:55%}#homeView .inventa-inspired-home .feature-art{right:-3%;width:53%}#homeView .inventa-inspired-home .feature-illustration{min-width:0;width:100%}}
+
+/* KONTROLA 0.3.27: imágenes 3D propias, únicas y con fundido transparente sobre las tarjetas. */
+#homeView .inventa-inspired-home .feature-art{overflow:hidden;border-radius:0 23px 23px 0;right:0;bottom:0;width:54%;height:100%}
+#homeView .inventa-inspired-home .feature-illustration{inset:0;width:100%;height:100%;object-fit:contain;filter:none;mix-blend-mode:normal}
+#homeView .inventa-inspired-home .feature-copy{width:50%;max-width:50%}
+@media(max-width:540px){#homeView .inventa-inspired-home .feature-art{width:54%;right:0}#homeView .inventa-inspired-home .feature-copy{width:53%;max-width:53%}#homeView .inventa-inspired-home .feature-illustration{width:100%;height:100%;object-fit:contain}}
