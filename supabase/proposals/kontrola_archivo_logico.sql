@@ -51,3 +51,18 @@ begin
 end $fn$;
 revoke all on function public.kontrola_cambiar_archivo(text,boolean) from public,anon;
 grant execute on function public.kontrola_cambiar_archivo(text,boolean) to authenticated;
+
+-- Consulta administrativa de cargas archivadas; respeta el acceso por almacén.
+create or replace function public.kontrola_listar_archivadas()
+returns table(codigo text, fecha date, almacen text, archivado_en timestamptz, archivado_por uuid, restaurado_en timestamptz, restaurado_por uuid)
+language plpgsql security definer set search_path = '' as $fn$
+begin
+ if auth.uid() is null or not public.kontrola_es_administrador() then
+  raise exception 'Solo administración' using errcode='42501';
+ end if;
+ return query select c.codigo,c.fecha,c.almacen,c.archivado_en,c.archivado_por,c.restaurado_en,c.restaurado_por
+ from public.kontrola_cargas c where c.archivado=true and public.kontrola_puede_almacen(c.almacen)
+ order by c.archivado_en desc nulls last;
+end $fn$;
+revoke all on function public.kontrola_listar_archivadas() from public,anon;
+grant execute on function public.kontrola_listar_archivadas() to authenticated;

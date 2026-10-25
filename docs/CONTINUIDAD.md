@@ -464,3 +464,7 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 
 ### 2026-10-25 — Ampliación de contrato SQL
 - Añadidas comprobaciones estáticas de verificación sin líneas, preparaciones abiertas, avisos activos y auditoría de restauración. Pendiente CI y pruebas SQL reales.
+
+### 2026-10-25 — Consulta administrativa de archivadas preparada
+- Añadida a la propuesta SQL la RPC `kontrola_listar_archivadas()`, solo administración y filtrada por almacenes autorizados.
+- Aún no aplicada en Supabase; debe probarse junto con la migración antes de usarla.
