@@ -445,3 +445,9 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 - Pestaña Archivo de cargas: código, archivar y restaurar, confirmación, errores y bloqueo durante la solicitud.
 - Llama a RPC `kontrola_cambiar_archivo` solo cuando el administrador actúa; si falta la RPC, muestra error sin afirmar éxito.
 - Backend de PR #11 sigue siendo propuesta sin aplicar. Pendiente consulta de archivadas, pruebas y despliegue.
+
+### 2026-10-25 — Rama de integración de archivo (sin despliegue)
+- Se ha consolidado `src/admin.mjs` e `index.html` de `feat/admin-archivo-ui-20261025`, backend SQL propuesto y las pruebas de `feat/archivo-rpc-segura-20261025`.
+- Corrección preventiva: no archivar antes de 90 días desde la última actualización de una incidencia, aunque `cerrada_en` sea anterior. Este criterio conservador protege regularizaciones posteriores.
+- La migración sigue en `supabase/proposals/` y NO se aplica automáticamente en CI ni Supabase; pendiente validar SQL real, RPC de panel y autorización.
+- No realizar borrado automático, no modificar INVENTA ni MOVENTA.

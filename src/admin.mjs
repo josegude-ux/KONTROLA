@@ -506,7 +506,7 @@ export function createAdminController({client,getUser,bucket,global,errorText,on
     ()=>{$("revisionCode").focus();},
     ()=>{},
     ()=>refreshSummary(),
-    ()=>{}
+    ()=>refreshArchivedLoads()
   ];
   for(const button of document.querySelectorAll("[data-admin-tab]"))button.addEventListener("click",async()=>{
     const index=Number(button.dataset.adminTab);
@@ -528,6 +528,19 @@ export function createAdminController({client,getUser,bucket,global,errorText,on
   }
   $("archiveLoad").addEventListener("click",()=>changeArchive(true));
   $("restoreLoad").addEventListener("click",()=>changeArchive(false));
+  async function refreshArchivedLoads(){
+    const target=$("archivedLoadsList");target.textContent="Consultando cargas archivadas…";
+    try{
+      const {data,error}=await client.rpc("kontrola_listar_archivadas");
+      if(error)throw error;
+      const rows=Array.isArray(data)?data:[];
+      if(!rows.length){target.textContent="No hay cargas archivadas disponibles para este almacén.";return;}
+      const table=document.createElement("table");const head=document.createElement("tr");
+      for(const label of ["Código","Fecha","Almacén","Archivada el"]){const th=document.createElement("th");th.textContent=label;head.appendChild(th);}const thead=document.createElement("thead");thead.appendChild(head);table.appendChild(thead);
+      const tbody=document.createElement("tbody");for(const row of rows){const tr=document.createElement("tr");for(const value of [row.codigo,row.fecha,row.almacen,row.archivado_en]){const td=document.createElement("td");td.textContent=value==null?"":String(value);tr.appendChild(td);}tbody.appendChild(tr);}table.appendChild(tbody);target.replaceChildren(table);
+    }catch(error){target.textContent="No se pudieron consultar las archivadas: "+errorText(error);}
+  }
+  $("refreshArchived").addEventListener("click",refreshArchivedLoads);
   async function open(){
     selectAdminTab(0);
     await Promise.all([refreshAttention(),refreshPendingPublish(),refreshReviewSelector(),refreshSummary(),refreshIncidents(),operatorStats.refresh(),printBatch.refresh()]);
