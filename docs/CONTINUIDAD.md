@@ -482,3 +482,7 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 - `src/app.mjs` consulta este estado junto con las RPC de panel existentes, superpone `archivado` por código y filtra cargas activas. Historial conserva todas y marca cuáles están archivadas.
 - Si falla alguna RPC, los listados fallan de forma segura, evitando mostrar cargas archivadas como activas. Requiere aplicar backend antes de fusionar desplegar esta interfaz.
 - Pendiente CI aislado; Supabase real sin modificar.
+
+### Pruebas SQL de visibilidad por archivo
+- `tests/integration/archive.sql` comprueba la RPC `kontrola_codigos_archivados` en los estados archivado y restaurado de una carga real dentro de la base temporal.
+- No hay cambios en Supabase real. Pendiente validación CI del último commit.
