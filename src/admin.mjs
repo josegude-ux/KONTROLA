@@ -153,6 +153,7 @@ export function createAdminController({client,getUser,bucket,global,errorText,on
     }finally{
       setBusy(false);
       $("pdfInput").value="";
+    $("reviewLoadSelect").replaceChildren();$("reviewLoadMessage").textContent="";
     }
   }
   async function loadImport(id){
@@ -178,7 +179,45 @@ export function createAdminController({client,getUser,bucket,global,errorText,on
       findings:data.hallazgos||[],acknowledged:data.advertencias_confirmadas?(data.hallazgos||[]).filter(item=>item.severity==="warning").map(item=>item.id):[]
     };
     renderDraft();
+    $("reviewLoadSelect").value=data.id;
   }
+  async function refreshReviewSelector(){
+    const select=$("reviewLoadSelect"),message=$("reviewLoadMessage");
+    const previous=select.value||draft?.id||"";
+    const warehouse=$("adminWarehouse").value,session=getUser()?.id;
+    message.textContent="Consultando cargas pendientes…";
+    const {data,error}=await client.from("kontrola_importaciones")
+      .select("id,codigo,estado,almacen_detectado,actualizado_en")
+      .in("estado",["revision_requerida","aprobada"])
+      .order("actualizado_en",{ascending:false}).limit(150);
+    if(getUser()?.id!==session||$("adminWarehouse").value!==warehouse)return;
+    select.replaceChildren();
+    const initial=document.createElement("option");initial.value="";initial.textContent="Seleccionar carga…";select.appendChild(initial);
+    if(error){message.textContent="No se pudieron consultar las cargas: "+errorText(error);return;}
+    const rows=(data||[]).filter(row=>!warehouse||row.almacen_detectado===warehouse||!row.almacen_detectado);
+    for(const row of rows){
+      const option=document.createElement("option");option.value=row.id;
+      option.textContent=row.codigo+" · "+(row.estado==="aprobada"?"Aprobada":"Pendiente de revisión");
+      select.appendChild(option);
+    }
+    if(rows.some(row=>row.id===previous))select.value=previous;
+    message.textContent=rows.length+" carga(s) disponibles para revisar.";
+  }
+  $("reviewLoadSelect").addEventListener("change",async()=>{
+    const id=$("reviewLoadSelect").value;
+    if(!id||busy)return;
+    if(draft?.id===id)return;
+    if(draft&&draft.state!=="publicada"&&!window.confirm(
+      "Si has realizado cambios sin guardar en esta revisión, se perderán al cambiar de carga. ¿Continuar?"
+    )){$("reviewLoadSelect").value=draft.id||"";return;}
+    $("reviewLoadSelect").disabled=true;
+    try{
+      await loadImport(id);
+      setStatus("Revisión cargada. Puedes continuar sin salir de este menú.","success");
+    }catch(error){setStatus("No se pudo cambiar de carga: "+errorText(error),"error");}
+    finally{$("reviewLoadSelect").disabled=false;}
+  });
+  $("reviewLoadRefresh").addEventListener("click",refreshReviewSelector);
   function renderDraft(){
     const root=$("documentReview");root.replaceChildren();
     if(!draft){root.textContent="Procesa un PDF para iniciar la revisión.";return;}
@@ -412,7 +451,7 @@ export function createAdminController({client,getUser,bucket,global,errorText,on
   });
   async function open(){
     selectAdminTab(0);
-    await Promise.all([refreshAttention(),refreshSummary(),refreshIncidents(),operatorStats.refresh(),printBatch.refresh()]);
+    await Promise.all([refreshAttention(),refreshReviewSelector(),refreshSummary(),refreshIncidents(),operatorStats.refresh(),printBatch.refresh()]);
   }
   function clearSensitive(){
     draft=null;busy=false;
@@ -433,8 +472,8 @@ export function createAdminController({client,getUser,bucket,global,errorText,on
   $("goToBatchPrint").addEventListener("click",()=>{selectAdminTab(2);printBatch.refresh();});
   $("locationReport").addEventListener("click",showLocationReport);
   $("publishReviewedLoad").addEventListener("click",publish);
-  $("adminWarehouse").addEventListener("change",()=>Promise.all([refreshAttention(),refreshSummary(),operatorStats.refresh(),printBatch.refresh()]));
-  $("reloadAttention").addEventListener("click",refreshAttention);
+  $("adminWarehouse").addEventListener("change",()=>Promise.all([refreshAttention(),refreshReviewSelector(),refreshSummary(),operatorStats.refresh(),printBatch.refresh()]));
+  $("reloadAttention").addEventListener("click",()=>Promise.all([refreshAttention(),refreshReviewSelector()]));
   $("reloadIncidents").addEventListener("click",refreshIncidents);
   $("printReport").addEventListener("click",()=>window.print());
   $("downloadReport").addEventListener("click",()=>{

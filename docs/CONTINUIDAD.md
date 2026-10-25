@@ -379,3 +379,9 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 - `src/logic.mjs`: función compartida `ordenarLineasPasillo` y aplicación en `agruparPasillos`; `src/report.mjs`: el informe impreso aplica exactamente el mismo orden.
 - Pruebas en `tests/logic.test.mjs` y `tests/report.test.mjs`. No se alteran cantidades, pasillos, estados, BC ni Supabase.
 - Pendiente CI y despliegue.
+
+## 2026-10-25 — Selector directo de revisiones en Importar PDF
+- Se añade un selector compacto «Cambiar de carga pendiente» sobre la revisión, con actualización manual. Carga directamente revisiones pendientes o aprobadas del almacén activo, sin volver al listado ni cambiar de pestaña.
+- Los cambios sin guardar se advierten antes de abandonar una revisión. La selección nunca publica ni guarda automáticamente. Solo carga el registro elegido y mantiene el resto de flujos.
+- `src/admin.mjs`, `index.html`; selector refrescado al abrir administración y cambiar almacén. No hay cambios en Supabase ni otras aplicaciones.
+- Pendiente CI y despliegue.
