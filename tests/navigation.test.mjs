@@ -42,12 +42,12 @@ test("La navegación conserva los accesos previos y los regresos al submenú",()
 
 test("La versión y el caché están preparados para instalar nuevas pantallas",()=>{
   const version=JSON.parse(read("version.json")).version;
-  assert.equal(version,"0.3.22");
+  assert.equal(version,"0.3.23");
   assert.equal(JSON.parse(read("package.json")).version,version);
   assert.equal(JSON.parse(read("package-lock.json")).version,version);
-  assert.match(read("src/config.mjs"),/APP_VERSION="0\.3\.22"/);
-  assert.match(html,/id="appVersion">0\.3\.22</);
-  assert.match(read("sw.js"),/kontrola-integral-v053/);
+  assert.match(read("src/config.mjs"),/APP_VERSION="0\.3\.23"/);
+  assert.match(html,/id="appVersion">0\.3\.23</);
+  assert.match(read("sw.js"),/kontrola-integral-v054/);
 });
 
 test("Las consultas descartan respuestas de sesiones o almacenes anteriores",()=>{
@@ -67,4 +67,15 @@ test("El historial exporta CSV e imprime solo registros filtrados",()=>{
   assert.match(app,/csvHistorial\(records,selectedWarehouse\)/);
   assert.match(app,/htmlResumenHistorial\(records,/);
   assert.match(read("sw.js"),/\.\/src\/history\.mjs/);
+});
+
+test("Mi actividad muestra solo contadores, sin listado de eventos con fecha y hora",()=>{
+ assert.match(html,/id="operatorSummary"/);
+ assert.doesNotMatch(html,/id="operatorActivity"/);
+ const start=app.indexOf("async function refreshOperatorDashboard()");
+ const end=app.indexOf("async function initialize()",start);
+ assert.ok(start>=0&&end>start);
+ const dashboard=app.slice(start,end);
+ assert.match(dashboard,/kontrola_resumen_zona/);
+ assert.doesNotMatch(dashboard,/kontrola_actividad|creado_en|toLocaleString/);
 });

@@ -101,10 +101,7 @@ async function selectWarehouse(code,context="home"){
 async function refreshOperatorDashboard(){
   if(!client||!user||!selectedWarehouse)return;
   const warehouse=selectedWarehouse,userId=user.id;
-  const [{data:summary,error},{data:activity,error:activityError}]=await Promise.all([
-    client.rpc("kontrola_resumen_zona",{p_almacen:warehouse,p_dia:fechaAlmacen()}),
-    client.from("kontrola_actividad").select("tipo,codigo,creado_en,detalle").eq("almacen",warehouse).order("creado_en",{ascending:false}).limit(20)
-  ]);
+  const {data:summary,error}=await client.rpc("kontrola_resumen_zona",{p_almacen:warehouse,p_dia:fechaAlmacen()});
   if(!validRequest(warehouse,userId))return;
   if(error)throw error;
   const values=Array.isArray(summary)?summary[0]:summary,target=$("operatorSummary");target.replaceChildren();
@@ -112,10 +109,6 @@ async function refreshOperatorDashboard(){
     const card=document.createElement("div");card.className="fact";const small=document.createElement("small"),strong=document.createElement("b");
     small.textContent=label;strong.textContent=Number(values?.[key]||0);card.append(small,strong);target.appendChild(card);
   }
-  const log=$("operatorActivity");log.replaceChildren();
-  if(activityError){log.textContent=errorText(activityError);return;}
-  if(!activity?.length){log.textContent="Todavía no hay actividad registrada.";return;}
-  for(const event of activity){const row=document.createElement("p");row.textContent=new Date(event.creado_en).toLocaleString("es-ES")+" · "+event.tipo+" · "+(event.codigo||"");log.appendChild(row);}
 }
 async function initialize(){
   status("authMessage","Conectando con el servidor…");

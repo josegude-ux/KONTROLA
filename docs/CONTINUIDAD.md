@@ -529,3 +529,9 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 - `src/report.mjs` agrega una fila **TOTAL PASILLO** después de cada grupo, con número de referencias y suma de cantidades separada por unidad (CAJA, BOTELLA, etc.), sin mezclar unidades incompatibles.
 - Mantiene el orden de mercancía, el filtro de cantidades positivas y el detalle original. La fila se imprime en iPhone/Android/Windows con `styles.css`, sin alterar PDFs BC ni datos persistidos.
 - Pruebas en `tests/report.test.mjs` para varios pasillos, unidades mixtas, decimales, cero y escape HTML.
+
+### 2026-10-25 — Mi actividad sin detalle de eventos y PWA 0.3.23
+- Se elimina del inicio el detalle con fecha, hora y código de las últimas operaciones bajo «Mi actividad»; permanecen los cuatro contadores de disponibles, en preparación, por verificar y cerradas.
+- `refreshOperatorDashboard` deja de consultar `kontrola_actividad` en esa pantalla. No se borra ni altera ningún evento almacenado ni el historial administrativo.
+- `tests/navigation.test.mjs` comprueba que solo queda el resumen y se eliminó la consulta de eventos del inicio.
+- Versión 0.3.23 y caché v054 para publicar la mejora, junto a los subtotales ya integrados, en los dispositivos instalados.
