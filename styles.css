@@ -81,3 +81,10 @@ footer{padding:18px;text-align:center;background:#fff;border-top:1px solid #e6e8
 .revision-changes h4{font-size:14px;margin:0 0 7px}
 .revision-changes ul{padding-left:18px;margin:0}.revision-changes li{font-size:13px;line-height:1.6;padding:3px 0}
 @media(max-width:520px){.revision-entry{align-items:stretch;flex-direction:column}.revision-entry button{width:100%}.revision-selectors{grid-template-columns:1fr}}
+
+/* Tabla de actividad por operario, adaptada a móvil sin deformar la página. */
+.operator-stats-scroll{width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;margin-top:12px}
+.operator-stats-table{border-collapse:collapse;width:100%;min-width:660px;font-size:13px}
+.operator-stats-table th,.operator-stats-table td{text-align:left;padding:10px 9px;border-bottom:1px solid #e2e8ef;white-space:nowrap}
+.operator-stats-table th{background:#eff4f8;color:#0B2647;font-weight:750}
+.operator-stats-table tr:nth-child(even){background:#f9fbfd}
