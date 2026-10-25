@@ -141,16 +141,16 @@
         <p class="muted">Este procedimiento es manual. KONTROLA no envía documentos ni elimina versiones automáticamente.</p>
       </section>
       <section class="panel" id="batchPrintPanel">
-        <div class="line"><div><h2>Imprimir varias hojas procesadas</h2><p class="muted">Selecciona hasta 10 cargas del almacén. Se agrupan las hojas procesadas en un único informe. Los PDF originales no se modifican.</p></div><button id="batchPrintRefresh" type="button" class="secondary">Actualizar</button></div>
+        <div class="line"><div><h2>Imprimir varias hojas procesadas</h2><p class="muted">Selecciona hasta 20 cargas del almacén. Se agrupan las hojas procesadas en un único informe. Los PDF originales no se modifican.</p></div><button id="batchPrintRefresh" type="button" class="secondary">Actualizar</button></div>
         <div id="batchPrintStatus" class="status" role="status" aria-live="polite"></div>
         <div class="archive-range-fields">
           <label>Desde (opcional)<input id="batchPrintFrom" type="date"></label>
           <label>Hasta (opcional)<input id="batchPrintTo" type="date"></label>
         </div>
-        <p class="hint">Elige el periodo que archivarás en OneDrive. Solo podrás seleccionar hasta 10 hojas por documento; si hay más, prepara varios lotes.</p>
+        <p class="hint">Elige el periodo que archivarás en OneDrive. Podrás seleccionar hasta 20 hojas por documento. El botón de grupos avanza de 20 en 20; guarda cada PDF antes de continuar.</p>
         <p class="hint" id="batchArchiveName" aria-live="polite"></p>
         <div id="batchPrintList" class="batch-print-list"></div>
-        <button id="batchPrintSelectVisible" type="button" class="secondary">Seleccionar hasta 10 cargas del periodo</button>
+        <button id="batchPrintSelectVisible" type="button" class="secondary">Seleccionar siguiente grupo de hasta 20 cargas</button>
         <button id="batchPrintOpen" type="button" class="primary" disabled>Preparar impresión de hojas seleccionadas</button>
       </section>
       <section class="panel" id="operatorStatsPanel">
