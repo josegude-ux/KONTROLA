@@ -366,3 +366,10 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 - `src/admin.mjs`: el bloque posterior solo se muestra cuando la carga está publicada; no permite generar la hoja antes de publicar. El acceso a lotes abre directamente la pestaña de impresión y actualiza las cargas.
 - Se ocultan los botones de guardar/publicar ya ejecutados para evitar confusión. Sin publicación automática ni cambios en BC.
 - Pendiente CI y despliegue.
+
+## 2026-10-25 — Bultos de Business Central (extracción y persistencia)
+- Analizados diez PDF reales de BC. El total de bultos es la primera cifra del renglón «TOTAL:» de MERCANCÍA, excluyendo las columnas de devoluciones y los bloques CONTROL ENVASES/PALETS. Un PDF puede tener varios almacenes, por lo que se conserva el desglose por almacén.
+- Migración aplicada a Supabase `kontrola_bultos_bc_total_mercancia`: campo `kontrola_cargas.bultos`, restricción no negativo, recuperación segura de cargas ya publicadas mediante importación vigente verificada y hash coincidente, trigger para nuevas publicaciones, RPC compatible `kontrola_panel_cargas_v2` (la original permanece).
+- `src/core.mjs`: `bultos` explícitos a partir de `declaredTotal` calculado por coordenadas en el bloque MERCANCÍA; `src/admin.mjs`: se transporta al JSON de importación; `src/app.mjs` y `src/admin-print-batch.mjs`: consulta de RPC v2, con bultos visibles en tarjetas.
+- No se cambian PDF originales, cantidades, revisiones, estados ni procesos de otras aplicaciones. Sin datos contrastados se muestra «—».
+- Verificar CI y publicación GitHub Pages.

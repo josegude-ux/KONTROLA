@@ -63,6 +63,8 @@ export function parseDocumentPages(pages, fileName='Documento.pdf', options={}) 
  id=id||fileName.replace(/\.pdf$/i,'');
  const weight=numeric(extract(/Peso\s*carga\s*:?\s*([\d.]+,\d+|\d+(?:\.\d+)?)/i));
  const refs=numeric(extract(/Total\s*referencias\s*prod\.?\s*:?\s*(\d+)/i));
+ // «TOTAL» del bloque MERCANCÍA de BC: bultos, no referencias ni devoluciones.
+ // La lectura por coordenadas de declaredTotal excluye CONTROL ENVASES y PALETS.
  const visits=numeric(extract(/N[º°o.]?\s*visitas\s*:?\s*(\d+)/i));
  const driver=(extract(/Repartidor\s*:\s*(.{1,65}?)(?=N[º°o.]?\s*copias|N[º°o.]?\s*visitas|Peso\s*carga|Almac[eé]n|$)/i)||'').trim();
  const plate=extract(/Matr[ií]cula\s*:?\s*([A-Z0-9-]{5,12})/i)||extract(/Cami[oó]n\s*:\s*CR(\d{4}[A-Z]{3})/i)||'';
@@ -146,7 +148,7 @@ export function parseDocumentPages(pages, fileName='Documento.pdf', options={}) 
  if(amountOK===false)warnings.push('Suma detectada: '+sum.toFixed(3)+' / declarada: '+declaredTotal);
  if(declaredTotal===null)warnings.push('No se pudo contrastar el total del PDF');
  const verified=countOK&&amountOK===true&&warnings.length===0;
- return {id,weight,refs,visits,driver,plate,palletsLarge,palletsSmall,date,route,source:fileName,products,declaredTotal,actualTotal:sum,verified,warnings,warehouse,warehouseKnown:KNOWN_WAREHOUSES.has(warehouse),mixedWarehouse,availableWarehouses:warehouses};
+ return {id,weight,refs,bultos:declaredTotal,visits,driver,plate,palletsLarge,palletsSmall,date,route,source:fileName,products,declaredTotal,actualTotal:sum,verified,warnings,warehouse,warehouseKnown:KNOWN_WAREHOUSES.has(warehouse),mixedWarehouse,availableWarehouses:warehouses};
 }
 export function summarize(products){
  const units={},aisles={},unlocated=[];

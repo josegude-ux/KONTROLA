@@ -64,7 +64,7 @@ export function configurarLoteImpresion({client,getUser,getWarehouse,errorText})
     if(!warehouse||!session){status.textContent="Selecciona almacén e inicia sesión.";return;}
     $("batchPrintRefresh").disabled=true;status.textContent="Consultando hojas procesadas…";
     try{
-      const {data,error}=await client.rpc("kontrola_panel_cargas",{p_almacen:warehouse});
+      const {data,error}=await client.rpc("kontrola_panel_cargas_v2",{p_almacen:warehouse});
       if(req!==seq||getUser()?.id!==session||getWarehouse()!==warehouse)return;
       if(error)throw error;
       const {data:prints,error:printError}=await client.rpc("kontrola_estado_impresion",{p_almacen:warehouse});

@@ -16,6 +16,7 @@ const hashFile=async file=>[...new Uint8Array(await crypto.subtle.digest("SHA-25
 const asPayload=parsed=>({
   codigo:parsed.id,fecha:fechaISO(parsed.date),matricula:parsed.plate||null,ruta:parsed.route||null,
   repartidor:parsed.driver||null,peso_kg:parsed.weight??null,referencias:parsed.refs??null,
+  bultos:parsed.bultos??null,
   almacen:parsed.warehouse,declared_total:parsed.declaredTotal??null,actual_total:parsed.actualTotal??null,
   parser_metadata:{
     verified:parsed.verified===true,warnings:Array.isArray(parsed.warnings)?parsed.warnings:[],
@@ -167,7 +168,7 @@ export function createAdminController({client,getUser,bucket,global,errorText,on
       id:data.id,hash:data.documento_hash,path:data.documento_ruta,state:data.estado,
       parsed:{
         id:payload.codigo,date:payload.fecha,plate:payload.matricula,route:payload.ruta,driver:payload.repartidor,
-        weight:payload.peso_kg,refs:payload.referencias,warehouse:payload.almacen,products:payload.productos,
+        weight:payload.peso_kg,refs:payload.referencias,bultos:payload.bultos??payload.declared_total,warehouse:payload.almacen,products:payload.productos,
         declaredTotal:payload.declared_total,actualTotal:payload.actual_total,
         verified:payload.parser_metadata?.verified,warnings:payload.parser_metadata?.warnings||[],
         mixedWarehouse:payload.parser_metadata?.mixed_warehouse,

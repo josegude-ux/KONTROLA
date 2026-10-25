@@ -156,7 +156,7 @@ $("loginForm").addEventListener("submit",async e=>{
 async function refreshLoads(){
   const warehouse=selectedWarehouse,userId=user?.id;
   loads=[];$("loadsList").textContent="Consultando cargas disponibles…";
-  const {data,error}=await client.rpc("kontrola_panel_cargas",{p_almacen:warehouse});
+  const {data,error}=await client.rpc("kontrola_panel_cargas_v2",{p_almacen:warehouse});
   if(!validRequest(warehouse,userId))return;
   if(error){$("loadsList").textContent="No se pueden cargar los documentos: "+errorText(error);throw error;}
   loads=ordenarCargas(data||[]);
