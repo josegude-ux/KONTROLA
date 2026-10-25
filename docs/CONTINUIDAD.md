@@ -7,7 +7,7 @@
 **Rama principal del desarrollo en curso:** cursor/verificacion-fisica-cargas-8ba0
 **PR de trabajo:** https://github.com/josegude-ux/KONTROLA/pull/2
 **PR de Fase 1:** https://github.com/josegude-ux/KONTROLA/pull/1
-**Versión del código de esta rama:** 0.3.18
+**Versión del código de esta rama:** 0.3.19
 
 > La aplicación funcional vive en ramas de desarrollo: main no debe tomarse como punto de partida para rehacerla. No fusionar a main ni aplicar migraciones a producción sin autorización.
 
@@ -191,3 +191,13 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 - `archive-period.mjs`: los nombres codifican de forma reversible todos los números de carga del grupo sin el prefijo `LP` ni el guion. Se ordenan, se validan y caben dentro de los 255 caracteres.
 - Los PDF son informes de **hojas procesadas**, no el original de Business Central. Los archivos aún deben guardarse manualmente en Archivos y trasladarse a la carpeta OneDrive autorizada, sin borrado automático.
 - Riesgo pendiente de prueba física: la impresión de 20 hojas con muchos productos podría ocupar más páginas o memoria en Safari. No declarar garantizada la impresión real hasta comprobarlo.
+
+
+## Protección del PDF frente a cambios concurrentes — v0.3.19
+
+- `src/archive-snapshot.mjs`: verificación pura de hasta veinte cargas antes de imprimir. Bloquea ausencias, códigos repetidos, almacenes distintos, ausencia de cantidades positivas y discrepancias entre datos seleccionados y datos recién recibidos.
+- `src/admin-print-batch.mjs`: **segunda RPC `kontrola_panel_cargas`** al pulsar preparar impresión; comprueba usuario/almacén/filtro/selección tras la respuesta y utiliza filas actuales para carátula y hojas. Si hay cambios, informa y obliga a actualizar.
+- Mejora de impresión en `index.html`: cabecera repetida en tablas multipágina, líneas de productos sin cortes intencionados.
+- `tests/archive-snapshot.test.mjs`: regresiones de lote vigente, cantidades, transporte, desaparición, almacenes, cero mercancía y formato de impresión.
+- No se cambia ni escribe información empresarial; el origen de los datos sigue siendo una RPC con comprobación de permisos. No se autoriza ninguna migración o despliegue.
+- Validar físicamente en iPhone tras la publicación autorizada de una versión de prueba, especialmente rendimiento con 20 cargas extensas y correcto archivado en OneDrive.
