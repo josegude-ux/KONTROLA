@@ -51,6 +51,8 @@ jobs:
           node --check src/admin-legacy.mjs
           node --check src/legacy-reconcile.mjs
           node --check src/admin-reconcile.mjs
+          node --check src/legacy-originals.mjs
+          node --check src/admin-originals.mjs
           node --check src/admin-print-batch.mjs
           node --check src/verification.mjs
           node --check src/document-review.mjs
