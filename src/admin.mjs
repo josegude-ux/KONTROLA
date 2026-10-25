@@ -1,9 +1,6 @@
 import {fechaAlmacen} from "./business-date.mjs";
 import {validarLotePdf,resumenLotePdf} from "./import-batch.mjs";
 import {configurarEstadisticasOperarios} from "./admin-stats.mjs";
-import {configurarAuditoriaLegacy} from "./admin-legacy.mjs";
-import {configurarConciliacionLegacy} from "./admin-reconcile.mjs";
-import {configurarInventarioOriginales} from "./admin-originals.mjs";
 import {configurarLoteImpresion} from "./admin-print-batch.mjs";
 import {analyzeDocument,applyLineCorrection,publicationReadiness,warehouseZone} from "./document-review.mjs";
 import {fechaISO} from "./logic.mjs";
@@ -40,9 +37,6 @@ export function buildReportDownloadHtml(title,styles,content){
 export function createAdminController({client,getUser,bucket,global,errorText,onPublished}){
   const revisionControl=configureRevisionHistory({client,getUser,bucket,errorText});
   const operatorStats=configurarEstadisticasOperarios({client,getUser,errorText,getWarehouse:()=>document.getElementById("adminWarehouse").value});
-  const legacyAudit=configurarAuditoriaLegacy({getUser,errorText});
-  const legacyReconcile=configurarConciliacionLegacy({client,getUser,getWarehouse:()=>document.getElementById("adminWarehouse").value,errorText});
-  const legacyOriginals=configurarInventarioOriginales({getUser,errorText});
   const printBatch=configurarLoteImpresion({client,getUser,errorText,getWarehouse:()=>document.getElementById("adminWarehouse").value});
   let busy=false,draft=null;
   const setStatus=(message="",level="")=>{
@@ -343,12 +337,11 @@ export function createAdminController({client,getUser,bucket,global,errorText,on
     }
   }
   async function open(){
-    legacyAudit.clear();legacyReconcile.clear();legacyOriginals.clear();
     await Promise.all([refreshAttention(),refreshSummary(),refreshIncidents(),operatorStats.refresh(),printBatch.refresh()]);
   }
   function clearSensitive(){
     draft=null;busy=false;
-    revisionControl.clear();operatorStats.clear();printBatch.clear();legacyAudit.clear();legacyReconcile.clear();legacyOriginals.clear();
+    revisionControl.clear();operatorStats.clear();printBatch.clear();
     for(const id of ["documentReview","attentionList","adminSummary","adminActivity",
       "incidentList","reviewReadiness","reportPaper"]){
       const element=$(id);if(element)element.replaceChildren();
@@ -361,7 +354,7 @@ export function createAdminController({client,getUser,bucket,global,errorText,on
   $("saveDocumentReview").addEventListener("click",saveReview);
   $("generateSheet").addEventListener("click",showReport);
   $("publishReviewedLoad").addEventListener("click",publish);
-  $("adminWarehouse").addEventListener("change",()=>{legacyReconcile.clear();return Promise.all([refreshAttention(),refreshSummary(),operatorStats.refresh(),printBatch.refresh()]);});
+  $("adminWarehouse").addEventListener("change",()=>Promise.all([refreshAttention(),refreshSummary(),operatorStats.refresh(),printBatch.refresh()]));
   $("reloadAttention").addEventListener("click",refreshAttention);
   $("reloadIncidents").addEventListener("click",refreshIncidents);
   $("printReport").addEventListener("click",()=>window.print());
