@@ -105,7 +105,7 @@ test("KONTROLA usa cuatro imágenes 3D exclusivas, distintas y precargadas sin c
    return bytes.toString("base64");
  });
  assert.equal(new Set(images).size,4,"No repetir diseños entre tarjetas");
- assert.doesNotMatch(html,/raw\\.githubusercontent\\.com\\/josegude-ux\\/INVENTA-/);
+ assert.equal(html.includes("raw.githubusercontent.com/josegude-ux/INVENTA-"),false);
  assert.doesNotMatch(read("sw.js"),/ORIGINAL_INVENTA_IMAGES/);
  for(const id of ["openPreparation","openReview","openCargas","openAdmin"]){
    assert.match(html,new RegExp('id="'+id+'"[^>]*class="feature'));

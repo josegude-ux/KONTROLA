@@ -559,3 +559,5 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 - Se elimina del HTML toda referencia a los recursos WebP remotos de INVENTA; en la PWA se sustituye la precarga remota por precarga local en la caché `kontrola-integral-v058`. Las cuatro imágenes se sirven sin conexión tras la instalación.
 - Se conservan identificadores de botones, control de permisos, selección de almacén, rutas y operaciones. Tests exigen cuatro archivos WebP reales con contenido diferente y precarga en el Service Worker.
 - Actualización v0.3.27 de `version.json`, `src/config.mjs`, `index.html`, `package.json` y `package-lock.json` y documentación en el mismo commit. Supabase e INVENTA no se modifican.
+
+- Ajuste de prueba: la ausencia de referencias externas de INVENTA se comprueba con cadena literal para evitar interpretaciones ambiguas de la barra `/` en expresiones regulares.
