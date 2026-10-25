@@ -57,8 +57,8 @@ test("usa SOLO una transacción de lectura y un cursor de claves",()=>{
   assert.doesNotMatch(source,/\.put\(|\.delete\(|\.clear\(|"readwrite"/);
   assert.doesNotMatch(view,/\.rpc\(|\.upload\(|\.from\(|fetch\(/);
   assert.match(view,/active!==current\|\|getUser\(\)\?\.id!==session/);
-  assert.match(admin,/legacyOriginals\.clear\(\)/);
-  assert.match(html,/id="legacyOriginalsScan"/);
+  assert.doesNotMatch(admin,/configurarInventarioOriginales|legacyOriginals/);
+  assert.doesNotMatch(html,/id="legacyOriginalsScan"/);
 });
 
 function fakeReadOnlyDatabase(file){
