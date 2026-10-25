@@ -3,7 +3,7 @@ on:
   push:
     branches: [desarrollo/fase-1-operario]
   pull_request:
-    branches: [main, desarrollo/fase-1-operario]
+    branches: [main, desarrollo/fase-1-operario, cursor/verificacion-fisica-cargas-8ba0]
 permissions:
   contents: read
 jobs:
