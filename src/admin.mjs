@@ -1,6 +1,7 @@
 import {fechaAlmacen} from "./business-date.mjs";
 import {validarLotePdf,resumenLotePdf} from "./import-batch.mjs";
 import {configurarEstadisticasOperarios} from "./admin-stats.mjs";
+import {configurarAuditoriaLegacy} from "./admin-legacy.mjs";
 import {analyzeDocument,applyLineCorrection,publicationReadiness,warehouseZone} from "./document-review.mjs";
 import {fechaISO} from "./logic.mjs";
 import {parsePdfFile} from "./pdf.mjs";
@@ -36,6 +37,7 @@ export function buildReportDownloadHtml(title,styles,content){
 export function createAdminController({client,getUser,bucket,global,errorText,onPublished}){
   configureRevisionHistory({client,getUser,bucket,errorText});
   const operatorStats=configurarEstadisticasOperarios({client,getUser,errorText,getWarehouse:()=>document.getElementById("adminWarehouse").value});
+  const legacyAudit=configurarAuditoriaLegacy({getUser,errorText});
   let busy=false,draft=null;
   const setStatus=(message="",level="")=>{
     const target=$("importStatus");target.textContent=message;target.className="status "+level;
@@ -331,6 +333,7 @@ export function createAdminController({client,getUser,bucket,global,errorText,on
     }
   }
   async function open(){
+    legacyAudit.clear();
     await Promise.all([refreshAttention(),refreshSummary(),refreshIncidents(),operatorStats.refresh()]);
   }
   $("processPdf").addEventListener("click",processPdf);
