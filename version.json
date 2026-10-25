@@ -1,4 +1,4 @@
 {
-  "version": "0.3.13",
-  "notes": "Conciliación local de copias JSON antiguas con el panel autorizado, sin migraciones ni modificaciones de datos."
+  "version": "0.3.14",
+  "notes": "Inventario voluntario de claves PDF almacenadas localmente en el navegador original; no lee ni altera los PDF."
 }
