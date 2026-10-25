@@ -1,15 +1,15 @@
 import {buildPreparationReport} from "./report.mjs";
 import {fechaAlmacen} from "./business-date.mjs";
-import {filtrarCargasArchivo,validarPeriodoArchivo,nombreSugeridoArchivo,portadaLoteArchivo} from "./archive-period.mjs";
+import {filtrarCargasArchivo,validarPeriodoArchivo,nombreSugeridoArchivo,portadaLoteArchivo,MAX_HOJAS_ARCHIVO} from "./archive-period.mjs";
 
 // Solo lectura; crea una vista imprimible a partir de las cargas autorizadas.
 // No incluye los PDF originales ni publica/actualiza documentos.
 const $=id=>document.getElementById(id);
 export function configurarLoteImpresion({client,getUser,getWarehouse,errorText}){
-  let rows=[],allRows=[],selected=new Set(),currentWarehouse="",currentSession=null,seq=0;
+  let rows=[],allRows=[],selected=new Set(),currentWarehouse="",currentSession=null,seq=0,nextGroupStart=0;
   const status=$("batchPrintStatus"),list=$("batchPrintList"),button=$("batchPrintOpen");
   function reset(){
-    rows=[];allRows=[];selected.clear();list.replaceChildren();button.disabled=true;
+    rows=[];allRows=[];selected.clear();nextGroupStart=0;list.replaceChildren();button.disabled=true;
     $("batchArchiveName").textContent="";
   }
   function render(){
@@ -30,8 +30,8 @@ export function configurarLoteImpresion({client,getUser,getWarehouse,errorText})
       const check=document.createElement("input");check.type="checkbox";
       check.checked=selected.has(load.codigo);
       check.addEventListener("change",()=>{
-        if(check.checked&&selected.size>=10){
-          check.checked=false;status.textContent="Puedes imprimir como máximo 10 hojas por lote.";return;
+        if(check.checked&&selected.size>=MAX_HOJAS_ARCHIVO){
+          check.checked=false;status.textContent="Puedes imprimir como máximo "+MAX_HOJAS_ARCHIVO+" hojas por lote.";return;
         }
         if(check.checked)selected.add(load.codigo);else selected.delete(load.codigo);
         button.disabled=selected.size===0;
@@ -69,7 +69,7 @@ export function configurarLoteImpresion({client,getUser,getWarehouse,errorText})
       status.textContent="Actualiza la lista antes de preparar la impresión.";return;
     }
     const chosen=rows.filter(row=>selected.has(row.codigo));
-    if(!chosen.length||chosen.length>10){status.textContent="Elige entre 1 y 10 hojas.";return;}
+    if(!chosen.length||chosen.length>MAX_HOJAS_ARCHIVO){status.textContent="Elige entre 1 y "+MAX_HOJAS_ARCHIVO+" hojas.";return;}
     const from=$("batchPrintFrom").value,to=$("batchPrintTo").value;
     try{validarPeriodoArchivo(from,to);}catch(error){status.textContent=error.message;return;}
     const date=fechaAlmacen();
@@ -85,17 +85,23 @@ export function configurarLoteImpresion({client,getUser,getWarehouse,errorText})
   for(const id of ["batchPrintFrom","batchPrintTo"]){
     $(id).addEventListener("change",()=>{
       if(allRows.length){
-        render();
+        nextGroupStart=0;render();
         status.textContent=rows.length+" carga(s) en el periodo seleccionado.";
       }
     });
   }
   $("batchPrintSelectVisible").addEventListener("click",()=>{
     if(!rows.length){status.textContent="No hay hojas visibles para seleccionar.";return;}
-    selected=new Set(rows.slice(0,10).map(row=>row.codigo));
+    // Cada pulsación avanza al siguiente grupo. No se considera archivado.
+    if(nextGroupStart>=rows.length)nextGroupStart=0;
+    const start=nextGroupStart;
+    selected=new Set(rows.slice(start,start+MAX_HOJAS_ARCHIVO).map(row=>row.codigo));
+    nextGroupStart=Math.min(rows.length,start+MAX_HOJAS_ARCHIVO);
     render();
-    status.textContent=selected.size+" hoja(s) seleccionada(s)."+
-      (rows.length>10?" Prepara otro lote para las "+(rows.length-10)+" restantes.":"");
+    const totalGroups=Math.ceil(rows.length/MAX_HOJAS_ARCHIVO);
+    const group=Math.floor(start/MAX_HOJAS_ARCHIVO)+1;
+    status.textContent="Grupo "+group+" de "+totalGroups+": "+selected.size+
+      " hoja(s) seleccionada(s). Genera y guarda este PDF antes de pasar al siguiente grupo.";
   });
   button.addEventListener("click",preview);
   return {refresh,clear:()=>{
