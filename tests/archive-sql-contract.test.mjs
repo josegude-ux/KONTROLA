@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import {readFileSync} from "node:fs";
-const sql=readFileSync(new URL("../supabase/proposals/kontrola_archivo_logico.sql",import.meta.url),"utf8");
+const sql=readFileSync(new URL("../supabase/migrations/20261031_kontrola_archivo_logico_seguro.sql",import.meta.url),"utf8");
 test("archivo requiere 90 dias desde cierre",()=>assert.match(sql,/cerrada_en>now\(\)-interval '90 days'/));
 test("archivo rechaza acciones nulas",()=>assert.match(sql,/p_archivar is null/));
 test("archivo restringido a administracion",()=>assert.match(sql,/kontrola_es_administrador\(\)/));

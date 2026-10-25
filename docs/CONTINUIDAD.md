@@ -486,3 +486,9 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 ### Pruebas SQL de visibilidad por archivo
 - `tests/integration/archive.sql` comprueba la RPC `kontrola_codigos_archivados` en los estados archivado y restaurado de una carga real dentro de la base temporal.
 - No hay cambios en Supabase real. Pendiente validación CI del último commit.
+
+### Archivo lógico — Migración desplegada y canonizada (25/10/2026)
+- Aplicada con éxito mediante el conector de Supabase al proyecto de pruebas `control-cargas-movil` (`oevetnszmfxeukcncwji`). Se verificaron 13 cargas existentes, 0 archivadas y 0 eventos de archivo tras la aplicación. Los cinco campos nuevos y las tres RPC están presentes.
+- Se incorpora copia canónica del SQL aplicado en `supabase/migrations/20261031_kontrola_archivo_logico_seguro.sql`, y el runner CI pasa a ejecutarlo dentro de las migraciones normales (seis en total), sin ejecución duplicada desde `supabase/proposals`.
+- Pruebas de PostgreSQL real aislado completadas previamente en PR #14; tras cambiar la ruta canónica se requiere CI nuevo. Operaciones autenticadas contra Supabase real no comprobadas aún.
+- No hay eliminación automática ni migración a INVENTA/MOVENTA.
