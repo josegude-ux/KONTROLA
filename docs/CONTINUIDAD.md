@@ -524,3 +524,8 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 \n### 2026-10-25 — Marcador ? de recogida no es incidencia\n- Confirmación de negocio: `?` en los productos de Business Central identifica **recogida**, no anomalía.\n- `analyzeDocument()` deja de generar advertencias `special_marker`; preserva `sourceContext` y cantidades.\n- Al abrir una importación anterior se excluyen únicamente los avisos heredados `special_marker` de la vista; guardar la revisión reescribe los hallazgos sin esos falsos avisos. Las demás incidencias siguen activas.\n- Pruebas cubren mercancía con recogida y filtrado selectivo de hallazgos antiguos. Sin eliminación de importaciones ni alteraciones directas en Supabase.\n
 ### 2026-10-25 — Publicación v0.3.22 de recogidas
 - Versión de aplicación y caché PWA elevados a 0.3.22 y `kontrola-integral-v053`, incluyendo lockfile y prueba de navegación, para distribuir la corrección del marcador `?` a los dispositivos existentes sin reinstalar.
+
+### 2026-10-25 — Totalización de hojas de preparación por pasillos
+- `src/report.mjs` agrega una fila **TOTAL PASILLO** después de cada grupo, con número de referencias y suma de cantidades separada por unidad (CAJA, BOTELLA, etc.), sin mezclar unidades incompatibles.
+- Mantiene el orden de mercancía, el filtro de cantidades positivas y el detalle original. La fila se imprime en iPhone/Android/Windows con `styles.css`, sin alterar PDFs BC ni datos persistidos.
+- Pruebas en `tests/report.test.mjs` para varios pasillos, unidades mixtas, decimales, cero y escape HTML.
