@@ -492,3 +492,12 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 - Se incorpora copia canónica del SQL aplicado en `supabase/migrations/20261031_kontrola_archivo_logico_seguro.sql`, y el runner CI pasa a ejecutarlo dentro de las migraciones normales (seis en total), sin ejecución duplicada desde `supabase/proposals`.
 - Pruebas de PostgreSQL real aislado completadas previamente en PR #14; tras cambiar la ruta canónica se requiere CI nuevo. Operaciones autenticadas contra Supabase real no comprobadas aún.
 - No hay eliminación automática ni migración a INVENTA/MOVENTA.
+
+### 2026-10-25 — Archivo lógico integrado y migración aplicada (estado verificado)
+- PR #14 **fusionado** en rama operativa `cursor/verificacion-fisica-cargas-8ba0`; merge `a5920ed5a51b216b249c1516ffbe3f73a2f8737c`. La interfaz de archivo/restauración, consulta de archivadas, estado de archivo en paneles, migración canónica y pruebas SQL están integrados.
+- GitHub Actions sobre el merge: **173/173 pruebas correctas**, cero fallos; `KONTROLA_DATABASE_OK migrations=6 ... archive=passed`.
+- Migración aplicada a Supabase de pruebas `control-cargas-movil` (`oevetnszmfxeukcncwji`), verificada la existencia de las 3 RPC y los 5 campos de archivo. Datos conservados: **13 cargas**, **0 archivadas**, **0 eventos de archivo** tras migrar.
+- Las 3 RPC permiten ejecución a `authenticated` y no a `anon` según la inspección de permisos. Las operaciones de escritura comprueban administrador y almacén dentro de `SECURITY DEFINER`.
+- PR #11 y #13 cerrados sin fusionar al estar sustituidos por PR #14 (sin borrar ramas ni datos). PR #10 continúa independiente pendiente de valorar.
+- **Pendiente de validación manual:** abrir la PWA con una sesión real de administrador y de operario para comprobar experiencia de usuario, despliegue de frontend y autorización del endpoint. No se ha archivado ninguna carga real.
+- Política: nunca eliminar automáticamente, 90 días mínimos de cierre definitivo y actividad de incidencia, conservar eventos y permitir restauración administrada.
