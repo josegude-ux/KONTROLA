@@ -106,6 +106,18 @@ Control de Cargas v0.5.26 también usa información local del dispositivo. Las 3
 - Reversión documentada y reproducible; backups probados, no solo generados.
 - Autorización expresa del usuario para cualquier escritura en producción y para pausar o eliminar proyectos.
 
+## Recomendación de arquitectura para futura incorporación de Control de Tanques (25/10/2026)
+
+**Estado: propuesta técnica, pendiente de aceptación para su implementación. No ejecutar migraciones ni activar Tanques como consecuencia de esta nota.**
+
+- El proyecto de pruebas independiente `control-tanques-staging` permanece **INACTIVE** y se mantiene en pausa. No confundirlo con el proyecto activo Control de Cargas, que conserva tablas históricas de Tanques.
+- Preparar la consolidación de INVENTA / KONTROLA / Control de Cargas con **identidad única** y **permisos granulares por módulo y por almacén**. No dar acceso automático a Tanques a todos los operarios.
+- Reservar en el diseño técnico un módulo futuro **Tanques**, con sus propias tablas, políticas RLS, auditoría y procesos, evitando mezclar mediciones con cargas o inventarios.
+- **No crear ahora tablas nuevas de Tanques ni portar sus datos**; primero estabilizar preparación, verificación, importación documental y la unificación de identidades.
+- Antes de integrar Tanques, inventariar y preservar con seguridad sus tablas/funciones ya presentes en Control de Cargas, sin asumir que siguen operativas ni borrarlas por considerarlas obsoletas.
+- Continuar sin costes adicionales mediante estudio, migraciones preparadas sin aplicar y pruebas sobre PostgreSQL temporal en GitHub Actions.
+- El diseño de la base debe permitir sumar módulos, pero no debe condicionar innecesariamente las pantallas actuales de KONTROLA.
+
 ## Conclusión
 
 **Sí es viable usar una sola base de datos Supabase y un inicio de sesión unificado, manteniendo los módulos operativos.** La ruta probablemente menos disruptiva es incorporar las funciones y datos de Control de Cargas/KONTROLA en el proyecto INVENTA, ya que INVENTA contiene el catálogo, las ubicaciones, la auditoría y la mayoría de claves foráneas.
