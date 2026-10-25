@@ -32,10 +32,20 @@ function switchView(id,{force=false}={}){
 function loggedOut(message=""){
   user=null;profile=null;loads=[];historyRows=[];historyReady=false;current=null;currentPreparation=null;currentReadOnly=false;reviewLoads=[];currentVerification=null;verificationLines=[];
   adminController?.clearSensitive?.();
-  for(const id of ["userName","profileName","profileRole","loadsList","reviewLoadsList",
-    "historyList","historySummary","productList","verificationLines","detailFacts"]){
+  // El mismo móvil puede utilizarse por varios trabajadores: eliminar también
+  // datos anteriores de vistas ocultas y deshabilitar descargas del historial.
+  for(const id of ["userName","profileName","profileRole","globalMessage",
+    "operatorSummary","operatorActivity","loadsList","reviewLoadsList",
+    "historyList","historySummary","historyStatusMessage","productList",
+    "verificationLines","detailFacts","detailTitle","detailSubtitle",
+    "prepStatus","aisleTabs","reviewDetailTitle","reviewDetailSubtitle",
+    "reviewStatus","reviewProgress","reportTitle","reportPaper","settingsStatus"]){
     const node=$(id);if(node)node.replaceChildren();
   }
+  $("loginPassword").value="";
+  $("historyDownload").disabled=true;$("historyPrint").disabled=true;
+  visible($("reportView"),false);
+  document.body.classList.remove("report-open");
   visible($("shell"),false);visible($("loginView"),true);
   status("authMessage",message,message?"error":"");
 }
@@ -574,8 +584,13 @@ $("checkUpdates").addEventListener("click",async()=>{
 $("logout").addEventListener("click",async()=>{
   if(busy||opening||adminController?.isBusy?.())return status("settingsStatus","Espera a que finalice la operación en curso antes de cerrar sesión.","error");
   if(!client)return;
-  await client.auth.signOut().catch(e=>status("settingsStatus",errorText(e),"error"));
-  loggedOut();
+  try{
+    const {error}=await client.auth.signOut();
+    if(error)throw error;
+    loggedOut();
+  }catch(error){
+    status("settingsStatus","No se pudo cerrar la sesión en el servidor: "+errorText(error),"error");
+  }
 });
 function renderConnection(){
   const target=$("connectionStatus");target.textContent=navigator.onLine?"En línea":"Sin conexión · no se guardará";
