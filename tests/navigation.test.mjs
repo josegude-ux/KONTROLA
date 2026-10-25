@@ -42,12 +42,12 @@ test("La navegación conserva los accesos previos y los regresos al submenú",()
 
 test("La versión y el caché están preparados para instalar nuevas pantallas",()=>{
   const version=JSON.parse(read("version.json")).version;
-  assert.equal(version,"0.3.24");
+  assert.equal(version,"0.3.25");
   assert.equal(JSON.parse(read("package.json")).version,version);
   assert.equal(JSON.parse(read("package-lock.json")).version,version);
-  assert.match(read("src/config.mjs"),/APP_VERSION="0\.3\.24"/);
-  assert.match(html,/id="appVersion">0\.3\.24</);
-  assert.match(read("sw.js"),/kontrola-integral-v055/);
+  assert.match(read("src/config.mjs"),/APP_VERSION="0\.3\.25"/);
+  assert.match(html,/id="appVersion">0\.3\.25</);
+  assert.match(read("sw.js"),/kontrola-integral-v056/);
 });
 
 test("Las consultas descartan respuestas de sesiones o almacenes anteriores",()=>{
@@ -90,4 +90,16 @@ test("inicio visual inspirado en INVENTA conserva rutas, permisos y estados",()=
   assert.match(html,/id="operatorSummary"/);
   assert.match(html,/id="homeWarehouse"/);
   assert.match(css,/inventa-inspired-home/);
+});
+
+test("las cuatro tarjetas mantienen sus accesos y cargan ilustraciones 3D locales",()=>{
+  for(const [id,name] of [["openPreparation","preparacion"],["openReview","verificacion"],["openCargas","control-cargas"],["openAdmin","administracion"]]){
+    assert.match(html,new RegExp('id="'+id+'"[^>]*>[^]*?assets/home/'+name+'-3d\\.svg'));
+    assert.match(read("sw.js"),new RegExp('assets/home/'+name+'-3d\\.svg'));
+    const image=read("assets/home/"+name+"-3d.svg");
+    assert.match(image,/<svg[^>]*viewBox="0 0 400 320"/);
+    assert.match(image,/linearGradient|filter/);
+  }
+  assert.match(html,/id="openAdmin"[^>]*hidden/);
+  assert.doesNotMatch(html,/class="feature-icon"[^>]*>[📦✅📋🗂️]/u);
 });
