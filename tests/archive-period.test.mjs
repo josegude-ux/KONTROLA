@@ -54,8 +54,8 @@ test("el módulo de archivo no registra ni borra cargas y respeta lotes de 20",(
  assert.match(src,/portadaLoteArchivo\(verified,/);
  assert.match(src,/selected\.size>=MAX_HOJAS_ARCHIVO/);
  assert.match(src,/id/); // controles de selección por código de carga
- assert.match(ui,/id="batchPrintFrom"/);
- assert.match(ui,/id="batchPrintTo"/);
+ assert.doesNotMatch(ui,/id="batchPrintFrom"|id="batchPrintTo"/);
+ assert.match(ui,/id="batchPrintReprint"/);
  assert.match(ui,/id="batchPrintSelectVisible"/);
  assert.match(ui,/id="batchArchiveName"/);
  assert.doesNotMatch(src,/client\.from\(|\.upload\(|\.upsert\(|client\.delete\(/);
@@ -86,5 +86,5 @@ test("selector de grupos sucesivos recorre la lista en bloques de veinte",()=>{
  assert.match(src,/if\(nextGroupStart>=rows\.length\)nextGroupStart=0/);
  assert.match(src,/nombreSugeridoArchivo\([\s\S]*?\[\.\.\.selected\]/);
  assert.match(ui,/Seleccionar siguiente grupo de hasta 20 cargas/);
- assert.match(ui,/Podrás seleccionar hasta 20 hojas/);
+ assert.match(ui,/grupos de hasta 20 hojas/);
 });

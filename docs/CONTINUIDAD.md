@@ -260,3 +260,7 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 - `src/admin-print-batch.mjs` excluye de la impresión normal las cargas ya generadas y ofrece Reimprimir sin confirmación adicional; registra el intento justo antes de abrir la vista imprimible. `index.html` incorpora el control.
 - Limitación: Safari no informa del éxito físico de la impresora; se registra intento de generación, no impresión efectiva. Si falla, reimprimir. Si la vista no abre tras registrar, se puede reimprimir.
 - No modifica tablas ni datos de INVENTA o Control de Cargas. Pendiente: aplicar migración y verificar CI y despliegue.
+
+## 2026-10-25 — Actualización de pruebas de impresión
+- Ajustados tests obsoletos de filtros Desde/Hasta a impresión exclusivamente del día; comprobación del control Reimprimir y agrupación máxima 20.
+- Antes: CI fallaba por expectativas antiguas y escapes erróneos en expresiones regulares; después: pruebas actualizadas. Pendiente resultado CI.
