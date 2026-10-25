@@ -1,70 +1,72 @@
 # KONTROLA — Ficha maestra de continuidad
 
-**Actualizada:** 2026-10-25  
-**Repositorio:** `josegude-ux/KONTROLA`  
-**Rama base:** `desarrollo/fase-1-operario`  
-**Rama de este avance:** `cursor/verificacion-fisica-cargas-8ba0`  
-**Pull requests:** Fase 1 [#1](https://github.com/josegude-ux/KONTROLA/pull/1) · verificación [#2](https://github.com/josegude-ux/KONTROLA/pull/2)
+**Actualización:** 25 de octubre de 2026
+**Repositorio:** https://github.com/josegude-ux/KONTROLA
+**Rama principal del desarrollo en curso:** cursor/verificacion-fisica-cargas-8ba0
+**PR de trabajo:** https://github.com/josegude-ux/KONTROLA/pull/2
+**PR de Fase 1:** https://github.com/josegude-ux/KONTROLA/pull/1
+**Versión del código de esta rama:** 0.3.1
 
-> Antes de continuar, inspeccionar la PR #1 y la PR #2. `main` no contiene la aplicación completa. No aplicar migraciones, desplegar, publicar documentos reales ni fusionar sin autorización.
+> La aplicación funcional vive en ramas de desarrollo: main no debe tomarse como punto de partida para rehacerla. No fusionar a main ni aplicar migraciones a producción sin autorización.
 
-## Implementación recuperada
+## Decisiones de negocio consolidadas
 
-- Autenticación Supabase contra el proyecto de Control de Cargas, separada de INVENTA.
-- Roles `operario` y `administrador`, consulta de cargas, pasillos, ubicaciones y PDF privado.
-- Motor PDF heredado de Control de Cargas v0.5.26 conservado.
-- Apertura atómica de preparación, una carga activa por operario y un preparador por carga.
-- Cierre automático de la preparación anterior al abrir otra carga.
-- Publicación administrativa de PDF validado sin sobrescritura automática.
+- Perfiles OPERARIO y ADMINISTRADOR, autenticados de forma individual.
+- KONTROLA comparte el proyecto Supabase de Control de Cargas, pero utiliza tablas y un bucket propios. INVENTA dispone de otra base independiente.
+- Business Central es externo: los PDF se descargan manualmente, la preparación física se registra con las pistolas de BC y las regularizaciones se realizan manualmente en BC. KONTROLA no escribe allí.
+- La vista de consulta de una carga NO debe iniciar el reloj; solo el botón explícito de iniciar preparación.
+- Una preparación se cierra manualmente, por cambio a otra carga, o al finalizar la verificación de la misma carga si sigue abierta.
+- El preparador nunca puede verificar su propia carga. La verificación guarda cantidades por línea, diferencias y auditoría.
+- Al completar todas las líneas, la verificación cierra la carga incluso si hay incidencias por regularizar.
+- El administrador importa/revisa los PDF, genera la hoja procesada, la imprime y publica la carga para los operarios.
+- El PDF original se conserva; la impresión operativa corresponde al documento calculado/modificado.
+- El panel separa Coruña (COR_01_COR) de Ferrol (COR_02_NAR), sin mezclar cargas. Un almacén desconocido queda pendiente de clasificación.
+- El diseño visual existente es el estándar obligatorio. No rediseñar pantallas ni romper coherencia; las propuestas futuras se distinguen de las reales.
+- Queda pendiente definir con el usuario un rediseño específico de los totales/listados por pasillos: NO inventarlo ni desplegarlo unilateralmente.
 
-## Implementación realizada en este avance
+## Componentes ya presentes en código de la PR #2
 
-- El perfil propio se obtiene mediante `kontrola_mi_perfil`; el navegador deja de consultar directamente `usuarios_app`.
-- La última preparación puede finalizarse explícitamente con hora del servidor; cambiar de carga mantiene el cierre automático anterior.
-- Todos los usuarios autorizados pueden abrir el flujo de verificación.
-- SQL impide que una persona verifique una carga preparada por ella misma.
-- Una sola persona verifica cada carga, línea por línea, con bloqueos transaccionales por carga y fila.
-- Se guardan cantidad prevista, cantidad comprobada, diferencia, usuario y hora del servidor.
-- Cada modificación de cantidad crea un evento de auditoría; las diferencias crean incidencias trazables agrupadas por carga.
-- Al completar todas las líneas, la verificación y la carga se cierran incluso si existen incidencias pendientes.
-- Administración ve incidencias agrupadas y puede confirmar una regularización ya realizada manualmente en Business Central.
-- KONTROLA no escribe ni regulariza automáticamente en Business Central.
-- Interfaz móvil de verificación, progreso, diferencias y cierre; versión propuesta `0.2.0`.
-- Caché PWA y CI ampliadas para incluir el módulo y las pruebas de verificación.
+- Inicio de sesión, perfil servidor y control de roles; PWA para uso móvil.
+- Consulta documental por pasillos y búsqueda de productos y cargas.
+- Inicio explícito de preparación, finalización manual y por cambio de carga.
+- Verificación física independiente con registro de cantidades, progreso, incidencias, cierre y regularización administrativa.
+- Clasificación Coruña/Ferrol y permisos de almacén configurables.
+- Módulo de revisión documental y hallazgos para la importación administrativa.
+- Motor de lectura PDF, generación de hoja procesada y funciones de impresión/descarga en navegador.
+- Paneles administrativos de actividad, incidencias, documentos pendientes y resumen por zona.
+- Tres migraciones SQL que crean/extienden tablas, funciones, restricciones y permisos específicos de KONTROLA.
+- Pruebas unitarias y pruebas de integración PostgreSQL con concurrencia.
 
-## Persistencia propuesta, no aplicada
+El código disponible NO implica que se haya comprobado todavía el funcionamiento completo sobre el Supabase real ni con impresoras y dispositivos empresariales.
 
-- `supabase/migrations/20261024_kontrola_preparacion.sql`: perfil propio y finalización explícita añadidos al SQL de Fase 1.
-- `supabase/migrations/20261025_kontrola_verificacion.sql`: verificaciones, líneas, incidencias, eventos, RLS y RPC transaccionales.
-- No se ha ejecutado SQL en Supabase ni se ha modificado producción.
+## Reparaciones realizadas directamente desde GitHub (25/10/2026)
 
-## Pruebas realizadas
+- Se eliminó la dependencia no disponible de ripgrep en los scripts de integración, usando grep estándar.
+- Se corrigió la carrera entre dos reservas simultáneas de un mismo PDF en la función kontrola_reservar_importacion: ON CONFLICT DO NOTHING cubre tanto la restricción única de hash como la de ruta.
+- Se restauró y corrigió el script de concurrencia después de revisar los registros de CI.
+- Se añadió un bloqueo de seguridad al ejecutor test:db: solo acepta bases llamadas kontrola_test o kontrola_test_* y rechaza servidores remotos definidos mediante PGHOST.
+- Todo se realizó en la rama de la PR #2, sin fusionar ni tocar producción.
 
-- `npm run check`: 23 pruebas aprobadas, 0 fallos; incluye sintaxis del cliente, regresiones heredadas, cantidades, cierre con diferencias, permisos declarados, concurrencia, trazabilidad, PWA y CI.
-- Prueba local en viewport móvil 390 × 844: login visible, sin desbordamiento horizontal, recursos locales con HTTP 200 y sin errores JavaScript.
-- Revisión adversarial aplicada: cierre explícito de la última preparación, estado de UI tras finalizar y regularización administrativa.
+## Pruebas verificadas en GitHub Actions
 
-Las pruebas de contrato SQL inspeccionan la migración, pero no sustituyen una ejecución real de PostgreSQL/Supabase.
+- Antes de los arreglos: las 48 pruebas de JavaScript pasaban, pero el job de integración fallaba por la utilidad ausente y posteriormente se reprodujo una colisión real de importación concurrente.
+- Tras la corrección y restauración de los scripts, el workflow de GitHub para el commit 0d581bb4460a26c8eb842af26df8a5bf8969d583 finalizó con resultado SUCCESS.
+- Tras añadir la barrera contra uso accidental en bases no aisladas, el workflow del commit d9c296feb2d3d94e43c6df3fcfc1189acd83a9b5 también terminó SUCCESS.
+- El pipeline ejecuta npm ci, comprobaciones de sintaxis, pruebas JavaScript, migraciones reales sobre un PostgreSQL 16 temporal, flujo SQL y pruebas de concurrencia.
+- La ejecución en CI utiliza únicamente datos ficticios y un contenedor temporal. NO equivale a instalar migraciones en el proyecto Supabase empresarial ni a un E2E con móviles reales.
 
-## Decisiones operativas vigentes
+## Limitaciones y trabajo pendiente
 
-- Control de Cargas actual e INVENTA no se modifican.
-- El picking se realiza con pistolas en Business Central; KONTROLA no añade checks de picking.
-- Nadie puede verificar su propia preparación.
-- La verificación es independiente de la preparación y se completa línea por línea.
-- Las incidencias no reabren una carga cerrada.
-- La regularización en Business Central es manual y la confirma un administrador autorizado en KONTROLA.
-- No hay modo offline operativo fiable; no afirmarlo.
+1. Verificar y aplicar las migraciones en un Supabase de pruebas autorizado o rama aislada que no afecte a producción; comprobar diferencias entre PostgreSQL temporal y servicios completos de Supabase.
+2. Probar con credenciales de pruebas y dos operarios diferentes la matriz completa de roles, acceso a almacenes, seguridad RLS, Storage privado, preparación y verificación.
+3. Verificar importación con PDF reales autorizados de ambas zonas. En CI se usan PDF generados de prueba, no se deben publicar documentos reales en este repositorio público.
+4. Probar impresión desde iPhone/Android/Windows con impresoras del almacén y confirmar los ajustes específicos necesarios.
+5. Verificar que el procesamiento documental corresponde exactamente a las reglas del motor de Control de Cargas y que INVENTA/Control de Cargas permanecen intactos.
+6. Confirmar compatibilidad de actualizaciones PWA y recuperación de tareas frente a cortes de red en dispositivos reales.
+7. No presentar la versión 0.3.1 como lista para producción hasta estas pruebas.
+8. Mantener la separación estricta entre proyectos y no introducir ninguna automatización de Business Central.
 
-## Pendiente antes de producción
+## Continuación recomendada
 
-1. Revisión humana del SQL y aplicación autorizada en un entorno de pruebas del proyecto correcto.
-2. Prueba E2E con al menos dos cuentas reales y dos dispositivos: preparación, exclusión del preparador, concurrencia, verificación, incidencias y regularización.
-3. Validación real de RLS y Storage con roles `anon`, `authenticated`, operario inactivo, operario activo y administrador.
-4. Prueba con PDF real y confirmación de que Control de Cargas e INVENTA siguen intactos.
-5. Aviso en tiempo real al responsable; la lista actual se actualiza al abrir Administración o pulsar «Actualizar».
-6. Definir copia/recuperación, observabilidad y estrategia offline antes de desplegar.
+Continuar trabajando directamente en GitHub sobre la PR #2, priorizando correcciones verificables y usando GitHub Actions como sistema de pruebas. No duplicar trabajo ni pedir a Cursor que reconstruya la aplicación. Documentar en esta ficha cada hito. Cualquier cambio o coste en Supabase debe autorizarse separadamente, especialmente si se trata de una rama de desarrollo que genere cargos.
 
-## Próximo paso recomendado
-
-Revisar la PR #2 y sus dos migraciones; después, con autorización expresa, aplicar el SQL únicamente en un entorno de pruebas y ejecutar la matriz E2E de dos usuarios/dispositivos. No desplegar ni fusionar en `main` todavía.
