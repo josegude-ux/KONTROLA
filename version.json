@@ -1,4 +1,4 @@
 {
-  "version": "0.3.14",
-  "notes": "Inventario voluntario de claves PDF almacenadas localmente en el navegador original; no lee ni altera los PDF."
+  "version": "0.3.15",
+  "notes": "Inventario y recuperación individual, voluntaria y verificada por SHA-256 de PDFs locales antiguos, sin subir ni alterar originales."
 }
