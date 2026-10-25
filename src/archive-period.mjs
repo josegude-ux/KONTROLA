@@ -36,7 +36,7 @@ export function filtrarCargasArchivo(cargas=[],desde="",hasta=""){
 }
 export function nombreSugeridoArchivo(almacen,desde="",hasta="",hoy="",codigos=[]){
   validarPeriodoArchivo(desde,hasta);
-  const safe=value=>String(value??"").replace(/[^A-Za-z0-9_-]/g,"_").slice(0,36)||"SIN_DATO";
+  const safe=value=>String(value??"").replace(/[^A-Za-z0-9_-]/g,"_").slice(0,24)||"SIN_DATO";
   const period=desde&&hasta?desde+"_"+hasta:desde?"desde_"+desde:hasta?"hasta_"+hasta:hoy||"sin_fecha";
   if(!Array.isArray(codigos)||codigos.length>MAX_HOJAS_ARCHIVO)throw Error("El nombre de archivo admite hasta "+MAX_HOJAS_ARCHIVO+" códigos de carga.");
   const ids=codigos.map(value=>String(value??"").trim().toUpperCase());
