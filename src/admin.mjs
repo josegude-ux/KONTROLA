@@ -506,7 +506,7 @@ export function createAdminController({client,getUser,bucket,global,errorText,on
     ()=>{$("revisionCode").focus();},
     ()=>{},
     ()=>refreshSummary(),
-    ()=>refreshArchivedLoads()
+    ()=>{}
   ];
   for(const button of document.querySelectorAll("[data-admin-tab]"))button.addEventListener("click",async()=>{
     const index=Number(button.dataset.adminTab);

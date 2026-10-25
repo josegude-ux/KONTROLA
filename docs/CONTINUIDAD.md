@@ -453,3 +453,7 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 ### Corrección de navegación del archivo administrativo
 - La pestaña Archivo de cargas dispara ahora la consulta `kontrola_listar_archivadas` al abrirse, además del botón de actualización manual.
 - Pendiente CI; la RPC aún no existe en Supabase porque la migración no se ha aplicado.
+
+### CI confirmado — PR #13
+- Commit `11de4c1b34eb61b3ec04cd41063392754abc70cd`: workflow `test` completado correctamente; 153 pruebas pasadas, 0 fallidas.
+- Esta CI valida la suite existente de la interfaz, no el despliegue SQL de archivo; PR #11 no tiene ejecución CI confirmada en el último commit.
