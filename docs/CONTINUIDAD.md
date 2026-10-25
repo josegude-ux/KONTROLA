@@ -470,3 +470,6 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 ### Ampliación de pruebas integradas de retención
 - Tras CI real favorable con 171 pruebas y `archive=passed`, se incorporan dos escenarios adicionales de PostgreSQL aislado: rechazar incidencia regularizada muy recientemente y rechazar incidencia aún pendiente aun con carga antigua.
 - Ningún cambio de datos en Supabase. Pendiente validar el CI de esta ampliación.
+
+### Corrección del test de incidencias (PL/pgSQL)
+- La ejecución de GitHub Actions detectó dos bloques DO escritos con delimitadores `$` en vez de `$$`. Se han corregido en `tests/integration/archive.sql`. Pendiente CI del nuevo commit.
