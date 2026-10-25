@@ -60,12 +60,33 @@
         <button id="cargasConsultar" type="button" class="submenu-card"><span class="submenu-icon" aria-hidden="true">📄</span><span><b>Consultar cargas</b><small>Documentos, referencias y mercancía por pasillos</small></span><span class="submenu-arrow" aria-hidden="true">›</span></button>
         <button id="cargasPreparar" type="button" class="submenu-card"><span class="submenu-icon" aria-hidden="true">📦</span><span><b>Preparación de cargas</b><small>Inicia el reloj solo cuando comiences a preparar</small></span><span class="submenu-arrow" aria-hidden="true">›</span></button>
         <button id="cargasVerificar" type="button" class="submenu-card"><span class="submenu-icon" aria-hidden="true">✅</span><span><b>Verificación física</b><small>Comprueba cantidades de cargas preparadas por otra persona</small></span><span class="submenu-arrow" aria-hidden="true">›</span></button>
+        <button id="cargasHistorial" type="button" class="submenu-card"><span class="submenu-icon" aria-hidden="true">📊</span><span><b>Historial y resumen</b><small>Buscar por fecha, estado, ruta y repartidor</small></span><span class="submenu-arrow" aria-hidden="true">›</span></button>
         <button id="cargasAdministrar" type="button" class="submenu-card" hidden><span class="submenu-icon" aria-hidden="true">🗂️</span><span><b>Documentos y administración</b><small>Importar, revisar y publicar PDF descargados manualmente</small></span><span class="submenu-arrow" aria-hidden="true">›</span></button>
       </div>
       <p class="hint">Este menú reúne funciones existentes. El picking y las regularizaciones se realizan en Business Central.</p>
     </section>
+    <section id="cargasHistoryView" class="view" hidden>
+      <div class="page-heading">
+        <button id="backFromHistory" type="button" class="back-button">← Volver a Control de Cargas</button>
+        <p class="eyebrow">KONTROLA / CONTROL DE CARGAS</p>
+        <h1>Historial y resumen</h1>
+        <p class="muted">Consulta las cargas publicadas por fecha y estado. Los filtros no modifican horarios ni documentos.</p>
+      </div>
+      <section class="panel">
+        <div class="line"><h2>Filtrar historial</h2><select id="historyWarehouse" class="warehouse-select" aria-label="Almacén del historial"></select></div>
+        <div class="history-filters">
+          <label>Fecha de carga<input id="historyDate" type="date" aria-label="Filtrar por fecha de carga"></label>
+          <label>Estado<select id="historyStatus" class="warehouse-select"><option value="">Todos los estados</option><option value="publicada">Publicada</option><option value="preparacion_en_curso">En preparación</option><option value="preparada">Preparada</option><option value="verificacion_en_curso">En verificación</option><option value="cerrada">Cerrada</option></select></label>
+          <label class="history-search">Buscar carga, ruta, matrícula o repartidor<input id="historySearch" type="search" placeholder="Código, ruta, matrícula o repartidor"></label>
+        </div>
+        <div class="actions"><button id="historyClear" type="button" class="secondary">Limpiar filtros</button><button id="historyRefresh" type="button" class="secondary">Actualizar</button></div>
+      </section>
+      <div id="historySummary" class="facts" aria-live="polite"></div>
+      <div id="historyStatusMessage" class="status" role="status" aria-live="polite"></div>
+      <div id="historyList" class="loads-list" aria-live="polite"></div>
+    </section>
     <section id="loadsView" class="view" hidden>
-      <div class="page-heading"><button type="button" id="backFromLoads" class="back-button">← Volver</button><h1>Preparación de cargas</h1><p class="muted">Consultar una carga no inicia el reloj. Inícialo únicamente al comenzar la preparación física.</p></div>
+      <div class="page-heading"><button type="button" id="backFromLoads" class="back-button">← Volver</button><h1 id="loadsHeading">Preparación de cargas</h1><p id="loadsDescription" class="muted">Consultar una carga no inicia el reloj. Inícialo únicamente al comenzar la preparación física.</p></div>
       <div id="prepWarehouseTabs" class="warehouse-tabs" role="tablist" aria-label="Almacén"></div>
       <div class="toolbar"><label class="search-wrap">Buscar carga<input id="loadSearch" type="search" placeholder="Nº de carga, ruta, matrícula o repartidor"></label><button type="button" id="reloadLoads" class="secondary">Actualizar</button></div>
       <div id="loadsList" class="loads-list" aria-live="polite"></div>
