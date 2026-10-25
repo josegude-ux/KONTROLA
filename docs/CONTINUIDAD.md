@@ -5,7 +5,7 @@
 **Rama principal del desarrollo en curso:** cursor/verificacion-fisica-cargas-8ba0
 **PR de trabajo:** https://github.com/josegude-ux/KONTROLA/pull/2
 **PR de Fase 1:** https://github.com/josegude-ux/KONTROLA/pull/1
-**Versión del código de esta rama:** 0.3.13
+**Versión del código de esta rama:** 0.3.15
 
 > La aplicación funcional vive en ramas de desarrollo: main no debe tomarse como punto de partida para rehacerla. No fusionar a main ni aplicar migraciones a producción sin autorización.
 
@@ -151,3 +151,11 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 - La nueva interfaz es de consulta y no ofrece botones de migración, restauración ni sobrescritura. La auditoría de copias preexistente continúa igual.
 - Pruebas `tests/legacy-reconcile.test.mjs` incluidas. **CI confirmada**: ejecución `40188458388`, commit `17c2d732bea75275d7996fea30bfe3c6f200e553`; 104 pruebas JS correctas, 0 fallidas, cinco migraciones en PostgreSQL temporal y prueba de concurrencia aprobada.
 - Pendientes: cotejo con una copia autorizada real, inventario del contenido local de cada dispositivo, pruebas con Supabase Auth/Storage y plan de restauración/migración con autorización y reversión. La PR #2 permanece sin fusionar; **no se tocó producción**.
+
+
+## Recuperación local y voluntaria de PDF — v0.3.14 y v0.3.15
+- Inspección de esquema histórico confirmado en Control de Cargas original `printing.mjs`: IndexedDB `control_cargas_movil_originales`, object store `originales`, claves `LPyy-nnnnn` (activa) y `LPyy-nnnnn::SHA256` (revisión).
+- v0.3.14: `src/legacy-originals.mjs` inventaría únicamente **claves**, sin abrir los blobs, con `readonly/openKeyCursor`. Si el almacén no existe, un upgrade sería abortado. No hay consultas de red.
+- v0.3.15: `recuperarPdfOriginalLocal` lee solo un archivo elegido explícitamente y comprueba su cabecera PDF y SHA-256; rechaza revisiones históricas si su huella no coincide. `src/admin-originals.mjs` ofrece botones individuales para guardar copia mediante enlace temporal de descarga, sin eliminar o transmitir datos.
+- **Limitación iPhone:** origen/partición de almacenamiento distinta entre Safari y PWA instalada; un escaneo vacío no acredita pérdida de originales. Quedan pendientes pruebas físicas y copia independiente desde el contenedor del Control de Cargas original.
+- Los PDF siguen sin trasladarse automáticamente a KONTROLA y **no hay migraciones de datos ni aplicaciones desplegadas**. Cualquier recuperación real requiere intervención/consentimiento explícito del administrador.
