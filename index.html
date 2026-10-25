@@ -141,7 +141,9 @@
           <label>Hasta (opcional)<input id="batchPrintTo" type="date"></label>
         </div>
         <p class="hint">Elige el periodo que archivarás en OneDrive. Solo podrás seleccionar hasta 10 hojas por documento; si hay más, prepara varios lotes.</p>
+        <p class="hint" id="batchArchiveName" aria-live="polite"></p>
         <div id="batchPrintList" class="batch-print-list"></div>
+        <button id="batchPrintSelectVisible" type="button" class="secondary">Seleccionar hasta 10 cargas del periodo</button>
         <button id="batchPrintOpen" type="button" class="primary" disabled>Preparar impresión de hojas seleccionadas</button>
       </section>
       <section class="panel" id="operatorStatsPanel">
@@ -195,7 +197,7 @@
   <footer> KONTROLA · MOVENTA · Los datos de picking se gestionan en Business Central.</footer>
 </div>
 <section id="reportView" class="report-view" hidden>
-  <header class="report-controls"><button id="closeReport" class="back-button" type="button">← Volver</button><h1 id="reportTitle">Hoja procesada</h1><div class="actions"><button id="downloadReport" class="secondary" type="button">Descargar</button><button id="printReport" class="primary" type="button">Imprimir / Guardar PDF</button></div></header>
+  <header class="report-controls"><button id="closeReport" class="back-button" type="button">← Volver</button><h1 id="reportTitle">Hoja procesada</h1><div class="actions"><button id="downloadReport" class="secondary" type="button" title="Descarga una copia HTML; para OneDrive utiliza Guardar PDF">Descargar HTML</button><button id="printReport" class="primary" type="button">Imprimir / Guardar PDF</button></div></header>
   <p class="hint archive-info" id="onedriveArchiveHelp">Para archivar: toca «Imprimir / Guardar PDF», guarda una copia PDF en Archivos y, cuando corresponda, muévela a la carpeta de OneDrive elegida. El traslado no es automático. No elimines archivos hasta comprobar que la copia está guardada.</p>
   <main id="reportPaper" class="report-paper"></main>
 </section>
