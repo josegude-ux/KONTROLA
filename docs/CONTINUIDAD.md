@@ -70,3 +70,9 @@ El código disponible NO implica que se haya comprobado todavía el funcionamien
 
 Continuar trabajando directamente en GitHub sobre la PR #2, priorizando correcciones verificables y usando GitHub Actions como sistema de pruebas. No duplicar trabajo ni pedir a Cursor que reconstruya la aplicación. Documentar en esta ficha cada hito. Cualquier cambio o coste en Supabase debe autorizarse separadamente, especialmente si se trata de una rama de desarrollo que genere cargos.
 
+
+## Decisión posterior sobre navegación (25/10/2026)
+
+El usuario ha definido **KONTROLA como aplicación principal de operarios**: **Control de Cargas** y **Control de Tanques** serán submenús de KONTROLA, no accesos separados. INVENTA mantiene interfaz propia aunque se estudie un Supabase y autenticación comunes. Tanques sigue en pausa; no se activa ni se migra todavía. Antes de implementar menús hay que revisar el detalle de las pantallas, y conservar el diseño y lógica existentes.
+
+Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_MODULAR.md). Ninguna base real se modifica por esta decisión.
