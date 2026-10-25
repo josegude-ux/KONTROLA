@@ -1,4 +1,4 @@
 {
-  "version": "0.3.4",
-  "notes": "Historial de Control de Cargas con exportación CSV segura para Excel e impresión de resúmenes filtrados."
+  "version": "0.3.5",
+  "notes": "Revisión documental: confirmación de sustitución, PDF duplicados seguros y conservación de versiones, con pruebas PostgreSQL."
 }
