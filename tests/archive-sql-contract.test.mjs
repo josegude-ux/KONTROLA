@@ -1,0 +1,13 @@
+import test from "node:test";
+import assert from "node:assert/strict";
+import {readFileSync} from "node:fs";
+const sql=readFileSync(new URL("../supabase/proposals/kontrola_archivo_logico.sql",import.meta.url),"utf8");
+test("archivo requiere 90 dias desde cierre",()=>assert.match(sql,/cerrada_en>now\(\)-interval '90 days'/));
+test("archivo rechaza acciones nulas",()=>assert.match(sql,/p_archivar is null/));
+test("archivo restringido a administracion",()=>assert.match(sql,/kontrola_es_administrador\(\)/));
+test("archivo usa bloqueo de fila",()=>assert.match(sql,/for update/));
+test("archivo exige verificacion finalizada",()=>assert.match(sql,/v\.estado='finalizada'/));
+test("archivo bloquea incidencias sin regularizar",()=>assert.match(sql,/i\.estado is distinct from 'regularizada'/));
+test("archivo registra eventos",()=>assert.match(sql,/insert into public\.kontrola_archivo_eventos/));
+test("archivo no contiene borrado automatico",()=>assert.doesNotMatch(sql,/\bdelete\s+from\b/i));
+test("archivo no concede RPC a anon",()=>assert.match(sql,/revoke all on function public\.kontrola_cambiar_archivo\(text,boolean\) from public,anon/));

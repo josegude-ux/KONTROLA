@@ -452,3 +452,6 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 ### Validación pendiente de archivo lógico
 - Pruebas automáticas actuales no ejercitan la nueva RPC, porque SQL está en `supabase/proposals` y no en `supabase/migrations`.
 - Antes de migrar: confirmar cierre definitivo, que las incidencias no se reabran, políticas RLS y auditoría de restauración; probar rollback en base aislada.
+
+### Pruebas estáticas de contrato del archivo
+- `tests/archive-sql-contract.test.mjs` verifica restricciones declaradas del SQL de propuesta. No ejecuta SQL ni sustituye integración con PostgreSQL/Supabase.
