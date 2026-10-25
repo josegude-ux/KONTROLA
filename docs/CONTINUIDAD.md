@@ -541,3 +541,8 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 - Solo modifica la estructura visual de `#homeView`: conserva IDs y eventos de Preparación, Verificación, Control de Cargas y Administración, sus permisos, selección de almacén y estadísticas. Otras pantallas operativas no se alteran.
 - `styles.css` añade reglas confinadas a `#homeView`, accesibilidad de foco y responsive; prueba de contrato nueva para navegación y permisos.
 - Publicación de PWA v0.3.24 mediante actualización de versión y caché v055; sin migraciones de Supabase ni pérdida de datos.
+
+### 2026-10-25 — Ilustraciones tridimensionales en la portada v0.3.25
+- Se reemplazan los cuatro emojis de Preparación, Verificación, Control de Cargas y Administración por ilustraciones 3D propias de mercancías/palet y lector, checklist, documentos y almacén, respectivamente.
+- SVG locales en `assets/home/*-3d.svg`, incluidos en la precaché PWA para uso sin conexión. Conservan los cuatro IDs, los manejadores, los permisos por perfil y el diseño responsive.
+- Versionado 0.3.25 y caché v056 con pruebas de existencia y de rutas de imágenes. Sin tocar INVENTA, Supabase, lógica de mercancías ni documentación original de Business Central.

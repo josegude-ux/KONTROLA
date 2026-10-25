@@ -39,7 +39,7 @@
       <button class="primary full" type="submit" id="loginButton">Entrar</button>
     </form>
     <p id="authMessage" class="status" role="status" aria-live="polite"></p>
-    <p class="hint">Las cuentas son habilitadas por administración. No existen usuarios de demostración.<br>Versión <span id="loginVersion">0.3.24</span></p>
+    <p class="hint">Las cuentas son habilitadas por administración. No existen usuarios de demostración.<br>Versión <span id="loginVersion">0.3.25</span></p>
   </div>
 </section>
 <div id="shell" hidden>
@@ -52,10 +52,10 @@
     <section id="homeView" class="view">
       <div class="home-welcome"><p class="eyebrow">KONTROLA · MOVENTA</p><h1>Tu almacén,<br>bajo control</h1><p class="muted">¿Qué necesitas hacer hoy?</p></div>
       <div class="home-grid inventa-inspired-home" aria-label="Funciones principales de KONTROLA">
-        <button id="openPreparation" class="feature feature-pink" type="button"><span class="feature-copy"><b>Preparación</b><small>Consulta la mercancía por pasillos y controla la preparación</small><span class="feature-go" aria-hidden="true">→</span></span><span class="feature-art" aria-hidden="true"><span class="feature-art-glow"></span><span class="feature-icon">📦</span></span></button>
-        <button id="openReview" class="feature feature-blue" type="button"><span class="feature-copy"><b>Verificación</b><small>Comprueba físicamente las cargas, referencia a referencia</small><span class="feature-go" aria-hidden="true">→</span></span><span class="feature-art" aria-hidden="true"><span class="feature-art-glow"></span><span class="feature-icon">✅</span></span></button>
-        <button id="openCargas" class="feature feature-lilac" type="button"><span class="feature-copy"><b>Control de Cargas</b><small>Consulta documentos y gestiona tus cargas</small><span class="feature-go" aria-hidden="true">→</span></span><span class="feature-art" aria-hidden="true"><span class="feature-art-glow"></span><span class="feature-icon">📋</span></span></button>
-        <button id="openAdmin" class="feature feature-cream" type="button" hidden><span class="feature-copy"><b>Administración</b><small>Publica documentos y supervisa las operaciones</small><span class="feature-go" aria-hidden="true">→</span></span><span class="feature-art" aria-hidden="true"><span class="feature-art-glow"></span><span class="feature-icon">🗂️</span></span></button>
+        <button id="openPreparation" class="feature feature-pink" type="button"><span class="feature-copy"><b>Preparación</b><small>Consulta la mercancía por pasillos y controla la preparación</small><span class="feature-go" aria-hidden="true">→</span></span><span class="feature-art" aria-hidden="true"><span class="feature-art-glow"></span><img class="feature-illustration" src="./assets/home/preparacion-3d.svg" alt="" width="400" height="320" loading="eager" decoding="async"></span></button>
+        <button id="openReview" class="feature feature-blue" type="button"><span class="feature-copy"><b>Verificación</b><small>Comprueba físicamente las cargas, referencia a referencia</small><span class="feature-go" aria-hidden="true">→</span></span><span class="feature-art" aria-hidden="true"><span class="feature-art-glow"></span><img class="feature-illustration" src="./assets/home/verificacion-3d.svg" alt="" width="400" height="320" loading="eager" decoding="async"></span></button>
+        <button id="openCargas" class="feature feature-lilac" type="button"><span class="feature-copy"><b>Control de Cargas</b><small>Consulta documentos y gestiona tus cargas</small><span class="feature-go" aria-hidden="true">→</span></span><span class="feature-art" aria-hidden="true"><span class="feature-art-glow"></span><img class="feature-illustration" src="./assets/home/control-cargas-3d.svg" alt="" width="400" height="320" loading="eager" decoding="async"></span></button>
+        <button id="openAdmin" class="feature feature-cream" type="button" hidden><span class="feature-copy"><b>Administración</b><small>Publica documentos y supervisa las operaciones</small><span class="feature-go" aria-hidden="true">→</span></span><span class="feature-art" aria-hidden="true"><span class="feature-art-glow"></span><img class="feature-illustration" src="./assets/home/administracion-3d.svg" alt="" width="400" height="320" loading="eager" decoding="async"></span></button>
       </div>
       <section class="panel"><div class="line"><h2>Mi actividad</h2><select id="homeWarehouse" class="warehouse-select" aria-label="Almacén activo"></select></div><div id="operatorSummary" class="facts"></div></section>
     </section>
@@ -197,7 +197,7 @@
     <section id="settingsView" class="view" hidden>
       <div class="page-heading"><button type="button" data-back="home" class="back-button">← Volver</button><h1>Ajustes</h1></div>
       <section class="panel">
-        <p><b>Aplicación:</b> KONTROLA</p><p><b>Versión:</b> <span id="appVersion">0.3.24</span></p>
+        <p><b>Aplicación:</b> KONTROLA</p><p><b>Versión:</b> <span id="appVersion">0.3.25</span></p>
         <p><b>Usuario:</b> <span id="profileName"></span></p><p><b>Perfil:</b> <span id="profileRole"></span></p>
         <div class="actions"><button type="button" id="checkUpdates" class="secondary">Buscar actualización</button><button id="logout" type="button" class="ghost-danger">Cerrar sesión</button></div>
         <div class="status" id="settingsStatus" role="status" aria-live="polite"></div>
