@@ -51,3 +51,20 @@ footer{padding:18px;text-align:center;background:#fff;border-top:1px solid #e6e8
 #historySummary .fact b{font-size:16px}
 @media(max-width:720px){#historySummary{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:440px){.history-filters{grid-template-columns:1fr}.history-filters .history-search{grid-column:auto}}
+
+.history-actions{margin-top:16px}.history-actions button{flex:1 1 180px;min-width:0}
+.history-print{font-family:Arial,sans-serif;color:#172635;background:#fff}
+.history-print header{border-bottom:2px solid #0B2647;padding-bottom:8px}
+.history-print header h2{font-size:20px;margin:0 0 5px}
+.history-print header p{font-size:10px;margin:0;color:#415367}
+.history-print dl{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin:11px 0}
+.history-print dl div{padding:7px;border:1px solid #bccbd6;min-width:0}
+.history-print dt{font-size:9px;color:#526779;text-transform:uppercase}
+.history-print dd{font-size:13px;font-weight:750;margin:3px 0 0;overflow-wrap:anywhere}
+.history-table-scroll{overflow-x:auto}
+.history-print table{border-collapse:collapse;width:100%;font-size:10px}
+.history-print th,.history-print td{border:1px solid #b3c1cc;text-align:left;padding:5px;overflow-wrap:anywhere}
+.history-print th{background:#eaf0f5;font-weight:750}
+.history-print tr{break-inside:avoid}
+@media(max-width:720px){.history-print dl{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media print{.history-print dl{grid-template-columns:repeat(4,minmax(0,1fr))}.history-table-scroll{overflow:visible}.history-print th,.history-print td{font-size:8px;padding:3px 2px}}
