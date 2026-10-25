@@ -1,0 +1,14 @@
+import test from "node:test";
+import assert from "node:assert/strict";
+import { evaluarArchivoCarga } from "../src/archive-eligibility.mjs";
+const ahora = new Date("2026-10-25T12:00:00Z");
+const carga = { estado:"cerrada", verificacionCompleta:true, incidenciasResueltas:true, sinBloqueos:true, dependenciasVerificadas:true, cierreDefinitivoEn:"2026-07-27T12:00:00Z" };
+test("exactamente 90 dias permite solo evaluacion",()=>assert.equal(evaluarArchivoCarga(carga,{ahora}).elegible,true));
+test("un segundo antes bloquea",()=>assert.equal(evaluarArchivoCarga({...carga,cierreDefinitivoEn:"2026-07-27T12:00:01Z"},{ahora}).elegible,false));
+test("incidencia pendiente bloquea",()=>assert.equal(evaluarArchivoCarga({...carga,incidenciasResueltas:false},{ahora}).elegible,false));
+test("fecha ausente bloquea",()=>assert.equal(evaluarArchivoCarga({...carga,cierreDefinitivoEn:null},{ahora}).elegible,false));
+test("fecha sin zona bloquea",()=>assert.equal(evaluarArchivoCarga({...carga,cierreDefinitivoEn:"2026-07-27T12:00:00"},{ahora}).elegible,false));
+test("fecha futura bloquea",()=>assert.equal(evaluarArchivoCarga({...carga,cierreDefinitivoEn:"2026-11-01T12:00:00Z"},{ahora}).elegible,false));
+test("estado no cerrado bloquea",()=>assert.equal(evaluarArchivoCarga({...carga,estado:"publicada"},{ahora}).elegible,false));
+test("sin acreditacion de dependencias bloquea",()=>assert.equal(evaluarArchivoCarga({...carga,dependenciasVerificadas:undefined},{ahora}).elegible,false));
+test("sin datos bloquea",()=>assert.equal(evaluarArchivoCarga(null,{ahora}).elegible,false));
