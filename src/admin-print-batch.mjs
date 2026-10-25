@@ -22,9 +22,12 @@ export function configurarLoteImpresion({client,getUser,getWarehouse,errorText})
     }
     selected=new Set([...selected].filter(id=>rows.some(row=>row.codigo===id)));
     button.disabled=selected.size===0;
-    $("batchArchiveName").textContent=rows.length
-      ?"Nombre sugerido para guardar el PDF: "+nombreSugeridoArchivo(currentWarehouse,from,to,fechaAlmacen())
-      :"No hay hojas para el periodo seleccionado.";
+    $("batchArchiveName").textContent=!rows.length
+      ?"No hay hojas para el periodo seleccionado."
+      :!selected.size?"Selecciona las cargas para ver el nombre recomendado del PDF."
+      :"Nombre sugerido para guardar el PDF: "+nombreSugeridoArchivo(
+        currentWarehouse,from,to,fechaAlmacen(),[...selected]
+      );
     for(const load of rows){
       const label=document.createElement("label");label.className="batch-print-row";
       const check=document.createElement("input");check.type="checkbox";
@@ -35,6 +38,10 @@ export function configurarLoteImpresion({client,getUser,getWarehouse,errorText})
         }
         if(check.checked)selected.add(load.codigo);else selected.delete(load.codigo);
         button.disabled=selected.size===0;
+        $("batchArchiveName").textContent=selected.size
+          ?"Nombre sugerido para guardar el PDF: "+nombreSugeridoArchivo(
+            currentWarehouse,$("batchPrintFrom").value,$("batchPrintTo").value,fechaAlmacen(),[...selected])
+          :"Selecciona las cargas para ver el nombre recomendado del PDF.";
         status.textContent=selected.size+" hoja(s) seleccionada(s) de "+rows.length+".";
       });
       const info=document.createElement("span");
