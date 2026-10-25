@@ -12,7 +12,7 @@ test("Control de Cargas aparece como submenú navegable sin duplicar operaciones
   assert.match(html,/id="cargasMenuView"[^>]*hidden/);
   for(const id of ["cargasConsultar","cargasPreparar","cargasVerificar","cargasAdministrar"]){
     assert.match(html,new RegExp('id="'+id+'"'));
-    assert.match(app,new RegExp('\\$("'+id+'"\\)\\.addEventListener'));
+    assert.ok(app.includes('$("'+id+'").addEventListener'),"Falta el manejador "+id);
   }
   assert.match(app,/openLoadsMenu\("cargasMenuView"\)/);
   assert.match(app,/openReviewMenu\("cargasMenuView"\)/);
