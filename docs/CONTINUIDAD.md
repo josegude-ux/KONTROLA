@@ -421,3 +421,7 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 - Se documenta en `docs/POLITICA_RETENCION_CARGAS.md` una propuesta de archivo lógico y elegibilidad para revisión de eliminación solo tras 90 días completos desde la finalización verificable.
 - Se protegen cargas no finalizadas, incidencias, bloqueos y dependencias; no se habilita borrado automático ni manual.
 - Cambio documental aislado sin migraciones, despliegues ni modificaciones de Supabase, INVENTA o MOVENTA. Pendiente revisión y autorización de cualquier implementación.
+
+### 2026-10-25 — Inventario de dependencias para retención
+- Se amplía `docs/POLITICA_RETENCION_CARGAS.md` con relaciones verificadas en migraciones y tests: carga cerrada con incidencias pendientes, verificaciones, eventos, preparación, historial documental, impresión y Storage.
+- No se ha acreditado una marca de cierre definitivo: bloquear elegibilidad hasta auditar el esquema real y la RPC de finalización. Sin cambios SQL, datos ni borrados.
