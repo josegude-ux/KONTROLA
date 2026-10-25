@@ -10,11 +10,11 @@ const css=read("styles.css");
 test("Control de Cargas aparece como submenú navegable sin duplicar operaciones",()=>{
   assert.match(html,/id="openCargas"[^>]*>/);
   assert.match(html,/id="cargasMenuView"[^>]*hidden/);
-  for(const id of ["cargasConsultar","cargasPreparar","cargasVerificar","cargasAdministrar"]){
+  for(const id of ["cargasConsultar","cargasPreparar","cargasVerificar","cargasHistorial","cargasAdministrar"]){
     assert.match(html,new RegExp('id="'+id+'"'));
     assert.ok(app.includes('$("'+id+'").addEventListener'),"Falta el manejador "+id);
   }
-  assert.match(app,/openLoadsMenu\("cargasMenuView"\)/);
+  assert.match(app,/openLoadsMenu\("cargasMenuView","consulta"\)/);
   assert.match(app,/openReviewMenu\("cargasMenuView"\)/);
   assert.match(css,/\.submenu-grid\{/);
 });
@@ -36,14 +36,16 @@ test("La navegación conserva los accesos previos y los regresos al submenú",()
   }
   assert.match(app,/switchView\(loadsParent\)/);
   assert.match(app,/switchView\(reviewLoadsParent\)/);
+  assert.match(app,/currentReadOnly\|\|currentPreparation\?\.active/);
+  assert.match(html,/id="cargasHistoryView"[^>]*hidden/);
 });
 
 test("La versión y el caché están preparados para instalar nuevas pantallas",()=>{
   const version=JSON.parse(read("version.json")).version;
-  assert.equal(version,"0.3.2");
+  assert.equal(version,"0.3.3");
   assert.equal(JSON.parse(read("package.json")).version,version);
   assert.equal(JSON.parse(read("package-lock.json")).version,version);
   assert.match(read("src/config.mjs"),/APP_VERSION="0\.3\.2"/);
   assert.match(html,/id="appVersion">0\.3\.2</);
-  assert.match(read("sw.js"),/kontrola-integral-v033/);
+  assert.match(read("sw.js"),/kontrola-integral-v034/);
 });
