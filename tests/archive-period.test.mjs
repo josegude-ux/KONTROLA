@@ -51,7 +51,7 @@ test("el módulo de archivo no registra ni borra cargas y respeta lotes de 20",(
  const admin=readFileSync(new URL("../src/admin.mjs",import.meta.url),"utf8");
  const ui=readFileSync(new URL("../index.html",import.meta.url),"utf8");
  assert.match(src,/filtrarCargasArchivo\(allRows,from,to\)/);
- assert.match(src,/portadaLoteArchivo\(chosen,/);
+ assert.match(src,/portadaLoteArchivo\(verified,/);
  assert.match(src,/selected\.size>=MAX_HOJAS_ARCHIVO/);
  assert.match(src,/id/); // controles de selección por código de carga
  assert.match(ui,/id="batchPrintFrom"/);
