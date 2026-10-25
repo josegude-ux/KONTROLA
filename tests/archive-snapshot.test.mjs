@@ -45,3 +45,10 @@ test("acepta 20 y rechaza 21 sin convertir la verificación en una escritura",()
  assert.match(script,/status\.textContent="No se ha generado el PDF:/);
  assert.doesNotMatch(script,/client\.from\(|\.insert\(|\.upsert\(|\.upload\(/);
 });
+
+test("la impresión protege líneas y repite la cabecera si veinte cargas ocupan varias páginas",()=>{
+ const html=readFileSync(new URL("../index.html",import.meta.url),"utf8");
+ assert.match(html,/preparation-report thead,.archive-cover thead\{display:table-header-group\}/);
+ assert.match(html,/preparation-report tr,.archive-cover tr\{break-inside:avoid;page-break-inside:avoid\}/);
+ assert.match(html,/report-batch-sheet\{break-after:page;page-break-after:always\}/);
+});
