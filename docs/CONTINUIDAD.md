@@ -345,3 +345,5 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 - `src/core.mjs`: admite códigos LP que PDF.js divide en fragmentos, guiones y espacios; para archivos solo numéricos exige fecha de carga y número explícito en el contenido antes de reconstruir el código.
 - `tests/core-warehouse.test.mjs`: pruebas para LP fragmentado y rechazo de identificadores deducidos sin evidencia.
 - No se importan datos automáticamente ni se alteran registros existentes. Pendiente CI.
+
+- Ajuste adicional: prioridad de año de cuatro cifras en fecha BC para evitar interpretar 2026 como 20.

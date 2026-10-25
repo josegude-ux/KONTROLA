@@ -55,7 +55,7 @@ export function parseDocumentPages(pages, fileName='Documento.pdf', options={}) 
  // documento contiene la misma numeración de carga.
  if(!id&&/^\d{4,6}\.pdf$/i.test(fileName)){
    const number=fileName.replace(/\.pdf$/i,'');
-   const dateMatch=textAll.match(/Fecha\s*carga\s*:?\s*(\d{2}\/\d{2}\/(\d{2}|\d{4}))/i);
+   const dateMatch=textAll.match(/Fecha\s*carga\s*:?\s*(\d{2}\/\d{2}\/(\d{4}|\d{2}))/i);
    const year=dateMatch?.[2]?.slice(-2);
    const numberInDocument=new RegExp('(?:N[º°o.]?\\s*(?:carga|documento)|N[uú]mero\\s*(?:carga|documento)|Carga)\\s*:?\\s*'+number+'\\b','i').test(textAll);
    if(year&&numberInDocument)id='LP'+year+'-'+number;
