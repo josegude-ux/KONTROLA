@@ -131,7 +131,13 @@ export function createAdminController({client,getUser,bucket,global,errorText,on
       const before=draft.parsed.warehouse||"";
       try{
         const file=await downloadDraftFile();
-        const next=await parsePdfFile(file,{warehouse:warehouse.value});
+        const reparsed=await parsePdfFile(file,{warehouse:warehouse.value});
+        const next={
+          ...reparsed,
+          products:draft.parsed.products,
+          actualTotal:draft.parsed.actualTotal,
+          corrections:draft.parsed.corrections||[]
+        };
         next.corrections=[...(draft.parsed.corrections||[]),{line:null,field:"warehouse",before,after:warehouse.value,by:getUser().id,at:new Date().toISOString()}];
         draft.parsed=next;draft.findings=analyzeDocument(next);draft.state="revision_requerida";renderDraft();
       }catch(error){setStatus("No se pudo reclasificar: "+errorText(error),"error");}
@@ -188,7 +194,7 @@ export function createAdminController({client,getUser,bucket,global,errorText,on
     setBusy(true);
     try{
       const {data,error}=await client.rpc("kontrola_corregir_importacion",{
-        p_importacion:draft.id,p_carga:asPayload(draft.parsed),p_hallazgos:draft.findings,
+        p_importacion:draft.id,p_carga:asPayload({...draft.parsed,verified:readiness.errors.length===0&&confirmed}),p_hallazgos:draft.findings,
         p_correcciones:draft.parsed.corrections||[],p_confirmar_advertencias:confirmed
       });
       if(error)throw error;

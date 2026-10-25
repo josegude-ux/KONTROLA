@@ -43,8 +43,19 @@ select test.assert((select count(*)=1 from public.kontrola_panel_cargas('COR_01_
 select test.assert((select count(*)=1 from public.kontrola_panel_cargas('COR_02_NAR')),'Ferrol debe contener una carga');
 select test.assert((select count(*)=0 from public.kontrola_preparaciones),'consultar no debe iniciar relojes');
 select test.assert((select count(*)=2 from public.kontrola_carga_revisiones where vigente),'cada carga debe conservar su revisión documental');
+reset role;
+select test.assert((select not public and file_size_limit=26214400 from storage.buckets where id='kontrola-pdfs'),'el bucket documental debe permanecer privado y limitado');
+set role authenticated;
+select set_config('request.jwt.claim.sub','00000000-0000-0000-0000-000000000001',false);
 select * from public.kontrola_reservar_importacion('LP26-10001',repeat('a',64),'renamed.pdf',12000)\gset duplicate_
 select test.assert(:'duplicate_repetida'='t','el mismo contenido con otro nombre debe detectarse como repetido');
+do $$
+begin
+ insert into public.kontrola_cargas(codigo,productos,documento_ruta,documento_hash,publicado_por)
+ values('LP26-99999','[]','documentos/LP26-99999/eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee.pdf',repeat('e',64),auth.uid());
+ raise exception 'ASSERTION FAILED: administración insertó una carga sin RPC';
+exception when insufficient_privilege then null;
+end$$;
 
 select set_config('request.jwt.claim.sub','00000000-0000-0000-0000-000000000002',false);
 select test.assert((select count(*)=0 from public.kontrola_importaciones),'un operario no debe leer importaciones administrativas');
@@ -68,6 +79,26 @@ select set_config('request.jwt.claim.sub','00000000-0000-0000-0000-000000000003'
 select * from public.kontrola_iniciar_verificacion(
  'LP26-10001','20000000-0000-0000-0000-000000000002'
 )\gset ver_cor_
+select set_config('request.jwt.claim.sub','00000000-0000-0000-0000-000000000001',false);
+select public.kontrola_configurar_acceso_almacen(
+ '00000000-0000-0000-0000-000000000003','COR_01_COR',false
+);
+select set_config('request.jwt.claim.sub','00000000-0000-0000-0000-000000000003',false);
+select test.assert((select count(*)=0 from public.kontrola_verificaciones where id=:'ver_cor_id'),'revocar el almacén debe ocultar la verificación asignada');
+select test.assert((select count(*)=0 from public.kontrola_verificacion_lineas where verificacion_id=:'ver_cor_id'),'revocar el almacén debe ocultar sus líneas');
+do $$
+begin
+ perform * from public.kontrola_registrar_linea(
+  (select v.id from public.kontrola_verificaciones v where v.codigo='LP26-10001'),1,2
+ );
+ raise exception 'ASSERTION FAILED: el usuario revocado registró una cantidad';
+exception when insufficient_privilege then null;
+end$$;
+select set_config('request.jwt.claim.sub','00000000-0000-0000-0000-000000000001',false);
+select public.kontrola_configurar_acceso_almacen(
+ '00000000-0000-0000-0000-000000000003','COR_01_COR',true
+);
+select set_config('request.jwt.claim.sub','00000000-0000-0000-0000-000000000003',false);
 select * from public.kontrola_registrar_linea(:'ver_cor_id',1,2);
 select * from public.kontrola_registrar_linea(:'ver_cor_id',2,1);
 select * from public.kontrola_finalizar_verificacion(:'ver_cor_id');
@@ -75,6 +106,11 @@ select test.assert((select estado='cerrada' from public.kontrola_cargas where co
 select test.assert((select count(*)=1 from public.kontrola_incidencias where codigo='LP26-10001' and estado='pendiente'),'la diferencia debe crear una incidencia');
 select test.assert((select count(*)=2 from public.kontrola_verificacion_eventos where verificacion_id=:'ver_cor_id'),'cada cantidad debe dejar evento');
 
+select set_config('request.jwt.claim.sub','00000000-0000-0000-0000-000000000001',false);
+select public.kontrola_configurar_acceso_almacen(
+ '00000000-0000-0000-0000-000000000003','COR_02_NAR',true
+);
+select set_config('request.jwt.claim.sub','00000000-0000-0000-0000-000000000003',false);
 select * from public.kontrola_iniciar_verificacion(
  'LP26-20001','20000000-0000-0000-0000-000000000003'
 )\gset ver_fer_
@@ -85,13 +121,34 @@ select set_config('request.jwt.claim.sub','00000000-0000-0000-0000-000000000001'
 select test.assert((select fin is not null and cierre_motivo='Finalización de verificación' from public.kontrola_preparaciones where codigo='LP26-20001'),'verificar debe cerrar la preparación abierta');
 select test.assert((select estado='cerrada' from public.kontrola_cargas where codigo='LP26-20001'),'la carga Ferrol debe cerrarse');
 
+reset role;
+insert into public.kontrola_cargas(
+ codigo,fecha,referencias,productos,documento_ruta,documento_hash,publicado_por,almacen,estado
+) values(
+ 'LP26-20002','2026-10-25',1,'[{"sku":"PRD0000005","description":"Solapada","location":"E101-1","qty":1,"unit":"CAJA"}]',
+ 'documentos/LP26-20002/eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee.pdf',
+ repeat('e',64),'00000000-0000-0000-0000-000000000001','COR_02_NAR','publicada'
+);
+set role authenticated;
+select set_config('request.jwt.claim.sub','00000000-0000-0000-0000-000000000004',false);
+select * from public.kontrola_iniciar_preparacion('LP26-20002','10000000-0000-0000-0000-000000000004');
+select set_config('request.jwt.claim.sub','00000000-0000-0000-0000-000000000003',false);
+select * from public.kontrola_iniciar_verificacion('LP26-20002','20000000-0000-0000-0000-000000000004')\gset overlap_
+select set_config('request.jwt.claim.sub','00000000-0000-0000-0000-000000000004',false);
+select public.kontrola_finalizar_preparacion('LP26-20002');
+select test.assert((select estado='verificacion_en_curso' from public.kontrola_cargas where codigo='LP26-20002'),'cerrar preparación no debe ocultar una verificación activa');
+select set_config('request.jwt.claim.sub','00000000-0000-0000-0000-000000000003',false);
+select * from public.kontrola_registrar_linea(:'overlap_id',1,1);
+select * from public.kontrola_finalizar_verificacion(:'overlap_id');
+
 select id from public.kontrola_incidencias where codigo='LP26-10001' and estado='pendiente'\gset inc_
+select set_config('request.jwt.claim.sub','00000000-0000-0000-0000-000000000001',false);
 select public.kontrola_regularizar_incidencia(:'inc_id');
 select test.assert((select estado='regularizada' from public.kontrola_incidencias where id=:'inc_id'),'administración debe confirmar la regularización');
 select test.assert((select count(*)>=2 from public.kontrola_incidencia_eventos where incidencia_id=:'inc_id'),'la incidencia debe conservar histórico');
 select test.assert((select count(*)=0 from public.kontrola_avisos where entidad_id=:'inc_id' and activo),'el aviso regularizado debe quedar inactivo');
 select test.assert((select cerradas=1 from public.kontrola_resumen_zona('COR_01_COR','2026-10-25')),'el resumen de Coruña debe usar datos reales');
-select test.assert((select cerradas=1 from public.kontrola_resumen_zona('COR_02_NAR','2026-10-25')),'el resumen de Ferrol debe usar datos reales');
+select test.assert((select cerradas=2 from public.kontrola_resumen_zona('COR_02_NAR','2026-10-25')),'el resumen de Ferrol debe usar datos reales');
 
 select public.kontrola_configurar_acceso_almacen(
  '00000000-0000-0000-0000-000000000004','COR_02_NAR',true
@@ -103,7 +160,7 @@ begin
  raise exception 'ASSERTION FAILED: un operario restringido accedió a Coruña';
 exception when insufficient_privilege then null;
 end$$;
-select test.assert((select count(*)=1 from public.kontrola_panel_cargas('COR_02_NAR')),'el permiso configurable debe permitir Ferrol');
+select test.assert((select count(*)=2 from public.kontrola_panel_cargas('COR_02_NAR')),'el permiso configurable debe permitir Ferrol');
 select set_config('request.jwt.claim.sub','00000000-0000-0000-0000-000000000001',false);
 select public.kontrola_configurar_acceso_almacen(
  '00000000-0000-0000-0000-000000000004','COR_02_NAR',false

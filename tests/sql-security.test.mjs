@@ -3,11 +3,11 @@ import assert from "node:assert/strict";
 import {readFile} from "node:fs/promises";
 
 const verificationSql=await readFile(new URL("../supabase/migrations/20261025_kontrola_verificacion.sql",import.meta.url),"utf8");
-const phaseOneSql=await readFile(new URL("../supabase/migrations/20261024_kontrola_preparacion.sql",import.meta.url),"utf8");
+const integralSql=await readFile(new URL("../supabase/migrations/20261026_kontrola_operacion_integral.sql",import.meta.url),"utf8");
 const app=await readFile(new URL("../src/app.mjs",import.meta.url),"utf8");
 
 test("profile authorization is server-owned and the browser does not query usuarios_app directly",()=>{
-  assert.match(phaseOneSql,/create or replace function public\.kontrola_mi_perfil\(\)/i);
+  assert.match(integralSql,/create or replace function public\.kontrola_mi_perfil\(\)/i);
   assert.doesNotMatch(app,/\.from\(["']usuarios_app["']\)/);
   assert.match(app,/\.rpc\(["']kontrola_mi_perfil["']\)/);
 });
@@ -23,9 +23,9 @@ test("verification mutations are RPC-only for authenticated users",()=>{
 });
 
 test("preparation can be explicitly completed without trusting a browser timestamp",()=>{
-  assert.match(phaseOneSql,/create or replace function public\.kontrola_finalizar_preparacion\(p_codigo text\)/i);
-  assert.match(phaseOneSql,/v_now timestamptz := now\(\)/i);
-  assert.match(phaseOneSql,/operario_id = v_user/i);
+  assert.match(integralSql,/create or replace function public\.kontrola_finalizar_preparacion\(p_codigo text\)/i);
+  assert.match(integralSql,/v_now timestamptz:=now\(\)/i);
+  assert.match(integralSql,/v_p\.operario_id<>v_user/i);
 });
 
 test("the database rejects self-verification and serializes load changes",()=>{

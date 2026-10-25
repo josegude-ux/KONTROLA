@@ -2,6 +2,19 @@
 -- Incremental: conserva las tablas de Fase 1 y verificación, sin tocar otros proyectos.
 begin;
 
+-- La Fase 1 pudo haberse aplicado antes de que existiera este RPC; se entrega
+-- de forma incremental para que las instalaciones existentes también lo reciban.
+create or replace function public.kontrola_mi_perfil()
+returns table(id uuid,nombre text,rol text,activo boolean)
+language sql stable security definer set search_path=''
+as $$
+ select u.id,u.nombre::text,u.rol::text,u.activo
+ from public.usuarios_app u
+ where u.id=(select auth.uid()) and u.activo and u.rol in ('operario','administrador');
+$$;
+revoke all on function public.kontrola_mi_perfil() from public,anon;
+grant execute on function public.kontrola_mi_perfil() to authenticated;
+
 create table if not exists public.kontrola_almacenes (
  codigo text primary key,
  nombre text not null,
@@ -15,6 +28,13 @@ on conflict(codigo) do update set nombre=excluded.nombre,activo=true;
 insert into public.kontrola_almacenes(codigo,nombre,activo) values
  ('PEND_00_CLAS','Pendiente de clasificar',false)
 on conflict(codigo) do update set nombre=excluded.nombre,activo=false;
+
+insert into storage.buckets(id,name,public,file_size_limit,allowed_mime_types)
+values('kontrola-pdfs','kontrola-pdfs',false,26214400,array['application/pdf'])
+on conflict(id) do update set
+ public=false,
+ file_size_limit=excluded.file_size_limit,
+ allowed_mime_types=excluded.allowed_mime_types;
 
 create table if not exists public.kontrola_usuario_almacenes (
  usuario_id uuid not null references auth.users(id) on delete cascade,
@@ -42,6 +62,8 @@ update public.kontrola_cargas set estado=case
 where estado is null;
 alter table public.kontrola_cargas alter column almacen set not null;
 alter table public.kontrola_cargas alter column estado set not null;
+revoke insert,update,delete on public.kontrola_cargas from authenticated;
+drop policy if exists "kontrola_cargas_publicar" on public.kontrola_cargas;
 alter table public.kontrola_cargas drop constraint if exists kontrola_cargas_estado_valido;
 alter table public.kontrola_cargas add constraint kontrola_cargas_estado_valido check (
  estado in ('publicada','preparacion_en_curso','preparada','verificacion_en_curso','cerrada')
@@ -209,6 +231,47 @@ create policy "kontrola_avisos_lectura" on public.kontrola_avisos
   or (destinatario_clave='usuario:'||(select auth.uid())::text and public.kontrola_puede_almacen(almacen))
  );
 
+drop policy if exists "kontrola_verificaciones_lectura" on public.kontrola_verificaciones;
+create policy "kontrola_verificaciones_lectura" on public.kontrola_verificaciones
+ for select to authenticated using (
+  public.kontrola_es_administrador() or (
+   public.kontrola_usuario_activo() and verificador_id=(select auth.uid()) and exists(
+    select 1 from public.kontrola_cargas c
+    where c.codigo=kontrola_verificaciones.codigo and public.kontrola_puede_almacen(c.almacen)
+   )
+  )
+ );
+drop policy if exists "kontrola_verificacion_lineas_lectura" on public.kontrola_verificacion_lineas;
+create policy "kontrola_verificacion_lineas_lectura" on public.kontrola_verificacion_lineas
+ for select to authenticated using (
+  public.kontrola_es_administrador() or exists(
+   select 1 from public.kontrola_verificaciones v
+   join public.kontrola_cargas c on c.codigo=v.codigo
+   where v.id=verificacion_id and v.verificador_id=(select auth.uid())
+    and public.kontrola_usuario_activo() and public.kontrola_puede_almacen(c.almacen)
+  )
+ );
+drop policy if exists "kontrola_incidencias_lectura" on public.kontrola_incidencias;
+create policy "kontrola_incidencias_lectura" on public.kontrola_incidencias
+ for select to authenticated using (
+  public.kontrola_es_administrador() or exists(
+   select 1 from public.kontrola_verificaciones v
+   join public.kontrola_cargas c on c.codigo=v.codigo
+   where v.id=verificacion_id and v.verificador_id=(select auth.uid())
+    and public.kontrola_usuario_activo() and public.kontrola_puede_almacen(c.almacen)
+  )
+ );
+drop policy if exists "kontrola_verificacion_eventos_lectura" on public.kontrola_verificacion_eventos;
+create policy "kontrola_verificacion_eventos_lectura" on public.kontrola_verificacion_eventos
+ for select to authenticated using (
+  public.kontrola_es_administrador() or exists(
+   select 1 from public.kontrola_verificaciones v
+   join public.kontrola_cargas c on c.codigo=v.codigo
+   where v.id=verificacion_id and v.verificador_id=(select auth.uid())
+    and public.kontrola_usuario_activo() and public.kontrola_puede_almacen(c.almacen)
+  )
+ );
+
 drop policy if exists "kontrola_cargas_lectura" on public.kontrola_cargas;
 create policy "kontrola_cargas_lectura" on public.kontrola_cargas
  for select to authenticated using (public.kontrola_puede_almacen(almacen));
@@ -229,7 +292,7 @@ create policy "kontrola_pdf_publicar_admin" on storage.objects for insert to aut
   bucket_id='kontrola-pdfs' and public.kontrola_es_administrador()
   and exists(
    select 1 from public.kontrola_importaciones i
-   where i.documento_ruta=name and i.estado='reservada' and i.creado_por=(select auth.uid())
+   where i.documento_ruta=name and i.estado='reservada'
   )
  );
 revoke execute on function public.kontrola_cargas_para_verificar() from authenticated;
@@ -250,6 +313,7 @@ create or replace function public.kontrola_configurar_acceso_almacen(
 )
 returns void language plpgsql security definer set search_path=''
 as $$
+declare v_anterior boolean;
 begin
  if auth.uid() is null or not public.kontrola_es_administrador() then
   raise exception 'Solo administración puede configurar almacenes' using errcode='42501';
@@ -260,9 +324,15 @@ begin
  if not exists(select 1 from public.kontrola_almacenes a where a.codigo=p_almacen and a.activo) then
   raise exception 'Almacén no disponible' using errcode='22023';
  end if;
+ select ua.activo into v_anterior from public.kontrola_usuario_almacenes ua
+ where ua.usuario_id=p_usuario and ua.almacen=p_almacen;
  insert into public.kontrola_usuario_almacenes(usuario_id,almacen,activo)
  values(p_usuario,p_almacen,p_activo)
  on conflict(usuario_id,almacen) do update set activo=excluded.activo,asignado_en=now();
+ insert into public.kontrola_actividad(almacen,tipo,actor_id,detalle)
+ values(p_almacen,'acceso_almacen_configurado',(select auth.uid()),jsonb_build_object(
+  'usuario_id',p_usuario,'anterior',v_anterior,'nuevo',p_activo
+ ));
 end;
 $$;
 revoke all on function public.kontrola_configurar_acceso_almacen(uuid,text,boolean) from public,anon;
@@ -340,14 +410,15 @@ begin
  if p_codigo !~ '^LP[0-9]{2}-[0-9]{4,6}$' or p_hash !~ '^[a-f0-9]{64}$' or p_tamano<=0 or p_tamano>26214400 then
   raise exception 'Metadatos de importación inválidos' using errcode='22023';
  end if;
- select x.* into v_existing from public.kontrola_importaciones x where x.documento_hash=p_hash;
- if found then
-  id:=v_existing.id;documento_ruta:=v_existing.documento_ruta;repetida:=true;estado:=v_existing.estado;return next;return;
- end if;
  v_id:=gen_random_uuid();
  insert into public.kontrola_importaciones(
   id,codigo,documento_hash,documento_ruta,archivo_nombre,archivo_tamano,creado_por,actualizado_por
- ) values(v_id,p_codigo,p_hash,'documentos/'||p_codigo||'/'||p_hash||'.pdf',p_archivo,p_tamano,v_user,v_user);
+ ) values(v_id,p_codigo,p_hash,'documentos/'||p_codigo||'/'||p_hash||'.pdf',p_archivo,p_tamano,v_user,v_user)
+ on conflict(documento_hash) do nothing returning kontrola_importaciones.id into v_id;
+ if v_id is null then
+  select x.* into v_existing from public.kontrola_importaciones x where x.documento_hash=p_hash;
+  id:=v_existing.id;documento_ruta:=v_existing.documento_ruta;repetida:=true;estado:=v_existing.estado;return next;return;
+ end if;
  id:=v_id;documento_ruta:='documentos/'||p_codigo||'/'||p_hash||'.pdf';repetida:=false;estado:='reservada';return next;
 end;
 $$;
@@ -509,7 +580,8 @@ begin
  update public.kontrola_preparaciones p set fin=v_now,cierre_motivo='Cambio de carga a '||p_codigo,actualizado_en=v_now
  where p.operario_id=v_user and p.fin is null;
  update public.kontrola_cargas c set estado='preparada',actualizado_en=v_now
- where exists(select 1 from public.kontrola_preparaciones p where p.codigo=c.codigo and p.operario_id=v_user and p.fin=v_now);
+ where exists(select 1 from public.kontrola_preparaciones p where p.codigo=c.codigo and p.operario_id=v_user and p.fin=v_now)
+  and not exists(select 1 from public.kontrola_verificaciones v where v.codigo=c.codigo and v.fin is null);
  insert into public.kontrola_preparaciones(codigo,operario_id,inicio,inicio_request_id,actualizado_en)
  values(p_codigo,v_user,v_now,p_request_id,v_now);
  update public.kontrola_cargas set estado='preparacion_en_curso',actualizado_en=v_now where kontrola_cargas.codigo=p_codigo;
@@ -534,7 +606,12 @@ begin
  if not found or v_p.operario_id<>v_user then raise exception 'Preparación no disponible' using errcode='42501';end if;
  if v_p.fin is not null then return v_p.fin;end if;
  update public.kontrola_preparaciones set fin=v_now,cierre_motivo='Finalización manual',actualizado_en=v_now where codigo=p_codigo;
- update public.kontrola_cargas set estado='preparada',actualizado_en=v_now where kontrola_cargas.codigo=p_codigo returning almacen into v_almacen;
+ update public.kontrola_cargas set
+  estado=case when exists(
+   select 1 from public.kontrola_verificaciones v where v.codigo=p_codigo and v.fin is null
+  ) then 'verificacion_en_curso' else 'preparada' end,
+  actualizado_en=v_now
+ where kontrola_cargas.codigo=p_codigo returning almacen into v_almacen;
  insert into public.kontrola_actividad(codigo,almacen,tipo,actor_id,detalle)
  values(p_codigo,v_almacen,'preparacion_finalizada',v_user,jsonb_build_object('motivo','manual'));
  return v_now;
@@ -578,6 +655,72 @@ revoke all on function public.kontrola_iniciar_verificacion(text,uuid) from publ
 grant execute on function public.kontrola_iniciar_verificacion(text,uuid) to authenticated;
 revoke execute on function public.kontrola_abrir_verificacion(text) from authenticated;
 
+create or replace function public.kontrola_registrar_linea(
+ p_verificacion uuid,p_linea integer,p_cantidad numeric
+)
+returns table(linea integer,comprobada_cantidad numeric,diferencia numeric,incidencia_estado text)
+language plpgsql security definer set search_path=''
+as $$
+declare
+ v_user uuid:=auth.uid();
+ v_verificacion public.kontrola_verificaciones%rowtype;
+ v_linea public.kontrola_verificacion_lineas%rowtype;
+ v_now timestamptz:=now();
+ v_almacen text;
+begin
+ if v_user is null or not public.kontrola_usuario_activo() then
+  raise exception 'Usuario no habilitado para verificación' using errcode='42501';
+ end if;
+ if p_cantidad is null or p_cantidad<0 or pg_catalog.scale(p_cantidad)>3 then
+  raise exception 'Cantidad comprobada inválida' using errcode='22023';
+ end if;
+ select v.* into v_verificacion from public.kontrola_verificaciones v
+ where v.id=p_verificacion for update;
+ if not found or v_verificacion.verificador_id<>v_user then
+  raise exception 'Verificación no disponible para este usuario' using errcode='42501';
+ end if;
+ select c.almacen into v_almacen from public.kontrola_cargas c where c.codigo=v_verificacion.codigo;
+ if not public.kontrola_puede_almacen(v_almacen) then
+  raise exception 'Acceso al almacén revocado' using errcode='42501';
+ end if;
+ if v_verificacion.estado<>'en_curso' then
+  raise exception 'La verificación ya está finalizada' using errcode='22023';
+ end if;
+ select l.* into v_linea from public.kontrola_verificacion_lineas l
+ where l.verificacion_id=p_verificacion and l.linea=p_linea for update;
+ if not found then raise exception 'Línea de verificación inexistente' using errcode='22023';end if;
+ insert into public.kontrola_verificacion_eventos(
+  verificacion_id,linea,cantidad_anterior,cantidad_nueva,registrado_por,registrado_en
+ ) values(p_verificacion,p_linea,v_linea.comprobada_cantidad,p_cantidad,v_user,v_now);
+ update public.kontrola_verificacion_lineas l
+ set comprobada_cantidad=p_cantidad,comprobada_por=v_user,comprobada_en=v_now
+ where l.verificacion_id=p_verificacion and l.linea=p_linea;
+ if p_cantidad<>v_linea.prevista_cantidad then
+  insert into public.kontrola_incidencias(
+   codigo,verificacion_id,linea,sku,prevista_cantidad,comprobada_cantidad,
+   diferencia,estado,detectada_por,detectada_en,actualizada_por,actualizada_en
+  ) values(
+   v_verificacion.codigo,p_verificacion,p_linea,v_linea.sku,v_linea.prevista_cantidad,
+   p_cantidad,p_cantidad-v_linea.prevista_cantidad,'pendiente',v_user,v_now,v_user,v_now
+  )
+  on conflict on constraint kontrola_incidencia_linea_unica do update set
+   comprobada_cantidad=excluded.comprobada_cantidad,diferencia=excluded.diferencia,
+   estado='pendiente',actualizada_por=excluded.actualizada_por,actualizada_en=excluded.actualizada_en;
+  incidencia_estado:='pendiente';
+ else
+  update public.kontrola_incidencias i set
+   comprobada_cantidad=p_cantidad,diferencia=0,estado='descartada',
+   actualizada_por=v_user,actualizada_en=v_now
+  where i.verificacion_id=p_verificacion and i.linea=p_linea;
+  incidencia_estado:=null;
+ end if;
+ linea:=p_linea;comprobada_cantidad:=p_cantidad;
+ diferencia:=p_cantidad-v_linea.prevista_cantidad;return next;
+end;
+$$;
+revoke all on function public.kontrola_registrar_linea(uuid,integer,numeric) from public,anon;
+grant execute on function public.kontrola_registrar_linea(uuid,integer,numeric) to authenticated;
+
 create or replace function public.kontrola_finalizar_verificacion(p_verificacion uuid)
 returns table(codigo text,finalizada_en timestamptz,incidencias_pendientes bigint)
 language plpgsql security definer set search_path=''
@@ -587,6 +730,8 @@ begin
  if v_user is null or not public.kontrola_usuario_activo() then raise exception 'Usuario no habilitado' using errcode='42501';end if;
  select v.* into v_v from public.kontrola_verificaciones v where v.id=p_verificacion for update;
  if not found or v_v.verificador_id<>v_user then raise exception 'Verificación no disponible' using errcode='42501';end if;
+ select c.almacen into v_almacen from public.kontrola_cargas c where c.codigo=v_v.codigo;
+ if not public.kontrola_puede_almacen(v_almacen) then raise exception 'Acceso al almacén revocado' using errcode='42501';end if;
  if exists(select 1 from public.kontrola_verificacion_lineas l where l.verificacion_id=p_verificacion and l.comprobada_cantidad is null) then
   raise exception 'Faltan líneas por comprobar' using errcode='22023';
  end if;

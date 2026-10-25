@@ -51,10 +51,12 @@ test("quantity corrections recalculate the extracted total",()=>{
 });
 
 test("unverified parser output and parser warnings block publication",()=>{
-  const findings=analyzeDocument({...parsed,verified:false,warnings:["Fila ilegible"]});
-  assert.ok(findings.some(item=>item.code==="parser_warning"&&item.severity==="error"));
-  assert.ok(findings.some(item=>item.code==="unverified_document"&&item.severity==="error"));
-  assert.equal(publicationReadiness(findings,findings.map(item=>item.id)).ready,false);
+  const reviewed={...parsed,products:parsed.products.map(product=>({...product,unit:"CAJA",location:product.location||"B101-1"})),verified:false,warnings:["Fila ilegible"]};
+  const findings=analyzeDocument(reviewed);
+  assert.ok(findings.some(item=>item.code==="parser_warning"&&item.severity==="warning"));
+  assert.ok(findings.some(item=>item.code==="unverified_document"&&item.severity==="warning"));
+  assert.equal(publicationReadiness(findings,[]).ready,false);
+  assert.equal(publicationReadiness(findings,findings.map(item=>item.id)).ready,true);
 });
 
 test("missing documentary totals block publication",()=>{

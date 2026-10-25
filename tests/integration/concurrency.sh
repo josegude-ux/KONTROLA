@@ -57,4 +57,23 @@ active=$("${PSQL[@]}" -qAt -c "select count(*) from public.kontrola_preparacione
 reason=$("${PSQL[@]}" -qAt -c "select cierre_motivo from public.kontrola_preparaciones where codigo='LP26-30001'")
 [[ "$active" == "1" ]]
 [[ "$reason" == "Cambio de carga a LP26-30002" ]]
-echo "KONTROLA_CONCURRENCY_OK winner=$winner"
+
+set +e
+call_as "00000000-0000-0000-0000-000000000001" \
+  "select repetida from public.kontrola_reservar_importacion('LP26-40001',repeat('f',64),'race.pdf',1000);" \
+  >/tmp/kontrola-import-race-one.log 2>&1 &
+import_pid_one=$!
+call_as "00000000-0000-0000-0000-000000000001" \
+  "select repetida from public.kontrola_reservar_importacion('LP26-40001',repeat('f',64),'race.pdf',1000);" \
+  >/tmp/kontrola-import-race-two.log 2>&1 &
+import_pid_two=$!
+wait "$import_pid_one";import_status_one=$?
+wait "$import_pid_two";import_status_two=$?
+set -e
+
+[[ $import_status_one -eq 0 && $import_status_two -eq 0 ]]
+[[ $("${PSQL[@]}" -qAt -c "select count(*) from public.kontrola_importaciones where documento_hash=repeat('f',64)") == "1" ]]
+[[ $(cat /tmp/kontrola-import-race-one.log /tmp/kontrola-import-race-two.log | rg -c '^[ft]$') == "2" ]]
+[[ $(cat /tmp/kontrola-import-race-one.log /tmp/kontrola-import-race-two.log | rg -c '^f$') == "1" ]]
+[[ $(cat /tmp/kontrola-import-race-one.log /tmp/kontrola-import-race-two.log | rg -c '^t$') == "1" ]]
+echo "KONTROLA_CONCURRENCY_OK preparer=$winner import_reservation=serialized"

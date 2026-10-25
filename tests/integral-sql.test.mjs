@@ -30,6 +30,8 @@ test("document import keeps immutable revisions and blocks replacement after wor
 test("warehouse restrictions fail closed once any membership is configured",()=>{
   assert.match(sql,/not exists\s*\(\s*select 1 from public\.kontrola_usuario_almacenes ua\s*where ua\.usuario_id=\(select auth\.uid\(\)\)\s*\)/i);
   assert.match(sql,/exists\s*\(\s*select 1 from public\.kontrola_usuario_almacenes ua[\s\S]*ua\.activo\s*\)/i);
+  assert.match(sql,/Acceso al almacén revocado/i);
+  assert.match(sql,/kontrola_verificacion_lineas_lectura[\s\S]*kontrola_puede_almacen/i);
 });
 
 test("review corrections persist warehouse and publication validates documentary totals",()=>{

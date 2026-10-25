@@ -26,19 +26,6 @@ $$;
 revoke all on function public.kontrola_es_administrador() from public, anon;
 grant execute on function public.kontrola_es_administrador() to authenticated;
 
--- Expone solo el perfil de la sesión actual; el navegador no consulta usuarios_app.
-create or replace function public.kontrola_mi_perfil()
-returns table(id uuid,nombre text,rol text,activo boolean)
-language sql stable security definer set search_path = ''
-as $$
- select u.id,u.nombre::text,u.rol::text,u.activo
- from public.usuarios_app u
- where u.id = (select auth.uid()) and u.activo = true
-  and u.rol in ('operario','administrador');
-$$;
-revoke all on function public.kontrola_mi_perfil() from public, anon;
-grant execute on function public.kontrola_mi_perfil() to authenticated;
-
 create table if not exists public.kontrola_cargas (
  codigo text primary key check (codigo ~ '^LP[0-9]{2}-[0-9]{4,6}$'),
  fecha date,
@@ -135,38 +122,6 @@ end;
 $$;
 revoke all on function public.kontrola_abrir_carga(text) from public, anon;
 grant execute on function public.kontrola_abrir_carga(text) to authenticated;
-
--- Permite cerrar la última preparación del turno sin abrir una carga ficticia.
-create or replace function public.kontrola_finalizar_preparacion(p_codigo text)
-returns timestamptz
-language plpgsql security definer set search_path = ''
-as $$
-declare
- v_user uuid := auth.uid();
- v_now timestamptz := now();
- v_preparacion public.kontrola_preparaciones%rowtype;
-begin
- if v_user is null or not public.kontrola_usuario_activo() then
-  raise exception 'Usuario no habilitado para preparación' using errcode = '42501';
- end if;
- perform pg_catalog.pg_advisory_xact_lock(pg_catalog.hashtextextended('operario:'||v_user::text,0));
- perform pg_catalog.pg_advisory_xact_lock(pg_catalog.hashtextextended('carga:'||p_codigo,0));
- select p.* into v_preparacion from public.kontrola_preparaciones p
- where p.codigo = p_codigo for update;
- if not found or v_preparacion.operario_id <> v_user then
-  raise exception 'Preparación no disponible para este usuario' using errcode = '42501';
- end if;
- if v_preparacion.fin is not null then
-  return v_preparacion.fin;
- end if;
- update public.kontrola_preparaciones p
- set fin = v_now, cierre_motivo = 'Finalización manual'
- where p.codigo = p_codigo and p.operario_id = v_user;
- return v_now;
-end;
-$$;
-revoke all on function public.kontrola_finalizar_preparacion(text) from public, anon;
-grant execute on function public.kontrola_finalizar_preparacion(text) to authenticated;
 
 -- Bucket privado separado: las políticas existentes de 'pdf-cargas' son más permisivas.
 insert into storage.buckets(id,name,public,file_size_limit,allowed_mime_types)

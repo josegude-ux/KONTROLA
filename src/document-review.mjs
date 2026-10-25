@@ -26,7 +26,7 @@ export function analyzeDocument(parsed={}){
     (parsed.availableWarehouses||[]).join(", ")
   ));
   for(const [index,message] of (Array.isArray(parsed.warnings)?parsed.warnings:[]).entries()){
-    findings.push(finding("parser_warning","error","El motor no pudo validar completamente el PDF.",index+1,clean(message)));
+    findings.push(finding("parser_warning","warning","El motor requiere revisión manual del PDF.",index+1,clean(message)));
   }
   const products=Array.isArray(parsed.products)?parsed.products:[];
   if(!products.length)findings.push(finding("no_products","error","No se reconocieron líneas de mercancía."));
@@ -55,7 +55,7 @@ export function analyzeDocument(parsed={}){
     "missing_quantity_total","error","No se pudo contrastar la cantidad total del PDF."
   ));
   if(parsed.verified===false)findings.push(finding(
-    "unverified_document","error","El documento no ha superado las comprobaciones del motor."
+    "unverified_document","warning","El documento requiere confirmación administrativa."
   ));
   return findings;
 }
@@ -81,14 +81,7 @@ export function applyLineCorrection(parsed,lineNumber,changes,userId,at=new Date
   }
   products[index]=product;
   const actualTotal=products.reduce((sum,item)=>sum+Number(item.qty||0),0);
-  const structurallyValid=products.length>0
-    && Number(parsed.refs)===products.length
-    && parsed.declaredTotal!=null
-    && Math.abs(Number(parsed.declaredTotal)-actualTotal)<0.000001
-    && products.every(item=>/^PRD\d{7}$/i.test(clean(item.sku))
-      && Number.isFinite(Number(item.qty))&&Number(item.qty)>=0
-      && (Number(item.qty)===0||clean(item.unit)));
-  return {...parsed,products,actualTotal,verified:structurallyValid&&!parsed.mixedWarehouse,warnings:[],corrections};
+  return {...parsed,products,actualTotal,verified:false,corrections};
 }
 
 export function publicationReadiness(findings=[],acknowledgedIds=[]){
