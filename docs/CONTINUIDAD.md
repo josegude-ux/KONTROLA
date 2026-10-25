@@ -1,5 +1,7 @@
 # KONTROLA — Ficha maestra de continuidad
 
+> **DECISIÓN DE PRIORIDAD ALTA (25/10/2026):** se inicia KONTROLA desde cero **en datos de operación y PDF nuevos**, no en código. Se renuncia a migrar, conciliar o recuperar los PDF y registros antiguos de Control de Cargas. NO borrar datos históricos; simplemente quedan fuera del alcance de implantación. A partir del arranque, los PDF que genere KONTROLA se moverán **periódicamente y manualmente** a una carpeta OneDrive de empresa; nombre y frecuencia aún no indicados. Ver [PLAN_ARCHIVO_ONEDRIVE.md](PLAN_ARCHIVO_ONEDRIVE.md). Esta decisión prevalece sobre las secciones históricas de migración/reconciliación de esta ficha.
+
 **Actualización:** 25 de octubre de 2026
 **Repositorio:** https://github.com/josegude-ux/KONTROLA
 **Rama principal del desarrollo en curso:** cursor/verificacion-fisica-cargas-8ba0
