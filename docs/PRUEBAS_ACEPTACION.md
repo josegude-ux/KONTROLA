@@ -38,6 +38,8 @@
 | A22 | Visibilidad | Inicio en perfil operario y administrador | Control de Tanques totalmente oculto |
 | A23 | Autorización Storage | Operario sin permisos intenta descargar PDF de otro almacén | Acceso denegado por RLS/políticas de Storage |
 | A24 | Fecha diaria | Consultar el resumen cerca de medianoche y al cambiar horario verano/invierno | Fecha del almacén Europe/Madrid, no UTC |
+| A25 | Importación múltiple | Seleccionar varios PDF autorizados, uno correcto, otro repetido y otro inválido | Procesamiento secuencial, informe por archivo, ninguna publicación automática |
+| A26 | Lote conflictivo | Dos PDF distintos con el mismo número de carga dentro del lote | Se bloquea el segundo para revisión individual, sin sobrescribir el primero |
 
 ## Condiciones de salida
 
