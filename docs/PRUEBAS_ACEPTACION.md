@@ -50,12 +50,16 @@
 | A34 | Conciliación local | Seleccionar JSON legacy y comparar contra almacén autorizado | Coincidencias, faltantes y diferencias visibles sin subir el backup ni escribir en KONTROLA |
 | A35 | Conciliación por almacén | Cambiar Coruña/Ferrol durante la consulta | Ignorar respuesta anterior; no presentar datos de otra zona |
 | A36 | Integridad documental | Copias con PDF renombrado o metadatos coincidentes sin hash conocido | No declarar PDF idéntico; exigir cotejo de originales y horarios antes de migrar |
+| A37 | Inventario PDF local | En el mismo contenedor del Control de Cargas, buscar claves de documentos IndexedDB | Mostrar versiones y documentos presentes sin crear, modificar ni borrar bases de datos |
+| A38 | Aislamiento de PWA | Buscar desde otro contenedor de Safari/PWA de iOS | Advertir que un resultado vacío no significa que los PDF se hayan perdido |
+| A39 | Recuperar revisión antigua | Guardar un PDF local con SHA correcto; probar otro con huella incorrecta | Solo descarga tras clic; compara SHA y rechaza archivo alterado sin tocar originales |
+| A40 | Seguridad PDF local | Cambiar usuario mientras se está preparando una recuperación | No descargar el archivo bajo la sesión nueva ni dejar datos visibles anteriores |
 
 ## Condiciones de salida
 
 **Desarrollo:** funciones implementadas, pruebas unitarias y SQL temporales superadas.
 
-**Validación real:** todas las pruebas A01–A36 ejecutadas y registradas con evidencias, sin errores bloqueantes.
+**Validación real:** todas las pruebas A01–A40 ejecutadas y registradas con evidencias, sin errores bloqueantes.
 
 **Puesta en producción:** únicamente tras inventario de datos locales y nube, copia verificada, migración autorizada con reversión, revisión de permisos, aprobación explícita y despliegue controlado.
 
