@@ -133,7 +133,11 @@ Desde el Control de Cargas original, guarda una copia JSON. En **Administración
 
 Recuerda que los PDF originales están guardados aparte en el móvil antiguo; conserva ese teléfono y no borres su almacenamiento hasta completar una migración autorizada.
 
-**Captura pendiente:** análisis local de una copia ficticia.
+Para **comparar esa copia con KONTROLA**, selecciona el mismo archivo JSON (si ya se ha limpiado el selector, vuelve a elegirlo), comprueba el almacén de Administración y pulsa **Comparar con KONTROLA (solo lectura)**. Aparecerán las coincidencias, los datos diferentes y las cargas que no se encuentran en ese almacén.
+
+**Importante:** aunque los datos coincidan, eso no confirma que sean el mismo PDF. No borres datos del móvil anterior ni realices ninguna migración.
+
+**Captura pendiente:** análisis y conciliación con copias ficticias.
 
 ### 13. Imprimir varias hojas procesadas
 
