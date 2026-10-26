@@ -17,6 +17,7 @@ from scripts.visura_github_readonly_snapshot import (
 )
 
 MAX_RULESET_PAGES = 5
+MAX_APPLIED_RULE_PAGES = 5
 _BRANCH = re.compile(r"[a-zA-Z0-9_./-]{1,200}\Z")
 
 
@@ -121,6 +122,47 @@ def inspect_branch_policy(repository, branch_name, token, opener=None):
     else:
         raise ValueError("Rulesets listing too long; incomplete result")
 
+    # This endpoint returns active rulesets actually applying to the named
+    # branch, unlike the repository-wide listing above. It does not replace
+    # classic branch protection checks or prove bypass permissions.
+    applied_rules = []
+    applied_status = "retrieved"
+    for page in range(1, MAX_APPLIED_RULE_PAGES + 1):
+        lookup, data = _read_status(
+            path + "/rules/branches/" + encoded_branch
+            + "?per_page=100&page=" + str(page),
+            token, opener,
+        )
+        if lookup != "retrieved":
+            applied_status = lookup
+            applied_rules = []
+            break
+        if not isinstance(data, list) or len(data) > 100:
+            raise ValueError("Invalid active branch rules response")
+        for rule in data:
+            if not isinstance(rule, dict):
+                raise ValueError("Invalid active branch rule record")
+            rule_type = rule.get("type")
+            rule_id = rule.get("ruleset_id")
+            source_type = rule.get("ruleset_source_type")
+            if (
+                not isinstance(rule_type, str) or not rule_type.strip()
+                or (rule_id is not None and (
+                    type(rule_id) is not int or rule_id <= 0
+                ))
+                or (source_type is not None and not isinstance(source_type, str))
+            ):
+                raise ValueError("Invalid active branch rule metadata")
+            applied_rules.append({
+                "type": rule_type,
+                "ruleset_id": rule_id,
+                "ruleset_source_type": source_type,
+            })
+        if len(data) < 100:
+            break
+    else:
+        raise ValueError("Active branch rules listing too long; incomplete result")
+
     return {
         "repository": repository,
         "branch": branch_name,
@@ -134,14 +176,28 @@ def inspect_branch_policy(repository, branch_name, token, opener=None):
             ),
             "branch_applicability_verified": False,
         },
+        "effective_ruleset_rules": {
+            "lookup": applied_status,
+            "observed_rule_count": (
+                len(applied_rules) if applied_status == "retrieved" else None
+            ),
+            "observed_rule_types": (
+                sorted({rule["type"] for rule in applied_rules})
+                if applied_status == "retrieved" else None
+            ),
+            "rules": applied_rules if applied_status == "retrieved" else None,
+            "applied_ruleset_api_responded": applied_status == "retrieved",
+            "includes_classic_branch_protection": False,
+        },
         "repository_policy_verified": False,
         "reviewer_permissions_verified": False,
         "execution_authorized": False,
         "merge_authorized": False,
         "deployment_authorized": False,
         "warning": (
-            "Classic protection may be inaccessible, and repository/parent "
-            "rulesets may not apply to this branch. No enforcement verdict."
+            "Classic protection may be inaccessible. The applied-rules endpoint "
+            "reports active rulesets, but cannot prove classic protection, "
+            "reviewer eligibility, bypass rights or an enforcement verdict."
         ),
     }
 
