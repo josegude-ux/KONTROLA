@@ -1,3 +1,7 @@
+> **VISURA AUTO-DEV — transporte GET aislado (26/10/2026)**: [PR #47](https://github.com/josegude-ux/KONTROLA/pull/47), rama `fix/visura-work-review-policy-flags-20261026`, código verificado `d598a4b569957fe62cabea6be618cf2a60c10329`. Añadido `scripts/visura_github_auth_preflight.py` y nueve pruebas: GET acotado de repositorio/PR con token obtenido solo del entorno, sin exponerlo ni conceder autoridad. Los checks Code Review Gate [40331737445](https://github.com/josegude-ux/KONTROLA/actions/runs/40331737445), CSV Pilot Tests [40331737471](https://github.com/josegude-ux/KONTROLA/actions/runs/40331737471) y Queue Audit [40331737574](https://github.com/josegude-ux/KONTROLA/actions/runs/40331737574) terminaron en `success`. Se **preservó** el workflow manual de comando único tras detectar y revertir una incompatibilidad con las pruebas de seguridad. NO se ejecutó autenticación Python real; políticas efectivas, elegibilidad y autorización siguen pendientes. Ver [VISURA_WORK_PREFLIGHT_GET_20261026.md](VISURA_WORK_PREFLIGHT_GET_20261026.md).
+
+---
+
 # VISURA AUTO-DEV — ampliación de observación de políticas de revisión
 
 **Fecha:** 2026-10-26. **Responsable:** conversación continuadora VISURA AUTO-DEV (origen VISURA WORK).
