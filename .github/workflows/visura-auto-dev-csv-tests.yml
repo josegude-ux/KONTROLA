@@ -1,5 +1,10 @@
 name: VISURA AUTO-DEV - CSV Pilot Tests
 on:
+  pull_request:
+    paths:
+      - scripts/visura_csv_preflight.py
+      - tests/test_visura_csv_preflight.py
+      - .github/workflows/visura-auto-dev-csv-tests.yml
   push:
     branches:
       - feat/visura-auto-dev-csv-preflight
