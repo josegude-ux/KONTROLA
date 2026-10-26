@@ -155,6 +155,16 @@ En INTEGRACIÓN EN RAMA: la imagen aprobada y sus derivados necesarios están re
 En PRUEBA / SIMULACIÓN: se audita la viabilidad, se identifican rutas y alternativas, se detectan bloqueos y se entrega un plan ejecutable SIN modificar sistemas.
 ```
 
+## Evolución de navegación móvil — Panel compacto (2026-10-26)
+
+**Objetivo:** evitar el desplazamiento vertical por siete órdenes completas en iPhone. El panel web conserva las siete órdenes sin variar sus prompts y muestra solo una a la vez.
+
+- Cabecera breve y **selector de orden** con las siete opciones; controles Anterior y Siguiente y contador visible. Se puede entrar directamente con un enlace `#orden-1` a `#orden-7`; la selección no modifica el contenido ni la copia de los prompts.
+- Accesos y documentación secundaria plegados, no ocupan la pantalla inicial. El menú debe mantener contraste, tamaño táctil cómodo y funcionar en móvil sin dependencias externas.
+- Orden 07: añade **«Elegir imagen en el dispositivo»** mediante un `<input type="file">` que abre el selector nativo de iOS (Archivos/Fotos, según dispositivo) y muestra nombre y vista previa local cuando sea posible. Mantiene la opción alternativa de URL pública.
+- **Limitación explícita:** por seguridad del navegador, seleccionar un archivo en una web independiente NO lo adjunta automáticamente a ChatGPT ni concede al asistente acceso a su ruta local. El prompt copiado incluye el nombre del archivo seleccionado e indica que el usuario debe adjuntarlo al chat receptor. Nunca inventar una URL local accesible al agente.
+- La herramienta de elección es totalmente local: no transmite bytes a servidores ni a GitHub desde el panel. La orden 07 V2 sigue respetando PRUEBA / SIMULACIÓN predeterminado y los permisos de integración en rama.
+
 ## Reglas comunes
 1. Consultar primero el estado verificado en GitHub, **sin tratar la documentación antigua de main como último estado**.
 2. Evitar repetir tareas y sobrescribir trabajo paralelo.
