@@ -32,18 +32,18 @@ test("C19711: se procesan e imprimen SOLO referencias COR1 y no COR2",()=>{
  assert.match(report,/PRD0000001/);
  assert.doesNotMatch(report,/PRD0000002|COR_02_NAR/);
 });
-test("F19711: conserva SOLO referencias de Ferrol sin mezclar COR1",()=>{
+test("F19711: preparación COR1 aunque la carga también contiene Ferrol",()=>{
  const p=parseDocumentPages([cor2(),cor1()],"F19711.pdf");
  assert.equal(p.id,"LP26-19711");
- assert.equal(p.warehouse,"COR_02_NAR");
+ assert.equal(p.warehouse,"COR_01_COR");
  assert.equal(p.mixedWarehouse,false);
  assert.equal(p.refs,1);
- assert.equal(p.actualTotal,5);
- assert.deepEqual(p.products.map(x=>x.sku),["PRD0000002"]);
+ assert.equal(p.actualTotal,3);
+ assert.deepEqual(p.products.map(x=>x.sku),["PRD0000001"]);
  assert.equal(analyzeDocument(p).some(x=>x.code==="mixed_warehouse"),false);
  const report=buildPreparationReport({codigo:p.id,almacen:p.warehouse,productos:p.products,referencias:p.refs});
- assert.match(report,/PRD0000002|COR_02_NAR/);
- assert.doesNotMatch(report,/PRD0000001|COR_01_COR/);
+ assert.match(report,/PRD0000001|COR_01_COR/);
+ assert.doesNotMatch(report,/PRD0000002|COR_02_NAR/);
 });
 test("sin prefijo ni selección: el documento mixto continúa bloqueado",()=>{
  const p=parseDocumentPages([cor2(),cor1()],"LP26-19711.pdf");
