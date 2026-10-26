@@ -1,5 +1,5 @@
 name: VISURA AUTO-DEV - Zero Cost PR Pilot
-# Manual, deterministic pilot. No AI, external services, or production access.
+# Deterministic zero-cost pilot. No AI, external services, or production access.
 on:
   push:
     branches:
