@@ -16,8 +16,9 @@ export const normalizeWarehouseCode=raw=>{
  return cleaned.replace(/^COR_1_/,'COR_01_').replace(/^COR_2_/,'COR_02_')||null;
 };
 const KNOWN_WAREHOUSES=new Set(['COR_01_COR','COR_02_NAR']);
-// Convención administrativa: C19711.pdf (A Coruña), F19711.pdf (Ferrol).
-// La letra identifica el almacén, no forma parte del LP.
+// Convención de archivo: F19711.pdf es una carga con destino Ferrol, que puede
+// contener mercancía de COR1 y COR2. El prefijo NUNCA autoriza preparar COR2.
+// C19711.pdf también se procesa exclusivamente desde COR1; la letra no integra el LP.
 export function identificarPdfPorAlmacen(fileName=""){
  const match=/^([CF])(\d{4,6})\.pdf$/i.exec(String(fileName).trim());
  if(!match)return null;
@@ -77,11 +78,10 @@ export function parseDocumentPages(pages, fileName='Documento.pdf', options={}) 
  const warehouses=[...new Set(identified.filter(Boolean))];
  const requestedWarehouse=normalizeWarehouseCode(options.warehouse);
  const fileIdentity=identificarPdfPorAlmacen(fileName);
- if(fileIdentity&&requestedWarehouse&&requestedWarehouse!==fileIdentity.warehouse)
-  throw Error("El nombre "+fileName+" indica "+fileIdentity.warehouse+"; no se puede clasificar en "+requestedWarehouse+".");
- if(fileIdentity&&warehouses.length&&!warehouses.includes(fileIdentity.warehouse))
-  throw Error("El nombre "+fileName+" indica "+fileIdentity.warehouse+", pero la cabecera del PDF indica "+warehouses.join(", ")+". Comprueba el archivo antes de importarlo.");
- const warehouse=requestedWarehouse||fileIdentity?.warehouse||(warehouses.length===1?warehouses[0]:null);
+ // La letra F señala el destino de la carga, NO un almacén que debamos preparar.
+ // Con nombres F/C el preparado predeterminado es siempre COR1; COR2 solo se
+ // puede extraer explícitamente para una hoja de detalle, nunca publicar como carga.
+ const warehouse=requestedWarehouse||(fileIdentity?"COR_01_COR":(warehouses.length===1?warehouses[0]:null));
  // 'Mixto' es bloqueante SOLO si no se ha separado un almacén concreto.
  // availableWarehouses conserva el hecho de que el PDF original contiene ambos.
  const mixedWarehouse=warehouses.length>1&&!warehouse;
@@ -104,6 +104,7 @@ export function parseDocumentPages(pages, fileName='Documento.pdf', options={}) 
  }else if(mixedWarehouse){
   pages=[];
  }
+ const pageNumbers=pages.map(p=>p.number);
  const every=pages.flatMap(p=>p.items.map(it=>({...it,page:p.number})));
  const textAll=every.map(i=>i.text).join(' ').replace(/\s+/g,' ');
  const extract=(regexp,source=textAll)=>source.match(regexp)?.[1]??null;
@@ -225,7 +226,7 @@ export function parseDocumentPages(pages, fileName='Documento.pdf', options={}) 
  if(amountOK===false)warnings.push('Suma detectada: '+sum.toFixed(3)+' / declarada: '+declaredTotal);
  if(declaredTotal===null)warnings.push('No se pudo contrastar el total del PDF');
  const verified=countOK&&amountOK===true&&warnings.length===0;
- return {id,weight,refs,bultos:declaredTotal,visits,driver,plate,palletsLarge,palletsSmall,palletsTotal,observations,date,route,source:fileName,products,declaredTotal,actualTotal:sum,verified,warnings,warehouse,warehouseKnown:KNOWN_WAREHOUSES.has(warehouse),mixedWarehouse,availableWarehouses:warehouses};
+ return {id,weight,refs,bultos:declaredTotal,visits,driver,plate,palletsLarge,palletsSmall,palletsTotal,observations,date,route,source:fileName,products,declaredTotal,actualTotal:sum,verified,warnings,warehouse,warehouseKnown:KNOWN_WAREHOUSES.has(warehouse),mixedWarehouse,availableWarehouses:warehouses,pageNumbers};
 }
 export function summarize(products){
  const units={},aisles={},unlocated=[];
