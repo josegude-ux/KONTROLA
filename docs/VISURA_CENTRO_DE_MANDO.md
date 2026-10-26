@@ -25,6 +25,12 @@ PREPARAR TRASPASO WORK. Antes de cualquier aviso de fin de créditos, verifica y
 
 **Referencia opcional:** puedes pegar el enlace de la conversación anterior, si está disponible. Un título o enlace **no garantiza acceso** a su contenido: el chat receptor debe comprobar si realmente puede recuperar el historial y contrastar el estado con GitHub.
 
+**Selector de destino (nuevo):** elige en qué chat se pegará la orden: «Chat nuevo» (predeterminado), una conversación VISURA conocida o «Otro chat». Si eliges un chat existente, puedes pegar su enlace en el campo «Enlace del chat de destino». Los nombres del desplegable son opciones predefinidas, no una lectura automática de todas las conversaciones del usuario.
+
+**Acciones distintas:** «Copiar recuperación elegida» copia un prompt que identifica claramente **CHAT DE ORIGEN** y **CHAT DE DESTINO**. «Abrir chat de destino» abre ChatGPT para crear un chat nuevo, o abre el enlace válido que el usuario haya proporcionado para un chat existente. No puede pegar ni enviar el texto automáticamente a una conversación externa; después de abrir el destino, el usuario debe pegarlo y enviarlo. Nunca inventar enlaces a chats ni confundir «enlace al chat anterior» con «enlace del chat de destino».
+
+**Seguridad:** el botón solo copia y abre enlaces. No modifica repositorios ni ejecuta órdenes. El prompt evita mezclar desarrollos paralelos y recuerda que un chat reservado a pruebas no autoriza cambios reales.
+
 **Comportamiento del botón:** genera un único prompt con el nombre exacto del chat seleccionado, el enlace opcional y la orden general de recuperación siguiente. No presume que las herramientas del nuevo chat puedan acceder al anterior. Si no pueden, exige continuar únicamente desde ramas, commits, PR y documentos verificables.
 
 **Uso actual:** elegir **VISURA WORK** para el traspaso provocado por el agotamiento de créditos de Work.
