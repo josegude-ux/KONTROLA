@@ -4,49 +4,45 @@
 
 > Este archivo es una **copia maestra de instrucciones**, no un informe del estado actual del software. Antes de cualquier cambio hay que contrastar ramas, commits, PR y documentación con GitHub. No fusionar, desplegar ni borrar datos sin autorización. No se puede garantizar un proceso en segundo plano ni superar límites de Work.
 
-## 1. REACTIVAR VISURA — CONTINUIDAD VERIFICADA (V3)
+## 1. REANUDAR DESARROLLO EN CHAT CONTINUADOR (V4)
 
-**Error corregido:** la versión V2 exigía pegar la orden literalmente en el chat elegido. Eso produjo una parada incorrecta cuando un chat inicialmente denominado «CHAT NUEVO» ya había recuperado y continuado legítimamente VISURA AUTO-DEV procedente de VISURA WORK. Una diferencia de nombre no demuestra que sea otro desarrollo.
+**Caso confirmado por el usuario:** el origen es **VISURA WORK** y el chat responsable y CORRECTO para continuar es **VISURA AUTO-DEV**. Ese segundo chat ya había recuperado y continuado el desarrollo. Una orden anterior lo paralizó porque interpretó un título previo «CHAT NUEVO» como si fuera una conversación incorrecta. Ese veto nominal queda eliminado.
 
-**Cuándo:** cuando quieras reanudar una línea ya iniciada, bien en su chat original o en una conversación que ya se haya convertido de forma verificable en su sucesora.
+**Uso:** elige un origen (valor inicial: VISURA WORK) y un destino actual (valor inicial: VISURA AUTO-DEV). Si seleccionas otros, escribe el nombre correcto. El botón genera un prompt que se pega en la conversación de destino ya activa. Para hacer un traspaso realmente nuevo, usa el botón 03; no confundas reanudar una continuidad existente con transferir por primera vez.
 
-**Selector:** elige el chat/línea a reanudar (incluye ahora «VISURA AUTO-DEV»), indica si estás en el chat original o en un chat continuador ya iniciado y, en el segundo caso, puedes identificar el chat de procedencia. El enlace directo sigue siendo opcional.
+**Evidencia de referencia:** en GitHub se ha confirmado la existencia del PR #44 del repositorio KONTROLA (commit asociado que comienza por `b934a2c`) y la rama `docs/visura-work-chat-nuevo-20261026`. La orden invita a comprobar su relación con el historial actual y los cambios posteriores; no presume que sean automáticamente el último estado.
 
-**Distinción con la orden 03:** la orden 01 reanuda un desarrollo **ya presente o continuado en la conversación receptora**; la 03 sirve para un **traspaso nuevo** entre conversaciones que todavía no han establecido continuidad. No hay que pedir al usuario rehacer el traspaso cuando la sucesión ya está comprobada.
+**Regla:** no detenerse por diferencias de títulos, ni exigir volver a Work o cambiar de chat cuando ya existe continuidad verificable. La conversación receptora debe comprobar el desarrollo y proseguir con la primera tarea segura. Las restricciones de pruebas, permisos de publicación, eliminación y protección de cambios ajenos se mantienen intactas.
 
-**Seguridad:** si la conversación receptora está reservada a pruebas, no se hacen cambios. Si no se puede verificar que la conversación pertenece a la línea elegida, únicamente se audita sin escribir. No se usa la coincidencia de títulos como prueba de identidad ni se confunde disponer de un nombre con leer el historial.
-
-**Variables:** `{{NOMBRE_CHAT}}`, `{{MODO}}`, `{{PROCEDENCIA}}`, `{{ENLACE_CHAT}}`.
+**Variables:** `{{ORIGEN}}`, `{{DESTINO}}`, `{{ENLACE_ORIGEN}}`, `{{ENLACE_DESTINO}}`.
 
 ```text
-REANUDAR DESARROLLO VISURA — CONTINUIDAD VERIFICADA.
+REANUDAR DESARROLLO VISURA EN SU CHAT CONTINUADOR YA ACTIVO.
 
-CHAT O LÍNEA DE DESARROLLO QUE QUIERO REANUDAR: {{NOMBRE_CHAT}}
-SITUACIÓN DE ESTA CONVERSACIÓN: {{MODO}}
-CHAT DE PROCEDENCIA (SI LO HUBO): {{PROCEDENCIA}}
-ENLACE DE REFERENCIA (SI LO HAY): {{ENLACE_CHAT}}
+CHAT DE ORIGEN DEL DESARROLLO: {{ORIGEN}}
+CHAT ACTUAL DONDE DEBES CONTINUAR: {{DESTINO}}
+ENLACE DE REFERENCIA AL ORIGEN: {{ENLACE_ORIGEN}}
+ENLACE DE REFERENCIA AL DESTINO: {{ENLACE_DESTINO}}
 
-MISIÓN
-Continúa el desarrollo indicado desde su último avance REALMENTE verificado, sin rehacer tareas ni detenerte por una discrepancia nominal de conversaciones. Esta orden sirve tanto en el chat original como en un CHAT CONTINUADOR YA INICIADO que haya recuperado y trabajado sobre esa misma línea. Identifica el desarrollo por su historial y evidencia técnica, NO solo por el título de la conversación.
+INSTRUCCIÓN FUNDAMENTAL
+ESTA ORDEN SE PEGA EN EL CHAT DE DESTINO, que ya ha recibido y continuado el desarrollo del chat de origen. El chat elegido como destino es el RESPONSABLE ACTUAL del trabajo. NO ordenes regresar al chat original, NO solicites repetir el traspaso y NO bloquees el desarrollo solo porque en mensajes previos se denominara «CHAT NUEVO», porque los títulos sean diferentes o porque se agotaran los créditos de Work. Para realizar un traspaso NUEVO que aún no se haya establecido, corresponde la orden 03, NO esta.
 
-REGLA CRÍTICA SOBRE «CHAT NUEVO» Y CHATS CONTINUADORES
-- Si esta conversación figura como «CHAT NUEVO» o tiene un nombre distinto, NO te detengas automáticamente ni respondas «pega el prompt en el chat original». Comprueba primero si aquí YA SE HABÍA RECUPERADO Y CONTINUADO el desarrollo elegido desde Work u otra conversación: historial realmente accesible, documentos de traspaso, ramas, commits, PR, archivos y pruebas vinculadas.
-- Un chat legítimo sucesor puede tener nombre diferente al de origen. Si la continuidad está verificada, acepta este chat como responsable actual, informa de ello brevemente y CONTINÚA con la siguiente tarea segura, sin exigir volver al chat agotado ni utilizar de nuevo la orden 03.
-- El nombre, un enlace o una afirmación previa por sí solos NO demuestran acceso al historial ni autorización para modificar un repositorio. Si hay conflicto o falta evidencia para vincular este chat con el desarrollo elegido, limita las acciones a auditoría de solo lectura e informa de la discrepancia concreta; usa la orden 03 solo para establecer un traspaso REALMENTE nuevo o no verificado.
+CASO VISURA WORK → VISURA AUTO-DEV
+Si el origen es VISURA WORK y el destino es VISURA AUTO-DEV, el usuario confirma que esta última conversación YA continuó VISURA AUTO-DEV procedente de VISURA WORK. Usa esa confirmación para interpretar el encargo, pero verifica el estado técnico antes de editar. Como pistas concretas, revisa el PR #44 del repositorio josegude-ux/KONTROLA, el commit b934a2c (abreviatura) y la rama docs/visura-work-chat-nuevo-20261026, además de los avances posteriores. Son referencias, NO una orden de usar esos hitos si ya han sido superados. La tarea pendiente mencionada anteriormente fue la autenticación real del agente y la revisión de políticas de seguridad: contrasta si continúa pendiente antes de implementarla.
 
-COMPROBACIONES OBLIGATORIAS ANTES DE CAMBIOS
-1. Verifica qué conversación y antecedentes puedes consultar de verdad. Para una línea procedente de otro chat, comprueba su procedencia indicada y la continuidad previamente asentada; no inventes lecturas de chats inaccesibles.
-2. Examina repositorios pertinentes, ramas activas, commits, PR abiertos/cerrados, archivos y documentación de continuidad con especial atención a los hitos MÁS RECIENTES. No asumas que main o docs/CONTINUIDAD.md antiguos reflejan el último estado.
-3. Distingue lo desarrollado, lo probado, lo pendiente, lo aprobado visualmente y lo integrado. Identifica la última tarea realmente comprobada y la siguiente tarea independiente y segura. Comprueba solapamientos con otros chats antes de escribir.
+RECUPERACIÓN Y VERIFICACIÓN
+1. Lee el historial REALMENTE disponible en ESTE chat de destino para identificar lo ya desarrollado y su relación con el origen. No afirmes haber leído el chat de origen cuando no sea accesible; puedes usar contexto previamente recuperado aquí y evidencias técnicas verificables.
+2. Revisa repositorios pertinentes, ramas activas, commits, PR, archivos, pruebas y documentación de continuidad más reciente; verifica cuál es el avance real y cuál fue la última tarea terminada. No presupongas que main o un documento antiguo reflejan el estado más avanzado.
+3. Distingue lo aprobado, implementado, probado y pendiente. Evita reconstruir aplicaciones o repetir tareas finalizadas; comprueba que otros chats no estén desarrollando la misma funcionalidad ni vayas a sobrescribir trabajo ajeno.
 
-EJECUCIÓN Y PARADA
-- Si este chat está expresamente reservado a PRUEBAS, no modifiques GitHub, aplicaciones ni bases de datos, aunque haya continuidad: solo audita o simula.
-- Si es un chat de DESARROLLO con continuidad verificada, continúa autónomamente la siguiente tarea autorizada y segura. Tras cada hito, verifica, guarda en la rama correcta y documenta los resultados; no repitas tareas finalizadas ni sobreescribas cambios ajenos.
-- No fusiones, publiques, despliegues ni borres datos sin autorización expresa. No te detengas por obstáculos subsanables; busca alternativas reales compatibles con las herramientas disponibles. Detente únicamente ante bloqueo auténtico, conflicto no resoluble sin riesgo, recurso imprescindible ausente o autorización que aún falte.
-- No prometas trabajo fuera de esta sesión, no inventes accesos, fechas, porcentajes ni pruebas.
+CONTINUACIÓN
+4. En este chat de destino, si está dedicado al DESARROLLO, reanuda la primera tarea pendiente que resulte realmente comprobada y autorizada. Continúa de forma autónoma con las tareas siguientes seguras. No termines con una respuesta administrativa sobre el título del chat, el traspaso o la elección de conversación.
+5. Antes de cada cambio comprueba la rama y el estado remoto; después de cada hito valida, guarda los commits y actualiza la continuidad correspondiente. No declares trabajo completado sin evidencia.
+6. Si este chat receptor está expresamente reservado a PRUEBAS, no ejecutes cambios reales. Si hay incertidumbre técnica material, primero verifica en solo lectura; no trates una simple diferencia de nombres como bloqueo.
+7. No fusiones, despliegues, publiques, sustituyas cambios ajenos ni borres datos sin autorización expresa. No prometas trabajo en segundo plano y no insistas en intentos idénticos fallidos.
 
-SALIDA
-Di en pocas líneas si esta conversación es el chat original, un continuador verificado o un destino aún no acreditado; cita rama/commit/PR que sustenten la decisión y reanuda la tarea sin una respuesta puramente administrativa. Si no puedes verificar el vínculo, explica exactamente qué evidencia falta y cuál sería el paso seguro siguiente.
+RESULTADO REQUERIDO
+Enuncia brevemente ORIGEN, DESTINO, repositorio, rama/commit/PR verificados, última tarea finalizada, tarea pendiente actual y primera acción que vas a realizar. A continuación, EJECUTA la tarea segura en este mismo chat de destino sin pedir un nuevo traspaso.
 ```
 
 ## 2. PREPARAR TRASPASO WORK
