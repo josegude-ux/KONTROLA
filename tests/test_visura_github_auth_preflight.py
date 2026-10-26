@@ -2,6 +2,7 @@ import io
 import json
 import os
 import unittest
+from pathlib import Path
 from contextlib import redirect_stdout
 from unittest.mock import patch
 from urllib.error import HTTPError
@@ -171,6 +172,29 @@ class ReadonlyAuthPreflightTests(unittest.TestCase):
         self.assertEqual(observer.call_args.args[:3], (REPO, 47, "secret-example"))
         self.assertNotIn("secret-example", output.getvalue())
         self.assertFalse(json.loads(output.getvalue())["execution_authorized"])
+
+
+class ManualWorkflowPreflightTests(unittest.TestCase):
+    def test_manual_audit_uses_trusted_default_and_preflight_first(self):
+        path = (
+            Path(__file__).resolve().parents[1] / ".github" / "workflows"
+            / "visura-auto-dev-manual-review-audit.yml"
+        )
+        workflow = path.read_text(encoding="utf-8")
+        self.assertIn("workflow_dispatch:", workflow)
+        self.assertNotIn("pull_request_target:", workflow)
+        self.assertNotIn("\\npush:", workflow)
+        self.assertIn("persist-credentials: false", workflow)
+        self.assertIn("ref: ${{ github.event.repository.default_branch }}", workflow)
+        preflight = workflow.index("scripts.visura_github_auth_preflight")
+        audit = workflow.index("scripts.visura_github_audit_bundle")
+        self.assertLess(preflight, audit)
+        self.assertIn("contents: read", workflow)
+        self.assertIn("pull-requests: read", workflow)
+        self.assertIn("checks: read", workflow)
+        self.assertNotIn("contents: write", workflow)
+        self.assertNotIn("pull-requests: write", workflow)
+        self.assertNotIn("permissions: write-all", workflow)
 
 
 if __name__ == "__main__":
