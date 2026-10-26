@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import {buildPreparationReport,filterProducts} from "../src/report.mjs";
+import {buildPreparationReport,filterProducts,desglosarBultos} from "../src/report.mjs";
 
 const load={
   codigo:"LP26-12345",fecha:"2026-10-25",matricula:"1234ABC",ruta:"Norte",
@@ -72,4 +72,35 @@ test("los totales escapan unidades potencialmente maliciosas",()=>{
  assert.match(html,/TOTAL PASILLO A/);
  assert.doesNotMatch(html,/<script>/);
  assert.match(html,/&lt;SCRIPT&gt;/);
+});
+
+test("el desglose para tarjetas suma unidades iguales sin mezclar cajas y botellas",()=>{
+  const result=desglosarBultos([
+    {qty:10,unit:"CAJA"},{qty:4,unit:" caja "},
+    {qty:8,unit:"BOTELLA"},{qty:1.5,unit:"BOTELLA"},
+    {qty:0,unit:"CAJA"},{qty:-2,unit:"BOTELLA"},
+    {qty:"invalido",unit:"CAJA"}
+  ]);
+  assert.deepEqual(result,[
+    {unidad:"BOTELLA",cantidad:9.5},
+    {unidad:"CAJA",cantidad:14}
+  ]);
+});
+
+test("el desglose no inventa un total sin líneas de mercancía",()=>{
+  assert.deepEqual(desglosarBultos(),[]);
+  assert.deepEqual(desglosarBultos(null),[]);
+  assert.deepEqual(desglosarBultos([{qty:0,unit:"CAJA"}]),[]);
+});
+
+test("la hoja de preparación comparte el cálculo con la vista de cargas",()=>{
+  const productos=[
+    {sku:"1",location:"A01",qty:2,unit:"CAJA"},
+    {sku:"2",location:"A02",qty:5,unit:"CAJA"},
+    {sku:"3",location:"A03",qty:3,unit:"BOTELLA"}
+  ];
+  const html=buildPreparationReport({...load,productos});
+  for(const {cantidad,unidad} of desglosarBultos(productos)){
+    assert.ok(html.includes(String(cantidad)+" "+unidad));
+  }
 });
