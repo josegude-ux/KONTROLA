@@ -28,6 +28,24 @@ from scripts.visura_github_legacy_statuses import (
 )
 
 
+def _stable_review_snapshot_evidence(snapshot):
+    """Canonicalize a validated GitHub PR/reviews snapshot for rechecking.
+
+    Review pages can be returned in a different order. Compare reviewer
+    decisions and identities, never rely on an unchanged PR head alone.
+    This observation is still non-atomic and never supplies approval rights.
+    """
+    keys = (
+        "repository", "pr_number", "head_sha", "base_branch",
+        "base_sha", "author_numeric_id", "pr_state",
+    )
+    fields = ("review_id", "reviewer_numeric_id", "reviewer_login", "state", "commit_sha")
+    return (
+        tuple(snapshot[key] for key in keys),
+        tuple(sorted(tuple(item[key] for key in fields) for item in snapshot["reviews"])),
+    )
+
+
 def inspect_readonly_audit_bundle(
     repository, pr_number, default_branch, token, opener=None
 ):
@@ -101,8 +119,20 @@ def inspect_readonly_audit_bundle(
     if target_policy_recheck != target_policy:
         raise ValueError("Target branch policy changed during the audit")
 
-    # Check the PR again LAST, after the policy recheck. These reads are
-    # non-atomic: a subsequent edit still invalidates the observation.
+    # Review decisions (including dismissals) can change without changing
+    # the PR's head SHA. Re-fetch the bounded pages and compare actual review
+    # identity/state records before calling this an internally consistent audit.
+    # A matching pair of snapshots still is NOT an authenticated approval.
+    reviews_recheck = fetch_readonly_review_snapshot(
+        repository, pr_number, token, opener=opener
+    )
+    if _stable_review_snapshot_evidence(reviews_recheck) != (
+        _stable_review_snapshot_evidence(pr)
+    ):
+        raise ValueError("Pull request reviews changed during the audit")
+
+    # Check the PR again LAST, after the review/policy rechecks. These reads
+    # are non-atomic: a subsequent edit still invalidates the observation.
     endpoint = "/repos/" + repository + "/pulls/" + str(pr_number)
     latest = _get_json(endpoint, token, opener)
     if not isinstance(latest, dict):
@@ -142,6 +172,7 @@ def inspect_readonly_audit_bundle(
         "target_differs_from_default": target_branch != default_branch,
         "same_pr_metadata_after_policy_lookup": True,
         "same_target_policy_after_audit": True,
+        "same_review_records_after_audit": True,
         "report_is_atomic": False,
         "repository_policy_verified": False,
         "execution_authorized": False,
