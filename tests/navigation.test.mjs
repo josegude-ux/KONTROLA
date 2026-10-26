@@ -260,3 +260,10 @@ test("piloto seguro sin control de velocidad y con acceso a cargas antiguas",()=
  assert.match(app,/client\.auth\.updateUser\(\{password\}\)/);
  assert.match(app,/profile\?\.rol!=="administrador"/);
 });
+
+test("Control de Cargas usa recursos 3D de PREPARA en lugar de iconos emoji",()=>{
+ for(const id of ["cargasConsultar","cargasPreparar","cargasVerificar","cargasHistorial","cargasAdministrar","cargasAntiguas"]){
+  assert.match(html,new RegExp('id="'+id+'"[^>]*>\\s*<span class="submenu-icon submenu-3d"'));
+ }
+ assert.match(css,/\.submenu-3d img/);
+});
