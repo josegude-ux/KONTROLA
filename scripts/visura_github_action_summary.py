@@ -52,6 +52,68 @@ def _policy_cells(policy):
     return cells + [count_text]
 
 
+def _reviewer_permission_lines(bundle, repository):
+    evidence = bundle.get("reviewer_repository_permissions")
+    heading = ["", "## Acceso de revisores al repositorio", ""]
+    if evidence is None:
+        return heading + ["Consulta: **desconocido** (informe anterior sin este componente)."]
+    if not isinstance(evidence, dict):
+        raise ValueError("Invalid reviewer permission evidence")
+    flags = ("reviewer_eligibility_verified", "execution_authorized",
+             "merge_authorized", "deployment_authorized")
+    if any(evidence.get(key) is not False for key in flags):
+        raise ValueError("Reviewer permissions must not grant authority")
+    lookup = evidence.get("lookup")
+    if lookup not in {"observed", "incomplete", "missing_review_data", "reviewer_limit_exceeded"}:
+        raise ValueError("Invalid reviewer permission lookup")
+    rows = evidence.get("observations")
+    if not isinstance(rows, list) or len(rows) > 50:
+        raise ValueError("Invalid reviewer permission observations")
+    if lookup in {"missing_review_data", "reviewer_limit_exceeded"}:
+        if rows:
+            raise ValueError("Unknown reviewer evidence cannot include observations")
+        return heading + ["Consulta: **" + lookup + "**; permisos desconocidos."]
+    known = write = mismatch = 0
+    seen = set()
+    for row in rows:
+        if not isinstance(row, dict) or row.get("repository") != repository:
+            raise ValueError("Reviewer permission repository mismatch")
+        if any(row.get(key) is not False for key in flags + ("repository_policy_verified",)):
+            raise ValueError("Reviewer observation must not grant authority")
+        numeric_id = row.get("reviewer_numeric_id")
+        if type(numeric_id) is not int or numeric_id <= 0 or numeric_id in seen:
+            raise ValueError("Invalid or duplicate reviewer identity")
+        seen.add(numeric_id)
+        state = row.get("lookup")
+        permission = row.get("observed_base_permission")
+        identity = row.get("identity_matches")
+        access = row.get("write_or_admin_observed")
+        if state == "retrieved":
+            if identity is not True or permission not in {"admin", "write", "read", "none"}:
+                raise ValueError("Invalid retrieved reviewer permission")
+            if access is not (permission in {"admin", "write"}):
+                raise ValueError("Inconsistent reviewer access")
+            known += 1
+            write += int(access)
+        elif state in {"inaccessible", "not_found_or_inaccessible", "identity_mismatch"}:
+            expected = False if state == "identity_mismatch" else None
+            if permission is not None or access is not None or identity is not expected:
+                raise ValueError("Unknown permission cannot imply access")
+            mismatch += int(state == "identity_mismatch")
+        else:
+            raise ValueError("Invalid reviewer observation lookup")
+    if (lookup == "observed") != (known == len(rows)):
+        raise ValueError("Inconsistent reviewer lookup completeness")
+    return heading + [
+        "- Identidades consultadas: **" + str(len(rows)) + "**",
+        "- Permiso observado con identidad coincidente: **" + str(known) + "**",
+        "- Acceso write/admin observado: **" + str(write) + "**",
+        "- Resultado desconocido: **" + str(len(rows) - known) + "**",
+        "- Identidades no coincidentes: **" + str(mismatch) + "**",
+        "", "**Estos permisos NO acreditan elegibilidad de revisión ni autorizan acciones.**",
+    ]
+
+
 def render_readonly_audit_summary(bundle):
     """Build a GitHub step summary with no implied execution authority."""
     if not isinstance(bundle, dict):
@@ -327,6 +389,7 @@ def render_readonly_audit_summary(bundle):
     ]
     for label, count in counts.items():
         lines.append("- " + label.capitalize() + ": **" + str(count) + "**")
+    lines += _reviewer_permission_lines(bundle, repository)
     lines += [
         "",
         "Las aprobaciones observadas no acreditan permisos efectivos del revisor.",

@@ -481,5 +481,29 @@ class AuditBundleTests(unittest.TestCase):
         self.assertFalse(json.loads(output.getvalue())["execution_authorized"])
 
 
+    def test_real_permission_observer_runs_before_final_pr_recheck(self):
+        snapshot = fixture_snapshot()
+        snapshot['reviews'] = [{'reviewer_numeric_id': 456, 'reviewer_login': 'reviewer'}]
+        events = []
+        def transport(request, timeout):
+            events.append('permission')
+            self.assertEqual(request.get_method(), 'GET')
+            self.assertTrue(request.full_url.endswith('/collaborators/reviewer/permission'))
+            return io.BytesIO(json.dumps({'permission': 'write',
+                'user': {'id': 456, 'login': 'reviewer'}}).encode())
+        def final(*args):
+            events.append('final_pr')
+            return fixture_pr()
+        with patch('scripts.visura_github_audit_bundle.fetch_readonly_review_snapshot', return_value=snapshot), patch(
+            'scripts.visura_github_audit_bundle.inspect_branch_policy', return_value={}), patch(
+            'scripts.visura_github_audit_bundle._get_json', side_effect=final):
+            result = inspect_readonly_audit_bundle(REPO, 37, 'main', 'token', opener=transport)
+        self.assertEqual(events, ['permission', 'final_pr'])
+        evidence = result['reviewer_repository_permissions']
+        self.assertEqual(evidence['lookup'], 'observed')
+        self.assertEqual(evidence['observations'][0]['reviewer_numeric_id'], 456)
+        self.assertFalse(result['execution_authorized'])
+
+
 if __name__ == "__main__":
     unittest.main()

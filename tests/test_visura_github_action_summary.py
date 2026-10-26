@@ -343,5 +343,70 @@ class GitHubActionSummaryTests(unittest.TestCase):
             render_readonly_audit_summary(data)
 
 
+class ReviewerPermissionSummaryTests(unittest.TestCase):
+    def evidence(self):
+        from scripts.visura_github_reviewer_permissions import observe_reviewer_permissions
+        import io, json
+        result = observe_reviewer_permissions('josegude-ux/KONTROLA', 'reviewer', 123, 'token',
+            lambda *a, **k: io.BytesIO(json.dumps({'permission': 'admin',
+                'user': {'id': 123, 'login': 'reviewer'}}).encode()))
+        return {'lookup': 'observed', 'observations': [result],
+                'reviewer_eligibility_verified': False, 'execution_authorized': False,
+                'merge_authorized': False, 'deployment_authorized': False}
+
+    def render(self, evidence):
+        data = bundle()
+        data['reviewer_repository_permissions'] = evidence
+        return render_readonly_audit_summary(data)
+
+    def test_counts_render_without_identity_or_token(self):
+        evidence = self.evidence()
+        evidence['observations'][0]['reviewer_login'] = '<script>SECRET</script>'
+        text = self.render(evidence)
+        self.assertIn('Acceso write/admin observado: **1**', text)
+        self.assertIn('NO acreditan elegibilidad', text)
+        self.assertNotIn('SECRET', text)
+        self.assertNotIn('token', text)
+
+    def test_missing_component_remains_unknown(self):
+        self.assertIn('informe anterior sin este componente', self.render(None))
+
+    def test_unknown_data_and_limit_have_no_zero_success(self):
+        for lookup in ['missing_review_data', 'reviewer_limit_exceeded']:
+            data = self.evidence(); data.update(lookup=lookup, observations=[])
+            self.assertIn('permisos desconocidos', self.render(data))
+
+    def test_authorizing_flags_are_rejected(self):
+        for at_row in [False, True]:
+            for flag in ['reviewer_eligibility_verified', 'execution_authorized',
+                         'merge_authorized', 'deployment_authorized']:
+                data = self.evidence()
+                (data['observations'][0] if at_row else data)[flag] = True
+                with self.subTest(flag=flag, at_row=at_row), self.assertRaises(ValueError):
+                    self.render(data)
+
+    def test_forged_identity_and_counts_fail_closed(self):
+        for key, value in [('repository', 'other/repo'), ('reviewer_numeric_id', True),
+                           ('identity_matches', False), ('write_or_admin_observed', False),
+                           ('lookup', 'inaccessible')]:
+            data = self.evidence(); data['observations'][0][key] = value
+            with self.subTest(key=key), self.assertRaises(ValueError):
+                self.render(data)
+
+    def test_unknown_and_mismatched_identities_are_counted(self):
+        data = self.evidence(); row = data['observations'][0]
+        data['lookup'] = 'incomplete'
+        row.update(lookup='identity_mismatch', identity_matches=False,
+                   observed_base_permission=None, write_or_admin_observed=None)
+        text = self.render(data)
+        self.assertIn('Identidades no coincidentes: **1**', text)
+        self.assertIn('Resultado desconocido: **1**', text)
+
+    def test_duplicate_identity_rejected(self):
+        data = self.evidence(); data['observations'] *= 2
+        with self.assertRaises(ValueError):
+            self.render(data)
+
+
 if __name__ == "__main__":
     unittest.main()
