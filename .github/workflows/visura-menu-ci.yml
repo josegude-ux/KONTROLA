@@ -5,7 +5,7 @@ on:
       - feature/visura-prepara-menu-oficial-20261026
   pull_request:
     branches:
-      - branding/visura-prepara-20261026
+      - feature/visura-prepara-menu-oficial-20261026
 permissions:
   contents: write
 jobs:
@@ -13,8 +13,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
-        with:
-          ref: feature/visura-prepara-menu-oficial-20261026
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: '22'
@@ -37,17 +35,3 @@ jobs:
           npx playwright install --with-deps chromium
           mkdir -p artifacts
           npx playwright test tests/visual-menu.spec.mjs --reporter=line
-      - name: Guardar recursos integrados despues de pasar pruebas
-        run: |
-          git add index.html sw.js tests/visura-menu.test.mjs tests/navigation.test.mjs
-          if test -f assets/home/visura-prepara-preparacion-3d.webp; then
-            git add assets/home/visura-prepara-*.webp assets/home/originales/
-          fi
-          if ! git diff --cached --quiet; then
-            git config user.name "github-actions[bot]"
-            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-            git commit -m "feat(menu): integrar imagenes oficiales tras pruebas"
-            git fetch origin feature/visura-prepara-menu-oficial-20261026
-            git rebase origin/feature/visura-prepara-menu-oficial-20261026
-            git push origin HEAD:feature/visura-prepara-menu-oficial-20261026
-          fi
