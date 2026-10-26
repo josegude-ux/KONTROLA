@@ -29,6 +29,8 @@ button:focus-visible,a:focus-visible{outline:3px solid #a7d6ff;outline-offset:3p
 .integrator textarea{resize:vertical;min-height:70px;line-height:1.45}
 .integrator :is(textarea,select,input):focus-visible{outline:3px solid #86afdb;outline-offset:2px}
 .integrator [hidden]{display:none!important}
+.recovery-separator{border-top:1px solid var(--border);margin:22px 0 18px}
+#open-destination-chat:disabled{opacity:.45;cursor:not-allowed}
 </style>
 </head>
 <body>
@@ -50,9 +52,29 @@ button:focus-visible,a:focus-visible{outline:3px solid #a7d6ff;outline-offset:3p
 <input id="other-chat" type="text" placeholder="Nombre del chat" hidden>
 <label class="field-label" for="source-link">Enlace al chat anterior (opcional)</label>
 <input id="source-link" type="url" placeholder="Enlace al chat anterior, si lo tienes">
-<p class="field-hint">El nombre indica qué desarrollo recuperar. El enlace ayuda a identificarlo, pero no garantiza acceso al historial. GitHub conserva los avances verificados.</p>
+<p class="field-hint">El origen indica qué desarrollo recuperar; GitHub conserva los avances verificables.</p>
+<div class="recovery-separator" aria-hidden="true"></div>
+<label class="field-label" for="destination-chat">¿En qué chat quieres pegar la orden?</label>
+<select id="destination-chat">
+<option value="CHAT NUEVO" selected>Chat nuevo (recomendado)</option>
+<option value="VISURA 0.2">VISURA 0.2</option>
+<option value="VISURA 0.1">VISURA 0.1</option>
+<option value="VISURA WORK">VISURA WORK</option>
+<option value="PROMPT E IMÁGENES">PROMPT E IMÁGENES</option>
+<option value="VISURA — IMPLEMENTACIÓN">VISURA — IMPLEMENTACIÓN</option>
+<option value="VISURA — PRUEBAS CENTRO DE MANDO">VISURA — PRUEBAS CENTRO DE MANDO</option>
+<option value="OTRO">Otro chat</option>
+</select>
+<label class="field-label" for="destination-other" id="destination-other-label" hidden>Nombre exacto del chat de destino</label>
+<input id="destination-other" type="text" placeholder="Nombre del chat de destino" hidden>
+<div id="destination-link-wrap" hidden>
+<label class="field-label" for="destination-link">Enlace al chat de destino (para abrirlo)</label>
+<input id="destination-link" type="url" placeholder="https://chatgpt.com/c/...">
 </div>
-<div class="actions"><button type="button" class="primary" data-copy="2">Copiar recuperación elegida</button><button type="button" class="secondary" aria-controls="prompt-2" aria-expanded="false" data-toggle="2">Ver texto</button></div><pre id="prompt-2" hidden>RECUPERAR VISURA. Debes continuar el desarrollo previo, no reiniciarlo. Localiza y lee en GitHub los documentos actualizados docs/CONTINUIDAD.md, CONTINUIDAD_WORK_A_CHAT_NORMAL.md y PROMPT_CONTINUAR_SIN_WORK.md disponibles, además de ramas, commits, PR y archivos relacionados. Contrasta su contenido con el estado real y prioriza la versión verificada más avanzada, aunque no esté en main. Recupera decisiones, imágenes y tareas pendientes. No inventes información inaccesible. No repitas ni sobrescribas avances. Evita solapamientos con los demás chats. Ejecuta la primera tarea segura y autorizada con las herramientas disponibles en este chat; informa de cualquier herramienta exclusiva de Work que falte. Mantén actualizados los registros de continuidad. No fusiones, publiques ni borres información sin la autorización que corresponda.</pre></article>
+<p class="field-hint" id="destination-help">El panel copia la orden y puede abrir ChatGPT, pero no la pega ni la envía automáticamente. Si eliges un chat existente, facilita su enlace para abrirlo.</p>
+
+</div>
+<div class="actions"><button type="button" class="primary" data-copy="2">Copiar recuperación elegida</button><button type="button" class="secondary" id="open-destination-chat">Abrir chat de destino</button><button type="button" class="secondary" aria-controls="prompt-2" aria-expanded="false" data-toggle="2">Ver texto</button></div><pre id="prompt-2" hidden>RECUPERAR VISURA. Debes continuar el desarrollo previo, no reiniciarlo. Localiza y lee en GitHub los documentos actualizados docs/CONTINUIDAD.md, CONTINUIDAD_WORK_A_CHAT_NORMAL.md y PROMPT_CONTINUAR_SIN_WORK.md disponibles, además de ramas, commits, PR y archivos relacionados. Contrasta su contenido con el estado real y prioriza la versión verificada más avanzada, aunque no esté en main. Recupera decisiones, imágenes y tareas pendientes. No inventes información inaccesible. No repitas ni sobrescribas avances. Evita solapamientos con los demás chats. Ejecuta la primera tarea segura y autorizada con las herramientas disponibles en este chat; informa de cualquier herramienta exclusiva de Work que falte. Mantén actualizados los registros de continuidad. No fusiones, publiques ni borres información sin la autorización que corresponda.</pre></article>
 <article class="command" id="orden-4"><div class="top"><div class="symbol">▧</div><div><div class="eyebrow">ORDEN 04 · Diseño e imágenes</div><h2>CONTINUAR IMÁGENES VISURA</h2></div></div><p class="when">reactivar el trabajo del chat «PROMPT E IMÁGENES».</p><div class="actions"><button type="button" class="primary" data-copy="3">Copiar orden</button><button type="button" class="secondary" aria-controls="prompt-3" aria-expanded="false" data-toggle="3">Ver texto</button></div><pre id="prompt-3" hidden>CONTINUAR IMÁGENES VISURA. Recupera la evolución de «PROMPT E IMÁGENES» mediante el contexto accesible, los archivos gráficos y los registros verificables de GitHub. Identifica qué imágenes están solo diseñadas, cuáles aprobadas, cuáles integradas y cuáles verificadas. Conserva el estilo tridimensional acordado y su adaptación al módulo o función correspondiente dentro de VISURA. No reutilices imágenes indiscriminadamente ni sustituyas recursos aprobados. Detecta la última tarea visual pendiente, evita modificaciones concurrentes y continúa su implementación sin alterar funciones existentes. Documenta asignaciones, rutas, pruebas y recursos finales. Mantén preparado el traspaso de Work a chat normal antes de cualquier límite.</pre></article>
 <article class="command" id="orden-5"><div class="top"><div class="symbol">⇆</div><div><div class="eyebrow">ORDEN 05 · Evitar solapamientos</div><h2>AUDITAR SOLAPAMIENTOS</h2></div></div><p class="when">sospechas que varios chats trabajan sobre la misma parte del proyecto.</p><div class="actions"><button type="button" class="primary" data-copy="4">Copiar orden</button><button type="button" class="secondary" aria-controls="prompt-4" aria-expanded="false" data-toggle="4">Ver texto</button></div><pre id="prompt-4" hidden>AUDITAR SOLAPAMIENTOS VISURA. Compara las tareas de VISURA WORK, PROMPT E IMÁGENES y los demás chats relacionados mediante ramas, commits, PR, documentos de continuidad y estados accesibles. Identifica coincidencias de archivos o funciones, separa los responsables y propone la siguiente tarea independiente para cada línea. No modifiques ni fusiones nada durante esta auditoría. Si algún chat no es accesible, indica la incertidumbre en vez de asumir su estado.</pre></article>
 <article class="command" id="orden-6">
@@ -162,18 +184,54 @@ const sourceChat=document.getElementById("source-chat");
 const otherChat=document.getElementById("other-chat");
 const otherChatLabel=document.getElementById("other-chat-label");
 const sourceLink=document.getElementById("source-link");
+const destinationChat=document.getElementById("destination-chat");
+const destinationOther=document.getElementById("destination-other");
+const destinationOtherLabel=document.getElementById("destination-other-label");
+const destinationLink=document.getElementById("destination-link");
+const destinationLinkWrap=document.getElementById("destination-link-wrap");
+const destinationHelp=document.getElementById("destination-help");
+const openDestinationButton=document.getElementById("open-destination-chat");
 function selectedSourceChat(){return sourceChat.value==="OTRO"?otherChat.value.trim():sourceChat.value;}
+function selectedDestinationChat(){return destinationChat.value==="OTRO"?destinationOther.value.trim():destinationChat.value;}
+function validDestinationLink(){
+ const raw=destinationLink.value.trim();
+ if(!raw)return "";
+ try{
+  const u=new URL(raw);
+  if(u.protocol!=="https:"||!["chatgpt.com","chat.openai.com"].includes(u.hostname)||u.pathname.startsWith("/share/"))return "";
+  return u.href;
+ }catch(_){return "";}
+}
 function recoveryPrompt(){
- const source=selectedSourceChat();
- if(!source)return "";
+ const source=selectedSourceChat(),destination=selectedDestinationChat();
+ if(!source||!destination)return "";
  const link=sourceLink.value.trim();
+ const targetLink=destinationChat.value==="CHAT NUEVO"?"":validDestinationLink();
  return "CHAT DE ORIGEN QUE QUIERO CONTINUAR: "+source+"\n"+
- (link?"ENLACE DE REFERENCIA AL CHAT: "+link+"\n":"")+
- "PRIORIDAD: continúa específicamente el desarrollo de este chat de origen y no el de otro chat relacionado. Recupera su historial solo si está realmente accesible; un título o enlace por sí solo no prueba que lo hayas leído. Contrasta el punto más avanzado verificable utilizando documentos, ramas, commits, pruebas y PR de los repositorios correspondientes en GitHub. Si no puedes acceder al chat, indícalo y continúa desde las evidencias verificadas sin inventar decisiones. Evita reescribir, fusionar o publicar sin autorización.\n\n"+commands[2];
+ (link?"ENLACE DE REFERENCIA AL CHAT DE ORIGEN: "+link+"\n":"")+
+ "CHAT DE DESTINO EN EL QUE PEGO ESTA ORDEN: "+destination+"\n"+
+ (targetLink?"ENLACE DEL CHAT DE DESTINO: "+targetLink+"\n":"")+
+ "ACLARACIÓN: el origen indica qué desarrollo recuperar; el destino indica dónde he pegado esta instrucción. El nombre del destino no implica que puedas leer otra conversación. No confundas ambas referencias ni mezcles proyectos. Si este chat de destino está reservado a pruebas, NO ejecutes modificaciones reales.\n"+
+ "PRIORIDAD: continúa específicamente el desarrollo del chat de origen y no el de otro chat relacionado. Recupera su historial solo si está realmente accesible; un título o enlace por sí solo no prueba que lo hayas leído. Contrasta el punto más avanzado verificable utilizando documentos, ramas, commits, pruebas y PR de los repositorios correspondientes en GitHub. Si no puedes acceder al chat, indícalo y continúa desde las evidencias verificadas sin inventar decisiones. Evita reescribir, fusionar o publicar sin autorización.\n\n"+commands[2];
 }
 function syncRecoveryPreview(){
  const pre=document.getElementById("prompt-2");
- pre.textContent=recoveryPrompt()||"Introduce el nombre exacto del chat.";
+ pre.textContent=recoveryPrompt()||"Elige los chats de origen y destino.";
+}
+function syncDestinationUI(){
+ const other=destinationChat.value==="OTRO";
+ const existing=destinationChat.value!=="CHAT NUEVO";
+ destinationOther.hidden=!other;
+ destinationOtherLabel.hidden=!other;
+ destinationLinkWrap.hidden=!existing;
+ const link=validDestinationLink();
+ openDestinationButton.disabled=existing&&!link;
+ destinationHelp.textContent=existing
+  ?(destinationLink.value.trim()&&!link
+    ?"Enlace inválido: utiliza un enlace https://chatgpt.com o https://chat.openai.com del chat de destino, no uno compartido."
+    :"Introduce el enlace directo si quieres abrir ese chat. Si no lo tienes, copia la orden y búscalo manualmente. El panel no puede pegar mensajes por ti.")
+  :"El panel abre ChatGPT para que crees un chat nuevo. Debes pegar y enviar manualmente la orden copiada.";
+ syncRecoveryPreview();
 }
 sourceChat.addEventListener("change",()=>{
  const needsOther=sourceChat.value==="OTRO";
@@ -183,7 +241,21 @@ sourceChat.addEventListener("change",()=>{
 });
 otherChat.addEventListener("input",syncRecoveryPreview);
 sourceLink.addEventListener("input",syncRecoveryPreview);
-syncRecoveryPreview();
+destinationChat.addEventListener("change",()=>{
+ syncDestinationUI();
+ if(destinationChat.value==="OTRO")destinationOther.focus();
+});
+destinationOther.addEventListener("input",syncRecoveryPreview);
+destinationLink.addEventListener("input",syncDestinationUI);
+openDestinationButton.addEventListener("click",()=>{
+ const dest=selectedDestinationChat();
+ if(!dest){destinationOther.focus();showStatus("Indica el nombre del chat de destino");return;}
+ const url=destinationChat.value==="CHAT NUEVO"?"https://chatgpt.com/":validDestinationLink();
+ if(!url){destinationLink.focus();showStatus("Necesitas el enlace del chat de destino");return;}
+ const opened=window.open(url,"_blank","noopener,noreferrer");
+ if(!opened)showStatus("Si no se abre, permite ventanas emergentes o abre el enlace manualmente.");
+});
+syncDestinationUI();
 
 
 const integrationTemplate="VISURA — ORDEN 07 V2: INTEGRAR IMAGEN APROBADA SIN INTERRUPCIONES EVITABLES\n\nMODO DE EJECUCIÓN: {{MODO}}\nDESTINO ELEGIDO: {{DESTINO}}\nUBICACIÓN O USO: {{UBICACION}}\nIMAGEN APROBADA: {{SELECCION}}\nARCHIVO ORIGINAL O FUENTE: {{RECURSO}}\nINDICACIONES ADICIONALES: {{OBSERVACIONES}}\n\nMISIÓN\nIncorpora la imagen ya aprobada en el destino seleccionado, conservando su diseño original y todas las funciones existentes. NO generes propuestas nuevas ni rediseñes la imagen. Continúa de forma autónoma, con herramientas realmente disponibles y dentro de esta sesión, hasta completar todas las tareas técnicas seguras permitidas o hasta demostrar un bloqueo real. No prometas trabajo en segundo plano.\n\n0. CORTAFUEGOS DE PRUEBAS Y AUTORIZACIONES\n- Si el MODO es «PRUEBA / SIMULACIÓN», o si la conversación receptora está reservada a pruebas, SOLO audita, simula y explica qué se ejecutaría. Prohibido escribir en GitHub, bases de datos, alojamientos o aplicaciones, aunque el resto de la orden pida integrar.\n- Si el MODO es «INTEGRACIÓN EN RAMA» y la conversación receptora permite desarrollos reales, está autorizado preparar, verificar y confirmar cambios reversibles únicamente en una rama de trabajo aislada y en el destino indicado. No se autoriza fusionar ramas, modificar producción, cambiar configuración de despliegue, publicar ni borrar datos o imágenes ajenas.\n- Ante cualquier duda entre prueba y ejecución real, prevalece PRUEBA / SIMULACIÓN. No conviertas una prueba en una intervención real. Una petición explícita e independiente de mantener el propio Centro de mando no significa autorización para ejecutar esta orden sobre una aplicación.\n\n1. IDENTIFICAR EL ARCHIVO APROBADO\n- Busca el archivo original entre los adjuntos accesibles, los archivos de Biblioteca/Proyecto disponibles, las rutas locales verificadas y los enlaces directos realmente descargables. Valida formato, dimensiones y contenido; conserva la fuente y registra SHA-256 cuando sea posible.\n- No asumas que una letra A/B/C, una captura o un enlace al chat dan acceso al fichero binario. Verifica que la imagen corresponde a la elección aprobada; si no puedes confirmarlo, solicita solo el recurso o la aclaración imprescindible.\n- Si el archivo está disponible, NO te detengas solicitando que el usuario lo adjunte otra vez.\n\n2. RECUPERAR EL DESARROLLO REAL SIN DUPLICAR\n- Confirma repositorio, ramas, commits, PR y documentos de continuidad vigentes. Antes de crear una rama nueva, busca si existe una rama de integración previa y reutilízala si conserva el trabajo correcto. No uses documentación antigua de main como estado actual por defecto.\n- Para VISURA CENTRO DE MANDO, comienza comprobando josegude-ux/KONTROLA, rama visura-panel, docs/index.html y la posible rama feat/visura-centro-mando-icono-b-20261026. Para otros módulos, identifica su repositorio real.\n- Detecta cambios ajenos o trabajo paralelo; no los sobrescribas. Mantén la implementación estrictamente acotada al recurso solicitado.\n\n3. PREPARAR LOS RECURSOS\n- Comprueba cómo se insertan iconos/imágenes en la aplicación: HTML, componentes, favicon, apple-touch-icon, manifest, etc. Conserva el original como fuente y genera únicamente los tamaños, formatos y optimizaciones técnicos necesarios, sin rediseñarla.\n- Revisa tamaños, relación de aspecto, bordes, fondo y legibilidad. Usa rutas nuevas y reversibles para no destruir recursos anteriores.\n\n4. SUBIR LOS ARCHIVOS A GITHUB: ESCALERA OBLIGATORIA\n- Nunca declares que «GitHub no admite archivos binarios» solo porque una función de creación de archivos acepta únicamente UTF-8.\n- Primero comprueba una función nativa de subida binaria, si existe.\n- Si no existe y está disponible la API Git de GitHub, evalúa y prueba la ruta correcta: codificar los bytes reales en Base64, crear el blob con create_blob y encoding=base64, añadirlo al árbol existente con create_tree, crear el commit con create_commit y el padre verificado, y actualizar la rama mediante update_ref con SHA esperado, sin forzar y sin tocar otras ramas. Verifica que los blobs corresponden a los bytes originales o derivados. NO uses una función exclusiva para texto UTF-8 para grabar una cadena Base64 como si fuera un archivo .png.\n- Si esa ruta falla, registra el error exacto y evalúa otra herramienta conectada y autorizada compatible con binarios. Si hay límite de tamaño, prueba optimización técnica razonable sin alterar la estética ni perder la fuente.\n- Si todas las rutas disponibles fallan, prepara un paquete local completo con rutas exactas, instrucciones de carga y cambios preservados. Marca «PENDIENTE DE SUBIDA BINARIA» y especifica UNA acción humana concreta necesaria. Es un bloqueo real, NO una integración terminada. Completa las otras tareas seguras que aún sean posibles.\n\n5. CERRAR EL CIRCUITO DE INTEGRACIÓN\n- En la rama aislada, enlaza la imagen real desde las pantallas o metadatos pertinentes. Verifica que los binarios existen en GitHub, las rutas coinciden, los archivos son legibles y los derivados tienen dimensiones correctas. Comprueba el HTML o aplicación y el manifest cuando corresponda.\n- Verifica visualmente cuando las herramientas lo permitan. Si no puedes probar físicamente en Safari/iPhone, indica esa limitación con precisión y aporta comprobaciones reproducibles. No inventes pruebas en un dispositivo.\n- Confirma que no se han alterado funciones existentes, que el diff es mínimo y que el repositorio base/productivo sigue intacto.\n\n6. AVANZAR SIN DETENCIONES ARTIFICIALES\n- Tras cada hito, continúa automáticamente con el siguiente paso seguro. No finalices la ejecución solo por haber creado un ZIP, manifest, documento o rama, ni por el primer error subsanable.\n- No preguntes por datos ya disponibles. Solo solicita intervención ante falta efectiva del original, ambigüedad material de la selección, permisos negados después de probar alternativas compatibles, conflicto de rama imposible de resolver sin sobrescribir trabajo, o autorización necesaria para fusionar/publicar/operar datos.\n- No repitas intentos idénticos que hayan fallado sin cambiar el método. No declares acciones ejecutadas sin evidencia; no prometas trabajo fuera de la sesión ni que superarás límites de herramientas.\n\n7. EVIDENCIA, CONTINUIDAD Y ENTREGA\n- Documenta en la rama segura rutas, hashes si procede, archivos modificados, commit, pruebas ejecutadas y pendientes. Mantén diferenciados: APROBADA, ORIGINAL RECUPERADO, DERIVADOS CREADOS, BINARIOS EN GITHUB, REFERENCIAS VALIDADAS, INTEGRADA EN RAMA, PUBLICADA, VERIFICADA EN DISPOSITIVO.\n- Al concluir informa brevemente del estado real, rama, commits, evidencias, URL de revisión si existe y siguiente acción concreta. Si falta una etapa, indica cuál y por qué.\n- Espera autorización explícita antes de fusionar, publicar/desplegar, sustituir recursos compartidos irreversiblemente o borrar datos.\n\nCRITERIO DE ÉXITO\nEn INTEGRACIÓN EN RAMA: la imagen aprobada y sus derivados necesarios están realmente en la rama correcta, la aplicación los referencia, se han realizado las comprobaciones técnicas disponibles y la continuidad está documentada, sin publicación no autorizada.\nEn PRUEBA / SIMULACIÓN: se audita la viabilidad, se identifican rutas y alternativas, se detectan bloqueos y se entrega un plan ejecutable SIN modificar sistemas.";
