@@ -174,8 +174,8 @@ class ReadonlyAuthPreflightTests(unittest.TestCase):
         self.assertFalse(json.loads(output.getvalue())["execution_authorized"])
 
 
-class ManualWorkflowPreflightTests(unittest.TestCase):
-    def test_manual_audit_uses_trusted_default_and_preflight_first(self):
+class ManualWorkflowSecurityContractTests(unittest.TestCase):
+    def test_manual_audit_preserves_one_trusted_readonly_command(self):
         path = (
             Path(__file__).resolve().parents[1] / ".github" / "workflows"
             / "visura-auto-dev-manual-review-audit.yml"
@@ -186,9 +186,9 @@ class ManualWorkflowPreflightTests(unittest.TestCase):
         self.assertNotIn("\npush:", workflow)
         self.assertIn("persist-credentials: false", workflow)
         self.assertIn("ref: ${{ github.event.repository.default_branch }}", workflow)
-        preflight = workflow.index("scripts.visura_github_auth_preflight")
-        audit = workflow.index("scripts.visura_github_audit_bundle")
-        self.assertLess(preflight, audit)
+        self.assertNotIn("scripts.visura_github_auth_preflight", workflow)
+        self.assertEqual(workflow.count("scripts.visura_github_audit_bundle"), 1)
+        self.assertEqual(workflow.count("GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}"), 1)
         self.assertIn("contents: read", workflow)
         self.assertIn("pull-requests: read", workflow)
         self.assertIn("checks: read", workflow)
