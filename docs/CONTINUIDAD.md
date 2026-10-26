@@ -98,3 +98,5 @@ La idea de un portal común se documentó separadamente en `docs/MOVENTA_CONCEPT
 - Esta implementación la realizó ChatGPT mediante GitHub, **no** el workflow autónomo de IA; sirve como primer candidato de código para el futuro ejecutor seguro.
 
 - CI inicial PR #35: 23/24 pruebas correctas; falló detección de delimitador ante una fila con columnas extra. Corregido en commit `20f7db4` tomando el delimitador de la cabecera. **Pendiente de confirmar CI tras el cambio.**
+
+- **CI verificada**: workflow Queue Audit runs #34 (`40259234346`) y #35 (`40259243634`) concluyeron `success`. El registro del run #35 confirma **24 pruebas OK**, smoke test de bloqueo de llamadas de pago y auditoría de issue #31. Evidencia: https://github.com/josegude-ux/KONTROLA/actions/runs/40259243634. El PR #35 sigue en borrador, sin fusionar ni desplegar.
