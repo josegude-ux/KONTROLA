@@ -55,5 +55,7 @@ export function crearListadoPasillosA4(load){
   if(matriz.pasillos.length>27)throw Error("Más de 27 pasillos o zonas: no caben legiblemente en una sola hoja A4.");
   return {tipo:"resumen_pasillos",codigo:String(load.codigo||load.id||""),
     fecha:String(load.fecha||load.date||"—"),repartidor:String(load.repartidor||load.driver||"—"),
+    matricula:String(load.matricula||load.plate||"—"),
+    referencias:matriz.referencias,
     almacen:"COR_01_COR",...matriz};
 }
