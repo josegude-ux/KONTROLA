@@ -393,6 +393,10 @@ class AuditBundleTests(unittest.TestCase):
         self.assertFalse(result["execution_authorized"])
 
     def test_same_target_as_default_is_queried_once(self):
+        self.preflight_mock.return_value = dict(
+            self.preflight_mock.return_value,
+            observed_base_branch="main",
+        )
         with patch(
             "scripts.visura_github_audit_bundle.fetch_readonly_review_snapshot",
             return_value=fixture_snapshot("main"),
