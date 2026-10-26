@@ -89,10 +89,95 @@ export function generarPdfHojas(hojas){
     y-=space;
   }
   function rule(){if(y<65)newPage();commands.push(`q 0.78 G ${MARGIN} ${y.toFixed(2)} m ${(PAGE_W-MARGIN).toFixed(2)} ${y.toFixed(2)} l S Q`);y-=12;}
+  function resumenPasillosA4(hoja){
+    const aisles=hoja.pasillos||[],unidades=hoja.unidades||[],sinUbicacion=hoja.sinUbicacion||[];
+    if(!aisles.length||aisles.length>27||!unidades.length||unidades.length>9)
+      throw Error("El resumen no cabe en un único A4 (máximo 27 zonas y 9 unidades).");
+    const left=MARGIN,right=PAGE_W-MARGIN,aisleW=90,totalW=44,doneW=44;
+    const unitW=(CONTENT_W-aisleW-totalW-doneW)/unidades.length;
+    const top=674,headerH=28;
+    const missingRows=sinUbicacion.map(row=>{
+      const descripcion=wrap(row.description||"Sin descripción",CONTENT_W-200,7.1);
+      if(descripcion.length>2)throw Error("La descripción SIN UBICACIÓN de "+String(row.sku||"")+" no cabe legible en el A4.");
+      return {row,descripcion,h:Math.max(16,descripcion.length*11+5)};
+    });
+    const missingHeight=missingRows.length?25+missingRows.reduce((acc,d)=>acc+d.h,0):0;
+    const rowH=Math.min(30,Math.floor((top-headerH-124-missingHeight)/aisles.length));
+    if(rowH<16)throw Error("El detalle SIN UBICACIÓN no cabe legiblemente en un único A4; no se ha omitido ninguna referencia.");
+    // PDF vectorial, una única página. No se altera ningún documento original.
+    function rect(x,y,w,h,r=0.94,g=0.96,b=0.98){
+      commands.push(`q ${r} ${g} ${b} rg ${x.toFixed(2)} ${y.toFixed(2)} ${w.toFixed(2)} ${h.toFixed(2)} re f Q`);
+    }
+    function label(text,x,y,size=8,{bold=false,center=false,color="0.12 0.20 0.31"}={}){
+      const clean=sanitize(text);
+      const width=estimatedWidth(clean,size,bold);
+      const xx=center?x-width/2:x;
+      commands.push(`BT /${bold?"F2":"F1"} ${size} Tf ${color} rg 1 0 0 1 ${xx.toFixed(2)} ${y.toFixed(2)} Tm (${pdfEscaped(clean)}) Tj ET`);
+    }
+    function horizontal(y){commands.push(`q 0.80 G 0.5 w ${left} ${y.toFixed(2)} m ${right} ${y.toFixed(2)} l S Q`);}
+    rect(0,PAGE_H-128,PAGE_W,128,0.09,0.16,0.24);
+    rect(0,PAGE_H-128,7,128,0.09,0.50,0.40);
+    label("VISURA PREPARA · MERCANCÍA COR1",left,PAGE_H-42,10,{bold:true,color:"0.68 0.86 0.78"});
+    label("LISTADO DE PREPARACIÓN POR PASILLOS",left,PAGE_H-79,17,{bold:true,color:"1 1 1"});
+    label("Carga: "+hoja.codigo+"     Fecha: "+hoja.fecha+"     Almacén: COR1 (A Coruña)",left,PAGE_H-107,9,{color:"1 1 1"});
+    label("Repartidor: "+hoja.repartidor,left,696,9,{bold:true});
+    label("Solo MERCANCÍA · sin envases ni palés · casillas HECHO",right,696,7.5,{color:"0.11 0.45 0.33",center:false});
+    rect(left,top-headerH,CONTENT_W,headerH,0.09,0.16,0.24);
+    const columnCenters=unidades.map((_,i)=>left+aisleW+unitW*(i+.5));
+    label("PASILLO",left+aisleW/2,top-19,8.6,{bold:true,center:true,color:"1 1 1"});
+    unidades.forEach((u,i)=>{
+      const name=({CAJA:"CAJAS",BOTELLA:"BOTELLAS",PACK:"PACK",PAQUETE:"PAQUETES"}[u]||u);
+      let size=8;while(size>=6&&estimatedWidth(name,size,true)>unitW-4)size-=.5;
+      if(size<6)throw Error("Columna de unidad demasiado larga para un A4: "+name);
+      label(name,columnCenters[i],top-19,size,{bold:true,center:true,color:"1 1 1"});
+    });
+    const totalX=right-doneW-totalW/2,doneX=right-doneW/2;
+    label("TOTAL",totalX,top-19,8,{bold:true,center:true,color:"1 1 1"});
+    label("HECHO",doneX,top-19,8,{bold:true,center:true,color:"1 1 1"});
+    let bottom=top-headerH;
+    for(let i=0;i<aisles.length;i++){
+      const row=aisles[i],y=bottom-rowH;
+      if(i%2===0)rect(left,y,CONTENT_W,rowH);
+      horizontal(y);
+      label(row.nombre,left+aisleW/2,y+Math.max(4,(rowH-10)/2+3),row.nombre==="SIN UBICACIÓN"?7.6:9,
+        {bold:true,center:true,color:row.nombre==="SIN UBICACIÓN"?"0.57 0.27 0.08":"0.12 0.25 0.34"});
+      unidades.forEach((u,j)=>{
+        if(Number(row.valores?.[u])>0)label(String(row.valores[u]),columnCenters[j],y+(rowH-10)/2+3,9,{bold:true,center:true});
+      });
+      label(String(row.total),totalX,y+(rowH-10)/2+3,9,{bold:true,center:true});
+      const sq=Math.min(12,Math.max(9,rowH-5));
+      commands.push(`q 0.30 G 0.9 w ${(doneX-sq/2).toFixed(2)} ${(y+(rowH-sq)/2).toFixed(2)} ${sq} ${sq} re S Q`);
+      bottom=y;
+    }
+    const totalY=bottom-34;
+    rect(left,totalY,CONTENT_W,31,.86,.94,.91);
+    label("TOTAL",left+aisleW/2,totalY+10,9.5,{bold:true,center:true});
+    unidades.forEach((u,i)=>label(String(hoja.totales[u]||""),
+      columnCenters[i],totalY+10,10,{bold:true,center:true}));
+    label(String(hoja.total),totalX,totalY+10,10,{bold:true,center:true});
+    if(missingRows.length){
+      let y=totalY-29;
+      label("SIN UBICACIÓN · DETALLE DE TODAS LAS REFERENCIAS",left,y,9,
+        {bold:true,color:"0.57 0.27 0.08"});
+      y-=15;
+      for(const [i,{row,descripcion,h}] of missingRows.entries()){
+        if(i%2===0)rect(left,y-h+3,CONTENT_W,h);
+        label(row.sku,left+5,y-10,7.2,{bold:true});
+        descripcion.forEach((line,k)=>label(line,left+113,y-10-k*11,7.1));
+        label(String(row.qty)+" "+String(row.unit),right-2,y-10,7.4,{bold:true,center:false});
+        y-=h;
+      }
+      if(y<82)throw Error("Detalle SIN UBICACIÓN demasiado largo para A4: no se han omitido productos.");
+    }
+    horizontal(60);
+    label("PREPARADOR: _________________________",left,76,8.5,{bold:true});
+    label("Totales por formato, sin conversiones. Picking en Business Central.",left,45,7.3);
+    label("1 / 1",right-30,45,7.3);
+  }
   for(const hoja of hojas){
-    if(!hoja||!['carga','portada'].includes(hoja.tipo))throw Error("Tipo de informe PDF no reconocido.");
+    if(!hoja||!['carga','portada','resumen_pasillos'].includes(hoja.tipo))throw Error("Tipo de informe PDF no reconocido.");
     newPage();
-    if(hoja.tipo==='portada'){
+    if(hoja.tipo==='resumen_pasillos'){resumenPasillosA4(hoja);continue;}\n    if(hoja.tipo==='portada'){
       addLine(hoja.titulo||'RELACIÓN DE HOJAS DE PREPARACIÓN',{size:15,bold:true,space:10});rule();
       for(const linea of hoja.detalles||[])addLine(linea,{size:10,space:4});
       rule();
