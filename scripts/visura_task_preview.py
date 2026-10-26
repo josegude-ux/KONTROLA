@@ -19,5 +19,6 @@ def preview_task(task):
         "merge_authorized": False,
         "provider_calls": 0,
         "estimated_cost_eur": 0.0,
+        "budget_enforced_by_provider": False,
         "human_approval_required": True,
     }
