@@ -36,7 +36,11 @@ with ZipFile(zip_path) as archive:
         files[name] = data
     for name in names:
         if name.startswith("assets/home/originales/") and not name.endswith("/"):
+            if Path(name).suffix.lower() not in (".png", ".jpeg", ".jpg"):
+                sys.exit("Formato original inesperado: " + name)
             files[name] = archive.read(name)
+    if len([name for name in files if name.startswith("assets/home/originales/")]) != 4:
+        sys.exit("El paquete debe contener cuatro imagenes originales")
 for card, (old, new) in mapping.items():
     match = re.search(r'(<button id="' + card + r'"[\s\S]*?</button>)', html)
     if not match:
