@@ -13,7 +13,7 @@ repeat('e',64),'00000000-0000-0000-0000-000000000001','COR_01_COR','publicada'),
 'documentos/LP26-70002/abababababababababababababababababababababababababababababababab.pdf',
 repeat('a',64),'00000000-0000-0000-0000-000000000001','COR_01_COR','publicada'),
 ('LP26-70003','[{"sku":"PRD0000703","description":"Palé preparación previa","location":"A101-3","qty":1,"unit":"CAJA"}]',
-'documentos/LP26-70003/bcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbc.pdf',
+'documentos/LP26-70003/'||repeat('b',64)||'.pdf',
 repeat('b',64),'00000000-0000-0000-0000-000000000001','COR_01_COR','publicada');
 
 set role authenticated;
