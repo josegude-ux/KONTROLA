@@ -135,6 +135,14 @@ class GitHubActionSummaryTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "Invalid inaccessible rule count"):
             render_readonly_audit_summary(data)
 
+    def test_disallow_branch_markdown_table_injection(self):
+        data = bundle()
+        data["review_snapshot"]["base_branch"] = "main|injected"
+        data["target_branch_policy"]["branch"] = "main|injected"
+        data["target_differs_from_default"] = True
+        with self.assertRaisesRegex(ValueError, "Invalid PR target branch"):
+            render_readonly_audit_summary(data)
+
     def test_disallow_repository_markdown_injection(self):
         data = bundle()
         data["repository"] = "owner/`evil`"
