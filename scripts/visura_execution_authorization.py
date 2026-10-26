@@ -17,7 +17,7 @@ def assess_execution_request(task, review):
         raise ValueError("Invalid review fields")
     if review["task_id"] != preview["task_id"]:
         raise ValueError("Review task mismatch")
-    if review["decision"] not in ALLOWED_REVIEW_DECISIONS:
+    if not isinstance(review["decision"], str) or review["decision"] not in ALLOWED_REVIEW_DECISIONS:
         raise ValueError("Invalid review decision")
     reviewer = review["reviewer_id"]
     if not isinstance(reviewer, str) or not reviewer.strip() or len(reviewer) > 120:
