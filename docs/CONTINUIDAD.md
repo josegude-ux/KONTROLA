@@ -773,3 +773,5 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 - Sin merge ni despliegue. Rama activa: `fix/visura-menu-playwright-auth-20261026`.
 
 - Añadida además una aserción geométrica a `tests/visual-menu.spec.mjs` para fallar si el área de texto se extiende sobre el área de la ilustración en cualquiera de los dos viewports (commit `b6526c323e7ce3181db1544576602592e9b120a7`). Pendiente resultado de CI para esta nueva aserción.
+
+- La ejecución #114 detectó un falso positivo de la aserción geométrica en escritorio: la estructura de columnas de escritorio permite cajas DOM que se solapan geométricamente aunque la captura no muestre solapamiento visible. Se limitó esa aserción específica al layout móvil, donde se había observado el defecto real. Commit `cc49100a3abe5570df226b5e9ff1deceb5575b0d`; pendiente CI.
