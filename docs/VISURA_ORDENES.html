@@ -176,10 +176,20 @@ header .intro{font-size:.85rem;line-height:1.38}
 @media(max-width:500px){.refresh-panel,.manage-button{font-size:.74rem;padding:7px}.brand-mark{width:42px!important;height:42px!important}.brand-lockup{gap:6px!important}.brand-text strong{font-size:1.02rem!important}.brand-text span{font-size:.52rem!important}.chat-manager{padding:12px}}
 @media(max-width:360px){.header-top{flex-wrap:wrap}.header-tools{margin-left:auto}}
 
+
+/* V5.3 — recuperación segura tras streaming: icono inspirado en el aviso naranja adjunto */
+.streaming-symbol{background:#fff2e9!important;color:#e96a2a!important;padding:4px}
+.streaming-icon{display:block;max-width:100%;height:auto}
+.streaming-action-mark{background:#fff0e4!important;color:#d75b1e!important;border:1px solid #eab18c;font-size:1.42rem;line-height:1}
+.streaming-dashboard-action{border-color:#d49b7c}
+.streaming-generator{margin:10px 0 14px}
+.streaming-generator textarea{width:100%;display:block;min-height:116px;background:var(--bg);color:var(--text);border:1px solid var(--border);border-radius:12px;padding:12px;font:inherit;font-size:16px;line-height:1.45;resize:vertical}
+.streaming-generator textarea:focus-visible{outline:3px solid #e8a16d;outline-offset:2px}
+
 </style>
 </head>
 <body>
-<main><header><div class="header-top"><div class="brand-lockup"><img class="brand-mark" src="./assets/icons/visura-centro-mando-logo-64.png" width="54" height="54" alt="Logo aprobado VISURA Centro de mando"><div class="brand-text"><strong>VISURA</strong><span>CENTRO DE MANDO <b class="panel-version">V5.2</b></span></div></div><div class="header-tools"><button type="button" class="manage-button" id="open-chat-manager" aria-expanded="false" aria-controls="chat-manager">⚙ Mis chats</button><button type="button" class="refresh-panel" id="refresh-panel" title="Cargar de nuevo el Centro de mando" aria-label="Actualizar Centro de mando"><span aria-hidden="true">↻</span> Actualizar</button></div></div><h1>¿Qué quieres hacer?</h1><p class="intro">Ocho funciones claras, sin órdenes duplicadas.</p></header>
+<main><header><div class="header-top"><div class="brand-lockup"><img class="brand-mark" src="./assets/icons/visura-centro-mando-logo-64.png" width="54" height="54" alt="Logo aprobado VISURA Centro de mando"><div class="brand-text"><strong>VISURA</strong><span>CENTRO DE MANDO <b class="panel-version">V5.3</b></span></div></div><div class="header-tools"><button type="button" class="manage-button" id="open-chat-manager" aria-expanded="false" aria-controls="chat-manager">⚙ Mis chats</button><button type="button" class="refresh-panel" id="refresh-panel" title="Cargar de nuevo el Centro de mando" aria-label="Actualizar Centro de mando"><span aria-hidden="true">↻</span> Actualizar</button></div></div><h1>¿Qué quieres hacer?</h1><p class="intro">Nueve funciones claras, sin órdenes duplicadas.</p></header>
 <section id="chat-manager" class="chat-manager" hidden aria-labelledby="manager-title">
 <div class="manager-head"><h2 id="manager-title">Mis chats VISURA</h2><button class="secondary" type="button" id="manager-close">✕ Cerrar</button></div>
 <p>Registro único para los botones. Lo mantienes tú: esta web no puede consultar automáticamente tus conversaciones de ChatGPT.</p>
@@ -201,7 +211,7 @@ header .intro{font-size:.85rem;line-height:1.38}
 <p id="manager-feedback" class="manager-feedback" role="status" aria-live="polite"></p>
 </section>
 <nav id="command-menu" class="dashboard-nav" aria-label="Accesos VISURA">
-<div class="dashboard-caption"><strong>ACCESOS DIRECTOS</strong><span>8 funciones</span></div>
+<div class="dashboard-caption"><strong>ACCESOS DIRECTOS</strong><span>9 funciones</span></div>
 <div class="dashboard-grid"><button type="button" class="dashboard-action" data-open-order="funcion-1" aria-controls="funcion-1"><span class="action-mark" aria-hidden="true">↻</span><span class="action-copy"><strong>Continuar desarrollo</strong><small>Mismo chat, sucesor o traspaso</small></span></button>
 <button type="button" class="dashboard-action" data-open-order="funcion-2" aria-controls="funcion-2"><span class="action-mark" aria-hidden="true">↗</span><span class="action-copy"><strong>Preparar Work</strong><small>Guardar continuidad</small></span></button>
 <button type="button" class="dashboard-action" data-open-order="funcion-3" aria-controls="funcion-3"><span class="action-mark" aria-hidden="true">▧</span><span class="action-copy"><strong>Imágenes</strong><small>Continuar diseños</small></span></button>
@@ -209,9 +219,10 @@ header .intro{font-size:.85rem;line-height:1.38}
 <button type="button" class="dashboard-action" data-open-order="funcion-5" aria-controls="funcion-5"><span class="action-mark" aria-hidden="true">✦</span><span class="action-copy"><strong>Crear imagen</strong><small>3 diseños alternativos</small></span></button>
 <button type="button" class="dashboard-action" data-open-order="funcion-6" aria-controls="funcion-6"><span class="action-mark" aria-hidden="true">↳</span><span class="action-copy"><strong>Integrar imagen</strong><small>Aplicar la aprobada</small></span></button>
 <button type="button" class="dashboard-action" data-open-order="funcion-7" aria-controls="funcion-7"><span class="action-mark" aria-hidden="true">▤</span><span class="action-copy"><strong>Estado del chat</strong><small>Avance y tareas pendientes</small></span></button>
-<button type="button" class="dashboard-action" data-open-order="funcion-8" aria-controls="funcion-8"><span class="action-mark" aria-hidden="true">✉</span><span class="action-copy"><strong>Orden / consulta</strong><small>Incidencias y peticiones</small></span></button></div>
+<button type="button" class="dashboard-action" data-open-order="funcion-8" aria-controls="funcion-8"><span class="action-mark" aria-hidden="true">✉</span><span class="action-copy"><strong>Orden / consulta</strong><small>Incidencias y peticiones</small></span></button>
+<button type="button" class="dashboard-action streaming-dashboard-action" data-open-order="funcion-9" aria-controls="funcion-9"><span class="action-mark streaming-action-mark" aria-hidden="true">⟳</span><span class="action-copy"><strong>Recuperar tras streaming</strong><small>Respuesta interrumpida</small></span></button></div>
 </nav>
-<div class="command-toolbar" id="command-toolbar" hidden><button class="back-to-dashboard" type="button" id="back-to-dashboard">‹ Volver al menú</button><span class="toolbar-order" id="current-order-label">ORDEN 01 / 08</span></div>
+<div class="command-toolbar" id="command-toolbar" hidden><button class="back-to-dashboard" type="button" id="back-to-dashboard">‹ Volver al menú</button><span class="toolbar-order" id="current-order-label">ORDEN 01 / 09</span></div>
 <article class="command" id="funcion-1">
 <div class="top"><div class="symbol" aria-hidden="true">↻</div><div><div class="eyebrow">ORDEN 01 · CONTINUIDAD DE DESARROLLO</div><h2>CONTINUAR DESARROLLO</h2></div></div>
 <p class="when">Una sola función para reanudar en el mismo chat, continuar en un sucesor ya activo o hacer un traspaso realmente nuevo.</p>
@@ -434,6 +445,21 @@ header .intro{font-size:.85rem;line-height:1.38}
 <button type="button" class="secondary" id="toggle-request-prompt" aria-controls="request-prompt" aria-expanded="false">Ver prompt</button>
 </div>
 <pre id="request-prompt" hidden>Indica asunto y explicación para preparar tu orden.</pre>
+</article>
+<article class="command" id="funcion-9">
+<div class="top"><div class="symbol streaming-symbol"><svg class="streaming-icon" viewBox="0 0 48 48" width="37" height="37" role="img" aria-label="Aviso de transmisión interrumpida">
+<rect x="2" y="4" width="44" height="40" rx="11" fill="#fff2e9" stroke="#f3a36a" stroke-width="1.7"/>
+<path d="M13 15L20 28H6Z" fill="#ed6f2c" opacity=".96"/><path d="M13 18.8V24M13 26.5V26.7" stroke="white" stroke-width="1.8" stroke-linecap="round"/>
+<g stroke="#b97751" stroke-linecap="round" stroke-width="2.9"><path d="M33 13v3.3" opacity=".25"/><path d="M40 16l-2.3 2.3" opacity=".4"/><path d="M43 24h-3.3" opacity=".65"/><path d="M40 32l-2.3-2.3" opacity=".85"/><path d="M33 35v-3.3"/><path d="M26 32l2.3-2.3" opacity=".9"/><path d="M23 24h3.3" opacity=".65"/><path d="M26 16l2.3 2.3" opacity=".4"/></g>
+</svg></div><div><div class="eyebrow">ORDEN 09 · RECUPERACIÓN SEGURA</div><h2>RECUPERAR TRAS STREAMING</h2></div></div>
+<p class="when">Cuando se interrumpe una respuesta durante un desarrollo, comprueba qué trabajo quedó realmente guardado y continúa solo lo pendiente. Pega la orden en el <strong>mismo chat afectado</strong>.</p>
+<div class="streaming-generator">
+<label class="field-label" for="streaming-task">Tarea que estaba en curso</label>
+<textarea id="streaming-task" rows="4" aria-describedby="streaming-task-hint">Comprobar las pruebas automáticas de la corrección conjunta de 6 G, 1 E y Observaciones, guardada presuntamente en una rama aislada.</textarea>
+<p class="field-hint" id="streaming-task-hint">Puedes editar esta tarea para futuros cortes. No se ejecuta ningún desarrollo desde este panel.</p>
+</div>
+<div class="actions"><button type="button" class="primary" id="copy-streaming-prompt">Copiar recuperación</button><button type="button" class="secondary" id="toggle-streaming-prompt" aria-controls="streaming-prompt" aria-expanded="false">Ver prompt</button></div>
+<pre id="streaming-prompt" hidden></pre>
 </article>
 <div class="foot"><details class="foot-details"><summary>Acerca del panel y copia en GitHub</summary><div class="foot-content"><h2>Copia maestra en GitHub</h2>
 <p>Las instrucciones se guardan en una rama independiente. No se ha fusionado ni modificado la rama principal.</p>
@@ -681,7 +707,7 @@ document.getElementById("show-integration-command").addEventListener("click",()=
 
 
 /* Vista móvil de siete funciones y compatibilidad de enlaces históricos V4. */
-const orderIds=Array.from({length:8},(_,i)=>"funcion-"+(i+1));
+const orderIds=Array.from({length:9},(_,i)=>"funcion-"+(i+1));
 const oldHashes={"orden-1":"funcion-1","orden-2":"funcion-2","orden-3":"funcion-1","orden-4":"funcion-3","orden-5":"funcion-4","orden-6":"funcion-5","orden-7":"funcion-6","orden-8":"funcion-7"};
 const dashboard=document.getElementById("command-menu"),toolbar=document.getElementById("command-toolbar"),foot=document.querySelector(".foot");
 function resolvedOrderId(hash){
@@ -696,7 +722,7 @@ function showOrder(id,scroll=true){
  const n=orderIds.indexOf(id),selected=n>=0;
  for(const [i,key] of orderIds.entries())document.getElementById(key).hidden=(!selected||i!==n);
  dashboard.hidden=selected;toolbar.hidden=!selected;foot.hidden=selected;
- if(selected)document.getElementById("current-order-label").textContent="FUNCIÓN "+String(n+1).padStart(2,"0")+" / 08";
+ if(selected)document.getElementById("current-order-label").textContent="FUNCIÓN "+String(n+1).padStart(2,"0")+" / 09";
  const hash=selected?"#"+id:"#inicio";
  if(location.hash!==hash){try{history.replaceState(null,"",hash)}catch(_){}}
  if(scroll)window.scrollTo({top:0,behavior:"smooth"});
@@ -1024,6 +1050,33 @@ document.getElementById("manager-import-file").addEventListener("change",async e
 });
 loadRegistry();renderChatManager();refreshAllChatSelectors();
 if(!registryStorageOK)managerNotice("Almacenamiento local bloqueado. La lista puede perderse al cerrar esta página.");
+
+
+/* V5.3: Copia un prompt con la tarea actual sin desencadenar acciones de GitHub. */
+const streamingTemplate="RECUPERACIÓN SEGURA TRAS INTERRUPCIÓN DE STREAMING — VISURA / EXCELL\n\nSe ha interrumpido la transmisión de la respuesta durante el desarrollo.\n\nRecupera la continuidad del trabajo desde el último estado realmente verificable.\n\nINSTRUCCIONES OBLIGATORIAS:\n\n1. Comprueba en GitHub la rama activa, los últimos commits, los PR abiertos y los resultados de las pruebas.\n2. Identifica qué operaciones se completaron, cuáles están pendientes y cuáles no pueden verificarse.\n3. No repitas cambios que ya estén guardados.\n4. No sobrescribas modificaciones de otros chats o desarrollos.\n5. Conserva intactas las aplicaciones instaladas y sus datos.\n6. Consulta docs/CONTINUIDAD.md, pero no consideres su contenido más antiguo que los commits recientes como estado definitivo.\n7. Actualiza la documentación de continuidad con los resultados verificados.\n8. Reanuda únicamente las operaciones pendientes y autorizadas.\n9. No fusiones ramas, publiques versiones ni modifiques bases de datos reales sin autorización.\n10. Tras cada hito, guarda y documenta un punto de recuperación verificable.\n\nTAREA QUE ESTABA EN CURSO:\n\n{{TAREA_EDITABLE}}\n\nOBJETIVO:\n\nContinuar el desarrollo sin pérdida de trabajo, sin duplicaciones y sin reiniciar tareas ya finalizadas.\n\nNo te detengas salvo bloqueo real o necesidad imprescindible de autorización. Si una comprobación no es posible, documenta la limitación y continúa con la siguiente tarea independiente y segura.";
+const streamingTask=document.getElementById("streaming-task");
+const streamingPreview=document.getElementById("streaming-prompt");
+const streamingToggle=document.getElementById("toggle-streaming-prompt");
+function streamingPrompt(){
+ const task=streamingTask.value.trim();
+ if(!task)return "";
+ return streamingTemplate.replaceAll("{{TAREA_EDITABLE}}",task);
+}
+function syncStreamingPreview(){
+ if(!streamingPreview.hidden)streamingPreview.textContent=streamingPrompt()||"Escribe la tarea que estaba en curso.";
+}
+streamingTask.addEventListener("input",syncStreamingPreview);
+document.getElementById("copy-streaming-prompt").addEventListener("click",()=>{
+ const prompt=streamingPrompt();
+ if(!prompt){streamingTask.focus();showStatus("Escribe la tarea que estaba en curso antes de copiar.");return;}
+ copyCommand(prompt);
+});
+streamingToggle.addEventListener("click",()=>{
+ streamingPreview.hidden=!streamingPreview.hidden;
+ streamingToggle.setAttribute("aria-expanded",String(!streamingPreview.hidden));
+ streamingToggle.textContent=streamingPreview.hidden?"Ver prompt":"Ocultar prompt";
+ syncStreamingPreview();
+});
 
 </script>
 </body></html>
