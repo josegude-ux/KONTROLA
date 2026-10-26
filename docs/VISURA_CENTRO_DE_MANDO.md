@@ -322,7 +322,7 @@ CONSULTA DE SOLO LECTURA: explica el funcionamiento actual, responde la pregunta
 
 ## Gestor único de chats V5.2 — Monousuario y copia en OneDrive
 
-**Decisión autorizada:** el Centro de mando es monousuario; no se crean usuarios, contraseñas, backend ni permisos Microsoft. Se reutiliza la configuración del propio panel, sin añadir una orden o prompt número 09.
+**Decisión autorizada:** el Centro de mando es monousuario; no se crean usuarios, contraseñas, backend ni permisos Microsoft. Se reutiliza la configuración del propio panel: el gestor de chats no constituye una orden numerada; la orden 09 es la recuperación de streaming, introducida después en V5.3.
 
 **Dónde está:** cabecera superior, botón «⚙ Mis chats». El gestor mantiene un único registro con nombre de conversación, estado (Por verificar / Activo / Continuador / Histórico / Finalizado) y URL directa opcional a `https://chatgpt.com/c/...`. Se puede añadir, editar y quitar una entrada **solo de la lista local**, nunca de ChatGPT. Los estados iniciales se basan en decisiones conocidas cuando las hay (por ejemplo, VISURA WORK histórico, VISURA AUTO-DEV continuador); los demás son «Por verificar», sin inventar actividad.
 
