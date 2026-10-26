@@ -798,3 +798,9 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 - La configuración declara expresamente que INVENTA usa otro backend independiente: NO afirmar que ambas aplicaciones ya comparten base Supabase.
 - CI #120 SUCCESS. CI #121 estaba en curso al realizar esta auditoría.
 - Antes del despliegue definitivo: revisar que el workflow Pages use la rama candidata, obtener SHA de la versión publicada para reversión, verificar ausencia de migraciones/destrucción y pedir aprobación explícita de publicación.
+
+
+### 2026-10-26 — Regresiones automáticas para actualización sobre la PWA instalada
+- Añadido `tests/pwa-update-safety.test.mjs` (commit `0395a584f0cc0d1ee130bb4771096e322e253d22`), integrado automáticamente en `npm run check` por el patrón `tests/*.test.mjs`.
+- Pruebas nuevas: mantener el proyecto Supabase y bucket actuales; rechazar claves secretas en configuración pública; conservar identidad `start_url` y `display` de la PWA; precarga de cuatro imágenes; coherencia entre `package.json`, `version.json` y `APP_VERSION`.
+- Estas pruebas no hacen peticiones a Supabase ni modifican datos. Pendiente confirmar resultado del CI del commit.
