@@ -127,7 +127,7 @@ No te detengas a solicitar preferencias adicionales si la finalidad ya está ind
 **Variables generadas por el panel:** `{{MODO}}`, `{{DESTINO}}`, `{{UBICACION}}`, `{{SELECCION}}`, `{{RECURSO}}`, `{{OBSERVACIONES}}`.
 
 ```text
-VISURA — ORDEN 07 V2: INTEGRAR IMAGEN APROBADA SIN INTERRUPCIONES EVITABLES
+VISURA — ORDEN 06 V2: INTEGRAR IMAGEN APROBADA SIN INTERRUPCIONES EVITABLES
 
 MODO DE EJECUCIÓN: {{MODO}}
 DESTINO ELEGIDO: {{DESTINO}}
