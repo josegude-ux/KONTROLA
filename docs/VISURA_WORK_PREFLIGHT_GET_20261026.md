@@ -1,3 +1,7 @@
+> **VISURA AUTO-DEV — hito integrado seguro (26/10/2026)**: [PR #47](https://github.com/josegude-ux/KONTROLA/pull/47), rama `fix/visura-work-review-policy-flags-20261026`, código verificado `885042dbb50bf4bc5a053ce13f888b72e1bb7320`. Se añadió preflight GET **dentro del mismo comando** de auditoría, sin modificar el workflow manual; el informe compara rama y SHA entre consultas y rechaza cambios. +4 tests de integración y +5 de salida legible. CI correcto: Code Review Gate [40334951854](https://github.com/josegude-ux/KONTROLA/actions/runs/40334951854), CSV Pilot Tests [40334951628](https://github.com/josegude-ux/KONTROLA/actions/runs/40334951628), Queue Audit [40334951448](https://github.com/josegude-ux/KONTROLA/actions/runs/40334951448). **No** se ha realizado autenticación Python real ni autorizado ejecución/fusión/despliegue. Véase [VISURA_WORK_PREFLIGHT_UNIFICADO_20261026.md](VISURA_WORK_PREFLIGHT_UNIFICADO_20261026.md).
+
+---
+
 # VISURA AUTO-DEV — diagnóstico de transporte autenticado en modo lectura
 
 **Fecha:** 26/10/2026. **Responsable:** VISURA AUTO-DEV (chat continuador). **Repositorio:** `josegude-ux/KONTROLA`.
