@@ -48,6 +48,14 @@ def bundle(target="chore/visura-auto-dev-guardrails", default="main"):
             "execution_authorized": False, "merge_authorized": False,
             "deployment_authorized": False,
         },
+        "head_check_runs": {
+            "repository": repo, "head_sha": SHA, "lookup": "retrieved",
+            "observed_total": 2, "status_counts": {"completed": 2},
+            "conclusion_counts": {"success": 1, "failure": 1},
+            "required_checks_verified": False, "branch_policy_verified": False,
+            "execution_authorized": False, "merge_authorized": False,
+            "deployment_authorized": False,
+        },
         "target_branch_policy": policy(target),
         "default_branch": default,
         "default_branch_policy": policy(default),
@@ -125,6 +133,49 @@ class GitHubActionSummaryTests(unittest.TestCase):
         data = bundle()
         data["report_is_atomic"] = True
         with self.assertRaisesRegex(ValueError, "non-authorizing and non-atomic"):
+            render_readonly_audit_summary(data)
+
+    def test_ci_check_counts_are_visible_without_approval(self):
+        result = render_readonly_audit_summary(bundle())
+        self.assertIn("Comprobaciones de CI observadas para el commit", result)
+        self.assertIn("| Conclusión success | 1 |", result)
+        self.assertIn("| Conclusiones negativas | 1 |", result)
+        self.assertIn("NO prueban", result)
+
+    def test_unavailable_checks_stay_unknown(self):
+        data = bundle()
+        data["head_check_runs"].update({
+            "lookup": "inaccessible_or_not_found",
+            "observed_total": None,
+            "status_counts": None,
+            "conclusion_counts": None,
+        })
+        result = render_readonly_audit_summary(data)
+        self.assertIn("Checks encontrados | desconocido", result)
+        self.assertNotIn("Checks encontrados | 0", result)
+
+    def test_checks_of_other_sha_are_rejected(self):
+        data = bundle()
+        data["head_check_runs"]["head_sha"] = "b" * 40
+        with self.assertRaisesRegex(ValueError, "Commit check SHA"):
+            render_readonly_audit_summary(data)
+
+    def test_forged_required_checks_permission_is_rejected(self):
+        data = bundle()
+        data["head_check_runs"]["required_checks_verified"] = True
+        with self.assertRaisesRegex(ValueError, "Commit checks must not grant"):
+            render_readonly_audit_summary(data)
+
+    def test_inconsistent_check_counts_rejected(self):
+        data = bundle()
+        data["head_check_runs"]["status_counts"] = {"completed": 1}
+        with self.assertRaisesRegex(ValueError, "Inconsistent total check count"):
+            render_readonly_audit_summary(data)
+
+    def test_unknown_check_status_rejected(self):
+        data = bundle()
+        data["head_check_runs"]["status_counts"] = {"all-authorized": 2}
+        with self.assertRaisesRegex(ValueError, "Invalid check outcome"):
             render_readonly_audit_summary(data)
 
     def test_inaccessible_branch_rule_count_cannot_be_forged(self):
