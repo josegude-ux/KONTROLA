@@ -13,11 +13,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: feature/visura-prepara-menu-oficial-20261026
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: '22'
       - name: Integrar ZIP oficial en rama de trabajo
-        if: github.event_name == 'push'
         run: |
           if test -f VISURA_PREPARA_SOLO_IMAGENES_GITHUB.zip && ! test -f assets/home/visura-prepara-preparacion-3d.webp; then
             python3 scripts/integrar_menu_oficial.py VISURA_PREPARA_SOLO_IMAGENES_GITHUB.zip
@@ -32,7 +33,6 @@ jobs:
           node --check tests/visura-menu.test.mjs
 
       - name: Guardar recursos integrados despues de pasar pruebas
-        if: github.event_name == 'push'
         run: |
           git add index.html sw.js tests/visura-menu.test.mjs
           if test -f assets/home/visura-prepara-preparacion-3d.webp; then
