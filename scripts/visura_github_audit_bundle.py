@@ -17,6 +17,7 @@ from scripts.visura_github_policy_probe import (
     _validate_branch, inspect_branch_policy,
 )
 from scripts.visura_github_reviewer_permissions import observe_snapshot_reviewer_permissions
+from scripts.visura_github_codeowners_probe import observe_codeowners
 from scripts.visura_github_action_summary import render_readonly_audit_summary
 from scripts.visura_github_commit_checks import (
     observe_commit_checks, compare_required_check_observations,
@@ -70,6 +71,10 @@ def inspect_readonly_audit_bundle(
         repository, pr, token, opener=opener
     )
 
+    # Read CODEOWNERS paths from the *actual PR target branch*, never a task.
+    # Even a visible file is not an effective reviewer-policy verdict.
+    codeowners = observe_codeowners(repository, target_branch, token, opener=opener)
+
     # Check the PR again after all observations, which are not atomic.
     # Even a consistent report can become stale immediately after return.
     endpoint = "/repos/" + repository + "/pulls/" + str(pr_number)
@@ -99,6 +104,7 @@ def inspect_readonly_audit_bundle(
         "pr_number": pr_number,
         "review_snapshot": pr,
         "reviewer_repository_permissions": reviewer_permissions,
+        "target_branch_codeowners": codeowners,
         "head_check_runs": head_checks,
         "required_check_observations": candidate_requirements,
         "legacy_commit_statuses": legacy_statuses,
