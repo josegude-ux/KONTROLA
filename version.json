@@ -1,4 +1,4 @@
 {
-  "version": "0.3.43",
-  "notes": "Cargas con destino Ferrol: solo COR1 va a preparación; impresión PDF COR1 original+detalle y detalle COR2 independiente"
+  "version": "0.3.44",
+  "notes": "Mejora preparación COR1: matriz por pasillos, totales por unidad y listado compacto A4 con HECHO y SIN UBICACIÓN"
 }
