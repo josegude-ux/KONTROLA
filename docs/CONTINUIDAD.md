@@ -726,3 +726,9 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 - Añadido `docs/REVISION_VISUAL_MENU.md` (commit d1def38a4c57916a757235591d1a49ac8eb5df5b) con comprobaciones manuales para imágenes, acciones, visibilidad por rol, PWA sin conexión y dispositivos iPhone/Android/Windows.
 - No se ha afirmado que la validación visual esté realizada: requiere probar la app en dispositivos reales y registrar capturas/evidencias.
 - No merge ni despliegue.
+
+
+### 2026-10-26 - Pruebas de integridad de imagenes oficiales
+- Commit 1f25ac2477f09e12c32c90ab0d88b38bbec4ba80: añadidas dos pruebas automatizadas para verificar cabeceras RIFF/WEBP y tamaño razonable de las cuatro imágenes referenciadas, además de exigir la versión de caché PWA v063.
+- La ejecución de GitHub Actions para este commit todavía no aparece; no se declara superada esta ampliación hasta disponer del resultado.
+- La validación visual manual en dispositivos reales sigue pendiente. Sin merge ni despliegue.
