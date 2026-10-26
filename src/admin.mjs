@@ -158,7 +158,10 @@ export function createAdminController({client,getUser,bucket,global,errorText,on
     }finally{
       setBusy(false);
       $("pdfInput").value="";
-    $("reviewLoadSelect").replaceChildren();$("reviewLoadMessage").textContent="";
+      // El selector representa las pendientes del servidor; no vaciarlo al
+      // terminar el lote, ya que parecería que las cargas han desaparecido.
+      try{await Promise.all([refreshReviewSelector(),refreshPendingPublish()]);}
+      catch(error){global("Importación finalizada, pero no se pudo actualizar el listado de pendientes: "+errorText(error),"error");}
     }
   }
   async function loadImport(id){
