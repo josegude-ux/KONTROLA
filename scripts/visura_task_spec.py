@@ -3,6 +3,7 @@
 This is a local policy gate only: it does not call an AI provider, run shell
 commands, create branches, or write repository files.
 """
+import math
 import re
 
 ALLOWED_KEYS = {"task_id", "title", "scope", "checks", "max_cost_eur"}
@@ -37,7 +38,7 @@ def validate_task(task):
                    for check in checks)):
         raise ValueError("Invalid checks")
     cost = task["max_cost_eur"]
-    if isinstance(cost, bool) or not isinstance(cost, (int, float)) or cost < 0 or cost > MAX_COST_EUR:
+    if (isinstance(cost, bool) or not isinstance(cost, (int, float))\n            or not math.isfinite(cost) or cost < 0 or cost > MAX_COST_EUR):
         raise ValueError("max_cost_eur must be between 0 and 10")
     return {
         "task_id": task_id,
