@@ -10,6 +10,7 @@ _SHA = re.compile(r"[0-9a-fA-F]{40}\Z")
 _STATES = {"APPROVED", "CHANGES_REQUESTED", "COMMENTED", "DISMISSED", "PENDING"}
 _KEYS = {
     "repository", "pr_number", "head_sha", "author_numeric_id",
+    "base_branch", "base_sha",
     "pr_state", "reviews", "retrieval_method", "repository_policy_verified",
     "execution_authorized", "merge_authorized", "deployment_authorized",
 }
@@ -33,6 +34,11 @@ def summarize_readonly_review_snapshot(snapshot):
         or not isinstance(snapshot["head_sha"], str)
         or not _SHA.fullmatch(snapshot["head_sha"])
         or not _positive_int(snapshot["author_numeric_id"])
+        or not isinstance(snapshot["base_branch"], str)
+        or not re.fullmatch(r"[A-Za-z0-9_./-]{1,200}", snapshot["base_branch"])
+        or any(part in {"", ".", ".."} for part in snapshot["base_branch"].split("/"))
+        or not isinstance(snapshot["base_sha"], str)
+        or not _SHA.fullmatch(snapshot["base_sha"])
         or snapshot["pr_state"] not in ("open", "closed")
         or snapshot["retrieval_method"] != "github_rest_https_token"
         or not isinstance(snapshot["reviews"], list)
@@ -119,6 +125,8 @@ def summarize_readonly_review_snapshot(snapshot):
         "repository": snapshot["repository"],
         "pr_number": snapshot["pr_number"],
         "head_sha": snapshot["head_sha"],
+        "base_branch": snapshot["base_branch"],
+        "base_sha": snapshot["base_sha"],
         "pr_state": snapshot["pr_state"],
         "observed_review_count": len(seen_review_ids),
         "observed_current_commit_approvals": sorted(
