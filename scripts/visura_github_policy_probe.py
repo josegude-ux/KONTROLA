@@ -72,6 +72,27 @@ def _parse_required_checks(rows, app_key):
     return results
 
 
+# These are observations from the applied-rules endpoint, not evidence that
+# a PR has satisfied a rule. Missing response fields must remain unknown.
+_ACTIVE_REVIEW_BOOLEAN_FIELDS = (
+    "dismiss_stale_reviews_on_push",
+    "require_code_owner_review",
+    "require_last_push_approval",
+    "required_review_thread_resolution",
+    "require_extra_approval_for_unattributed_changes",
+)
+
+
+def _read_active_review_boolean_fields(parameters):
+    observed = {}
+    for field in _ACTIVE_REVIEW_BOOLEAN_FIELDS:
+        value = parameters.get(field)
+        if field in parameters and type(value) is not bool:
+            raise ValueError("Invalid active pull request review control: " + field)
+        observed[field] = value
+    return observed
+
+
 def inspect_branch_policy(repository, branch_name, token, opener=None):
     """Return observations, never permissions or a sufficient-policy verdict."""
     _validate_repo(repository)
@@ -180,6 +201,7 @@ def inspect_branch_policy(repository, branch_name, token, opener=None):
     applied_requirements_complete = True
     observed_review_requirements = []
     review_requirements_complete = True
+    review_control_fields_complete = True
     applied_status = "retrieved"
     for page in range(1, MAX_APPLIED_RULE_PAGES + 1):
         lookup, data = _read_status(
@@ -193,6 +215,7 @@ def inspect_branch_policy(repository, branch_name, token, opener=None):
             applied_requirements = []
             applied_requirements_complete = False
             review_requirements_complete = False
+            review_control_fields_complete = False
             break
         if not isinstance(data, list) or len(data) > 100:
             raise ValueError("Invalid active branch rules response")
@@ -214,15 +237,20 @@ def inspect_branch_policy(repository, branch_name, token, opener=None):
                 parameters = rule.get("parameters")
                 if parameters is None:
                     review_requirements_complete = False
+                    review_control_fields_complete = False
                 elif not isinstance(parameters, dict):
                     raise ValueError("Invalid active pull request parameters")
                 else:
                     count = parameters.get("required_approving_review_count")
                     if type(count) is not int or count < 0:
                         raise ValueError("Invalid active required approving review count")
+                    controls = _read_active_review_boolean_fields(parameters)
+                    if any(value is None for value in controls.values()):
+                        review_control_fields_complete = False
                     observed_review_requirements.append({
                         "ruleset_id": rule_id,
                         "required_approving_review_count": count,
+                        **controls,
                     })
             if rule_type == "required_status_checks":
                 parameters = rule.get("parameters")
@@ -286,6 +314,10 @@ def inspect_branch_policy(repository, branch_name, token, opener=None):
             ),
             "review_requirements_available": (
                 applied_status == "retrieved" and review_requirements_complete
+            ),
+            "active_review_control_fields_complete": (
+                applied_status == "retrieved" and review_requirements_complete
+                and review_control_fields_complete
             ),
             "applied_ruleset_api_responded": applied_status == "retrieved",
             "includes_classic_branch_protection": False,
