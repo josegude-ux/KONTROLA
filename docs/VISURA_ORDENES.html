@@ -117,6 +117,13 @@ header .intro{font-size:.85rem;line-height:1.38}
 .refresh-panel{margin-left:4px}
 @media(prefers-color-scheme:dark){.brand-text strong{color:#71e9a8}}
 @media(max-width:380px){.brand-lockup{gap:7px}.brand-mark{height:44px;width:44px}.brand-text strong{font-size:1.02rem;letter-spacing:.13em}.brand-text span{font-size:.56rem}.refresh-panel{font-size:.76rem;padding:7px}}
+
+.reactivation-generator{margin:10px 0 14px}
+.reactivation-generator select,.reactivation-generator input{display:block;width:100%;border:1px solid var(--border);border-radius:12px;background:var(--bg);color:var(--text);font:inherit;font-size:16px;padding:11px 12px}
+.reactivation-generator [hidden]{display:none!important}
+.reactivation-generator :is(select,input):focus-visible{outline:3px solid #86afdb;outline-offset:2px}
+#open-reactivate-chat:disabled{opacity:.42;cursor:not-allowed}
+
 </style>
 </head>
 <body>
@@ -132,7 +139,27 @@ header .intro{font-size:.85rem;line-height:1.38}
 <button type="button" class="dashboard-action" data-open-order="orden-7" aria-controls="orden-7"><span class="action-mark" aria-hidden="true">↳</span><span class="action-copy"><strong>Integrar imagen</strong><small>Aplicar la aprobada</small></span></button></div>
 </nav>
 <div class="command-toolbar" id="command-toolbar" hidden><button class="back-to-dashboard" type="button" id="back-to-dashboard">‹ Volver al menú</button><span class="toolbar-order" id="current-order-label">ORDEN 01 / 07</span></div>
-<article class="command" id="orden-1"><div class="top"><div class="symbol">↻</div><div><div class="eyebrow">ORDEN 01 · Reanudar desarrollo</div><h2>REACTIVAR VISURA</h2></div></div><p class="when">se para el desarrollo pero sigues en el mismo chat.</p><div class="actions"><button type="button" class="primary" data-copy="0">Copiar orden</button><button type="button" class="secondary" aria-controls="prompt-0" aria-expanded="false" data-toggle="0">Ver texto</button></div><pre id="prompt-0" hidden>REACTIVAR VISURA. Retoma el desarrollo desde la última tarea realmente comprobada, respetando las decisiones y el prompt maestro de este chat. Antes de modificar código, verifica la rama, los commits, los PR y docs/CONTINUIDAD.md de los repositorios implicados. No repitas tareas finalizadas, no sobrescribas cambios ajenos y evita solapamientos entre chats. Continúa con la siguiente tarea autorizada y segura. Después de cada hito, comprueba, guarda y documenta los cambios. No te detengas salvo bloqueo real o necesidad de autorización.</pre></article>
+<article class="command" id="orden-1"><div class="top"><div class="symbol">↻</div><div><div class="eyebrow">ORDEN 01 · Reanudar desarrollo</div><h2>REACTIVAR VISURA</h2></div></div><p class="when">Elige exactamente qué desarrollo quieres reanudar. Para trasladarlo a otro chat, utiliza la orden 03.</p><div class="reactivation-generator">
+<label class="field-label" for="reactivate-chat">¿Qué chat quieres reactivar?</label>
+<select id="reactivate-chat" required>
+<option value="" selected disabled>Selecciona un chat…</option>
+<option value="VISURA WORK">VISURA WORK</option>
+<option value="VISURA 0.1">VISURA 0.1</option>
+<option value="VISURA 0.2">VISURA 0.2</option>
+<option value="PROMPT E IMÁGENES">PROMPT E IMÁGENES</option>
+<option value="VISURA CENTRO DE MANDO">VISURA CENTRO DE MANDO</option>
+<option value="VISURA — PRUEBAS CENTRO DE MANDO">VISURA — PRUEBAS CENTRO DE MANDO</option>
+<option value="VISURA INVENTA">VISURA INVENTA</option>
+<option value="VISURA PREPARA">VISURA PREPARA</option>
+<option value="MOVENTA 0.3">MOVENTA 0.3</option>
+<option value="OTRO">Otro chat</option>
+</select>
+<label class="field-label" for="reactivate-other" id="reactivate-other-label" hidden>Nombre exacto del chat</label>
+<input id="reactivate-other" type="text" placeholder="Nombre del chat que quieres continuar" hidden>
+<label class="field-label" for="reactivate-chat-link">Enlace directo del chat elegido (opcional)</label>
+<input id="reactivate-chat-link" type="url" inputmode="url" placeholder="https://chatgpt.com/c/…">
+<p class="field-hint" id="reactivate-help">Selecciona el chat antes de copiar. La orden debe pegarse en esa misma conversación. Sin enlace, tendrás que abrirla manualmente.</p>
+</div><div class="actions"><button type="button" class="primary" data-copy="0">Copiar reactivación elegida</button><button type="button" class="secondary" id="open-reactivate-chat" disabled>Abrir chat elegido</button><button type="button" class="secondary" aria-controls="prompt-0" aria-expanded="false" data-toggle="0">Ver texto</button></div><pre id="prompt-0" hidden>Selecciona el chat que quieres reactivar.</pre></article>
 <article class="command" id="orden-2"><div class="top"><div class="symbol">↗</div><div><div class="eyebrow">ORDEN 02 · Preparar fin de créditos</div><h2>PREPARAR TRASPASO WORK</h2></div></div><p class="when">Work está cerca de su límite o quieres protegerte antes de perder acceso.</p><div class="actions"><button type="button" class="primary" data-copy="1">Copiar orden</button><button type="button" class="secondary" aria-controls="prompt-1" aria-expanded="false" data-toggle="1">Ver texto</button></div><pre id="prompt-1" hidden>PREPARAR TRASPASO WORK. Antes de cualquier aviso de fin de créditos, verifica y guarda los avances reales; actualiza docs/CONTINUIDAD.md, CONTINUIDAD_WORK_A_CHAT_NORMAL.md y PROMPT_CONTINUAR_SIN_WORK.md donde corresponda. Incluye repositorios, ramas, commits, PR, imágenes aprobadas, decisiones, pruebas, bloqueos y la primera tarea pendiente. Comprueba que los documentos sean accesibles y entrega aquí el prompt completo, autocontenido y copiable para continuar desde un chat normal. Si no puedes guardar en GitHub, entrega la recuperación en esta conversación y declara qué no quedó persistido. Solo emite «DESARROLLO FIN DE CRÉDITOS WORK» si realmente no puedes continuar y después de entregar la recuperación disponible.</pre></article>
 <article class="command" id="orden-3"><div class="top"><div class="symbol">⇄</div><div><div class="eyebrow">ORDEN 03 · Continuar en otro chat</div><h2>RECUPERAR VISURA EN NUEVO CHAT</h2></div></div><p class="when">Selecciona la conversación de origen. Si se han agotado los créditos, elige VISURA WORK.</p><div class="recovery-generator">
 <label class="field-label" for="source-chat">¿Qué chat quieres continuar?</label>
@@ -264,8 +291,59 @@ document.body.removeChild(el);
 if(ok){showStatus("Orden copiada ✓");return}
 window.prompt("Copia la orden y pégala en ChatGPT:",text)
 }
-document.querySelectorAll("[data-copy]").forEach(b=>b.addEventListener("click",()=>{const n=Number(b.dataset.copy);if(n===2){const p=recoveryPrompt();if(!p){otherChat.focus();showStatus("Introduce el nombre del chat");return;}copyCommand(p);}else{copyCommand(commands[n]);}}));
+document.querySelectorAll("[data-copy]").forEach(b=>b.addEventListener("click",()=>{const n=Number(b.dataset.copy);if(n===0){const p=reactivatePrompt();if(!p){reactivateChat.focus();showStatus("Selecciona el chat que quieres reactivar");return;}copyCommand(p);}else if(n===2){const p=recoveryPrompt();if(!p){otherChat.focus();showStatus("Introduce el nombre del chat");return;}copyCommand(p);}else{copyCommand(commands[n]);}}));
 document.querySelectorAll("[data-toggle]").forEach(b=>b.addEventListener("click",()=>{const pre=document.getElementById("prompt-"+b.dataset.toggle);pre.hidden=!pre.hidden;b.setAttribute("aria-expanded",String(!pre.hidden));b.textContent=pre.hidden?"Ver texto":"Ocultar texto"}));
+
+
+/* Orden 01 V2: distingue el chat de desarrollo que se pretende reactivar. */
+const reactivateTemplate="REACTIVAR DESARROLLO VISURA — CHAT SELECCIONADO.\n\nCHAT QUE QUIERO REACTIVAR: {{NOMBRE_CHAT}}\nENLACE DE REFERENCIA DEL CHAT ELEGIDO: {{ENLACE_CHAT}}\n\nPRIORIDAD ABSOLUTA: Esta orden es EXCLUSIVAMENTE para reanudar el desarrollo del chat indicado arriba. Debe pegarse en ESA conversación de ChatGPT, no en cualquier otro chat. Si se ha pegado en una conversación distinta o reservada a pruebas, NO ejecutes cambios reales: indica la discrepancia y explica dónde pegarla. Si el usuario quiere continuar un desarrollo en un chat distinto del de origen, debe usar la orden 03 (RECUPERAR EN OTRO CHAT).\n\nVERIFICACIÓN: No supongas que el nombre o enlace del chat permite leer automáticamente su historial. Comprueba qué contexto está realmente accesible. Si el historial está disponible, respeta el último avance y todas las decisiones comprobadas. Si no está disponible, dilo expresamente y contrasta el desarrollo concreto mediante documentos actualizados, ramas, commits, archivos, PR y pruebas de los repositorios GitHub correspondientes. No confundas el desarrollo seleccionado con otros proyectos VISURA relacionados ni consideres main automáticamente la versión más avanzada.\n\nCONTINUACIÓN: Desde la última tarea verdaderamente comprobada de ESE desarrollo, continúa con la siguiente acción autorizada y segura. No reconstruyas tareas ya completadas, no sobrescribas trabajo ajeno y evita simultaneidades entre chats. Después de cada hito verifica, guarda en la rama correcta y actualiza la documentación de continuidad pertinente. Mantén separadas las imágenes aprobadas, integradas y verificadas.\n\nLÍMITES: No fusiones, publiques, despliegues ni borres datos sin autorización explícita. Si el chat receptor está reservado a pruebas, limítate a analizar o simular sin escribir en GitHub o aplicaciones. No te detengas por obstáculos subsanables; busca alternativas compatibles con las herramientas disponibles y solo solicita intervención ante un bloqueo real o una autorización imprescindible. No inventes accesos, pruebas ni trabajo futuro en segundo plano.\n\nRESULTADO: comunica la rama o evidencia verificada, la tarea que has retomado, los cambios efectivamente realizados y cualquier paso que siga pendiente.";
+const reactivateChat=document.getElementById("reactivate-chat");
+const reactivateOther=document.getElementById("reactivate-other");
+const reactivateOtherLabel=document.getElementById("reactivate-other-label");
+const reactivateChatLink=document.getElementById("reactivate-chat-link");
+const reactivateOpen=document.getElementById("open-reactivate-chat");
+const reactivateHelp=document.getElementById("reactivate-help");
+function selectedReactivateChat(){
+ return reactivateChat.value==="OTRO"?reactivateOther.value.trim():reactivateChat.value;
+}
+function validatedReactivateLink(){
+ const raw=reactivateChatLink.value.trim();
+ if(!raw)return "";
+ try{
+  const url=new URL(raw);
+  if(url.protocol!=="https:"||!["chatgpt.com","chat.openai.com"].includes(url.hostname)||!url.pathname.includes("/c/"))return "";
+  return url.href;
+ }catch(_){return "";}
+}
+function reactivatePrompt(){
+ const chat=selectedReactivateChat();
+ if(!chat)return "";
+ return reactivateTemplate.replaceAll("{{NOMBRE_CHAT}}",chat).replaceAll("{{ENLACE_CHAT}}",validatedReactivateLink()||"No proporcionado; el nombre no garantiza acceso al historial.");
+}
+function syncReactivate(){
+ const other=reactivateChat.value==="OTRO";
+ reactivateOther.hidden=!other;
+ reactivateOtherLabel.hidden=!other;
+ const link=validatedReactivateLink();
+ reactivateOpen.disabled=!selectedReactivateChat()||!link;
+ const badLink=reactivateChatLink.value.trim()&&!link;
+ reactivateHelp.textContent=badLink
+  ?"Para abrir el chat, pega un enlace directo válido de ChatGPT (https://chatgpt.com/c/…). Los enlaces compartidos no sirven para escribir en él."
+  :(!selectedReactivateChat()?"Elige primero un chat para reactivar.":"Copia la orden y pégala en el chat elegido. "+(link?"Puedes abrirlo con el enlace.":"Si no tienes su enlace, ábrelo manualmente en ChatGPT."));
+ document.getElementById("prompt-0").textContent=reactivatePrompt()||"Selecciona el chat que quieres reactivar.";
+}
+reactivateChat.addEventListener("change",()=>{syncReactivate();if(reactivateChat.value==="OTRO")reactivateOther.focus();});
+reactivateOther.addEventListener("input",syncReactivate);
+reactivateChatLink.addEventListener("input",syncReactivate);
+reactivateOpen.addEventListener("click",()=>{
+ const url=validatedReactivateLink();
+ if(!selectedReactivateChat()){reactivateChat.focus();showStatus("Elige el chat que quieres reactivar");return;}
+ if(!url){reactivateChatLink.focus();showStatus("Necesitas el enlace directo del chat");return;}
+ const opened=window.open(url,"_blank");
+ if(opened){try{opened.opener=null;}catch(_){}}
+ else showStatus("Tu navegador ha bloqueado la apertura; abre el enlace manualmente.");
+});
+syncReactivate();
 
 const visualPromptTemplate="GENERAR IMAGEN O ICONO VISURA.\n\nTIPO DE RECURSO: {{TIPO}}\nPARA QUÉ SIRVE: {{FINALIDAD}}\n\nCrea directamente una nueva imagen del tipo indicado. Antes de generarla, utiliza las referencias visuales de VISURA accesibles en esta conversación, archivos adjuntos o recursos verificados; si no puedes acceder a una referencia, no afirmes haberla recuperado. Mantén coherencia visual con el módulo, pantalla o función correspondiente dentro de VISURA, sin imponer nombres de aplicaciones concretas. Respeta las decisiones estéticas aprobadas y evita copiar indiscriminadamente imágenes destinadas a otras funciones.\n\nEstilo de partida: profesional, moderno, tridimensional, limpio, con profundidad, volumen e iluminación cuidada, siempre adaptado al uso descrito. Para un icono, da prioridad a silueta legible, pocos elementos, contraste y formato cuadrado; evita textos pequeños. Si el uso es una ilustración de pantalla o una imagen de contenido, adapta composición y formato a ese uso. Si se adjuntan referencias, consérvalas como guía prioritaria.\n\nOBLIGATORIO — MÍNIMO TRES MUESTRAS: si hay información suficiente, genera y muestra al menos TRES PROPUESTAS VISUALES REALES, identificadas como A, B y C. Deben representar tres caminos creativos sustancialmente distintos, no versiones casi idénticas con cambios de color, iluminación o perspectiva. Diferéncialas de verdad en la idea visual principal, la silueta, la composición, el símbolo o metáfora gráfica y el tratamiento tridimensional; adapta esas diferencias al uso del recurso. Las tres deben ser igualmente trabajadas, profesionales y coherentes con VISURA, con suficiente personalidad y atractivo para que resulte difícil elegir entre ellas. No incluyas una alternativa de relleno ni elijas por el usuario.\n\nGenera las tres imágenes utilizando la herramienta de imágenes disponible; si la herramienta solo permite una o dos por ejecución, continúa con ejecuciones adicionales cuando sea posible. No presentes tres descripciones como si fueran tres imágenes y no afirmes que has generado muestras que no se hayan creado realmente. Muéstralas juntas o de forma claramente comparable, explica en una frase la diferencia esencial de cada una y permite elegir A, B o C antes de refinar la seleccionada.\n\nNo te detengas a solicitar preferencias adicionales si la finalidad ya está indicada. Si el uso no está indicado o falta una decisión imprescindible, pregunta solo por ese dato. No te limites a redactar un prompt. Crear propuestas no significa aprobarlas o integrarlas: espera la elección y autorización del usuario antes de sustituir activos o modificar repositorios.";
 const visualType=document.getElementById("resource-type");
