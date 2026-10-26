@@ -604,3 +604,10 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 - Añadidas pruebas estáticas `tests/visura-menu.test.mjs` de IDs, títulos, imágenes de respaldo y precarga existente; pendiente confirmar ejecución en CI. No se han modificado los controladores de navegación.
 - **Pendiente**: subir al repositorio los 4 WEBP aprobados y 4 originales del ZIP, sustituir las cuatro rutas de imagen, actualizar caché PWA y pruebas para los recursos definitivos, capturas reales y validación en dispositivos. No declarar completado. Los WEBP antiguos siguen visibles hasta integrar los oficiales.
 - Sin cambios en Supabase, Business Central, roles, usuarios o datos. Los commits parciales de etiquetas/pruebas se han hecho por separado; esta actualización de continuidad documenta el conjunto. En el commit final de integración se debe incluir también esta ficha.
+
+
+### 2026-10-26 — Directiva maestra y continuación autónoma
+- Registrada la orden del propietario en `docs/DIRECTIVA_DESARROLLO.md`: desarrollo autónomo dentro de límites de seguridad, sin Cursor, sin reiniciar, sin pedir permiso entre fases, sin merges/despliegues/borrados no autorizados.
+- Test `tests/visura-menu.test.mjs` reforzado para verificar existencia de recursos y precarga PWA; ejecución CI aún no verificada. La PR #29 sigue en borrador.
+- Estado de la integración visual: títulos y IDs conservados en el código; WEBP oficiales aún no subidos. No cambiar rutas antes de incorporar los recursos.
+- Último commit de documentación de directiva anterior a esta actualización: `37fc7b2752a7eabc6511f77ddf2e5a6310a9dcc8`. Reversión: cerrar PR #29 sin fusionar; ninguna versión instalada ha sido modificada.
