@@ -96,3 +96,5 @@ La idea de un portal común se documentó separadamente en `docs/MOVENTA_CONCEPT
 - Rama aislada `feat/visura-auto-dev-csv-preflight` desde guardrails; utilidad `scripts/visura_csv_preflight.py` de **solo lectura** para ficheros CSV manuales, con límite de tamaño, detección de delimitador, cabeceras requeridas, columnas duplicadas y filas mal formadas.
 - Se añaden seis pruebas unitarias en `tests/test_visura_csv_preflight.py`. **Pendiente de ejecución CI y revisión**, no integrado en ninguna aplicación ni usado en producción.
 - Esta implementación la realizó ChatGPT mediante GitHub, **no** el workflow autónomo de IA; sirve como primer candidato de código para el futuro ejecutor seguro.
+
+- CI inicial PR #35: 23/24 pruebas correctas; falló detección de delimitador ante una fila con columnas extra. Corregido en commit `20f7db4` tomando el delimitador de la cabecera. **Pendiente de confirmar CI tras el cambio.**
