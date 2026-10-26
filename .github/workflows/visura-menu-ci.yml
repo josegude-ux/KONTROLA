@@ -7,7 +7,7 @@ on:
     branches:
       - feature/visura-prepara-menu-oficial-20261026
 permissions:
-  contents: write
+  contents: read
 jobs:
   menu:
     runs-on: ubuntu-latest
