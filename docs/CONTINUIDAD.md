@@ -790,3 +790,11 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 - Mantener la app publicada actual intacta mientras se completan las validaciones automatizadas y se prepara un paquete de actualización reversible. No crear una PWA paralela como requisito del flujo.
 - Antes de publicar la actualización en la misma URL, verificar que se conserva el proyecto Supabase configurado, que no hay migraciones ni operaciones destructivas y que el service worker/cache versiona los recursos correctamente. Mantener disponible el commit de la versión actual para revertir el código si fuera necesario.
 - La publicación definitiva sigue requiriendo autorización expresa según la directiva permanente; la preferencia por actualizar la misma aplicación no autoriza por sí sola a desplegar producción.
+
+
+### 2026-10-26 — Auditoría previa a actualizar la PWA instalada
+- Configuración verificada en rama: `src/config.mjs` apunta al proyecto Supabase actual de KONTROLA (`oevetnszmfxeukcncwji`), con clave publicable, bucket `kontrola-pdfs` y versión `0.3.30`. No se cambió la configuración.
+- `sw.js` usa caché `kontrola-integral-visura-v063` y `manifest.webmanifest` conserva `start_url: ./`, `display: standalone` y marca VISURA PREPARA. La actualización sobre la misma URL conserva la identidad de la PWA instalada, sujeto al comportamiento del navegador.
+- La configuración declara expresamente que INVENTA usa otro backend independiente: NO afirmar que ambas aplicaciones ya comparten base Supabase.
+- CI #120 SUCCESS. CI #121 estaba en curso al realizar esta auditoría.
+- Antes del despliegue definitivo: revisar que el workflow Pages use la rama candidata, obtener SHA de la versión publicada para reversión, verificar ausencia de migraciones/destrucción y pedir aprobación explícita de publicación.
