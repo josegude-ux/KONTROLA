@@ -756,3 +756,10 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 ### Ajuste de CI para PR #36
 - Se detectó que la PR #36 no disparaba Actions: el workflow solo aceptaba PR con base `branding/visura-prepara-20261026`, y además forzaba checkout de la rama principal de feature, ignorando el head de la PR. Se corrigió el destino del trigger para `feature/visura-prepara-menu-oficial-20261026`, se dejó checkout del commit de PR predeterminado y se eliminó el paso que hacía push automático desde el workflow.
 - Commit: 4f14275bc0f30684ecef2285495407b1b605e5a2. Pendiente CI de PR #36.
+
+
+### 2026-10-26 - Smoke visual Chromium superado
+- GitHub Actions #109, run 40260656625, commit `fc359a8ce6593699258a2e2aebd540220126ceaf`: SUCCESS. Los pasos de regresión y `Prueba visual Chromium en escritorio y móvil` terminaron correctamente.
+- La ejecución #108 también terminó SUCCESS, pero no había artefactos de capturas porque el paso de subida se había retirado al corregir el YAML. Se ha añadido de nuevo la publicación de `artifacts/*.png` con retención de 7 días (commit `ea300efb06360a7a4b3e5982543af287790b1f2c`); falta confirmar las capturas en la siguiente ejecución.
+- Esta comprobación se ejecuta en Chromium emulado con viewports de 1440x1000 y 390x844; no sustituye validación física en iPhone/Android.
+- PR #36 permanece abierta y en borrador. No merge ni despliegue.
