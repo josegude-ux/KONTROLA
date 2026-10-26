@@ -11,22 +11,340 @@ button.primary,button.secondary,button.ghost-danger{min-height:46px;border-radiu
 .status{min-height:16px;margin-top:12px;white-space:pre-wrap;color:#566b7b;line-height:1.5;font-size:13px;overflow-wrap:anywhere}
 .status.error{color:#9a2732}.status.success{color:#17633c}
 .topbar{background:#fff;border-bottom:1px solid #e5e9ee;padding:12px max(17px,env(safe-area-inset-right)) 12px max(17px,env(safe-area-inset-left));display:flex;justify-content:space-between;align-items:center;gap:12px;position:sticky;top:0;z-index:10;min-height:74px}
-.brand-button{border:0;background:none;padding:0;display:flex;align-items:center}.brand-button img{width:clamp(132px,33vw,185px);height:auto}.top-actions{display:flex;gap:12px;align-items:center}.user-name{font-size:12px;color:#647386;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.icon-button{border:1px solid #e1e7ee;border-radius:11px;background:white;padding:12px;font-size:13px;font-weight:700;min-height:48px}
+.brand-button{border:0;background:none;padding:0;display:flex;align-items:center}.brand-button img{width:clamp(132px,33vw,185px);height:auto}.top-actions{display:flex;gap:12px;align-items:center}.user-name{font-size:12px;color:#647386;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.connection-status{font-size:11px;font-weight:800;color:#17633c}.connection-status.offline{color:#9a2732}.icon-button{border:1px solid #e1e7ee;border-radius:11px;background:white;padding:12px;font-size:13px;font-weight:700;min-height:48px}
 .container{max-width:1020px;margin:auto;padding:30px 18px 55px;min-height:calc(100dvh - 140px)}
 .feature{width:100%;border:1px solid #e7ebf0;border-radius:22px;padding:22px;min-height:150px;display:flex;align-items:center;text-align:left;gap:20px;color:#0B2647;box-shadow:0 9px 28px #0b26470b;transition:transform .12s ease}
-.feature:active:not(:disabled){transform:scale(.99)}.feature-pink{background:#fff0f1}.feature-blue{background:#edf5fc}.feature-cream{background:#fff3db}.feature-icon{width:76px;height:76px;border-radius:20px;background:#ffffffa8;display:grid;place-items:center;font-size:40px;flex:none;box-shadow:0 4px 13px #0b264711}
+.feature:active:not(:disabled){transform:scale(.99)}
+.feature-lilac{background:#f1ecfb}
+.submenu-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin:23px 0 18px}
+.submenu-card{width:100%;min-height:112px;display:flex;gap:15px;align-items:center;text-align:left;padding:17px;border:1px solid #e0e7ed;border-radius:19px;background:#fff;color:#0B2647;box-shadow:0 5px 17px #0b264708}
+.submenu-card:active{background:#f6f8fa}.submenu-icon{width:54px;height:54px;flex:none;display:grid;place-items:center;border-radius:16px;background:#eef4f8;font-size:28px}
+.submenu-card b{display:block;font-size:18px;margin-bottom:6px}.submenu-card small{display:block;color:#52697e;font-size:13px;line-height:1.4}
+.submenu-arrow{font-size:28px;color:#677c92;margin-left:auto}
+@media(max-width:720px){.submenu-grid{grid-template-columns:1fr}.submenu-card{min-height:94px}}
+@media(max-width:360px){.submenu-card{gap:10px;padding:12px}.submenu-icon{width:44px;height:44px;font-size:24px}}
+.feature-pink{background:#fff0f1}.feature-blue{background:#edf5fc}.feature-cream{background:#fff3db}.feature-icon{width:76px;height:76px;border-radius:20px;background:#ffffffa8;display:grid;place-items:center;font-size:40px;flex:none;box-shadow:0 4px 13px #0b264711}
 .feature b{display:block;font-size:23px;margin-bottom:8px}.feature small{font-size:14px;color:#51657b;display:block;line-height:1.4}.feature .arrow{font-size:26px;margin-left:auto;flex:none}
 .home-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:17px;margin-top:28px}.home-grid .feature:last-child:nth-child(odd){grid-column:span 2}
 .page-heading{margin-bottom:21px}.back-button{background:transparent;color:#0B2647;border:0;font-weight:750;padding:0;min-height:48px;margin-bottom:10px}
-.toolbar{display:flex;align-items:end;gap:12px;flex-wrap:wrap}.search-wrap{flex:1;min-width:180px}.loads-list{display:grid;gap:12px;margin-top:14px}
+.toolbar{display:flex;align-items:end;gap:12px;flex-wrap:wrap}
+/* Lectura voluntaria de cabeceras antiguas: control separado de tarjetas activadoras. */
+.legacy-header-actions{display:flex;align-items:center;flex-wrap:wrap;gap:10px;margin-top:10px}
+.legacy-header-actions button{flex:none;max-width:100%;font-size:13px;padding:10px 13px;min-height:42px}
+.legacy-header-actions p{font-size:13px;line-height:1.45;color:#49647d;margin:0;min-width:0;overflow-wrap:anywhere}
+@media(max-width:540px){.legacy-header-actions{align-items:flex-start;flex-direction:column}.legacy-header-actions button{width:100%}}
+.search-wrap{flex:1;min-width:180px}.loads-list{display:grid;gap:12px;margin-top:14px}
 .load-card{border:1px solid #e0e6eb;background:#fff;border-radius:17px;display:flex;align-items:center;gap:18px;justify-content:space-between;text-align:left;padding:18px;width:100%;box-shadow:0 2px 9px #0b264708}.load-title{display:block;font-size:20px;font-weight:800}.load-meta{font-size:13px;color:#647386;display:block;line-height:1.5;margin-top:5px}.load-weight{font-weight:800;font-size:16px;white-space:nowrap}
 .panel{border:1px solid #e6eaef;background:white;border-radius:18px;padding:20px;margin-top:17px;box-shadow:0 6px 22px #0b264708}.line{display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap}.facts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}.fact{padding:13px;border:1px solid #e3eaf0;border-radius:12px;background:#fff}.fact small{color:#65778a;display:block;font-size:12px}.fact b{display:block;margin-top:7px;overflow-wrap:anywhere}
 .info-bar{border-radius:12px;background:#eaf3fa;color:#12446b;font-size:13px;line-height:1.5;padding:13px 16px;margin-bottom:15px;font-weight:600}
 .info-bar.warning{background:#fff1dd;color:#75461b}.info-bar.complete{background:#e5f2e9;color:#17613d}
 .pills{display:flex;gap:7px;overflow-x:auto;padding:7px 0 15px}.pill{border:1px solid #cbd8e5;color:#0B2647;background:white;padding:11px 14px;white-space:nowrap;border-radius:30px;font-size:13px;font-weight:750;min-height:44px}.pill.active{background:#0B2647;color:white}
 .product{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;padding:16px 8px;border-bottom:1px solid #e7edf1}.product:last-child{border-bottom:0}.product b{font-size:15px}.product .description{display:block;margin:5px 0;color:#253b52;line-height:1.45}.product small{display:block;color:#65758a}.product .qty{color:#0B2647;font-size:18px;font-weight:850;white-space:nowrap}.product .qty small{font-size:11px;text-align:right}
+.verification-line{border:1px solid #e0e7ed;border-radius:14px;padding:15px;margin:12px 0;background:#fff}.verification-line.has-difference{border-color:#e5a7ad;background:#fff8f8}.verification-line.is-checked:not(.has-difference){border-color:#a9d5ba;background:#f7fcf8}.verification-line-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}.verification-line-head b{display:block}.verification-line-head small,.verification-line .description{display:block;color:#65758a;margin-top:4px}.expected{font-weight:850;white-space:nowrap}.verification-entry{display:grid;grid-template-columns:minmax(130px,1fr) auto;align-items:end;gap:10px;margin-top:12px}.verification-entry label{margin:0}.verification-entry input{margin-top:6px}.verification-entry button{min-height:48px}.difference-note{margin:10px 0 0;font-size:13px;font-weight:750;color:#9a2732}.match-note{margin:10px 0 0;font-size:13px;font-weight:750;color:#17633c}.verification-finish{border-top:1px solid #e4e9ed;margin-top:20px;padding-top:18px}.verification-finish button{width:100%}
+.incident-list{display:grid;gap:16px;margin-top:16px}.incident-group{border:1px solid #ead8d9;border-radius:14px;overflow:hidden}.incident-group h3{margin:0;padding:13px 15px;background:#fff1f1;font-size:17px}.incident-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:center;padding:14px 15px;border-top:1px solid #edf0f2}.incident-row p{margin:4px 0 0;color:#65758a;font-size:13px}.incident-row button{min-height:44px}
+.warehouse-tabs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:14px 0}.warehouse-tabs button{border:2px solid #cbd8e5;border-radius:13px;background:#fff;padding:13px;font-weight:800;color:#0B2647}.warehouse-tabs button.active{border-color:#0B2647;background:#0B2647;color:#fff}.warehouse-select{min-height:44px;border:1px solid #cad6df;border-radius:10px;padding:8px;background:#fff;color:#0B2647;font:inherit}.activity-list{margin-top:14px;max-height:260px;overflow:auto}.activity-list p{padding:9px 0;margin:0;border-bottom:1px solid #e6ebef;font-size:13px}.attention-list{display:grid;gap:9px;margin-top:14px}.attention-card{display:flex;flex-direction:column;gap:5px;text-align:left;border:1px solid #edc7ca;background:#fff8f8;border-radius:12px;padding:13px;color:#0B2647}.attention-card span{font-size:12px;color:#65758a}.document-review{margin-top:17px}.review-heading{display:flex;justify-content:space-between;align-items:center;gap:10px}.state-badge{border-radius:20px;padding:6px 10px;background:#eaf3f9;font-size:11px;font-weight:800}.findings{display:grid;gap:7px;margin:12px 0}.finding{display:flex;gap:9px;align-items:flex-start;margin:0;padding:10px;border-radius:9px;font-weight:600}.finding.error{background:#fff0f1;color:#8b2630}.finding.warning{background:#fff5df;color:#75461b}.finding input{width:auto;min-height:0;margin:2px 0}.review-lines{display:grid;gap:12px}.review-line{border:1px solid #dce5ec;border-radius:12px;padding:13px;display:grid;grid-template-columns:1.1fr 2fr 1fr 1fr 1fr;gap:8px;align-items:end}.review-line label{margin:0}.review-line input{min-height:42px}.report-view{position:fixed;inset:0;z-index:100;background:#eef2f5;overflow:auto;padding:20px}.report-controls{max-width:960px;margin:0 auto 14px;background:#fff;padding:15px;border-radius:14px}.report-paper{max-width:900px;min-height:297mm;margin:auto;background:#fff;padding:12mm;box-shadow:0 8px 30px #0002}.report-open{overflow:hidden}
 .actions{display:flex;gap:10px;flex-wrap:wrap}.actions button{flex:1}
 footer{padding:18px;text-align:center;background:#fff;border-top:1px solid #e6e8eb;color:#788699;font-size:11px}
-@media(max-width:720px){.home-grid{grid-template-columns:1fr}.home-grid .feature:last-child:nth-child(odd){grid-column:auto}.facts{grid-template-columns:repeat(2,minmax(0,1fr))}.feature{min-height:128px;padding:16px}.feature-icon{width:64px;height:64px;font-size:33px}.feature b{font-size:21px}.feature .arrow{display:none}.container{padding-top:20px}.user-name{display:none}}
+@media(max-width:720px){.home-grid{grid-template-columns:1fr}.home-grid .feature:last-child:nth-child(odd){grid-column:auto}.facts{grid-template-columns:repeat(2,minmax(0,1fr))}.feature{min-height:128px;padding:16px}.feature-icon{width:64px;height:64px;font-size:33px}.feature b{font-size:21px}.feature .arrow{display:none}.container{padding-top:20px}.user-name{display:none}.verification-entry{grid-template-columns:1fr}.verification-entry button{width:100%}.review-line{grid-template-columns:1fr 1fr}.review-line>b{grid-column:1/-1}.report-view{padding:8px}.report-paper{padding:7mm;min-height:0}.preparation-report dl{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:360px){.feature-icon{width:52px;height:52px}.feature{gap:12px}.feature small{font-size:12px}}
 @media(prefers-reduced-motion:reduce){.feature{transition:none}}
+
+.history-filters{display:grid;grid-template-columns:minmax(150px,1fr) minmax(160px,1fr);gap:12px;margin-top:12px;align-items:end}
+.history-filters label{margin:3px 0 8px}
+.history-filters .history-search{grid-column:1/-1}
+.history-filters .warehouse-select{display:block;width:100%;margin-top:8px;min-height:48px}
+#historySummary{margin:20px 0 12px;grid-template-columns:repeat(5,minmax(0,1fr))}
+#historySummary .fact b{font-size:16px}
+@media(max-width:720px){#historySummary{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:440px){.history-filters{grid-template-columns:1fr}.history-filters .history-search{grid-column:auto}}
+
+.history-actions{margin-top:16px}.history-actions button{flex:1 1 180px;min-width:0}
+.history-print{font-family:Arial,sans-serif;color:#172635;background:#fff}
+.history-print header{border-bottom:2px solid #0B2647;padding-bottom:8px}
+.history-print header h2{font-size:20px;margin:0 0 5px}
+.history-print header p{font-size:10px;margin:0;color:#415367}
+.history-print dl{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin:11px 0}
+.history-print dl div{padding:7px;border:1px solid #bccbd6;min-width:0}
+.history-print dt{font-size:9px;color:#526779;text-transform:uppercase}
+.history-print dd{font-size:13px;font-weight:750;margin:3px 0 0;overflow-wrap:anywhere}
+.history-table-scroll{overflow-x:auto}
+.history-print table{border-collapse:collapse;width:100%;font-size:10px}
+.history-print th,.history-print td{border:1px solid #b3c1cc;text-align:left;padding:5px;overflow-wrap:anywhere}
+.history-print th{background:#eaf0f5;font-weight:750}
+.history-print tr{break-inside:avoid}
+@media(max-width:720px){.history-print dl{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media print{.history-print dl{grid-template-columns:repeat(4,minmax(0,1fr))}.history-table-scroll{overflow:visible}.history-print th,.history-print td{font-size:8px;padding:3px 2px}}
+
+/* Historial documental: mismas tarjetas y tonos que Administración. */
+.revision-list{display:grid;gap:9px;margin:14px 0}
+.revision-entry{display:flex;align-items:center;justify-content:space-between;gap:12px;border:1px solid #dce5ed;border-radius:13px;background:#fff;padding:14px}
+.revision-entry b{display:block;font-size:15px}.revision-entry small{display:block;margin-top:5px;font-size:12px}
+.revision-entry button{flex:none}
+.revision-selectors{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:16px 0}
+.revision-selectors label{margin:0}.revision-selectors select{display:block;width:100%;margin-top:7px}
+.revision-diff{border:1px solid #dae5ee;border-radius:14px;background:#f8fafc;padding:16px;overflow-wrap:anywhere}
+.revision-diff h3{font-size:17px;margin:0 0 9px}.revision-changes{margin-top:13px}
+.revision-changes h4{font-size:14px;margin:0 0 7px}
+.revision-changes ul{padding-left:18px;margin:0}.revision-changes li{font-size:13px;line-height:1.6;padding:3px 0}
+@media(max-width:520px){.revision-entry{align-items:stretch;flex-direction:column}.revision-entry button{width:100%}.revision-selectors{grid-template-columns:1fr}}
+
+/* Tabla de actividad por operario, adaptada a móvil sin deformar la página. */
+.operator-stats-scroll{width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;margin-top:12px}
+.operator-stats-table{border-collapse:collapse;width:100%;min-width:660px;font-size:13px}
+.operator-stats-table th,.operator-stats-table td{text-align:left;padding:10px 9px;border-bottom:1px solid #e2e8ef;white-space:nowrap}
+.operator-stats-table th{background:#eff4f8;color:#0B2647;font-weight:750}
+.operator-stats-table tr:nth-child(even){background:#f9fbfd}
+
+/* Resultado local de auditoría de copias originales, sin cargar el JSON en red. */
+.legacy-audit-results{padding:8px 0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.legacy-audit-line{border:1px solid #d9e5ee;background:#fbfcfe;color:#0B2647;border-radius:9px;padding:10px;margin:0;font-size:13px;overflow-wrap:anywhere;line-height:1.5}
+@media(max-width:520px){.legacy-audit-results{grid-template-columns:1fr}}
+
+/* Selección táctil de hojas procesadas para impresión conjunta. */
+.batch-print-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin:14px 0;max-height:350px;overflow-y:auto}
+.batch-print-row{display:flex;align-items:center;gap:11px;padding:12px;border:1px solid #d9e4ed;background:#fff;border-radius:12px;cursor:pointer;margin:0;min-width:0}
+.batch-print-row input[type="checkbox"]{width:20px;height:20px;min-height:20px;flex:none;margin:0}
+.batch-print-row span{min-width:0}.batch-print-row b{display:block;font-size:14px}.batch-print-row small{display:block;font-size:12px;color:#667b90;overflow-wrap:anywhere}
+@media(max-width:600px){.batch-print-list{grid-template-columns:1fr}}
+@media print{.report-batch-sheet{break-after:page;page-break-after:always}.report-batch-sheet:last-child{break-after:auto;page-break-after:auto}}
+
+.archive-info{max-width:760px;margin:12px auto 18px;padding:12px;border:1px solid #cfdce7;border-radius:10px}
+@media print{#onedriveArchiveHelp{display:none!important}}
+
+/* Archivo periódico: filtro de fechas para las nuevas hojas y carátula impresa. */
+.archive-range-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:14px 0}
+.archive-range-fields label{min-width:0}
+.archive-range-fields input{width:100%;box-sizing:border-box}
+#batchArchiveName{overflow-wrap:anywhere;margin:10px 0}
+#batchPrintSelectVisible{width:100%;margin-bottom:10px}
+.archive-cover{max-width:100%;background:#fff}
+.archive-cover table{table-layout:auto}
+@media(max-width:540px){.archive-range-fields{grid-template-columns:1fr}}
+@media print{.archive-cover{break-after:page;page-break-after:always}}
+
+/* Navegación compacta de Administración para móvil */
+.admin-tabs{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0 18px}.admin-tab{font-size:.9rem;padding:10px 12px;min-height:44px;border:1px solid #b8c8d9;background:#fff;color:#0b2647;border-radius:10px;font-weight:650;flex:1 1 auto}.admin-tab.active{background:#0b2647;color:#fff;border-color:#0b2647}#adminView .panel[hidden]{display:none!important}@media(max-width:480px){.admin-tabs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.admin-tab{width:100%;padding:10px 6px;font-size:.88rem}}
+
+/* Ajustes de revisión en pantallas estrechas */
+#adminView .review-heading{display:flex;flex-wrap:wrap;align-items:center;gap:10px;min-width:0}#adminView .review-heading h3{min-width:0;overflow-wrap:anywhere;flex:1 1 160px}#adminView .review-heading .warehouse-select{min-width:0;max-width:100%;flex:1 1 160px}#adminView .state-badge{max-width:100%;overflow-wrap:anywhere;white-space:normal}#adminView .document-review,#adminView .panel{min-width:0;max-width:100%}@media(max-width:480px){#adminView .review-heading{align-items:stretch}#adminView .review-heading h3{flex-basis:100%;margin-bottom:0}#adminView .review-heading .warehouse-select{flex-basis:100%}}
+
+/* Informe de incidencias para corrección manual en Business Central */
+.report-paper>table{width:100%;border-collapse:collapse;table-layout:fixed;margin-top:14px;font-size:12px}
+.report-paper>table th,.report-paper>table td{border:1px solid #cbd5e1;padding:7px 5px;text-align:left;vertical-align:top;overflow-wrap:anywhere}
+.report-paper>table th{background:#edf2f7;color:#17324f}
+.report-paper>table th:last-child{width:24%}
+@media(max-width:720px){.report-paper>table{font-size:10px}.report-paper>table th,.report-paper>table td{padding:5px 3px}}
+@media print{.report-paper>table{font-size:9pt;table-layout:auto}.report-paper>table thead{display:table-header-group}.report-paper>table tr{break-inside:avoid;page-break-inside:avoid}.report-paper>table th,.report-paper>table td{padding:5px 4px}.report-paper>table th{background:#f1f1f1!important;color:#000!important}}
+
+/* Datos prioritarios en tarjetas de carga */
+#loadsList .load-vehicle{display:flex;align-items:stretch;flex-wrap:wrap;gap:9px;margin-top:10px}
+#loadsList .load-vehicle .load-plate{margin-top:0}
+#loadsList .load-pallets{display:inline-flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:3px;padding:8px 13px 9px;border:2px solid #bfccd8;border-radius:10px;background:#f3f7fb;color:#082b52;box-sizing:border-box}
+#loadsList .load-pallets-label{font-size:10px;font-weight:800;letter-spacing:.065em;color:#526d86}
+#loadsList .load-pallets-value{font-size:clamp(17px,4.5vw,23px);font-weight:900;line-height:1.15}
+#loadsList .load-card-summary{display:flex;flex-direction:column;align-items:flex-end;justify-content:center;gap:8px;flex:none;text-align:right}
+#loadsList .load-bundles-total{font-weight:800;font-size:16px;white-space:nowrap}
+
+.load-plate{display:inline-flex;flex-direction:column;align-items:flex-start;gap:3px;margin-top:10px;padding:8px 15px 9px;border:2px solid #a7bdcf;border-radius:10px;background:linear-gradient(180deg,#fff 0%,#e6f3ff 100%);box-shadow:inset 0 0 0 2px #fff,0 2px 7px #0b264718;color:#082b52;max-width:100%;box-sizing:border-box}
+.load-plate-label{font-size:10px;font-weight:800;letter-spacing:.14em;color:#526d86}
+.load-plate-value{font-size:clamp(17px,4.5vw,23px);font-weight:900;letter-spacing:.065em;line-height:1.15;overflow-wrap:anywhere}
+.load-bundles{display:block;margin-top:9px;color:#254a70;font-weight:750;font-size:14px;line-height:1.5;overflow-wrap:anywhere}
+@media(max-width:540px){#loadsList .load-card{align-items:flex-start}#loadsList .load-card>span:first-child{min-width:0;flex:1}#loadsList .load-card-summary{align-self:center}#loadsList .load-bundles-total,#loadsList .load-weight{font-size:15px;text-align:right}#loadsList .load-plate-value,#loadsList .load-pallets-value{font-size:19px}}
+
+/* Tarjetas de cargas: la fila de vehículo no compite con peso/bultos.
+   Es el mismo diseño en móvil, tableta y escritorio. */
+#loadsList .load-card{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) max-content;
+  grid-template-areas:"info summary" "vehicle vehicle" "breakdown breakdown";
+  gap:8px 12px;
+  align-items:start;
+  justify-content:stretch;
+}
+#loadsList .load-card-info{grid-area:info;min-width:0;overflow-wrap:anywhere}
+#loadsList .load-card-summary{grid-area:summary;align-self:start;justify-self:end;margin-top:4px}
+#loadsList .load-vehicle{
+  grid-area:vehicle;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);
+  gap:9px;width:100%;margin-top:4px;min-width:0;
+}
+#loadsList .load-vehicle .load-plate,#loadsList .load-vehicle .load-pallets{
+  width:100%;min-width:0;max-width:none;min-height:72px;margin:0;
+}
+#loadsList .load-bundles{grid-area:breakdown;margin-top:2px;min-width:0}
+@media(max-width:540px){
+  #loadsList .load-card{gap:8px 10px;padding:16px}
+  #loadsList .load-card-info{min-width:0;flex:none}
+  #loadsList .load-card-summary{align-self:start;margin-top:2px}
+  #loadsList .load-vehicle .load-plate,#loadsList .load-vehicle .load-pallets{padding:9px 10px;min-height:69px}
+  #loadsList .load-plate-label,#loadsList .load-pallets-label{font-size:9px;letter-spacing:.055em}
+  #loadsList .load-plate-value,#loadsList .load-pallets-value{font-size:clamp(16px,4.6vw,19px);letter-spacing:.035em;overflow-wrap:anywhere}
+}
+
+/* La hoja A4 conserva sus tablas en PDF/impresión. Solo la vista de pantalla
+   estrecha transforma cada fila en ficha de lectura; no cambia cantidades. */
+@media screen and (max-width:700px){
+  #reportView{overflow-x:hidden}
+  #reportView .report-controls{min-width:0;padding:12px;gap:8px}
+  #reportView .report-controls h1{min-width:0;width:100%;overflow-wrap:anywhere;font-size:22px;line-height:1.25}
+  #reportView .report-paper{box-sizing:border-box;width:100%;min-width:0;max-width:100%;padding:14px;overflow-wrap:anywhere}
+  #reportView .preparation-report{min-width:0;max-width:100%}
+  #reportView .preparation-report .report-aisle{min-width:0;margin:18px 0 22px}
+  #reportView .preparation-report .report-aisle>table{display:block;width:100%;max-width:100%;border:none;margin-top:10px}
+  #reportView .preparation-report .report-aisle>table thead{
+    position:absolute;width:1px;height:1px;overflow:hidden;
+    clip-path:inset(50%);white-space:nowrap
+  }
+  #reportView .preparation-report .report-aisle>table tbody{display:grid;gap:9px;width:100%}
+  #reportView .preparation-report .report-aisle>table tbody tr{
+    display:grid;grid-template-columns:minmax(0,1fr) auto auto;
+    grid-template-areas:"reference quantity unit" "description description description" "location location location";
+    gap:5px 9px;min-width:0;background:#fff;border:1px solid #d8e2eb;
+    border-radius:11px;padding:12px;box-shadow:0 1px 4px #0b264711
+  }
+  #reportView .preparation-report .report-aisle>table tbody td{
+    display:block;min-width:0;padding:0;border:0;line-height:1.4;
+    overflow-wrap:anywhere;font-size:14px;vertical-align:baseline
+  }
+  #reportView .preparation-report .report-aisle>table tbody td:nth-child(1){
+    grid-area:location;color:#526b82;font-size:12px
+  }
+  #reportView .preparation-report .report-aisle>table tbody td:nth-child(1)::before{content:"Ubicación: ";font-weight:700}
+  #reportView .preparation-report .report-aisle>table tbody td:nth-child(2){
+    grid-area:reference;color:#0b2647;font-size:16px;font-weight:800
+  }
+  #reportView .preparation-report .report-aisle>table tbody td:nth-child(3){
+    grid-area:description;line-height:1.48;color:#253b52
+  }
+  #reportView .preparation-report .report-aisle>table tbody td:nth-child(4){
+    grid-area:quantity;white-space:nowrap;text-align:right;font-weight:850;font-size:16px
+  }
+  #reportView .preparation-report .report-aisle>table tbody td:nth-child(5){
+    grid-area:unit;font-size:12px;max-width:72px;font-weight:700;
+    color:#63768c;overflow-wrap:anywhere;align-self:center
+  }
+  #reportView .preparation-report .report-aisle>table tfoot{display:block;margin-top:8px}
+  #reportView .preparation-report .report-aisle>table tfoot tr{display:block}
+  #reportView .preparation-report .report-aisle>table tfoot th{
+    display:block;text-align:left;white-space:normal;border:1px solid #ccdae8;
+    border-radius:8px;font-size:13px;line-height:1.45;padding:10px;
+    overflow-wrap:anywhere
+  }
+  #reportView .preparation-report dl{grid-template-columns:repeat(2,minmax(0,1fr))}
+  #reportView .preparation-report dl div{min-width:0;overflow-wrap:anywhere}
+}
+
+/* Subtotales de pasillo visibles en pantalla y en impresión. */
+.preparation-report .report-aisle-total th{font-weight:800;text-align:right;background:#edf3f8;color:#092c50;border-top:2px solid #819bb3;padding:9px 8px;white-space:normal}
+@media print{.preparation-report .report-aisle-total{break-inside:avoid;page-break-inside:avoid}.preparation-report .report-aisle-total th{background:#e9e9e9!important;color:#000!important;border-top:2px solid #555}}
+
+/* Portada de KONTROLA alineada visualmente con INVENTA, aislada de las pantallas operativas. */
+#homeView .home-welcome{margin:0 0 20px;padding:4px 4px 0}
+#homeView .home-welcome h1{font-size:clamp(30px,4.3vw,42px);line-height:1.08;margin:6px 0 10px;color:#1d2e43;font-weight:850}
+#homeView .home-welcome .muted{color:#607184;font-size:16px;margin-bottom:0}
+#homeView .inventa-inspired-home{display:grid;grid-template-columns:1fr;gap:16px;margin:18px 0 24px;max-width:840px}
+#homeView .inventa-inspired-home .feature{isolation:isolate;position:relative;overflow:hidden;display:flex;justify-content:space-between;min-height:196px;padding:24px 28px;border:0;border-radius:24px;box-shadow:0 5px 18px #1829420a;text-align:left;color:#1d2e43;gap:15px}
+#homeView .inventa-inspired-home .feature-pink{background:linear-gradient(105deg,#fff0f0 0%,#f8dadd 100%)}
+#homeView .inventa-inspired-home .feature-blue{background:linear-gradient(105deg,#eafaff 0%,#cceffa 100%)}
+#homeView .inventa-inspired-home .feature-lilac{background:linear-gradient(105deg,#f1edff 0%,#ded8fa 100%)}
+#homeView .inventa-inspired-home .feature-cream{background:linear-gradient(105deg,#fff7db 0%,#f4e5aa 100%)}
+#homeView .inventa-inspired-home .feature-copy{position:relative;z-index:2;display:flex;flex-direction:column;align-items:flex-start;align-self:stretch;justify-content:center;max-width:55%;min-width:0}
+#homeView .inventa-inspired-home .feature b{font-size:clamp(23px,3.4vw,33px);line-height:1.1;letter-spacing:-.7px;margin-bottom:9px}
+#homeView .inventa-inspired-home .feature small{font-size:14px;line-height:1.45;color:#617183;margin-bottom:14px}
+#homeView .inventa-inspired-home .feature-go{display:grid;place-items:center;border-radius:50%;height:39px;width:39px;color:white;background:#c9232b;font-size:23px;font-weight:750}
+#homeView .inventa-inspired-home .feature-blue .feature-go{background:#178fc3}
+#homeView .inventa-inspired-home .feature-lilac .feature-go{background:#7762ae}
+#homeView .inventa-inspired-home .feature-cream .feature-go{background:#d79b13}
+#homeView .inventa-inspired-home .feature-art{position:relative;flex:0 0 39%;display:grid;place-items:center;min-width:0}
+#homeView .inventa-inspired-home .feature-art-glow{position:absolute;width:min(100%,185px);aspect-ratio:1;border-radius:42%;background:#ffffff70;transform:rotate(-14deg);box-shadow:0 12px 22px #23344313}
+#homeView .inventa-inspired-home .feature-icon{position:relative;z-index:1;display:grid;place-items:center;background:transparent;box-shadow:none;width:auto;height:auto;font-size:clamp(76px,12vw,123px);filter:drop-shadow(0 13px 7px #22334422)}
+#homeView>.panel{border-radius:22px;background:#fff;box-shadow:0 4px 22px #18294209}
+#homeView .inventa-inspired-home .feature:focus-visible{outline:3px solid #163d67;outline-offset:3px}
+@media(min-width:1100px){#homeView .inventa-inspired-home{max-width:920px}}
+@media(max-width:540px){#homeView .inventa-inspired-home .feature{min-height:165px;padding:19px 20px;border-radius:21px}#homeView .inventa-inspired-home .feature b{font-size:24px}#homeView .inventa-inspired-home .feature small{font-size:13px}#homeView .inventa-inspired-home .feature-icon{font-size:78px}#homeView .inventa-inspired-home .feature-copy{max-width:60%}#homeView .inventa-inspired-home .feature-art{flex-basis:35%}}
+@media(prefers-reduced-motion:reduce){#homeView .inventa-inspired-home .feature{transition:none}}
+
+/* Ilustraciones 3D locales de almacén, sin iconos emoji. */
+#homeView .inventa-inspired-home .feature-art-glow{display:none}
+#homeView .inventa-inspired-home .feature-illustration{position:relative;z-index:2;width:min(100%,285px);height:auto;aspect-ratio:5/4;object-fit:contain;filter:drop-shadow(0 8px 5px #24314318);pointer-events:none;user-select:none}
+@media(max-width:540px){#homeView .inventa-inspired-home .feature-illustration{width:100%;min-width:110px}}
+
+/* Portada con proporciones visuales coherentes con INVENTA e ilustraciones propias de KONTROLA. */
+#homeView .inventa-inspired-home{max-width:720px;gap:17px}
+#homeView .inventa-inspired-home .feature{min-height:194px;border-radius:25px;padding:24px;box-shadow:0 12px 24px #18304a0b}
+#homeView .inventa-inspired-home .feature-pink{background:linear-gradient(115deg,#fff1ef,#f9d9da)}
+#homeView .inventa-inspired-home .feature-blue{background:linear-gradient(115deg,#eef9ff,#d7ebfc)}
+#homeView .inventa-inspired-home .feature-cream{background:linear-gradient(115deg,#fff8e6,#fbe9bf)}
+#homeView .inventa-inspired-home .feature-copy{max-width:53%;width:53%}
+#homeView .inventa-inspired-home .feature b{font-weight:900;font-size:clamp(22px,4.7vw,31px);letter-spacing:-.8px}
+#homeView .inventa-inspired-home .feature-art{position:absolute;right:-2%;bottom:-3%;width:53%;height:104%;display:block}
+#homeView .inventa-inspired-home .feature-illustration{position:absolute;inset:0;width:100%;height:100%;aspect-ratio:auto;object-fit:contain;filter:drop-shadow(0 12px 12px #18263a12)}
+#homeView .inventa-inspired-home .feature-management-gear{position:absolute;z-index:3;right:8%;bottom:3%;width:22%;height:auto;filter:drop-shadow(0 7px 5px #18263a25);pointer-events:none}
+@media(max-width:540px){#homeView .inventa-inspired-home .feature{min-height:175px;padding:20px}#homeView .inventa-inspired-home .feature-copy{max-width:55%;width:55%}#homeView .inventa-inspired-home .feature-art{right:-3%;width:53%}#homeView .inventa-inspired-home .feature-illustration{min-width:0;width:100%}}
+
+/* KONTROLA 0.3.27: imágenes 3D propias, únicas y con fundido transparente sobre las tarjetas. */
+#homeView .inventa-inspired-home .feature-art{overflow:hidden;border-radius:0 23px 23px 0;right:0;bottom:0;width:54%;height:100%}
+#homeView .inventa-inspired-home .feature-illustration{inset:0;width:100%;height:100%;object-fit:contain;filter:none;mix-blend-mode:normal}
+#homeView .inventa-inspired-home .feature-copy{width:50%;max-width:50%}
+@media(max-width:540px){#homeView .inventa-inspired-home .feature-art{width:54%;right:0}#homeView .inventa-inspired-home .feature-copy{width:53%;max-width:53%}#homeView .inventa-inspired-home .feature-illustration{width:100%;height:100%;object-fit:contain}}
+
+/* KONTROLA 0.3.28: única acción Volver en la esquina superior izquierda de las vistas. */
+#shell .topbar .topbar-back{border:1px solid #d4e0eb;border-radius:10px;background:#f2f7fa;color:#0b2647;font-weight:800;padding:10px 12px;min-height:44px;white-space:nowrap;flex:none}
+#shell .view .page-heading>.back-button{display:none}
+.report-view .report-controls{position:sticky;top:0;z-index:105;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.report-view .report-controls>.back-button{border:1px solid #d4e0eb;background:#f2f7fa;border-radius:10px;padding:10px 12px;white-space:nowrap;flex:none}
+.home-summary-bottom{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:9px;flex-wrap:wrap}
+.home-summary-bottom .status{margin:0;min-height:0;flex:1}
+.home-summary-bottom .status.warning{color:#a35c0e}
+.home-summary-bottom button{font-size:13px;padding:7px 12px;min-height:40px}
+.prep-clock{margin:-3px 0 15px;padding:12px 15px;border-radius:12px;border:1px solid #a6d8ba;background:#eaf8ef;color:#155c36;font-variant-numeric:tabular-nums;font-weight:800;font-size:18px}
+@media(max-width:600px){#shell .topbar{gap:7px;padding-inline:8px}#shell .topbar .brand-button img{width:94px}#shell .topbar .top-actions{gap:6px}#shell .topbar .top-actions .icon-button{padding:8px 9px;min-height:42px;font-size:20px}#shell .topbar .top-actions .icon-button span{display:none}#shell .topbar .connection-status{font-size:10px}#shell .topbar .topbar-back{padding:9px 9px;font-size:13px}}
+@media print{#shell .topbar .topbar-back{display:none!important}.report-view .report-controls{display:none!important}}
+
+.active-warehouse-hint{margin:8px 0 14px;padding:10px 14px;background:#f0f7fb;color:#355e79;border-radius:11px;font-size:13px;font-weight:700}
+
+/* VISURA PREPARA: recurso 3D exclusivo en acceso, sin alterar menús operativos. */
+.visura-brand-intro{display:grid;grid-template-columns:minmax(0,1fr) minmax(90px,118px);align-items:center;gap:12px;margin-bottom:25px}
+.visura-brand-intro .app-brand{min-width:0;margin:0}.visura-brand-intro .app-brand img{width:100%;max-width:240px;height:auto}
+.visura-brand-intro .visura-identity-image{display:block;width:100%;height:auto;aspect-ratio:1;object-fit:contain;border-radius:22px;box-shadow:0 9px 20px #0b26471a}
+@media(max-width:380px){.visura-brand-intro{grid-template-columns:minmax(0,1fr) 95px;gap:9px}}
+
+/* Ajuste de aceptación visual VISURA PREPARA: separar texto e ilustración en móvil. */
+@media(max-width:540px){
+  #homeView .inventa-inspired-home .feature{position:relative;overflow:hidden;min-height:175px;padding:18px 16px;gap:10px}
+  #homeView .inventa-inspired-home .feature-copy{position:relative;z-index:1;width:47%;max-width:47%;flex:0 0 47%;}
+  #homeView .inventa-inspired-home .feature-art{position:absolute;right:0;top:0;bottom:0;width:46%;height:100%;}
+  #homeView .inventa-inspired-home .feature-illustration{display:block;width:100%;height:100%;min-width:0;object-fit:contain;}
+}
+
+/* Comprobación de huecos del camión: interfaz informativa sin escrituras. */
+.truck-capacity{border:2px solid #c6d9e7;background:#f8fbfe}
+.truck-capacity h2{margin:0 0 8px;color:#0b2647}
+.truck-capacity label{display:flex;flex-direction:column;gap:6px;font-weight:700;color:#183552;margin:12px 0}
+.truck-capacity select,.truck-capacity input{max-width:100%;box-sizing:border-box;font-size:16px;background:#fff}
+.truck-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 16px}
+.truck-grid-span{grid-column:1/-1;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 16px}
+.truck-result{margin:12px 0;padding:14px;border-radius:12px;background:#eef3f8;color:#132d4c;border:1px solid #c5d5e4;white-space:pre-line;line-height:1.55}
+.truck-result.viable{background:#e7f7ed;border-color:#84c79f;color:#14552e}
+.truck-result.inviable{background:#fff0ed;border-color:#e7a49b;color:#7c241b}
+.truck-capacity [hidden]{display:none!important}
+@media(max-width:600px){.truck-grid,.truck-grid-span{grid-template-columns:1fr}}
+@media print{#truckCapacityPanel{display:none!important}}
+
+/* Matriz operativa por pasillos (escritorio v1.3 adaptado a VISURA móvil). */
+.aisle-matrix-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:12px 0}
+.aisle-metric{border:1px solid #dce5eb;border-radius:11px;padding:11px 13px;background:#f8fafc;min-width:0}
+.aisle-metric b{display:block;color:#0b2647;font-size:23px;font-variant-numeric:tabular-nums}
+.aisle-metric small{display:block;margin-top:4px;color:#597084;font-size:11px;line-height:1.35}
+.aisle-matrix-scroll{max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-gutter:stable;margin:12px 0 8px}
+.aisle-matrix{width:100%;border-collapse:separate;border-spacing:0;border:1px solid #dce5eb;font-size:13px;background:#fff;white-space:nowrap;font-variant-numeric:tabular-nums}
+.aisle-matrix thead th{background:#152a40;color:#fff;font-size:11px;letter-spacing:.15px;text-align:center;padding:12px 10px}
+.aisle-matrix thead th:first-child{text-align:left;position:sticky;left:0;z-index:2;min-width:116px}
+.aisle-matrix tbody tr:nth-child(odd){background:#f1f6f8}
+.aisle-matrix tbody th{background:inherit;position:sticky;left:0;z-index:1;text-align:left}
+.aisle-matrix tbody td{padding:9px 12px;text-align:center;border-top:1px solid #edf0f3}
+.aisle-matrix tbody .total-row{background:#e4f1eb;font-weight:850}
+.aisle-matrix tbody .unlocated{background:#fff2df}
+.aisle-matrix .aisle-row-total{font-weight:850}
+.aisle-jump{border:0;background:transparent;color:#0b2647;padding:9px 12px;text-align:left;min-width:100%;font-size:13px;font-weight:760;cursor:pointer}
+.aisle-jump:hover,.aisle-jump:focus-visible{text-decoration:underline;background:#e7f2ed}
+@media(max-width:720px){.aisle-matrix-summary{grid-template-columns:repeat(2,minmax(0,1fr))}.aisle-matrix thead th,.aisle-matrix tbody td{padding-left:8px;padding-right:8px}}

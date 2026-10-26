@@ -1,0 +1,32 @@
+import {parseDocumentPages} from "./core.mjs";
+
+let pdfjsPromise;
+async function pdfEngine(){
+  if(!pdfjsPromise)pdfjsPromise=import("../vendor/pdf.min.mjs").then(module=>{
+    module.GlobalWorkerOptions.workerSrc=new URL("../vendor/pdf.worker.min.mjs",import.meta.url).href;
+    return module;
+  }).catch(error=>{pdfjsPromise=null;throw error;});
+  return pdfjsPromise;
+}
+
+export async function parsePdfFile(file,options={}){
+  const engine=await pdfEngine();
+  const loadingTask=engine.getDocument({data:new Uint8Array(await file.arrayBuffer())});
+  const pdf=await loadingTask.promise;
+  const pages=[];
+  try{
+    for(let number=1;number<=pdf.numPages;number++){
+      const page=await pdf.getPage(number);
+      const content=await page.getTextContent();
+      const viewport=page.getViewport({scale:1});
+      const items=content.items.filter(item=>typeof item.str==="string").map(item=>({
+        text:item.str,x:item.transform?.[4]??0,y:viewport.height-(item.transform?.[5]??0)
+      }));
+      pages.push({number,width:viewport.width,items});
+    }
+    return parseDocumentPages(pages,file.name,options);
+  }finally{
+    // PDF.js expone destroy() en PDFDocumentLoadingTask, no necesariamente en PDFDocumentProxy.
+    await loadingTask.destroy();
+  }
+}

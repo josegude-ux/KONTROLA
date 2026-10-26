@@ -1,4 +1,4 @@
 {
-  "version": "0.1.0",
-  "notes": "Primera fase de KONTROLA; pendiente de migración SQL y pruebas en dispositivos."
+  "version": "0.3.45",
+  "notes": "Listado A4 COR1: matrícula, referencias, casillas HECHO grandes y totales exclusivamente por formato"
 }
