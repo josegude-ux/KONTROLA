@@ -8,6 +8,8 @@ import json
 import re
 from urllib.request import HTTPRedirectHandler, Request, build_opener
 
+from scripts.visura_github_review_audit import summarize_readonly_review_snapshot
+
 API_ROOT = "https://api.github.com"
 MAX_JSON_BYTES = 1024 * 1024
 MAX_REVIEW_PAGES = 5
@@ -143,7 +145,7 @@ def fetch_readonly_review_snapshot(repository, pr_number, token, opener=None):
     ):
         raise ValueError("Pull request changed during review retrieval")
 
-    return {
+    snapshot = {
         "repository": repository,
         "pr_number": pr_number,
         "head_sha": head_sha,
@@ -156,6 +158,9 @@ def fetch_readonly_review_snapshot(repository, pr_number, token, opener=None):
         "merge_authorized": False,
         "deployment_authorized": False,
     }
+    # The audit is observational. It cannot grant execution or merge rights.
+    snapshot["review_audit"] = summarize_readonly_review_snapshot(snapshot)
+    return snapshot
 
 
 def main(argv=None):
