@@ -12,8 +12,7 @@ AUDIT = ROOT / ".github/workflows/visura-auto-dev-manual-review-audit.yml"
 CODE_GATE = ROOT / ".github/workflows/visura-auto-dev-code-review.yml"
 
 EXPECTED_COMMANDS = [
-    'python3 -m scripts.visura_github_readonly_snapshot "$REPOSITORY" "$PR_NUMBER"',
-    'python3 -m scripts.visura_github_policy_probe "$REPOSITORY" "$DEFAULT_BRANCH"',
+    'python3 -m scripts.visura_github_audit_bundle "$REPOSITORY" "$PR_NUMBER" "$DEFAULT_BRANCH"',
 ]
 
 
@@ -69,16 +68,16 @@ class ManualAuditWorkflowContractTests(unittest.TestCase):
                 commands.extend(current)
         self.assertEqual(commands, EXPECTED_COMMANDS)
         self.assertEqual(
-            sum(line.lstrip().startswith("run:") for line in lines), 2
+            sum(line.lstrip().startswith("run:") for line in lines), 1
         )
 
     def test_api_token_only_comes_from_github_actions(self):
-        self.assertEqual(self.text.count("GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}"), 2)
-        self.assertEqual(len(re.findall(r"\$\{\{\s*secrets\.", self.text)), 2)
+        self.assertEqual(self.text.count("GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}"), 1)
+        self.assertEqual(len(re.findall(r"\$\{\{\s*secrets\.", self.text)), 1)
         self.assertNotIn("pull_request_target", self.text)
 
-    def test_both_queries_are_scoped_to_current_repository(self):
-        self.assertEqual(self.text.count("REPOSITORY: ${{ github.repository }}"), 2)
+    def test_unified_query_is_scoped_to_current_repository(self):
+        self.assertEqual(self.text.count("REPOSITORY: ${{ github.repository }}"), 1)
         self.assertIn("DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}",
                       self.text)
         self.assertIn("PR_NUMBER: ${{ inputs.pr_number }}", self.text)
