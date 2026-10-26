@@ -34,7 +34,7 @@ jobs:
 
       - name: Guardar recursos integrados despues de pasar pruebas
         run: |
-          git add index.html sw.js tests/visura-menu.test.mjs
+          git add index.html sw.js tests/visura-menu.test.mjs tests/navigation.test.mjs
           if test -f assets/home/visura-prepara-preparacion-3d.webp; then
             git add assets/home/visura-prepara-*.webp assets/home/originales/
           fi
