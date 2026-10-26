@@ -124,3 +124,5 @@ La idea de un portal común se documentó separadamente en `docs/MOVENTA_CONCEPT
 
 - Code Review Gate #30 (`40261499014`) superó 37/37 pruebas y compilación; Queue Audit #65 y CSV Pilot #38 también `success`. https://github.com/josegude-ux/KONTROLA/actions/runs/40261499014
 - Nueva fase de simulación: `scripts/visura_task_preview.py` devuelve un plan `dry_run` determinista, con cero llamadas al proveedor y sin autorización de ejecución o merge; pruebas en `tests/test_visura_task_preview.py` (commits `ae35bf7`, `0dcafc3`). **No es un ejecutor real** y su CI aún no se ha verificado.
+
+- Code Review Gate #33 (`40261606455`) terminó `success`: compilación correcta, **39 pruebas OK**, bloqueo de llamadas de pago y límite de reserva local verificados. https://github.com/josegude-ux/KONTROLA/actions/runs/40261606455. Después se añadió `budget_enforced_by_provider=False` al simulador (commit `82cd83d`) y una aserción de prueba (commit `91e4287`) para evitar confundir el límite local con una garantía real de facturación. CI de esta última revisión pendiente.
