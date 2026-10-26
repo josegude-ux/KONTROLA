@@ -1,7 +1,9 @@
 import io
 import json
 import os
+import tempfile
 import unittest
+from pathlib import Path
 from contextlib import redirect_stdout
 from unittest.mock import patch
 
@@ -167,9 +169,51 @@ class AuditBundleTests(unittest.TestCase):
         self.assertFalse(result["repository_policy_verified"])
         self.assertFalse(result["execution_authorized"])
 
+    def test_cli_writes_step_summary_without_exposing_token(self):
+        output = io.StringIO()
+        with tempfile.TemporaryDirectory() as directory:
+            summary_path = Path(directory) / "audit-summary.md"
+            summary_path.write_text("# Existing summary\\n", encoding="utf-8")
+            with patch.dict(os.environ, {
+                "GITHUB_TOKEN": "very-secret-token",
+                "GITHUB_STEP_SUMMARY": str(summary_path),
+            }):
+                with patch(
+                    "scripts.visura_github_audit_bundle.inspect_readonly_audit_bundle",
+                    return_value={"execution_authorized": False},
+                ):
+                    with patch(
+                        "scripts.visura_github_audit_bundle.render_readonly_audit_summary",
+                        return_value="# VISURA\\nNo authorization.",
+                    ) as renderer:
+                        with redirect_stdout(output):
+                            self.assertEqual(main([REPO, "37", "main"]), 0)
+            summary = summary_path.read_text(encoding="utf-8")
+            self.assertTrue(summary.startswith("# Existing summary"))
+            self.assertIn("# VISURA", summary)
+            self.assertIn("No authorization.", summary)
+            self.assertNotIn("very-secret-token", summary)
+            self.assertNotIn("very-secret-token", output.getvalue())
+            renderer.assert_called_once()
+
+    def test_cli_rejects_invalid_report_before_writing_summary(self):
+        with tempfile.TemporaryDirectory() as directory:
+            summary_path = Path(directory) / "audit-summary.md"
+            with patch.dict(os.environ, {
+                "GITHUB_TOKEN": "token",
+                "GITHUB_STEP_SUMMARY": str(summary_path),
+            }):
+                with patch(
+                    "scripts.visura_github_audit_bundle.inspect_readonly_audit_bundle",
+                    return_value={"execution_authorized": True},
+                ):
+                    with self.assertRaisesRegex(ValueError, "non-authorizing"):
+                        main([REPO, "37", "main"])
+            self.assertFalse(summary_path.exists())
+
     def test_cli_does_not_print_secret(self):
         output = io.StringIO()
-        with patch.dict(os.environ, {"GITHUB_TOKEN": "secret-not-for-logs"}):
+        with patch.dict(os.environ, {"GITHUB_TOKEN": "secret-not-for-logs", "GITHUB_STEP_SUMMARY": ""}):
             with patch(
                 "scripts.visura_github_audit_bundle.inspect_readonly_audit_bundle",
                 return_value={"execution_authorized": False},
