@@ -37,3 +37,12 @@ Estado: PREPARADO, NO ACTIVADO. No hay proveedor de IA conectado ni ejecuciones 
 - Primera prueba autónoma satisfactoria.
 
 **No afirmar que funciona 24/7 hasta verificar el disparador programado y la ejecución del agente.**
+
+
+## Avance comprobable del 26/10/2026
+- Dry Run de solo lectura: ejecución satisfactoria observada en GitHub Actions (captura del usuario; duración 9 s).
+- Workflow adicional `.github/workflows/visura-auto-dev-preflight.yml` creado en la rama del PR #30 (commit `0139a20`).
+- El preflight es manual (`workflow_dispatch`), no ejecuta IA, no usa la clave OpenRouter y no genera cargos de modelos.
+- **Pendiente de verificar ejecución del nuevo preflight**: la creación del archivo no equivale a ejecución satisfactoria.
+- El límite de crédito de una API key y un aviso de gasto no demuestran un tope mensual en euros. Mantener llamadas pagadas desactivadas hasta verificar un corte real y contemplar conversión USD/EUR, impuestos y costes de Actions.
+- El PR #30 sigue siendo borrador y no debe fusionarse sin aprobación.
