@@ -119,6 +119,53 @@ def _policy_review_control_rows(policy, label):
     return results
 
 
+_CODEOWNERS_PATHS = (".github/CODEOWNERS", "CODEOWNERS", "docs/CODEOWNERS")
+_CODEOWNERS_LOOKUPS = {"file_observed", "inaccessible", "not_found_or_inaccessible"}
+
+
+def _codeowners_lines(bundle, repository, branch):
+    """Show only fixed paths and status enums; never display CODEOWNERS content."""
+    heading = ["", "## CODEOWNERS en rama de destino (observación)", ""]
+    report = bundle.get("target_branch_codeowners")
+    if report is None:
+        return heading + ["Consulta: **desconocido** (informe previo sin componente)."]
+    if not isinstance(report, dict):
+        raise ValueError("Invalid CODEOWNERS observation")
+    if report.get("repository") != repository or report.get("branch") != branch:
+        raise ValueError("CODEOWNERS context mismatch")
+    if any(report.get(key) is not False for key in (
+        "file_absence_verified", "effective_code_ownership_verified",
+        "reviewer_eligibility_verified", "repository_policy_verified",
+        "execution_authorized", "merge_authorized", "deployment_authorized",
+    )):
+        raise ValueError("CODEOWNERS observation cannot grant authority")
+    rows = report.get("observations")
+    if not isinstance(rows, list) or len(rows) != len(_CODEOWNERS_PATHS):
+        raise ValueError("Incomplete CODEOWNERS observations")
+    found = []
+    for row, expected in zip(rows, _CODEOWNERS_PATHS):
+        if (not isinstance(row, dict) or row.get("path") != expected
+                or row.get("lookup") not in _CODEOWNERS_LOOKUPS):
+            raise ValueError("Invalid CODEOWNERS lookup")
+        if row["lookup"] == "file_observed":
+            found.append(expected)
+    first = found[0] if found else None
+    if report.get("first_observed_path") != first:
+        raise ValueError("CODEOWNERS priority mismatch")
+    if report.get("lookup") != ("file_observed" if found else "no_file_observed"):
+        raise ValueError("CODEOWNERS lookup mismatch")
+    priority = report.get("unshadowed_candidate_observed")
+    if type(priority) is not bool or priority is not (first == _CODEOWNERS_PATHS[0]):
+        raise ValueError("CODEOWNERS precedence claim inconsistent")
+    observation = first if first is not None else "ningún archivo visible"
+    return heading + [
+        "Primera ruta observada: **" + observation + "**.",
+        "Estado: **" + ("archivo observado" if first else "ausencia no verificada") + "**.",
+        "**Los 403/404 no prueban ausencia; tener un archivo no confirma "
+        "responsables aplicables ni autoriza revisión, merge o ejecución.**",
+    ]
+
+
 def _reviewer_permission_lines(bundle, repository):
     evidence = bundle.get("reviewer_repository_permissions")
     heading = ["", "## Acceso de revisores al repositorio", ""]
@@ -457,6 +504,7 @@ def render_readonly_audit_summary(bundle):
     for label, count in counts.items():
         lines.append("- " + label.capitalize() + ": **" + str(count) + "**")
     lines += _reviewer_permission_lines(bundle, repository)
+    lines += _codeowners_lines(bundle, repository, branch)
     lines += [
         "",
         "Las aprobaciones observadas no acreditan permisos efectivos del revisor.",
