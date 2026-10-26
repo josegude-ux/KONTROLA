@@ -126,6 +126,8 @@ export function parseDocumentPages(pages, fileName='Documento.pdf', options={}) 
   throw Error("El código "+id+" no coincide con el año de Fecha carga del documento.");
  // Usar F/C solo cuando el año está acreditado por la fecha documental;
  // no inventar el año desde la hora del dispositivo.
+ if(!id&&fileIdentity&&!year)
+  throw Error("El archivo "+fileName+" utiliza la nomenclatura F/C, pero no se pudo verificar el año en «Fecha carga» dentro del PDF. No se ha importado: comprueba la fecha del documento.");
  if(!id&&fileIdentity&&year)id="LP"+year+"-"+fileIdentity.number;
  // Los PDF de BC se descargan a veces como 19663.pdf. Reconstruir LP
  // únicamente si la fecha de carga explícita determina el año y el
@@ -223,7 +225,6 @@ export function parseDocumentPages(pages, fileName='Documento.pdf', options={}) 
  if(!countOK)warnings.push('Referencias detectadas: '+products.length+' / declaradas: '+(refs??'no consta'));
  if(amountOK===false)warnings.push('Suma detectada: '+sum.toFixed(3)+' / declarada: '+declaredTotal);
  if(declaredTotal===null)warnings.push('No se pudo contrastar el total del PDF');
- if(fileIdentity&&!id.startsWith("LP"))warnings.push('Falta el año verificable de Fecha carga; no se puede identificar el LP solo por el nombre');
  const verified=countOK&&amountOK===true&&warnings.length===0;
  return {id,weight,refs,bultos:declaredTotal,visits,driver,plate,palletsLarge,palletsSmall,palletsEuropean,palletsTotal,observations,date,route,source:fileName,products,declaredTotal,actualTotal:sum,verified,warnings,warehouse,warehouseKnown:KNOWN_WAREHOUSES.has(warehouse),mixedWarehouse,availableWarehouses:warehouses};
 }
