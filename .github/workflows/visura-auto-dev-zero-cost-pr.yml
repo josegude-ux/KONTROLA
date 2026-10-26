@@ -77,10 +77,18 @@ jobs:
             echo "Pilot PR already exists; no writes performed."
             exit 0
           fi
-          echo 'Attempting draft PR creation; GitHub repository Actions setting must allow PR creation.'
-          gh api --method POST "repos/$REPO/pulls" \
+          echo 'Attempting draft PR creation with GitHub Actions token.'
+          response_file="$(mktemp)"
+          if ! gh api --method POST "repos/$REPO/pulls" \
             -f "title=docs: VISURA AUTO-DEV zero-cost generated pilot #34" \
             -f "head=$HEAD" -f "base=$BASE" \
             -f "body=Automatically generated from approved issue #31 metadata only. No AI calls. Human review required. Do not merge without explicit approval." \
-            -F "draft=true" >/dev/null
-          echo "Draft PR created; no merge or deployment."
+            -F "draft=true" >"$response_file"; then
+            echo "::error::GitHub rejected draft PR creation. Check Settings > Actions > General > Workflow permissions > Allow GitHub Actions to create and approve pull requests."
+            exit 1
+          fi
+          pr_url="$(jq -r '.html_url // empty' "$response_file")"
+          test -n "$pr_url"
+          echo "Draft PR created: $pr_url"
+          echo "### Zero-cost pilot" >> "$GITHUB_STEP_SUMMARY"
+          echo "Draft PR: $pr_url" >> "$GITHUB_STEP_SUMMARY"
