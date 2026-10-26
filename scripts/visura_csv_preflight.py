@@ -3,7 +3,13 @@
 Never uploads or mutates source data. Does not assume Business Central column names.
 """
 import csv
+import io
 from pathlib import Path
+
+
+def stream_for_sample(sample):
+    """Yield a sample as a stream while preserving embedded newlines."""
+    return io.StringIO(sample, newline="")
 
 
 def inspect_csv(path, required_columns, *, max_bytes=20_000_000):
@@ -27,7 +33,7 @@ def inspect_csv(path, required_columns, *, max_bytes=20_000_000):
         candidates = {}
         for delimiter in (",", ";", "\t"):
             try:
-                parsed = next(csv.reader([sample.splitlines()[0]], delimiter=delimiter, strict=True))
+                parsed = next(csv.reader(stream_for_sample(sample), delimiter=delimiter, strict=True))
             except (csv.Error, StopIteration):
                 continue
             candidates[delimiter] = parsed
