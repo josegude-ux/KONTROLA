@@ -95,7 +95,8 @@ Se muestran los estados `retrieved`, `inaccessible` y
 `not_found_or_inaccessible`; la ausencia de datos se presenta como
 **desconocido**, nunca como "sin protección". El texto de nombres de revisores,
 comentarios y cuerpos de PR **no** se copia al resumen. Los campos de identidad
-del PR se validan antes de representarlos. Toda la vista advierte que **no
+del PR se validan antes de representarlos, y se rechazan separadores
+Markdown como `|` para impedir que una rama altere las tablas. Toda la vista advierte que **no
 autoriza ejecución, merge ni despliegue**.
 
 Módulo: `scripts/visura_github_action_summary.py`. La escritura se realiza
@@ -115,4 +116,4 @@ Antes de habilitar cualquier automatización con escritura será imprescindible 
 
 ## Validación
 
-Code Review Gate #117: **175 de 175 pruebas correctas** para el primer flujo unificado. Se añadió después una prueba integrada adicional con respuestas REST simuladas; su CI queda pendiente. El workflow manual sigue sin activarse. La consulta de producción y las reglas de protección de rama siguen pendientes de validación independiente.
+Code Review Gate #125: **176 de 176 pruebas correctas** para el primer flujo unificado. Se añadió después una prueba integrada adicional con respuestas REST simuladas; su CI queda pendiente. El workflow manual sigue sin activarse. La consulta de producción y las reglas de protección de rama siguen pendientes de validación independiente.
