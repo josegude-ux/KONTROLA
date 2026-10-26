@@ -5,6 +5,7 @@ GitHub Actions. Paid API calls remain disabled. Amounts are EUR cents.
 """
 import sqlite3
 import uuid
+from contextlib import closing
 
 LIMIT_CENTS = 1000
 
@@ -24,11 +25,12 @@ def reserve(db_path, *, month, amount_cents, reservation_id=None):
         raise ValueError("invalid month") from None
     if type(amount_cents) is not int or amount_cents <= 0 or amount_cents > LIMIT_CENTS:
         raise ValueError("invalid amount")
-    reservation_id = reservation_id or str(uuid.uuid4())
+    if reservation_id is None:
+        reservation_id = str(uuid.uuid4())
     if not isinstance(reservation_id, str) or not reservation_id.strip():
         raise ValueError("invalid reservation id")
 
-    with sqlite3.connect(db_path, timeout=10, isolation_level=None) as db:
+    with closing(sqlite3.connect(db_path, timeout=10, isolation_level=None)) as db:
         db.execute("PRAGMA busy_timeout = 10000")
         db.execute("BEGIN IMMEDIATE")
         try:
