@@ -110,3 +110,5 @@ La idea de un portal común se documentó separadamente en `docs/MOVENTA_CONCEPT
 - `scripts/visura_task_spec.py` valida campos permitidos, identificador, límites de texto, lista de comprobaciones y coste máximo declarado de 10 €. Rechaza campos desconocidos como `shell_command`.
 - El resultado siempre establece `execution_authorized=False` y `requires_human_approval=True`: validar una especificación **no ejecuta** la tarea ni demuestra que el proveedor respete un límite real de facturación.
 - Pruebas en `tests/test_visura_task_spec.py`; pendientes de CI y revisión. Sin llamadas de IA, sin shell, sin escritura en aplicaciones, sin despliegue.
+
+- Refuerzo del validador de tareas: se detectó que `NaN` podía superar comparaciones normales de presupuesto. `scripts/visura_task_spec.py` ahora exige coste finito con `math.isfinite` (commit `6cc8ab7`). Añadidas pruebas para `NaN`, infinito y alcance demasiado largo (commit `121a414`). El PR #37 sigue en borrador; CI de estos últimos cambios pendiente de confirmar.
