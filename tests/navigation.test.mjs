@@ -227,11 +227,11 @@ test("la lectura de PDF antiguos es voluntaria y no modifica Supabase ni relojes
  assert.match(app,/serial!==loadsRequestSerial/);
  assert.match(app,/if\(!validRequest\(warehouse,userId\)\|\|serial!==loadsRequestSerial\)return/);
  assert.match(app,/statusElement\.textContent="Leyendo cabecera "/);
- assert.doesNotMatch(pdf,/\\.insert\\(|\\.upsert\\(|\\.update\\(|\\.delete\\(|\\.rpc\\(/);
+ for(const mutation of [".insert(", ".upsert(", ".update(", ".delete(", ".rpc("])assert.ok(!pdf.includes(mutation),"Prohibida escritura en helper: "+mutation);
  const start=app.indexOf("async function leerCabecerasAntiguas()");
  const end=app.indexOf("function renderLoadList()",start);
  const legacy=app.slice(start,end);
- assert.doesNotMatch(legacy,/\\.insert\\(|\\.upsert\\(|\\.update\\(|\\.delete\\(|\\.rpc\\(|startCurrentPreparation|openLoad\\(/);
+ for(const mutation of [".insert(", ".upsert(", ".update(", ".delete(", ".rpc(", "startCurrentPreparation(", "openLoad("])assert.ok(!legacy.includes(mutation),"Prohibida escritura en lectura PDF: "+mutation);
 });
 
 test("los PDF leídos se muestran solo durante la sesión y se mantienen al refrescar",()=>{
