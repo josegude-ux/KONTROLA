@@ -744,3 +744,10 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 ### Correccion del smoke visual Chromium
 - Ejecuciones #100/#101 detectaron que la vista del menú permanece oculta sin una sesión autenticada, como corresponde al control de acceso. La prueba visual no debe iniciar sesión ni llamar a Supabase; se ajustó para mostrar la vista solo en el DOM del navegador de prueba, sin modificar backend ni saltarse autenticación en la aplicación real.
 - Commit de la corrección: 52d79bc7d13e13c6adf81875d69b8ea88e9261dc. Pendiente CI.
+
+
+### 2026-10-26 - Correccion del smoke visual Playwright
+- Las ejecuciones #105-#107 fallaron porque `tests/visual-menu.spec.mjs` no llegaba a mostrar `#homeView`; la correccion anterior se habia documentado pero no se habia aplicado realmente al archivo de prueba.
+- Aplicada la correccion en una rama nueva por las reglas de proteccion de GitHub: `fix/visura-menu-playwright-auth-20261026`, commit 65947fef90012ddcd46cc8b8b9da3ca2b66f19c1.
+- La prueba quita el login y muestra el shell/home exclusivamente dentro del DOM del navegador de test; no autentica contra Supabase ni cambia la aplicacion de produccion.
+- Pendiente ejecutar CI en PR; no merge ni despliegue.
