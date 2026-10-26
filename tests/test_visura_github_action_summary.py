@@ -494,5 +494,78 @@ class ReviewControlSummaryTests(unittest.TestCase):
         self.assertNotIn("<script>", text)
 
 
+class CodeownersSummaryTests(unittest.TestCase):
+    def evidence(self):
+        return {
+            "repository": "josegude-ux/KONTROLA",
+            "branch": "chore/visura-auto-dev-guardrails",
+            "lookup": "file_observed",
+            "observations": [
+                {"path": ".github/CODEOWNERS", "lookup": "file_observed"},
+                {"path": "CODEOWNERS", "lookup": "not_found_or_inaccessible"},
+                {"path": "docs/CODEOWNERS", "lookup": "not_found_or_inaccessible"},
+            ],
+            "first_observed_path": ".github/CODEOWNERS",
+            "unshadowed_candidate_observed": True,
+            "file_absence_verified": False,
+            "effective_code_ownership_verified": False,
+            "reviewer_eligibility_verified": False,
+            "repository_policy_verified": False,
+            "execution_authorized": False,
+            "merge_authorized": False,
+            "deployment_authorized": False,
+        }
+
+    def test_visible_file_is_not_eligibility(self):
+        data = bundle()
+        data["target_branch_codeowners"] = self.evidence()
+        text = render_readonly_audit_summary(data)
+        self.assertIn("CODEOWNERS en rama de destino", text)
+        self.assertIn(".github/CODEOWNERS", text)
+        self.assertIn("no confirma", text)
+        self.assertIn("NO autorización", text)
+
+    def test_404s_are_unknown_not_verified_absence(self):
+        data = bundle()
+        evidence = self.evidence()
+        evidence["lookup"] = "no_file_observed"
+        evidence["first_observed_path"] = None
+        evidence["unshadowed_candidate_observed"] = False
+        evidence["observations"][0]["lookup"] = "not_found_or_inaccessible"
+        data["target_branch_codeowners"] = evidence
+        text = render_readonly_audit_summary(data)
+        self.assertIn("ausencia no verificada", text)
+
+    def test_forged_authorization_and_scope_are_rejected(self):
+        for key, bad in (
+            ("execution_authorized", True),
+            ("file_absence_verified", True),
+            ("effective_code_ownership_verified", True),
+            ("branch", "other/branch"),
+        ):
+            with self.subTest(key=key):
+                data = bundle()
+                evidence = self.evidence()
+                evidence[key] = bad
+                data["target_branch_codeowners"] = evidence
+                with self.assertRaises(ValueError):
+                    render_readonly_audit_summary(data)
+
+    def test_malformed_file_order_and_precedence_are_rejected(self):
+        for field in ("wrong_path", "wrong_lookup", "forged_precedence"):
+            with self.subTest(field=field):
+                data = bundle()
+                evidence = self.evidence()
+                if field == "wrong_path":
+                    evidence["observations"][0]["path"] = "docs/other.md"
+                elif field == "wrong_lookup":
+                    evidence["observations"][0]["lookup"] = "<script>"
+                else:
+                    evidence["unshadowed_candidate_observed"] = False
+                data["target_branch_codeowners"] = evidence
+                with self.assertRaises(ValueError):
+                    render_readonly_audit_summary(data)
+
+
 if __name__ == "__main__":
     unittest.main()
