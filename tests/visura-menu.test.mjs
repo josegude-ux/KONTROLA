@@ -9,10 +9,10 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const html = readFileSync(resolve(root, "index.html"), "utf8");
 const sw = readFileSync(resolve(root, "sw.js"), "utf8");
 const cards = [
-  ["openPreparation", "Preparación", "kontrola-preparacion-3d.webp"],
-  ["openReview", "Control de Cargas", "kontrola-verificacion-3d.webp"],
-  ["openCargas", "Operaciones", "kontrola-control-cargas-3d.webp"],
-  ["openAdmin", "Administración", "kontrola-administracion-3d.webp"]
+  ["openPreparation", "Preparación", "visura-prepara-preparacion-3d.webp"],
+  ["openReview", "Control de Cargas", "visura-prepara-control-cargas-3d.webp"],
+  ["openCargas", "Operaciones", "visura-prepara-operaciones-3d.webp"],
+  ["openAdmin", "Administración", "visura-prepara-administracion-3d.webp"]
 ];
 for (const [id, label, image] of cards) {
   test(`tarjeta ${id}: mantiene ID, etiqueta e imagen de respaldo`, () => {
