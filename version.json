@@ -1,4 +1,4 @@
 {
-  "version": "0.3.42",
-  "notes": "Corrección de PDFs mixtos: revisión e impresión de mercancía separada por almacén sin mezclar COR1/COR2"
+  "version": "0.3.43",
+  "notes": "Cargas con destino Ferrol: solo COR1 va a preparación; impresión PDF COR1 original+detalle y detalle COR2 independiente"
 }
