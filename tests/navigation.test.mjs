@@ -39,7 +39,7 @@ test("PDF mixto: administración reprocesa solo el almacén elegido sin copiar l
   assert.match(source,/next\.id!==previous\.id\|\|next\.warehouse!==target\|\|next\.mixedWarehouse/);
   assert.doesNotMatch(source,/products:draft\.parsed\.products/);
   assert.doesNotMatch(source,/actualTotal:draft\.parsed\.actualTotal/);
-  assert.match(source,/Reprocesar solo /);
+  assert.match(source,/Reprocesar SOLO COR1/);
   assert.match(source,/El PDF original sigue intacto/);
   assert.match(source,/Guardar revisión para actualizar la carga pendiente/);
 });
