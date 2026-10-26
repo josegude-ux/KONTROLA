@@ -11,6 +11,9 @@ async function fixturePdf(warehouse,id){
   const page=document.addPage([1000,800]);
   const text=(value,x,y,size=11)=>page.drawText(value,{x,y,size,font});
   text(`Almacén: ${warehouse}`,20,770);
+  text("Camion: CR 9G 6P",20,760);
+  text("Huecos plts. camion: 6G 4P",20,745);
+  text("Observaciones: Entregar en puerta 2",20,730);
   text("M E R C A N C I A",20,700,14);
   text("A101-1 PRD0000001",90,650);
   text("Producto de prueba ?",300,650);
@@ -57,5 +60,8 @@ for(const [warehouse,id] of [["COR_01_COR","LP26-40001"],["COR_02_NAR","LP26-400
     assert.equal(parsed.products[0].unit,"CAJA");
     assert.match(parsed.products[0].sourceContext,/\?/);
     assert.equal(parsed.actualTotal,2);
+    assert.equal(parsed.palletsLarge,6);
+    assert.equal(parsed.palletsSmall,4);
+    assert.equal(parsed.observations,"Entregar en puerta 2");
   });
 }
