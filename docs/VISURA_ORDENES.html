@@ -391,6 +391,7 @@ function continuityProblem(){
  if(!origin)return "Escribe el nombre del chat de origen.";
  if(!destination)return "Escribe el nombre del chat de destino.";
  if(mode==="traspaso"&&origin.toLocaleLowerCase()===destination.toLocaleLowerCase())return "Para continuar en el mismo chat elige el primer modo.";
+ if(mode==="continuador"&&continuityDestination.value==="CHAT NUEVO")return "Crear chat nuevo requiere el modo Traspasar por primera vez.";
  if(continuitySourceLink.value.trim()&&!validatedContinuityLink(continuitySourceLink))return "El enlace de origen no tiene formato de conversación válido.";
  if(mode!=="mismo"&&continuityDestination.value!=="CHAT NUEVO"&&continuityDestinationLink.value.trim()&&!validatedContinuityLink(continuityDestinationLink))return "El enlace del destino no tiene formato de conversación válido.";
  return "";
@@ -443,7 +444,7 @@ continuityMode.addEventListener("change",()=>{
  syncContinuityForm();
 });
 continuitySource.addEventListener("change",()=>{syncContinuityForm();if(continuitySource.value==="OTRO")continuitySourceOther.focus();});
-continuityDestination.addEventListener("change",()=>{syncContinuityForm();if(continuityDestination.value==="OTRO")continuityDestinationOther.focus();});
+continuityDestination.addEventListener("change",()=>{if(continuityDestination.value==="CHAT NUEVO"&&continuityMode.value==="continuador")continuityMode.value="traspaso";syncContinuityForm();if(continuityDestination.value==="OTRO")continuityDestinationOther.focus();});
 [continuitySourceOther,continuityDestinationOther,continuityNewName,continuitySourceLink,continuityDestinationLink,continuityFocus].forEach(el=>el.addEventListener("input",syncContinuityForm));
 continuityOpen.addEventListener("click",()=>{
  if(continuityProblem()){showStatus(continuityProblem());return;}
