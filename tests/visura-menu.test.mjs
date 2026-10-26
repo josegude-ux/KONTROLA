@@ -48,7 +48,7 @@ test("acciones de las cuatro tarjetas siguen conectadas a controladores original
 test("administración permanece oculta por defecto hasta autorizar su visibilidad", () => {
   const card = html.match(/<button id="openAdmin"[^>]*>/)?.[0];
   assert.ok(card, "Falta la tarjeta de administración");
-  assert.match(card, /\\shidden(?:\\s|>)/, "Administración no debe mostrarse antes de validar permisos");
+  assert.match(card, /\shidden(?:\s|>)/, "Administración no debe mostrarse antes de validar permisos");
 });
 
 test("las ilustraciones de las cuatro funciones son distintas y están optimizadas", () => {
@@ -63,7 +63,7 @@ test("las ilustraciones de las cuatro funciones son distintas y están optimizad
 });
 
 test("la precarga PWA conserva las cuatro ilustraciones para uso sin conexión", () => {
-  const assets = sw.match(/const ASSETS=(\\[[^;]+\\]);/)?.[1];
+  const assets = sw.match(/const ASSETS=(\[[^;]+\]);/)?.[1];
   assert.ok(assets, "No se encuentra la lista de precarga");
   for (const [id] of cards) {
     const card = html.match(new RegExp(`<button id="${id}"[\\s\\S]*?</button>`))?.[0];
