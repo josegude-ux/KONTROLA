@@ -157,3 +157,13 @@ test("almacenes visibles y filtros claros",()=>{
  assert.match(app,/\$\("loadSearch"\)\.value=""/);
  assert.match(app,/\$\("reviewSearch"\)\.value=""/);
 });
+
+test("preparación muestra la matrícula destacada y el cálculo desglosado existente",()=>{
+  assert.match(app,/desglosarBultos\(r\.productos\)/);
+  assert.match(app,/Bultos desglosados:/);
+  assert.match(app,/Sin desglose disponible/);
+  assert.doesNotMatch(app,/bundles\.textContent="Bultos: "/);
+  assert.match(app,/plateValue\.textContent=r\.matricula/);
+  assert.match(css,/\.load-plate-label\{/);
+  assert.match(css,/\.load-plate-value\{/);
+});
