@@ -63,3 +63,14 @@ Repositorios: [KONTROLA](https://github.com/josegude-ux/KONTROLA) y [INVENTA-](h
 2. Verificar solapamientos en archivos de documentación de PR #43/#44 antes de asignar nuevas tareas.
 3. Completar nombres de chats EXCELL que solo están mencionados, no comprobados en el listado real.
 4. No convertir este inventario en permiso de fusionar, desplegar ni modificar datos.
+
+## 7. Nueva decisión de prioridad (2026-10-26)
+**Prioridad máxima de evolución: VISURA WORK — agente virtual VISURA AUTO-DEV.** Decisión explícita del usuario. Esta prioridad prevalece en la planificación ordinaria frente a mejoras no urgentes de los otros módulos, sin desatender fallos críticos.
+
+**Asignación y secuencia:**
+1. **VISURA WORK** es el único responsable del desarrollo activo de AUTO-DEV. Retomar en GitHub desde el punto más avanzado verificable de los PR #43/#44, contrastando HEAD, CI y documentos de su rama antes de cambiar nada.
+2. **VISURA 0.2** coordina, audita continuidad y recibe traspasos; no modifica en paralelo los mismos archivos ni PR del agente.
+3. **VISURA CENTRO DE MANDO** mantiene su ámbito de interfaz/control, sin activar ejecutores ni invadir las ramas del agente.
+4. **VISURA INVENTA y VISURA PREPARA** mantienen sus avances. Solo interrumpir la prioridad del agente por incidentes críticos o una decisión posterior del usuario.
+
+**Próxima evolución técnica segura:** verificar CI de #44 y sus conflictos potenciales con #43; después transporte GitHub autenticado exclusivamente de lectura, políticas efectivas de ramas y CODEOWNERS, elegibilidad de revisores y pruebas de aislamiento. El agente NO dispone aún de autorización de escritura autónoma. Sin gasto de IA de pago, ni uso de Cursor, fusión, despliegue, acciones destructivas o modificaciones de datos sin autorización explícita. Este registro documental no modifica automáticamente prioridades ni estado en otros chats de ChatGPT.
