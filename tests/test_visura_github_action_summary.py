@@ -143,6 +143,28 @@ class GitHubActionSummaryTests(unittest.TestCase):
                 with self.assertRaisesRegex(ValueError, "policy recheck claim"):
                     render_readonly_audit_summary(data)
 
+    def test_review_recheck_reports_consistency_but_not_approval(self):
+        data = bundle()
+        data["same_review_records_after_audit"] = True
+        report = render_readonly_audit_summary(data)
+        self.assertIn(
+            "Revisiones releídas | coincidentes al releer (no aprobación)",
+            report,
+        )
+        self.assertIn("NO autorización", report)
+
+    def test_old_report_review_recheck_is_unknown(self):
+        report = render_readonly_audit_summary(bundle())
+        self.assertIn("Revisiones releídas | desconocido", report)
+
+    def test_forged_review_recheck_rejected(self):
+        for value in (False, 0, 1, "true", [], {}):
+            with self.subTest(value=value):
+                data = bundle()
+                data["same_review_records_after_audit"] = value
+                with self.assertRaisesRegex(ValueError, "review records recheck claim"):
+                    render_readonly_audit_summary(data)
+
     def test_same_target_as_default_has_only_one_policy_row(self):
         result = render_readonly_audit_summary(bundle(target="main"))
         self.assertEqual(result.count("| Destino `main` |"), 1)
