@@ -314,10 +314,14 @@ export function createAdminController({client,getUser,bucket,global,errorText,on
   function updateActions(){
     const readiness=draft?publicationReadiness(draft.findings,draft.findings.filter(item=>item.severity==="warning").map(item=>item.id)):{ready:false};
     $("saveDocumentReview").disabled=busy||!draft;
-    $("generateSheet").disabled=busy||!draft||draft.state!=="publicada";
+    const isCor1=draft?.parsed?.warehouse==="COR_01_COR";
+    $("generateSheet").disabled=busy||!draft||draft.state!=="publicada"||!isCor1;
+    $("warehousePrintActions").hidden=!draft;
+    $("printCor1Pack").disabled=busy||!draft||draft.state!=="publicada"||!isCor1;
+    $("previewCor2Detail").disabled=busy||!draft||!(draft.parsed.availableWarehouses||[]).includes("COR_02_NAR");
     $("postPublishActions").hidden=!draft||draft.state!=="publicada";
     $("locationReport").disabled=busy||!draft;
-    $("publishReviewedLoad").disabled=busy||!draft||draft.state!=="aprobada"||!readiness.ready;
+    $("publishReviewedLoad").disabled=busy||!draft||draft.state!=="aprobada"||!readiness.ready||!isCor1;
     $("publishReviewedLoad").hidden=!!draft&&draft.state==="publicada";
     $("saveDocumentReview").hidden=!!draft&&draft.state==="publicada";
     $("reviewReadiness").textContent=draft?.state==="publicada"?"Carga publicada. Continúa con la hoja de preparación.":!draft?"":readiness.ready?"Sin errores graves: puedes guardar y publicar.":readiness.errors?.length
@@ -325,6 +329,7 @@ export function createAdminController({client,getUser,bucket,global,errorText,on
   }
   async function saveReview(){
     if(busy||!draft)return;
+    if(draft.parsed.warehouse!=="COR_01_COR")return setStatus("Solo se puede guardar para preparación COR1. Reprocesa la parte de A Coruña primero.","error");
     const readiness=publicationReadiness(draft.findings,draft.findings.filter(item=>item.severity==="warning").map(item=>item.id));
     // Los avisos no críticos se registran sin requerir confirmación línea a línea.
     const confirmed=true;
@@ -371,7 +376,7 @@ export function createAdminController({client,getUser,bucket,global,errorText,on
     $("reportView").hidden=false;document.body.classList.add("report-open");window.scrollTo(0,0);
   }
   function showReport(){
-    if(!draft)return;
+    if(!draft||draft.state!=="publicada"||draft.parsed.warehouse!=="COR_01_COR")return;
     $("reportPaper").innerHTML=buildPreparationReport(asPayload(draft.parsed));
     $("reportTitle").textContent="Hoja procesada · "+draft.parsed.id;
     $("onedriveArchiveHelp").hidden=false;
@@ -379,6 +384,7 @@ export function createAdminController({client,getUser,bucket,global,errorText,on
   }
   async function publish(){
     if(busy||!draft)return;
+    if(draft.parsed.warehouse!=="COR_01_COR")return setStatus("No se puede publicar COR2 en preparación. Solo se publica COR1.","error");
     setBusy(true);
     try{
       const {data,error}=await client.rpc("kontrola_publicar_importacion",{p_importacion:draft.id});
