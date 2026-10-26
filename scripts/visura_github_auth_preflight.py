@@ -17,7 +17,7 @@ from scripts.visura_github_readonly_snapshot import (
 )
 from scripts.visura_github_policy_probe import _validate_branch
 
-_SHA = re.compile(r"[0-9a-fA-F]{40}\\Z")
+_SHA = re.compile(r"[0-9a-fA-F]{40}\Z")
 _HTTP_LOOKUPS = {
     401: "unauthorized",
     403: "inaccessible",
