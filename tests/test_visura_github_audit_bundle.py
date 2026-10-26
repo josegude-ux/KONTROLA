@@ -36,6 +36,24 @@ def fixture_pr(branch="chore/visura-auto-dev-guardrails", head=HEAD, base=BASE):
 
 
 class AuditBundleTests(unittest.TestCase):
+    def setUp(self):
+        self.check_mock_patch = patch(
+            "scripts.visura_github_audit_bundle.observe_commit_checks",
+            return_value={
+                "repository": REPO, "head_sha": HEAD,
+                "lookup": "retrieved", "observed_total": 1,
+                "status_counts": {"completed": 1},
+                "conclusion_counts": {"success": 1},
+                "required_checks_verified": False,
+                "branch_policy_verified": False,
+                "execution_authorized": False,
+                "merge_authorized": False,
+                "deployment_authorized": False,
+            },
+        )
+        self.check_mock = self.check_mock_patch.start()
+        self.addCleanup(self.check_mock_patch.stop)
+
     def test_inspects_actual_target_and_default_separately(self):
         policy_calls = []
         def policy(repo, branch, token, opener):
@@ -63,6 +81,52 @@ class AuditBundleTests(unittest.TestCase):
         self.assertFalse(result["report_is_atomic"])
         self.assertFalse(result["execution_authorized"])
         self.assertFalse(result["merge_authorized"])
+
+    def test_ci_evidence_uses_exact_pr_head_not_base_sha(self):
+        with patch(
+            "scripts.visura_github_audit_bundle.fetch_readonly_review_snapshot",
+            return_value=fixture_snapshot(),
+        ), patch(
+            "scripts.visura_github_audit_bundle.inspect_branch_policy",
+            return_value={"branch": "any"},
+        ), patch(
+            "scripts.visura_github_audit_bundle._get_json",
+            return_value=fixture_pr(),
+        ):
+            result = inspect_readonly_audit_bundle(
+                REPO, 37, "main", "secret", opener=lambda *args: None
+            )
+        self.assertEqual(result["head_check_runs"]["head_sha"], HEAD)
+        self.assertFalse(result["head_check_runs"]["required_checks_verified"])
+        self.check_mock.assert_called_once()
+        self.assertEqual(self.check_mock.call_args.args[:3], (REPO, HEAD, "secret"))
+
+    def test_missing_checks_cannot_authorize_bundle(self):
+        self.check_mock.return_value = {
+            "repository": REPO, "head_sha": HEAD, "lookup": "inaccessible_or_not_found",
+            "observed_total": None, "status_counts": None,
+            "conclusion_counts": None,
+            "required_checks_verified": False,
+            "branch_policy_verified": False,
+            "execution_authorized": False,
+            "merge_authorized": False,
+            "deployment_authorized": False,
+        }
+        with patch(
+            "scripts.visura_github_audit_bundle.fetch_readonly_review_snapshot",
+            return_value=fixture_snapshot(),
+        ), patch(
+            "scripts.visura_github_audit_bundle.inspect_branch_policy",
+            return_value={"branch": "any"},
+        ), patch(
+            "scripts.visura_github_audit_bundle._get_json",
+            return_value=fixture_pr(),
+        ):
+            result = inspect_readonly_audit_bundle(
+                REPO, 37, "main", "secret", opener=lambda *args: None
+            )
+        self.assertIsNone(result["head_check_runs"]["observed_total"])
+        self.assertFalse(result["execution_authorized"])
 
     def test_same_target_as_default_is_queried_once(self):
         with patch(
