@@ -100,7 +100,8 @@
     <section id="loadsView" class="view" hidden>
       <div class="page-heading"><button type="button" id="backFromLoads" class="back-button">← Volver</button><h1 id="loadsHeading">Preparación de cargas</h1><p id="loadsDescription" class="muted">Al seleccionar una carga publicada se inicia automáticamente la preparación. Para consultar sin iniciar, usa Control de Cargas → Consultar cargas.</p></div>
       <div id="prepWarehouseTabs" class="warehouse-tabs" role="tablist" aria-label="Almacén"></div><p id="loadsWarehouseHint" class="active-warehouse-hint" role="status"></p>
-      <div class="toolbar"><label class="search-wrap">Buscar carga<input id="loadSearch" type="search" placeholder="Nº de carga, ruta, matrícula o repartidor"></label><button type="button" id="reloadLoads" class="secondary">Actualizar</button></div>
+      <div class="toolbar"><label class="search-wrap">Buscar carga<input id="loadSearch" type="search" placeholder="Nº de carga, ruta, matrícula, observaciones o repartidor"></label><button type="button" id="reloadLoads" class="secondary">Actualizar</button></div>
+      <div class="legacy-header-actions"><button id="readLegacyHeaders" type="button" class="secondary">Leer cabeceras antiguas (máx. 5)</button><p id="legacyHeaderStatus" role="status" aria-live="polite"></p></div>
       <div id="loadsList" class="loads-list" aria-live="polite"></div>
     </section>
     <section id="detailView" class="view" hidden>
