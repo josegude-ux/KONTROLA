@@ -83,11 +83,17 @@ def fetch_readonly_review_snapshot(repository, pr_number, token, opener=None):
         head_sha = pr["head"]["sha"]
         author_id = pr["user"]["id"]
         base_repository = pr["base"]["repo"]["full_name"]
+        base_branch = pr["base"]["ref"]
+        base_sha = pr["base"]["sha"]
         pr_state = pr["state"]
     except (KeyError, TypeError):
         raise ValueError("Incomplete pull request response") from None
     if (not isinstance(head_sha, str) or not SHA_PATTERN.fullmatch(head_sha)
         or not _positive_int(author_id) or base_repository != repository
+        or not isinstance(base_sha, str) or not SHA_PATTERN.fullmatch(base_sha)
+        or not isinstance(base_branch, str)
+        or not re.fullmatch(r"[A-Za-z0-9_./-]{1,200}", base_branch)
+        or any(part in {"", ".", ".."} for part in base_branch.split("/"))
         or pr_state not in {"open", "closed"}):
         raise ValueError("Invalid pull request metadata")
 
@@ -134,6 +140,8 @@ def fetch_readonly_review_snapshot(repository, pr_number, token, opener=None):
         latest_sha = latest_pr["head"]["sha"]
         latest_author_id = latest_pr["user"]["id"]
         latest_base_repository = latest_pr["base"]["repo"]["full_name"]
+        latest_base_branch = latest_pr["base"]["ref"]
+        latest_base_sha = latest_pr["base"]["sha"]
         latest_state = latest_pr["state"]
     except (KeyError, TypeError):
         raise ValueError("Incomplete final pull request response") from None
@@ -141,6 +149,8 @@ def fetch_readonly_review_snapshot(repository, pr_number, token, opener=None):
         latest_sha != head_sha
         or latest_author_id != author_id
         or latest_base_repository != base_repository
+        or latest_base_branch != base_branch
+        or latest_base_sha != base_sha
         or latest_state != pr_state
     ):
         raise ValueError("Pull request changed during review retrieval")
@@ -150,6 +160,8 @@ def fetch_readonly_review_snapshot(repository, pr_number, token, opener=None):
         "pr_number": pr_number,
         "head_sha": head_sha,
         "author_numeric_id": author_id,
+        "base_branch": base_branch,
+        "base_sha": base_sha,
         "pr_state": pr_state,
         "reviews": reviews,
         "retrieval_method": "github_rest_https_token",
