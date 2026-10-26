@@ -23,6 +23,7 @@ button:focus-visible,a:focus-visible{outline:3px solid #a7d6ff;outline-offset:3p
 .generator textarea{resize:vertical;min-height:106px;line-height:1.45}
 .generator :is(textarea,select):focus-visible{outline:3px solid #86afdb;outline-offset:2px}
 .field-hint{font-size:.8rem;margin:8px 0 15px}
+.recovery-generator{padding:2px 0 16px}.recovery-generator select,.recovery-generator input{display:block;width:100%;border:1px solid var(--border);border-radius:12px;background:var(--bg);color:var(--text);font:inherit;font-size:16px;padding:11px 12px;margin-bottom:7px}.recovery-generator [hidden]{display:none!important}.recovery-generator :is(select,input):focus-visible{outline:3px solid #86afdb;outline-offset:2px}
 </style>
 </head>
 <body>
@@ -30,7 +31,23 @@ button:focus-visible,a:focus-visible{outline:3px solid #a7d6ff;outline-offset:3p
 <nav class="quick" aria-label="Ir a una orden"><a href="#orden-1">Reactivar</a><a href="#orden-2">Traspaso Work</a><a href="#orden-3">Nuevo chat</a><a href="#orden-4">Imágenes</a><a href="#orden-5">Solapamientos</a><a href="#orden-6">Crear icono / imagen</a></nav>
 <article class="command" id="orden-1"><div class="top"><div class="symbol">↻</div><div><div class="eyebrow">ORDEN 01 · Reanudar desarrollo</div><h2>REACTIVAR VISURA</h2></div></div><p class="when">se para el desarrollo pero sigues en el mismo chat.</p><div class="actions"><button type="button" class="primary" data-copy="0">Copiar orden</button><button type="button" class="secondary" aria-controls="prompt-0" aria-expanded="false" data-toggle="0">Ver texto</button></div><pre id="prompt-0" hidden>REACTIVAR VISURA. Retoma el desarrollo desde la última tarea realmente comprobada, respetando las decisiones y el prompt maestro de este chat. Antes de modificar código, verifica la rama, los commits, los PR y docs/CONTINUIDAD.md de los repositorios implicados. No repitas tareas finalizadas, no sobrescribas cambios ajenos y evita solapamientos entre chats. Continúa con la siguiente tarea autorizada y segura. Después de cada hito, comprueba, guarda y documenta los cambios. No te detengas salvo bloqueo real o necesidad de autorización.</pre></article>
 <article class="command" id="orden-2"><div class="top"><div class="symbol">↗</div><div><div class="eyebrow">ORDEN 02 · Preparar fin de créditos</div><h2>PREPARAR TRASPASO WORK</h2></div></div><p class="when">Work está cerca de su límite o quieres protegerte antes de perder acceso.</p><div class="actions"><button type="button" class="primary" data-copy="1">Copiar orden</button><button type="button" class="secondary" aria-controls="prompt-1" aria-expanded="false" data-toggle="1">Ver texto</button></div><pre id="prompt-1" hidden>PREPARAR TRASPASO WORK. Antes de cualquier aviso de fin de créditos, verifica y guarda los avances reales; actualiza docs/CONTINUIDAD.md, CONTINUIDAD_WORK_A_CHAT_NORMAL.md y PROMPT_CONTINUAR_SIN_WORK.md donde corresponda. Incluye repositorios, ramas, commits, PR, imágenes aprobadas, decisiones, pruebas, bloqueos y la primera tarea pendiente. Comprueba que los documentos sean accesibles y entrega aquí el prompt completo, autocontenido y copiable para continuar desde un chat normal. Si no puedes guardar en GitHub, entrega la recuperación en esta conversación y declara qué no quedó persistido. Solo emite «DESARROLLO FIN DE CRÉDITOS WORK» si realmente no puedes continuar y después de entregar la recuperación disponible.</pre></article>
-<article class="command" id="orden-3"><div class="top"><div class="symbol">⇄</div><div><div class="eyebrow">ORDEN 03 · Continuar en otro chat</div><h2>RECUPERAR VISURA EN NUEVO CHAT</h2></div></div><p class="when">continuar desde otra conversación, especialmente al agotar Work.</p><div class="actions"><button type="button" class="primary" data-copy="2">Copiar orden</button><button type="button" class="secondary" aria-controls="prompt-2" aria-expanded="false" data-toggle="2">Ver texto</button></div><pre id="prompt-2" hidden>RECUPERAR VISURA. Debes continuar el desarrollo previo, no reiniciarlo. Localiza y lee en GitHub los documentos actualizados docs/CONTINUIDAD.md, CONTINUIDAD_WORK_A_CHAT_NORMAL.md y PROMPT_CONTINUAR_SIN_WORK.md disponibles, además de ramas, commits, PR y archivos relacionados. Contrasta su contenido con el estado real y prioriza la versión verificada más avanzada, aunque no esté en main. Recupera decisiones, imágenes y tareas pendientes. No inventes información inaccesible. No repitas ni sobrescribas avances. Evita solapamientos con los demás chats. Ejecuta la primera tarea segura y autorizada con las herramientas disponibles en este chat; informa de cualquier herramienta exclusiva de Work que falte. Mantén actualizados los registros de continuidad. No fusiones, publiques ni borres información sin la autorización que corresponda.</pre></article>
+<article class="command" id="orden-3"><div class="top"><div class="symbol">⇄</div><div><div class="eyebrow">ORDEN 03 · Continuar en otro chat</div><h2>RECUPERAR VISURA EN NUEVO CHAT</h2></div></div><p class="when">Selecciona la conversación de origen. Si se han agotado los créditos, elige VISURA WORK.</p><div class="recovery-generator">
+<label class="field-label" for="source-chat">¿Qué chat quieres continuar?</label>
+<select id="source-chat">
+<option value="VISURA WORK" selected>VISURA WORK (fin de créditos)</option>
+<option value="PROMPT E IMÁGENES">PROMPT E IMÁGENES</option>
+<option value="VISURA 0.2">VISURA 0.2</option>
+<option value="VISURA 0.1">VISURA 0.1</option>
+<option value="MOVENTA 0.3">MOVENTA 0.3</option>
+<option value="OTRO">Otro chat</option>
+</select>
+<label class="field-label" for="other-chat" id="other-chat-label" hidden>Nombre exacto del chat</label>
+<input id="other-chat" type="text" placeholder="Nombre del chat" hidden>
+<label class="field-label" for="source-link">Enlace al chat anterior (opcional)</label>
+<input id="source-link" type="url" placeholder="Enlace al chat anterior, si lo tienes">
+<p class="field-hint">El nombre indica qué desarrollo recuperar. El enlace ayuda a identificarlo, pero no garantiza acceso al historial. GitHub conserva los avances verificados.</p>
+</div>
+<div class="actions"><button type="button" class="primary" data-copy="2">Copiar recuperación elegida</button><button type="button" class="secondary" aria-controls="prompt-2" aria-expanded="false" data-toggle="2">Ver texto</button></div><pre id="prompt-2" hidden>RECUPERAR VISURA. Debes continuar el desarrollo previo, no reiniciarlo. Localiza y lee en GitHub los documentos actualizados docs/CONTINUIDAD.md, CONTINUIDAD_WORK_A_CHAT_NORMAL.md y PROMPT_CONTINUAR_SIN_WORK.md disponibles, además de ramas, commits, PR y archivos relacionados. Contrasta su contenido con el estado real y prioriza la versión verificada más avanzada, aunque no esté en main. Recupera decisiones, imágenes y tareas pendientes. No inventes información inaccesible. No repitas ni sobrescribas avances. Evita solapamientos con los demás chats. Ejecuta la primera tarea segura y autorizada con las herramientas disponibles en este chat; informa de cualquier herramienta exclusiva de Work que falte. Mantén actualizados los registros de continuidad. No fusiones, publiques ni borres información sin la autorización que corresponda.</pre></article>
 <article class="command" id="orden-4"><div class="top"><div class="symbol">▧</div><div><div class="eyebrow">ORDEN 04 · Diseño e imágenes</div><h2>CONTINUAR IMÁGENES VISURA</h2></div></div><p class="when">reactivar el trabajo del chat «PROMPT E IMÁGENES».</p><div class="actions"><button type="button" class="primary" data-copy="3">Copiar orden</button><button type="button" class="secondary" aria-controls="prompt-3" aria-expanded="false" data-toggle="3">Ver texto</button></div><pre id="prompt-3" hidden>CONTINUAR IMÁGENES VISURA. Recupera la evolución de «PROMPT E IMÁGENES» mediante el contexto accesible, los archivos gráficos y los registros verificables de GitHub. Identifica qué imágenes están solo diseñadas, cuáles aprobadas, cuáles integradas y cuáles verificadas. Conserva el estilo tridimensional acordado y su adaptación al módulo o función correspondiente dentro de VISURA. No reutilices imágenes indiscriminadamente ni sustituyas recursos aprobados. Detecta la última tarea visual pendiente, evita modificaciones concurrentes y continúa su implementación sin alterar funciones existentes. Documenta asignaciones, rutas, pruebas y recursos finales. Mantén preparado el traspaso de Work a chat normal antes de cualquier límite.</pre></article>
 <article class="command" id="orden-5"><div class="top"><div class="symbol">⇆</div><div><div class="eyebrow">ORDEN 05 · Evitar solapamientos</div><h2>AUDITAR SOLAPAMIENTOS</h2></div></div><p class="when">sospechas que varios chats trabajan sobre la misma parte del proyecto.</p><div class="actions"><button type="button" class="primary" data-copy="4">Copiar orden</button><button type="button" class="secondary" aria-controls="prompt-4" aria-expanded="false" data-toggle="4">Ver texto</button></div><pre id="prompt-4" hidden>AUDITAR SOLAPAMIENTOS VISURA. Compara las tareas de VISURA WORK, PROMPT E IMÁGENES y los demás chats relacionados mediante ramas, commits, PR, documentos de continuidad y estados accesibles. Identifica coincidencias de archivos o funciones, separa los responsables y propone la siguiente tarea independiente para cada línea. No modifiques ni fusiones nada durante esta auditoría. Si algún chat no es accesible, indica la incertidumbre en vez de asumir su estado.</pre></article>
 <article class="command" id="orden-6">
@@ -69,7 +86,7 @@ document.body.removeChild(el);
 if(ok){showStatus("Orden copiada ✓");return}
 window.prompt("Copia la orden y pégala en ChatGPT:",text)
 }
-document.querySelectorAll("[data-copy]").forEach(b=>b.addEventListener("click",()=>copyCommand(commands[Number(b.dataset.copy)])));
+document.querySelectorAll("[data-copy]").forEach(b=>b.addEventListener("click",()=>{const n=Number(b.dataset.copy);if(n===2){const p=recoveryPrompt();if(!p){otherChat.focus();showStatus("Introduce el nombre del chat");return;}copyCommand(p);}else{copyCommand(commands[n]);}}));
 document.querySelectorAll("[data-toggle]").forEach(b=>b.addEventListener("click",()=>{const pre=document.getElementById("prompt-"+b.dataset.toggle);pre.hidden=!pre.hidden;b.setAttribute("aria-expanded",String(!pre.hidden));b.textContent=pre.hidden?"Ver texto":"Ocultar texto"}));
 
 const visualPromptTemplate="GENERAR IMAGEN O ICONO VISURA.\n\nTIPO DE RECURSO: {{TIPO}}\nPARA QUÉ SIRVE: {{FINALIDAD}}\n\nCrea directamente una nueva imagen del tipo indicado. Antes de generarla, utiliza las referencias visuales de VISURA accesibles en esta conversación, archivos adjuntos o recursos verificados; si no puedes acceder a una referencia, no afirmes haberla recuperado. Mantén coherencia visual con el módulo, pantalla o función correspondiente dentro de VISURA, sin imponer nombres de aplicaciones concretas. Respeta las decisiones estéticas aprobadas y evita copiar indiscriminadamente imágenes destinadas a otras funciones.\n\nEstilo de partida: profesional, moderno, tridimensional, limpio, con profundidad, volumen e iluminación cuidada, siempre adaptado al uso descrito. Para un icono, da prioridad a silueta legible, pocos elementos, contraste y formato cuadrado; evita textos pequeños. Si el uso es una ilustración de pantalla o una imagen de contenido, adapta composición y formato a ese uso. Si se adjuntan referencias, consérvalas como guía prioritaria.\n\nOBLIGATORIO — MÍNIMO TRES MUESTRAS: si hay información suficiente, genera y muestra al menos TRES PROPUESTAS VISUALES REALES, identificadas como A, B y C. Deben representar tres caminos creativos sustancialmente distintos, no versiones casi idénticas con cambios de color, iluminación o perspectiva. Diferéncialas de verdad en la idea visual principal, la silueta, la composición, el símbolo o metáfora gráfica y el tratamiento tridimensional; adapta esas diferencias al uso del recurso. Las tres deben ser igualmente trabajadas, profesionales y coherentes con VISURA, con suficiente personalidad y atractivo para que resulte difícil elegir entre ellas. No incluyas una alternativa de relleno ni elijas por el usuario.\n\nGenera las tres imágenes utilizando la herramienta de imágenes disponible; si la herramienta solo permite una o dos por ejecución, continúa con ejecuciones adicionales cuando sea posible. No presentes tres descripciones como si fueran tres imágenes y no afirmes que has generado muestras que no se hayan creado realmente. Muéstralas juntas o de forma claramente comparable, explica en una frase la diferencia esencial de cada una y permite elegir A, B o C antes de refinar la seleccionada.\n\nNo te detengas a solicitar preferencias adicionales si la finalidad ya está indicada. Si el uso no está indicado o falta una decisión imprescindible, pregunta solo por ese dato. No te limites a redactar un prompt. Crear propuestas no significa aprobarlas o integrarlas: espera la elección y autorización del usuario antes de sustituir activos o modificar repositorios.";
@@ -91,5 +108,33 @@ document.getElementById("show-visual-command").addEventListener("click",()=>{
 });
 visualPurpose.addEventListener("input",()=>{if(!visualPre.hidden)previewVisual();});
 visualType.addEventListener("change",()=>{if(!visualPre.hidden)previewVisual();});
+
+const sourceChat=document.getElementById("source-chat");
+const otherChat=document.getElementById("other-chat");
+const otherChatLabel=document.getElementById("other-chat-label");
+const sourceLink=document.getElementById("source-link");
+function selectedSourceChat(){return sourceChat.value==="OTRO"?otherChat.value.trim():sourceChat.value;}
+function recoveryPrompt(){
+ const source=selectedSourceChat();
+ if(!source)return "";
+ const link=sourceLink.value.trim();
+ return "CHAT DE ORIGEN QUE QUIERO CONTINUAR: "+source+"\n"+
+ (link?"ENLACE DE REFERENCIA AL CHAT: "+link+"\n":"")+
+ "PRIORIDAD: continúa específicamente el desarrollo de este chat de origen y no el de otro chat relacionado. Recupera su historial solo si está realmente accesible; un título o enlace por sí solo no prueba que lo hayas leído. Contrasta el punto más avanzado verificable utilizando documentos, ramas, commits, pruebas y PR de los repositorios correspondientes en GitHub. Si no puedes acceder al chat, indícalo y continúa desde las evidencias verificadas sin inventar decisiones. Evita reescribir, fusionar o publicar sin autorización.\n\n"+commands[2];
+}
+function syncRecoveryPreview(){
+ const pre=document.getElementById("prompt-2");
+ pre.textContent=recoveryPrompt()||"Introduce el nombre exacto del chat.";
+}
+sourceChat.addEventListener("change",()=>{
+ const needsOther=sourceChat.value==="OTRO";
+ otherChat.hidden=!needsOther;otherChatLabel.hidden=!needsOther;
+ syncRecoveryPreview();
+ if(needsOther)otherChat.focus();
+});
+otherChat.addEventListener("input",syncRecoveryPreview);
+sourceLink.addEventListener("input",syncRecoveryPreview);
+syncRecoveryPreview();
+
 </script>
 </body></html>
