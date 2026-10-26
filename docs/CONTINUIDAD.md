@@ -115,3 +115,5 @@ La idea de un portal común se documentó separadamente en `docs/MOVENTA_CONCEPT
 
 - CI detectó un error de sintaxis en `visura_task_spec.py` (literal `\\n` insertado en una condición). Corregido en commit `31dd33c`; la ejecución posterior aún no está confirmada.
 - Siguiente componente de diseño: `scripts/visura_review_plan.py` genera una lista fija de revisión a partir de una tarea válida, sin ejecutar comandos ni autorizar ejecución/merge. Pruebas en `tests/test_visura_review_plan.py` (commits `12cd4de`, `3560057`); pendiente CI.
+
+- CI detectó que el intento anterior de corregir el presupuesto dejó un literal `\\n` en la condición. Corrección aplicada de nuevo en `aebf0f0` con salto de línea real. La ejecución de CI para este commit está pendiente; no considerar el validador ni el planificador aprobados hasta que el Code Review Gate termine en verde.
