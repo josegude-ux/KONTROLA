@@ -75,26 +75,49 @@ header .intro{font-size:.9rem;line-height:1.43;max-width:650px}
 .refresh-panel span{font-size:1.32rem;font-weight:600;line-height:1}
 .refresh-panel:active{transform:translateY(1px)}
 
+
+/* v4 dashboard */
+.dashboard-nav{margin:13px 0 18px}
+.dashboard-caption{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:0 2px 9px;color:var(--muted);font-size:.75rem;letter-spacing:.06em}
+.dashboard-caption span{letter-spacing:0}
+.dashboard-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.dashboard-action{min-width:0;min-height:94px;display:flex;align-items:flex-start;gap:9px;padding:14px 11px;border-radius:15px;border:1px solid var(--border);background:var(--panel);color:var(--text);text-align:left;box-shadow:0 3px 12px #0000000a}
+.dashboard-action:active{transform:scale(.985)}
+.action-mark{flex:none;display:grid;place-items:center;background:#def4e6;color:#184f37;width:34px;height:34px;border-radius:10px;font-size:1.25rem}
+.action-copy{min-width:0;display:flex;flex-direction:column;gap:4px}
+.action-copy strong{font-size:.93rem;line-height:1.18;overflow-wrap:break-word}
+.action-copy small{font-size:.74rem;line-height:1.27;font-weight:500;color:var(--muted)}
+.command-toolbar{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:6px 0 12px}
+.command-toolbar[hidden],.dashboard-nav[hidden],.foot[hidden]{display:none!important}
+.back-to-dashboard{border-radius:11px;border:1px solid var(--border);color:var(--text);background:var(--secondary);padding:9px 12px;font-size:.9rem;min-height:44px}
+.toolbar-order{color:var(--muted);font-size:.76rem;font-weight:800;white-space:nowrap}
+header{padding-bottom:2px}
+header .intro{font-size:.85rem;line-height:1.38}
+.foot{margin-top:7px}
+.foot-details{border:0!important;background:transparent!important;padding:0!important}
+.foot-details>summary{font-size:.78rem!important;color:var(--muted)!important;font-weight:650!important;padding:8px 2px}
+.foot-content .notice{display:none}
+.foot-content h2{display:none}
+.foot-content{padding:8px 2px!important}
+.foot-content p{font-size:.82rem;line-height:1.4}
+@media(prefers-color-scheme:dark){.action-mark{background:#244037;color:#bceacc}}
+@media(max-width:380px){.dashboard-action{min-height:91px;padding:12px 8px;gap:7px}.action-mark{width:29px;height:29px;font-size:1.1rem}.action-copy strong{font-size:.86rem}.action-copy small{font-size:.7rem}}
+
 </style>
 </head>
 <body>
-<main><header><div class="header-top"><div class="kicker">VISURA · CENTRO DE MANDO</div><button type="button" class="refresh-panel" id="refresh-panel" title="Cargar de nuevo el Centro de mando" aria-label="Actualizar Centro de mando"><span aria-hidden="true">↻</span> Actualizar</button></div><h1>Órdenes VISURA</h1><p class="intro">Selecciona una función y copia su orden. Sin desplazarte por todos los formularios.</p></header>
-<div class="command-menu" id="command-menu" aria-label="Navegar entre órdenes">
-  <div class="menu-label"><label for="command-select">ELEGIR ORDEN</label><span id="command-counter" aria-live="polite">01 / 07</span></div>
-  <div class="menu-controls">
-    <button type="button" class="menu-arrow" id="previous-command" aria-label="Orden anterior">‹</button>
-    <select id="command-select" aria-label="Seleccionar orden">
-      <option value="orden-1">01 · Reactivar desarrollo</option>
-      <option value="orden-2">02 · Traspaso de Work</option>
-      <option value="orden-3">03 · Continuar en otro chat</option>
-      <option value="orden-4">04 · Continuar imágenes</option>
-      <option value="orden-5">05 · Auditar solapamientos</option>
-      <option value="orden-6">06 · Generar imagen o icono</option>
-      <option value="orden-7">07 · Integrar imagen aprobada</option>
-    </select>
-    <button type="button" class="menu-arrow" id="next-command" aria-label="Orden siguiente">›</button>
-  </div>
-</div>
+<main><header><div class="header-top"><div class="kicker">VISURA · CENTRO DE MANDO</div><button type="button" class="refresh-panel" id="refresh-panel" title="Cargar de nuevo el Centro de mando" aria-label="Actualizar Centro de mando"><span aria-hidden="true">↻</span> Actualizar</button></div><h1>¿Qué quieres hacer?</h1><p class="intro">Siete funciones a un toque, sin recorrer formularios.</p></header>
+<nav id="command-menu" class="dashboard-nav" aria-label="Accesos VISURA">
+<div class="dashboard-caption"><strong>ACCESOS DIRECTOS</strong><span>7 funciones</span></div>
+<div class="dashboard-grid"><button type="button" class="dashboard-action" data-open-order="orden-1" aria-controls="orden-1"><span class="action-mark" aria-hidden="true">↻</span><span class="action-copy"><strong>Reactivar</strong><small>Continuar desarrollo</small></span></button>
+<button type="button" class="dashboard-action" data-open-order="orden-2" aria-controls="orden-2"><span class="action-mark" aria-hidden="true">↗</span><span class="action-copy"><strong>Traspaso Work</strong><small>Guardar continuidad</small></span></button>
+<button type="button" class="dashboard-action" data-open-order="orden-3" aria-controls="orden-3"><span class="action-mark" aria-hidden="true">⇄</span><span class="action-copy"><strong>Cambiar de chat</strong><small>Recuperar trabajo</small></span></button>
+<button type="button" class="dashboard-action" data-open-order="orden-4" aria-controls="orden-4"><span class="action-mark" aria-hidden="true">▧</span><span class="action-copy"><strong>Imágenes</strong><small>Continuar diseños</small></span></button>
+<button type="button" class="dashboard-action" data-open-order="orden-5" aria-controls="orden-5"><span class="action-mark" aria-hidden="true">⇆</span><span class="action-copy"><strong>Solapamientos</strong><small>Revisar tareas</small></span></button>
+<button type="button" class="dashboard-action" data-open-order="orden-6" aria-controls="orden-6"><span class="action-mark" aria-hidden="true">✦</span><span class="action-copy"><strong>Crear imagen</strong><small>3 diseños alternativos</small></span></button>
+<button type="button" class="dashboard-action" data-open-order="orden-7" aria-controls="orden-7"><span class="action-mark" aria-hidden="true">↳</span><span class="action-copy"><strong>Integrar imagen</strong><small>Aplicar la aprobada</small></span></button></div>
+</nav>
+<div class="command-toolbar" id="command-toolbar" hidden><button class="back-to-dashboard" type="button" id="back-to-dashboard">‹ Volver al menú</button><span class="toolbar-order" id="current-order-label">ORDEN 01 / 07</span></div>
 <article class="command" id="orden-1"><div class="top"><div class="symbol">↻</div><div><div class="eyebrow">ORDEN 01 · Reanudar desarrollo</div><h2>REACTIVAR VISURA</h2></div></div><p class="when">se para el desarrollo pero sigues en el mismo chat.</p><div class="actions"><button type="button" class="primary" data-copy="0">Copiar orden</button><button type="button" class="secondary" aria-controls="prompt-0" aria-expanded="false" data-toggle="0">Ver texto</button></div><pre id="prompt-0" hidden>REACTIVAR VISURA. Retoma el desarrollo desde la última tarea realmente comprobada, respetando las decisiones y el prompt maestro de este chat. Antes de modificar código, verifica la rama, los commits, los PR y docs/CONTINUIDAD.md de los repositorios implicados. No repitas tareas finalizadas, no sobrescribas cambios ajenos y evita solapamientos entre chats. Continúa con la siguiente tarea autorizada y segura. Después de cada hito, comprueba, guarda y documenta los cambios. No te detengas salvo bloqueo real o necesidad de autorización.</pre></article>
 <article class="command" id="orden-2"><div class="top"><div class="symbol">↗</div><div><div class="eyebrow">ORDEN 02 · Preparar fin de créditos</div><h2>PREPARAR TRASPASO WORK</h2></div></div><p class="when">Work está cerca de su límite o quieres protegerte antes de perder acceso.</p><div class="actions"><button type="button" class="primary" data-copy="1">Copiar orden</button><button type="button" class="secondary" aria-controls="prompt-1" aria-expanded="false" data-toggle="1">Ver texto</button></div><pre id="prompt-1" hidden>PREPARAR TRASPASO WORK. Antes de cualquier aviso de fin de créditos, verifica y guarda los avances reales; actualiza docs/CONTINUIDAD.md, CONTINUIDAD_WORK_A_CHAT_NORMAL.md y PROMPT_CONTINUAR_SIN_WORK.md donde corresponda. Incluye repositorios, ramas, commits, PR, imágenes aprobadas, decisiones, pruebas, bloqueos y la primera tarea pendiente. Comprueba que los documentos sean accesibles y entrega aquí el prompt completo, autocontenido y copiable para continuar desde un chat normal. Si no puedes guardar en GitHub, entrega la recuperación en esta conversación y declara qué no quedó persistido. Solo emite «DESARROLLO FIN DE CRÉDITOS WORK» si realmente no puedes continuar y después de entregar la recuperación disponible.</pre></article>
 <article class="command" id="orden-3"><div class="top"><div class="symbol">⇄</div><div><div class="eyebrow">ORDEN 03 · Continuar en otro chat</div><h2>RECUPERAR VISURA EN NUEVO CHAT</h2></div></div><p class="when">Selecciona la conversación de origen. Si se han agotado los créditos, elige VISURA WORK.</p><div class="recovery-generator">
@@ -426,36 +449,29 @@ document.getElementById("show-integration-command").addEventListener("click",()=
  btn.setAttribute("aria-expanded",String(!integrationPreview.hidden));
 });
 
-/* Muestra solo una orden para evitar recorrer siete tarjetas en móvil */
-const commandIds=Array.from({length:7},(_,i)=>"orden-"+(i+1));
-const commandSelect=document.getElementById("command-select");
-const commandCounter=document.getElementById("command-counter");
-const previousCommand=document.getElementById("previous-command");
-const nextCommand=document.getElementById("next-command");
-function indexOfCommand(id){return commandIds.indexOf(id);}
-function showCommand(id,scrollToTop=false){
- const n=indexOfCommand(id);
- if(n<0)return;
- commandIds.forEach((key,i)=>{document.getElementById(key).hidden=i!==n;});
- commandSelect.value=id;
- commandCounter.textContent=String(n+1).padStart(2,"0")+" / 07";
- previousCommand.disabled=n===0;
- nextCommand.disabled=n===commandIds.length-1;
- if(location.hash!=="#"+id){try{history.replaceState(null,"","#"+id);}catch(_){}}
- try{sessionStorage.setItem("visura-command",id);}catch(_){}
- if(scrollToTop){document.getElementById("command-menu").scrollIntoView({block:"start",behavior:"smooth"});}
-}
-commandSelect.addEventListener("change",()=>showCommand(commandSelect.value,true));
-previousCommand.addEventListener("click",()=>showCommand(commandIds[indexOfCommand(commandSelect.value)-1],true));
-nextCommand.addEventListener("click",()=>showCommand(commandIds[indexOfCommand(commandSelect.value)+1],true));
-window.addEventListener("hashchange",()=>{
- const id=location.hash.slice(1);
- if(indexOfCommand(id)>=0)showCommand(id);
-});
-let firstCommand=location.hash.slice(1);
-if(indexOfCommand(firstCommand)<0){try{firstCommand=sessionStorage.getItem("visura-command");}catch(_){}}
-showCommand(indexOfCommand(firstCommand)>=0?firstCommand:"orden-3");
 
+/* v4: portada con accesos directos; al elegir solo se abre una tarea. */
+const orderIds=Array.from({length:7},(_,i)=>"orden-"+(i+1));
+const dashboard=document.getElementById("command-menu"), toolbar=document.getElementById("command-toolbar");
+const foot=document.querySelector(".foot");
+function showOrder(id,scroll=true){
+ const n=orderIds.indexOf(id), selected=n>=0;
+ for(const [i,key] of orderIds.entries())document.getElementById(key).hidden=(!selected||i!==n);
+ dashboard.hidden=selected;
+ toolbar.hidden=!selected;
+ foot.hidden=selected;
+ if(selected)document.getElementById("current-order-label").textContent="ORDEN "+String(n+1).padStart(2,"0")+" / 07";
+ const hash=selected?"#"+id:"#inicio";
+ if(location.hash!==hash){try{history.replaceState(null,"",hash)}catch(_){}}
+ if(scroll)window.scrollTo({top:0,behavior:"smooth"});
+}
+document.querySelectorAll("[data-open-order]").forEach(b=>b.addEventListener("click",()=>showOrder(b.dataset.openOrder)));
+document.getElementById("back-to-dashboard").addEventListener("click",()=>showOrder(null));
+window.addEventListener("hashchange",()=>{const id=location.hash.slice(1);showOrder(orderIds.includes(id)?id:null,false);});
+const startingOrder=location.hash.slice(1);
+showOrder(orderIds.includes(startingOrder)?startingOrder:null,false);
+const infoDetails=document.querySelector(".foot-details");
+if(infoDetails)infoDetails.open=false;
 
 /* Recarga el HTML del panel con una URL nueva, sin alterar el hash de la orden elegida.
    La disponibilidad de versiones recientes sigue sujeta a la caché del proveedor externo. */
