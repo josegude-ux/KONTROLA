@@ -183,6 +183,14 @@ El usuario descartó el diseño anterior basado en un desplegable único con fle
 - **Alcance:** actualiza la página en el dispositivo; no ejecuta órdenes, no descarga cambios en GitHub, no fusiona y no despliega versiones. Los cambios del repositorio solo se reflejarán cuando el alojamiento que sirve el HTML los ofrezca realmente.
 - **Advertencias:** si el alojamiento de terceros usa una caché propia que ignora el parámetro o retiene copias, pulsar Actualizar **no garantiza** ver inmediatamente el último commit. Recargar puede perder datos aún no copiados de formularios y archivos locales seleccionados; conviene copiar primero la orden en curso.
 
+## Logo aprobado B en la cabecera — actualización verificada
+
+- **Origen:** imagen maestra aprobada `VISURA_CENTRO_DE_MANDO_ICONO_DEFINITIVO.png` (1024 × 1024), SHA-256 `45890808fada6590d90a925c06139d4ea860d1ff37423835f71dce801c75ab2e`.
+- **Archivo binario cargado y verificado en GitHub:** `docs/assets/icons/visura-centro-mando-logo-64.png` (PNG 64 × 64), Git blob SHA `b30dd2ae5e83d0feae2558b073ef916eebb58214` y SHA-256 `f3029a3e673a3f011676ec0ded14bc56a181f24a995c519e00126c8c812599f6`.
+- **Integrado en:** cabecera y favicon PNG de `docs/index.html` y `docs/VISURA_ORDENES.html`. El SVG anterior `docs/assets/logo-visura-centro-mando.svg` se mantiene sin borrar por compatibilidad y continuidad, pero las páginas actuales usan el PNG aprobado.
+- **Estado confirmado:** binario real en rama `visura-panel`, referencias HTML actualizadas y verificables, `main` sin cambios. **Pendiente:** confirmar el aspecto en Safari del usuario; el icono `apple-touch-icon` de 180 × 180 para el acceso instalado en iPhone NO se ha incorporado aún, y no debe darse por completado. El binario PNG de 64 × 64 no sustituye al necesario para iPhone.
+- No generar nuevamente la imagen ni fusionar/publicar otras ramas para completar esta fase.
+
 ## Identidad visual de la cabecera (2026-10-26)
 
 - El panel V4 muestra en la cabecera una **V VISURA verde/plata con anillo orbital**, acompañada del nombre y «CENTRO DE MANDO». Recurso de cabecera: `docs/assets/logo-visura-centro-mando.svg`, referenciado por `docs/index.html` y `docs/VISURA_ORDENES.html`.
