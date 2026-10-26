@@ -818,3 +818,10 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 - Este commit es una referencia verificada de una publicación exitosa, no una prueba independiente de que el navegador de cada dispositivo siga sirviendo esa versión en este instante.
 - CI candidato #126, commit `c7bc7e82b89d9fd1ad0d39a9e9a5a7adc33e99cc`, SUCCESS. No se ha ejecutado publicación desde rama candidata.
 - Plan de reversión: conservar el SHA anterior, comprobar que el código puede volver a desplegarse mediante el workflow existente, y validar versión/actualización de caché en dispositivos tras una publicación autorizada. Revertir código no revierte automáticamente cambios de datos, por lo que no introducir migraciones en esta actualización visual.
+
+
+### 2026-10-26 — Versión candidata de actualización sobre instalación existente
+- Se ha preparado la candidata `0.3.31` en `src/config.mjs`, `package.json`, `version.json` e `index.html` para que el botón «Buscar actualizaciones» distinga la candidata de `0.3.30`.
+- Se ha incrementado la caché de `sw.js` de `v063` a `v064` para evitar mezclar imágenes/recursos de la versión anterior; se ha ajustado la prueba correspondiente en `tests/visura-menu.test.mjs`.
+- La URL y clave publicable de Supabase, el bucket y las RPC permanecen sin cambios; no hay migraciones ni operaciones sobre datos.
+- Estos cambios son solo de rama candidata: no desplegar hasta aprobar expresamente la actualización de la misma PWA. Confirmar CI verde del HEAD final antes de publicar.
