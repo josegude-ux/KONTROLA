@@ -33,3 +33,10 @@ jobs:
           PR_NUMBER: ${{ inputs.pr_number }}
         run: |
           python3 -m scripts.visura_github_readonly_snapshot "$REPOSITORY" "$PR_NUMBER"
+      - name: Inspect branch policies (read only; unknown is not unprotected)
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPOSITORY: ${{ github.repository }}
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+        run: |
+          python3 -m scripts.visura_github_policy_probe "$REPOSITORY" "$DEFAULT_BRANCH"
