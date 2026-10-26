@@ -1,5 +1,5 @@
 # VISURA — CENTRO DE MANDO
-**Versión:** V5.1 — 2026-10-26  
+**Versión:** V5.2 — 2026-10-26  
 **Objetivo:** conservar órdenes copiables de desarrollo y recuperación de contexto para VISURA.
 
 > Este archivo es una **copia maestra de instrucciones**, no un informe del estado actual del software. Antes de cualquier cambio hay que contrastar ramas, commits, PR y documentación con GitHub. No fusionar, desplegar ni borrar datos sin autorización. No se puede garantizar un proceso en segundo plano ni superar límites de Work.
@@ -185,9 +185,9 @@ En INTEGRACIÓN EN RAMA: la imagen aprobada y sus derivados necesarios están re
 En PRUEBA / SIMULACIÓN: se audita la viabilidad, se identifican rutas y alternativas, se detectan bloqueos y se entrega un plan ejecutable SIN modificar sistemas.
 ```
 
-## Menú actual — Accesos directos V5.1 (2026-10-26)
+## Menú actual — Accesos directos V5.2 (2026-10-26)
 
-**Ocho funciones**, sin duplicidad 01/03: se añade una única función 08 para órdenes, incidencias y consultas específicas a un chat. La nueva orden 01 reúne las tres formas de continuidad; se conserva 02 Preparar Work y las demás tareas de diseño, auditoría, integración y consulta. La interfaz muestra las funciones en una cuadrícula móvil, abre solo la elegida y ofrece «Volver al menú».
+**Ocho funciones**, sin duplicidad 01/03, y un gestor de chats compartido en la cabecera (no es una nueva orden). La función 08 permanece para órdenes, incidencias y consultas específicas. La nueva orden 01 reúne las tres formas de continuidad; se conserva 02 Preparar Work y las demás tareas de diseño, auditoría, integración y consulta. La interfaz muestra las funciones en una cuadrícula móvil, abre solo la elegida y ofrece «Volver al menú».
 
 - Enlaces nuevos `#funcion-1` a `#funcion-7`. Enlaces históricos `#orden-1` a `#orden-8` compatibles con un mapeo explícito para no enviar a la función equivocada.
 - Se mantiene botón «↻ Actualizar», cabecera y logo aprobado, selector de archivos de la integración, todos los prompts independientes y la protección de PRUEBA / SIMULACIÓN.
@@ -319,6 +319,24 @@ ORDEN DE TRABAJO: ejecuta la funcionalidad o cambio solicitado si está dentro d
 ```text
 CONSULTA DE SOLO LECTURA: explica el funcionamiento actual, responde la pregunta concreta y señala las comprobaciones disponibles; no escribas en GitHub, bases de datos o aplicaciones. Si descubres una incidencia, descríbela y ofrece el paso para tramitarla como INCIDENCIA, pero no la ejecutes desde esta consulta.
 ```
+
+## Gestor único de chats V5.2 — Monousuario y copia en OneDrive
+
+**Decisión autorizada:** el Centro de mando es monousuario; no se crean usuarios, contraseñas, backend ni permisos Microsoft. Se reutiliza la configuración del propio panel, sin añadir una orden o prompt número 09.
+
+**Dónde está:** cabecera superior, botón «⚙ Mis chats». El gestor mantiene un único registro con nombre de conversación, estado (Por verificar / Activo / Continuador / Histórico / Finalizado) y URL directa opcional a `https://chatgpt.com/c/...`. Se puede añadir, editar y quitar una entrada **solo de la lista local**, nunca de ChatGPT. Los estados iniciales se basan en decisiones conocidas cuando las hay (por ejemplo, VISURA WORK histórico, VISURA AUTO-DEV continuador); los demás son «Por verificar», sin inventar actividad.
+
+**Desplegables conectados a la misma lista:** origen de Continuar desarrollo `continuity-source`, destino `continuity-destination`, chat a analizar `status-chat`, chat responsable de Orden/consulta `request-chat`. Se preservan los casos especiales `CHAT NUEVO` y `OTRO`, el comportamiento de los tres modos y la selección predeterminada VISURA WORK → VISURA AUTO-DEV. Los selectores para aplicaciones (por ejemplo `integration-target`) **no** se confunden con selectores de chats.
+
+**Persistencia:** `localStorage` del origen web, clave `visura-centro-chats-v1`. Guardar un cambio actualiza los cuatro desplegables sin recargar. Al abrir la aplicación se recarga este registro **del navegador**, NO la lista de conversaciones de ChatGPT. El registro no se sincroniza entre iPhone, PC o distintos dominios; Safari puede eliminar datos locales. Si el navegador bloquea el guardado, el gestor avisa y no declara una persistencia inexistente.
+
+**Copia en OneDrive SIN autorización especial:**
+1. Pulsa **Exportar JSON** en «⚙ Mis chats». En Safari/iOS se intenta mostrar Compartir del sistema y seleccionar **Guardar en Archivos → OneDrive** (si la app OneDrive está instalada, iniciada y habilitada como ubicación de Archivos). Si el navegador no admite compartir archivos, se descarga el JSON para que el usuario lo mueva a OneDrive manualmente.
+2. Para recuperar, pulsa **Importar JSON** y elige el archivo desde Archivos/OneDrive. Se valida el formato `visura-chat-registry-v1` y la lista, se pregunta antes de actualizar registros del mismo nombre y se conservan los demás. No se realiza importación silenciosa ni se borra la lista sin aviso.
+3. El JSON incluye nombres y posibles enlaces privados a los chats; guárdalo en una ubicación personal. No contiene contraseñas ni tokens. No usar Microsoft Graph, OneDrive API, OAuth, permisos delegados, Supabase ni cuentas adicionales.
+4. Esta copia es **manual**, no una sincronización bidireccional ni un acceso automático a archivos de OneDrive. La función de compartir exacta depende de Safari y de las opciones del iPhone.
+
+**Pruebas mínimas:** añadir/editar/quitar, persistencia tras recarga, seleccionabilidad en los cuatro formularios, exportación/importación incluyendo coincidencias y registro vacío, validación de URLs, ausencia de cambios en `main`, siete/ ocho funciones según la versión (V5.2: ocho), captura e integración conservadas. La prueba de interfaz real y de ubicación OneDrive en el iPhone solo puede confirmarla el usuario.
 
 ## Regla permanente 0 — Comprobar duplicados ANTES de crear un prompt
 
