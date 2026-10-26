@@ -17,6 +17,7 @@ class TaskPreviewTests(unittest.TestCase):
         self.assertEqual(result["mode"], "dry_run")
         self.assertEqual(result["provider_calls"], 0)
         self.assertEqual(result["estimated_cost_eur"], 0.0)
+        self.assertFalse(result["budget_enforced_by_provider"])
         self.assertFalse(result["execution_authorized"])
         self.assertFalse(result["merge_authorized"])
         self.assertTrue(result["human_approval_required"])
