@@ -65,6 +65,19 @@ La respuesta completa de la auditoría sigue fijando `repository_policy_verified
 
 Documentación oficial: https://docs.github.com/en/rest/repos/rules#get-rules-for-a-branch.
 
+## Vigilancia automática de permisos del workflow
+
+Se han añadido ocho pruebas de contrato en `tests/test_visura_manual_audit_workflow.py` que inspeccionan el YAML de la auditoría manual. Comprueban que:
+
+- La única activación prevista es `workflow_dispatch` y existe un único trabajo de auditoría.
+- Los únicos permisos declarados son `contents: read` y `pull-requests: read`.
+- Se hace checkout de la **rama predeterminada** con `persist-credentials: false`, sin ejecutar código del PR inspeccionado.
+- Los únicos dos comandos autorizados en el workflow consultan revisiones y políticas mediante los módulos de solo lectura.
+- El token procede del `GITHUB_TOKEN` facilitado por Actions, sin secretos adicionales.
+- El workflow de revisión de código incluye la definición de auditoría manual entre los archivos que provocan su ejecución.
+
+Estas son pruebas de regresión sobre los archivos del PR, **no una prueba de autenticidad del runner ni sustituyen las políticas y aprobaciones humanas de GitHub**.
+
 ## Qué NO demuestra
 
 La vista de últimas decisiones presupone que los IDs numéricos de las revisiones reflejan su orden de creación; **no comprueba marcas de tiempo, reglas de dismiss ni la última decisión efectiva en GitHub**. La API puede devolver una aprobación aunque esta no sea válida para las reglas vigentes de la rama. Puede existir una revisión posterior, un cambio de política, una eliminación de permisos o un cambio del PR después de la consulta. El informe clasifica **registros observados**, no toma decisiones de seguridad.
@@ -73,4 +86,4 @@ Antes de habilitar cualquier automatización con escritura será imprescindible 
 
 ## Validación
 
-Code Review Gate #102: **141 de 141 pruebas correctas** (incluidas cinco pruebas de decisiones sustituidas); se probaron respuestas simuladas, sin activar el workflow de auditoría. La consulta de producción y las reglas de protección de rama siguen pendientes de validación independiente.
+Code Review Gate #111: **161 de 161 pruebas correctas** (incluidas cinco pruebas de decisiones sustituidas); se probaron respuestas simuladas, sin activar el workflow de auditoría. La consulta de producción y las reglas de protección de rama siguen pendientes de validación independiente.
