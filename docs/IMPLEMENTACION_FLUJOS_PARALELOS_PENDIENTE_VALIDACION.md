@@ -2,7 +2,7 @@
 
 **Fecha:** 26/10/2026  
 **Origen funcional:** decisión del usuario y PR documental #57.  
-**Estado:** código y SQL preparados en rama AISLADA; **ninguna migración aplicada, ningún despliegue ni cambio en Supabase**.
+**Estado:** código y SQL preparados en rama AISLADA; **validación integrada superada en PostgreSQL efímero de GitHub Actions**. Ninguna migración aplicada al Supabase conectado, ningún despliegue ni alteración de cargas reales.
 
 ## Qué cambia
 
@@ -30,12 +30,12 @@ No se inicia un cronómetro ni se registra automáticamente «preparación inici
 ## Seguridad / trabajo pendiente
 
 - **Reconciliación realizada:** el PR #56 fue fusionado en la rama de desarrollo `cursor/verificacion-fisica-cargas-8ba0` (merge `fb2d0e6`). El código de los flujos paralelos se integró mediante commit de reconciliación de dos padres `c7b9317`, conservando la función de matriz por pasillos `renderAisleMatrix` y la generación del listado A4 `crearListadoPasillosA4`. No se ha fusionado este PR a la rama de destino ni desplegado.
-- **SQL actualizado desde funciones instaladas:** se inspeccionó en modo solo lectura el proyecto Supabase `control-cargas-movil` (ID `oevetnszmfxeukcncwji`) y se reconstruyó el borrador de las cinco RPC a partir de `pg_get_functiondef`, conservando en particular la protección de revisiones PDF mediante `c.documento_hash=v_i.documento_hash`. **No se ejecutó SQL de modificación**. Falta comprobar RLS, permisos efectivos y ejecutar el borrador en un entorno de pruebas aislado con autorización expresa. No editar/reaplicar migraciones históricas.
+- **SQL actualizado desde funciones instaladas:** se inspeccionó en modo solo lectura el proyecto Supabase `control-cargas-movil` (ID `oevetnszmfxeukcncwji`) y se reconstruyó el borrador de las cinco RPC a partir de `pg_get_functiondef`, conservando en particular la protección de revisiones PDF mediante `c.documento_hash=v_i.documento_hash`. **No se ejecutó SQL de modificación**. Falta comprobar RLS, permisos efectivos y ejecutar el borrador en un entorno de pruebas aislado con autorización expresa; esta ejecución ya se ha realizado en el PostgreSQL temporal de CI, sin despliegue. No editar/reaplicar migraciones históricas.
 - La propuesta SQL no crea tablas nuevas ni expone nuevas rutas públicas. Conserva `REVOKE` a `PUBLIC, anon` y `GRANT EXECUTE` a `authenticated`, pero debe someterse a asesores de seguridad y pruebas reales antes de ejecutarla.
 - El frontend aún contiene lógica heredada de tiempos de preparación de BC y del flujo de importación; la línea de desarrollo que retira el cronómetro debe reconciliarse con esta rama, sin reintroducir métricas de control.
 - El botón de preparación puede mostrar estado de una sesión de VISURA, pero nunca supone que refleja el progreso físico de picking BC.
 - Los escenarios de roles «Operario», «Supervisor» y «Administrador» deberán comprobarse contra las políticas realmente vigentes, sin conceder nuevos accesos indirectos.
-- **Pruebas evaluadas:** 10 casos de `tests/parallel-workflows.test.mjs` ejecutados en un intérprete JavaScript aislado con adaptadores para `node:test`, `assert` y lectura del SQL: 10/10 correctos. El código `src/app.mjs` y el módulo auxiliar superaron una comprobación de sintaxis JS. **Pendiente** ejecución nativa de `npm test` y CI, revisión estática avanzada del SQL, y ensayo real con dos operarios y carga de prueba. No existe evidencia de piloto real superado.
+- **Pruebas evaluadas:** 10 casos de `tests/parallel-workflows.test.mjs` ejecutados en un intérprete JavaScript aislado con adaptadores para `node:test`, `assert` y lectura del SQL: 10/10 correctos. El código `src/app.mjs` y el módulo auxiliar superaron una comprobación de sintaxis JS. **CI superado** con las pruebas nativas de Node y PostgreSQL temporal; pendiente ensayo físico con dos dispositivos, revisión avanzada de seguridad y eventual prueba autorizada en un entorno de staging independiente. No existe evidencia de piloto real superado.
 
 ## Criterios de aceptación
 
@@ -92,3 +92,18 @@ Se consultaron exclusivamente metadatos de `pg_catalog` del proyecto conectado (
 **Límite material restante:** no se dispone de un PostgreSQL de ensayo aislado y aprobado ni hay ejecuciones CI asociadas a esta rama. No se ha probado el comportamiento de RLS, concurrencia real o permisos entre dos dispositivos. El proyecto Supabase conectado podría estar siendo utilizado por la aplicación actual y queda expresamente fuera de las pruebas con escritura.
 
 **Plan de validación siguiente, sin producción:** establecer una base clonada y sanitizada o un Postgres local con roles y fixtures no reales; ejecutar migraciones existentes y el borrador mediante transacción controlada; probar dos usuarios autenticados, doble apertura, finalización en ambos órdenes, revisiones de carga bloqueadas tras iniciar verificación y grants; comprobar las advertencias de seguridad. Solo después plantear autorización independiente para migración o despliegue.
+
+## CI integrada de flujos paralelos — VALIDADA (26/10/2026)
+
+**Ejecución verificada:** [GitHub Actions «Verificar KONTROLA» #521](https://github.com/josegude-ux/KONTROLA/actions/runs/40384602491), commit de código/test `2e145bee9876a206ce23d7b57c556f4ac96882f8`. Resultado **success** en el job `test`. No se ha ejecutado esta prueba en el Supabase conectado.
+
+- **Node nativo:** 285 pruebas, 285 aprobadas, 0 fallidas.
+- **PostgreSQL 16 temporal:** migraciones históricas y pruebas existentes de RLS, revisión documental, archivo seguro y concurrencia: correctas.
+- **SQL de esta evolución aplicado solo al Postgres efímero:** `supabase/proposals/kontrola_prepara_verificacion_paralelas.sql` después de las pruebas de regresión históricas.
+- **Escenarios nuevos:** `tests/integration/parallel.sql` superado. Dos operarios autenticados con sesiones diferenciadas pueden preparar y verificar la misma carga; la verificación arranca sin preparador; el cierre de verificación no finaliza la preparación ajena; ambos órdenes de terminación funcionan; al finalizar la verificación sin preparación registrada la carga puede cerrarse; el rol anónimo no conserva `EXECUTE` en la RPC privilegiada dentro del ensayo.
+- **Concurrencia real entre dos conexiones PostgreSQL:** `tests/integration/parallel-concurrency.sh`, marcador de log `KONTROLA_PARALLEL_RACE_OK one_reviewer=1 events=1 fabricated_preparations=0`. Solo un verificador obtiene la sesión para la carga ficticia; queda un único evento de inicio y cero preparaciones creadas automáticamente.
+- El script `tests/integration/run.sh` mantiene **dos protecciones independientes** antes de crear la base de pruebas: nombre permitido `kontrola_test*` y `PGHOST` local. Se trata de un entorno efímero creado y destruido por CI. Nunca ejecutar contra datos reales.
+- Se detectaron y corrigieron incidencias del **fixture del test** (ruta del PDF, delimitador del bloque PL/pgSQL y consulta de preparación bajo el rol adecuado por RLS). No se modificó la política real de seguridad para conseguir el resultado.
+- **No equivalencia con piloto real:** faltan prueba física con dos terminales, flujos de importación Excel de jornada, usuarios/roles reales autorizados y confirmación de la interfaz desplegada. No se han fusionado ramas, desplegado frontend, aplicado SQL a Supabase conectado ni borrado cargas.
+
+**Fase siguiente:** revisión del PR #49 (eliminación del cronómetro y cambios compartidos en `src/app.mjs`) y de la línea de importación, evitando sobrescribir sus mejoras. Después, validación en un entorno staging independiente que no contenga datos operativos, y autorización separada de migración/despliegue. No aplicar la propuesta SQL a la base conectada por el simple hecho de haber pasado CI.
