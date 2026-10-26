@@ -10,6 +10,7 @@ from unittest.mock import patch
 from scripts.visura_github_audit_bundle import (
     inspect_readonly_audit_bundle, main,
 )
+from scripts.visura_github_action_summary import render_readonly_audit_summary
 
 REPO = "josegude-ux/KONTROLA"
 HEAD = "a" * 40
@@ -283,6 +284,63 @@ class AuditBundleTests(unittest.TestCase):
         self.assertTrue(all(url.startswith("https://api.github.com/") for url, _ in called))
         self.assertFalse(result["repository_policy_verified"])
         self.assertFalse(result["execution_authorized"])
+
+    def test_full_mock_rest_audit_compares_target_required_checks_without_authority(self):
+        # Exercise the real snapshot + policy + check-run + comparison + summary
+        # together, while never contacting GitHub or granting merge rights.
+        self.check_mock_patch.stop()
+        self.comparison_mock_patch.stop()
+
+        class FakeResponse:
+            def __init__(self, payload):
+                self.payload = json.dumps(payload).encode("utf-8")
+            def __enter__(self):
+                return self
+            def __exit__(self, *args):
+                return False
+            def read(self, length):
+                return self.payload[:length]
+
+        calls = []
+        def opener(request, timeout):
+            url = request.full_url
+            calls.append((url, request.get_method()))
+            if url.endswith("/pulls/37"):
+                return FakeResponse(fixture_pr())
+            if "/pulls/37/reviews?" in url:
+                return FakeResponse([])
+            if "/branches/" in url and url.endswith("/protection"):
+                if "chore%2Fvisura-auto-dev-guardrails" in url:
+                    return FakeResponse({
+                        "required_status_checks": {
+                            "checks": [{"context": "CI / review", "app_id": 42}],
+                        },
+                    })
+                return FakeResponse({})
+            if "/rulesets?" in url or "/rules/branches/" in url:
+                return FakeResponse([])
+            if "/check-runs?" in url:
+                return FakeResponse({"total_count": 1, "check_runs": [{
+                    "id": 1234, "head_sha": HEAD, "name": "CI / review",
+                    "app": {"id": 42}, "status": "completed",
+                    "conclusion": "success",
+                }]})
+            raise AssertionError("Unexpected REST URL: " + url)
+
+        result = inspect_readonly_audit_bundle(
+            REPO, 37, "main", "fake-token", opener=opener
+        )
+        observation = result["required_check_observations"]
+        self.assertEqual(observation["lookup"], "candidate_match_only")
+        self.assertEqual(observation["required_context_count"], 1)
+        self.assertEqual(observation["candidate_success_count"], 1)
+        self.assertFalse(observation["required_checks_verified"])
+        self.assertFalse(result["merge_authorized"])
+        markdown = render_readonly_audit_summary(result)
+        self.assertIn("Coincidencias candidatas", markdown)
+        self.assertIn("NO confirma", markdown)
+        self.assertTrue(all(method == "GET" for _, method in calls))
+        self.assertEqual(sum(url.endswith("/pulls/37") for url, _ in calls), 3)
 
     def test_cli_writes_step_summary_without_exposing_token(self):
         output = io.StringIO()
