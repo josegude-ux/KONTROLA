@@ -52,6 +52,73 @@ def _policy_cells(policy):
     return cells + [count_text]
 
 
+# Values in this table come from a *read-only* branch rules observation.
+# A value of "no" describes a returned setting, not authority to merge.
+_REVIEW_CONTROL_COLUMNS = (
+    ("dismiss_stale_reviews_on_push", "Descartar revisiones tras push"),
+    ("require_code_owner_review", "Revisión de CODEOWNERS"),
+    ("require_last_push_approval", "Aprobación de último push"),
+    ("required_review_thread_resolution", "Resolver conversaciones"),
+    ("require_extra_approval_for_unattributed_changes", "Aprobación adicional"),
+)
+
+
+def _policy_review_control_rows(policy, label):
+    """Render only validated primitive values; never review bodies or logins."""
+    effective = policy.get("effective_ruleset_rules")
+    if not isinstance(effective, dict):
+        raise ValueError("Incomplete applied rules snapshot")
+    status = effective.get("lookup")
+    rules = effective.get("pull_request_approval_requirements")
+    available = effective.get("review_requirements_available")
+    if available is not None and type(available) is not bool:
+        raise ValueError("Invalid review requirements availability")
+    unknown = "| " + label + " | " + " | ".join(
+        ["desconocido"] * (2 + len(_REVIEW_CONTROL_COLUMNS))
+    ) + " |"
+    if status != "retrieved":
+        if rules is not None or available is True:
+            raise ValueError("Inaccessible review controls cannot be known")
+        return [unknown]
+    if rules is None:
+        if available is True:
+            raise ValueError("Missing available review requirements")
+        return [unknown]
+    if not isinstance(rules, list) or len(rules) > 500:
+        raise ValueError("Invalid review requirements list")
+    if not rules:
+        return ["| " + label + " | sin regla PR observada | "
+                + " | ".join(["desconocido"] * (1 + len(_REVIEW_CONTROL_COLUMNS)))
+                + " |"]
+    if available is False:
+        raise ValueError("Incomplete review requirements cannot supply rows")
+    results = []
+    for rule in rules:
+        if not isinstance(rule, dict):
+            raise ValueError("Invalid review requirements row")
+        ruleset_id = rule.get("ruleset_id")
+        count = rule.get("required_approving_review_count")
+        if (ruleset_id is not None and (type(ruleset_id) is not int or ruleset_id <= 0)
+                or type(count) is not int or count < 0):
+            raise ValueError("Invalid rule identifier or approval count")
+        cells = [
+            str(ruleset_id) if ruleset_id is not None else "desconocido",
+            str(count),
+        ]
+        for key, _ in _REVIEW_CONTROL_COLUMNS:
+            value = rule.get(key)
+            if value is True:
+                cells.append("sí")
+            elif value is False:
+                cells.append("no")
+            elif value is None:
+                cells.append("desconocido")
+            else:
+                raise ValueError("Invalid observed review control")
+        results.append("| " + label + " | " + " | ".join(cells) + " |")
+    return results
+
+
 def _reviewer_permission_lines(bundle, repository):
     evidence = bundle.get("reviewer_repository_permissions")
     heading = ["", "## Acceso de revisores al repositorio", ""]
@@ -466,6 +533,20 @@ def render_readonly_audit_summary(bundle):
             + " | ".join(default_cells) + " |"
         )
     lines += [
+        "",
+        "## Controles de revisión observados (no autorizaciones)",
+        "",
+        "| Rama | Ruleset ID | Aprobaciones exigidas | "
+        + " | ".join(label for _, label in _REVIEW_CONTROL_COLUMNS) + " |",
+        "|---|---|---|" + "---|" * len(_REVIEW_CONTROL_COLUMNS),
+    ]
+    lines += _policy_review_control_rows(target_policy, "Destino")
+    if branch != default:
+        lines += _policy_review_control_rows(default_policy, "Predeterminada")
+    lines += [
+        "",
+        "**Las opciones observadas, incluso cuando dicen «no» o exigen cero "
+        "aprobaciones, NO acreditan elegibilidad ni autorizan acciones.**",
         "",
         "**No verificado:** suficiencia de la protección clásica, excepciones, "
         "permisos de revisores y vigencia posterior de los datos.",
