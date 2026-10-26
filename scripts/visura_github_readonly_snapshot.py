@@ -127,3 +127,23 @@ def fetch_readonly_review_snapshot(repository, pr_number, token, opener=None):
         "merge_authorized": False,
         "deployment_authorized": False,
     }
+
+
+def main(argv=None):
+    """CLI entrypoint for a manual, read-only GitHub Actions audit."""
+    import argparse
+    import os
+
+    parser = argparse.ArgumentParser(description="Inspect GitHub PR reviews (read only)")
+    parser.add_argument("repository")
+    parser.add_argument("pr_number", type=int)
+    args = parser.parse_args(argv)
+    result = fetch_readonly_review_snapshot(
+        args.repository, args.pr_number, os.environ.get("GITHUB_TOKEN", "")
+    )
+    print(json.dumps(result, indent=2, sort_keys=True))
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
