@@ -712,3 +712,11 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 - Verificacion directa de index.html y sw.js: las cuatro tarjetas referencian sus WEBP oficiales y las cuatro estan en precarga PWA. Cache actual kontrola-integral-visura-v063.
 - Estado: integracion visual en rama de desarrollo verificada y pruebas automatizadas superadas. No se ha fusionado ni desplegado. Pendiente revision visual real en iPhone/Android/Windows y revisar destino/estado de PR antes de preparar version candidata.
 - Esta entrada sustituye las notas anteriores que decian que los binarios seguian pendientes: esos datos quedaron desactualizados antes de la ejecucion #79.
+
+
+### 2026-10-26 - Revalidacion posterior a la actualizacion de PR
+- GitHub Actions run 40259434611 (#81) SUCCESS en el HEAD dca81657ae921a7a1588692e6d3271a8c081f894. Los siete pasos principales, incluida integracion, regresion y guardado, terminaron correctamente.
+- `npm run check`: 198 pruebas aprobadas, 0 fallidas.
+- PR #29 sigue abierta en borrador; titulo y descripcion actualizados para reflejar el estado real y los pendientes.
+- Revision de controladores: `openPreparation` -> `openLoadsMenu()`, `openReview` -> `openReviewMenu()`, `openCargas` -> `switchView("cargasMenuView")`, `openAdmin` -> `openAdminMenu("homeView")`; la tarjeta de Administracion sigue oculta por defecto hasta validar rol, como exige la prueba existente.
+- Pendiente externo: capturas visuales reales y prueba manual de interaccion en iPhone, Android y Windows. No se han hecho merge ni despliegue.
