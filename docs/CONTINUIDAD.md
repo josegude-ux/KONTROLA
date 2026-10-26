@@ -611,3 +611,10 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 - Test `tests/visura-menu.test.mjs` reforzado para verificar existencia de recursos y precarga PWA; ejecución CI aún no verificada. La PR #29 sigue en borrador.
 - Estado de la integración visual: títulos y IDs conservados en el código; WEBP oficiales aún no subidos. No cambiar rutas antes de incorporar los recursos.
 - Último commit de documentación de directiva anterior a esta actualización: `37fc7b2752a7eabc6511f77ddf2e5a6310a9dcc8`. Reversión: cerrar PR #29 sin fusionar; ninguna versión instalada ha sido modificada.
+
+
+### 2026-10-26 — Comprobación del cableado de navegación (PR #29)
+- Revisado `src/app.mjs` en la rama: `openPreparation` ejecuta `openLoadsMenu()`, `openReview` ejecuta `openReviewMenu()`, `openCargas` muestra `cargasMenuView` y `openAdmin` ejecuta `openAdminMenu("homeView")`. No se cambió ninguno de esos controladores.
+- Ampliada la prueba `tests/visura-menu.test.mjs` para detectar cambios involuntarios en esos cuatro manejadores. **Pendiente ejecución de la prueba y CI**; lectura del código no equivale a prueba funcional.
+- Se confirmó que el ZIP de imágenes oficial está disponible localmente y contiene los cuatro WEBP y originales. El bloqueo es transferir binarios del contenedor local al conector GitHub, que no comparte acceso a archivos; no hay acceso Git de red desde el contenedor. No sustituir rutas ni precarga hasta resolverlo.
+- Último commit de prueba antes de esta nota: `10187dcc4be816e3b874b285932ecfeffea16129`. Reversión: descartar PR #29 sin fusionar.
