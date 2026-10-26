@@ -173,6 +173,9 @@ class GitHubPolicyProbeTests(unittest.TestCase):
         opener, _ = fake_api(classic_error=404, effective=[[]])
         result = inspect_branch_policy(REPO, "main", "secret", opener=opener)
         self.assertEqual(result["effective_ruleset_rules"]["observed_rule_count"], 0)
+        self.assertFalse(
+            result["effective_ruleset_rules"]["active_review_control_fields_complete"]
+        )
         self.assertEqual(
             result["classic_protection"]["lookup"], "not_found_or_inaccessible"
         )
