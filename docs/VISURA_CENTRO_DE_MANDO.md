@@ -31,7 +31,7 @@ RECUPERAR VISURA. Debes continuar el desarrollo previo, no reiniciarlo. Localiza
 **Cuándo:** reactivar el trabajo del chat «PROMPT E IMÁGENES».
 
 ```text
-CONTINUAR IMÁGENES VISURA. Recupera la evolución de «PROMPT E IMÁGENES» mediante el contexto accesible, los archivos gráficos y los registros verificables de GitHub. Identifica qué imágenes están solo diseñadas, cuáles aprobadas, cuáles integradas y cuáles verificadas. Conserva el estilo tridimensional acordado y la diferenciación entre VISURA INVENTA y VISURA PREPARA. No reutilices imágenes indiscriminadamente ni sustituyas recursos aprobados. Detecta la última tarea visual pendiente, evita modificaciones concurrentes y continúa su implementación sin alterar funciones existentes. Documenta asignaciones, rutas, pruebas y recursos finales. Mantén preparado el traspaso de Work a chat normal antes de cualquier límite.
+CONTINUAR IMÁGENES VISURA. Recupera la evolución de «PROMPT E IMÁGENES» mediante el contexto accesible, los archivos gráficos y los registros verificables de GitHub. Identifica qué imágenes están solo diseñadas, cuáles aprobadas, cuáles integradas y cuáles verificadas. Conserva el estilo tridimensional acordado y adapta cada imagen al módulo, pantalla o función correspondiente dentro de VISURA. No reutilices imágenes indiscriminadamente ni sustituyas recursos aprobados. Detecta la última tarea visual pendiente, evita modificaciones concurrentes y continúa su implementación sin alterar funciones existentes. Documenta asignaciones, rutas, pruebas y recursos finales. Mantén preparado el traspaso de Work a chat normal antes de cualquier límite.
 ```
 
 ## 5. AUDITAR SOLAPAMIENTOS
@@ -40,6 +40,31 @@ CONTINUAR IMÁGENES VISURA. Recupera la evolución de «PROMPT E IMÁGENES» med
 ```text
 AUDITAR SOLAPAMIENTOS VISURA. Compara las tareas de VISURA WORK, PROMPT E IMÁGENES y los demás chats relacionados mediante ramas, commits, PR, documentos de continuidad y estados accesibles. Identifica coincidencias de archivos o funciones, separa los responsables y propone la siguiente tarea independiente para cada línea. No modifiques ni fusiones nada durante esta auditoría. Si algún chat no es accesible, indica la incertidumbre en vez de asumir su estado.
 ```
+
+## 6. GENERAR IMAGEN O ICONO VISURA
+
+**Cuándo:** al diseñar un nuevo icono, recurso tridimensional o ilustración para cualquier función del ecosistema VISURA.
+
+**Dónde explicar su función:** en el campo «¿Para qué sirve la imagen o el icono?» del panel. Selecciona «Icono» o «Imagen», describe el objetivo y pulsa **Copiar prompt para nuevo chat**. Después abre un nuevo chat de ChatGPT y pega el prompt como primer mensaje. Adjunta las capturas de estilo VISURA ya aprobado si están disponibles; ayudan a mantener la fidelidad. No es necesario repetir el prompt general.
+
+**Prompt parametrizado:** los marcadores `{{TIPO}}` y `{{FINALIDAD}}` se sustituyen automáticamente por los campos del panel.
+
+```text
+GENERAR IMAGEN O ICONO VISURA.
+
+TIPO DE RECURSO: {{TIPO}}
+PARA QUÉ SIRVE: {{FINALIDAD}}
+
+Crea directamente una nueva imagen del tipo indicado. Antes de generarla, utiliza las referencias visuales de VISURA accesibles en esta conversación, archivos adjuntos o recursos verificados; si no puedes acceder a una referencia, no afirmes haberla recuperado. Mantén coherencia visual con el módulo, pantalla o función correspondiente dentro de VISURA, sin imponer nombres de aplicaciones concretas. Respeta las decisiones estéticas aprobadas y evita copiar indiscriminadamente imágenes destinadas a otras funciones.
+
+Estilo de partida: profesional, moderno, tridimensional, limpio, con profundidad, volumen e iluminación cuidada, siempre adaptado al uso descrito. Para un icono, da prioridad a silueta legible, pocos elementos, contraste y formato cuadrado; evita textos pequeños. Si el uso es una ilustración de pantalla o una imagen de contenido, adapta composición y formato a ese uso. Si se adjuntan referencias, consérvalas como guía prioritaria.
+
+Si hay información suficiente, genera la imagen directamente con la herramienta de imágenes disponible y sin detenerte para pedir confirmaciones. Si el uso no está indicado o una decisión imprescindible no está definida, pregunta solo por ese dato. No te limites a redactar un prompt. Una imagen generada NO significa que esté aprobada o integrada: espera autorización para sustituir activos o modificar repositorios.
+```
+
+**Ejemplo para probar el Centro de mando:**
+- Tipo: `Icono`.
+- Para qué sirve: `Acceso directo al Centro de mando VISURA en la pantalla de inicio del iPhone. Permite abrir el panel de órdenes para reactivar, recuperar y controlar el desarrollo de VISURA. Debe ser un símbolo corporativo tridimensional, reconocible a tamaño pequeño y coherente con la estética VISURA.`
 
 ## Reglas comunes
 1. Consultar primero el estado verificado en GitHub, **sin tratar la documentación antigua de main como último estado**.
@@ -50,7 +75,7 @@ AUDITAR SOLAPAMIENTOS VISURA. Compara las tareas de VISURA WORK, PROMPT E IMÁGE
 6. Ejecutar tareas autorizadas en la sesión activa; no prometer procesos en segundo plano.
 
 ## Accesos
-- **Repositorio de copia:** `josegude-ux/KONTROLA`, rama aislada `docs/visura-centro-de-mando-20261026`.
+- **Repositorio de copia:** `josegude-ux/KONTROLA`, rama independiente `visura-panel`.
 - **Archivo:** `docs/VISURA_CENTRO_DE_MANDO.md`.
 - **Panel web independiente:** `docs/VISURA_ORDENES.html` en esta misma rama.
 - **ChatGPT:** recomendable un chat separado titulado «VISURA — CENTRO DE MANDO» dentro de un proyecto VISURA.
