@@ -649,3 +649,10 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 - La ejecución `40254682111` del workflow ampliado **falló**: 192 pruebas, 191 correctas, una fallida por `ERR_MODULE_NOT_FOUND: Cannot find package 'pdf-lib'` en `tests/pdf-real.test.mjs`. Las seis comprobaciones nuevas del menú pasaron.
 - Causa: al ampliar la suite se omitió instalar dependencias; el workflow aislado solo configuraba Node. Se añadió `npm ci` antes de ejecutar pruebas, sin tocar lógica de la aplicación.
 - Commit de corrección `632879bedbcb3c525a445161a2bcc034f61b752e`. **Pendiente comprobar nueva ejecución**; no declarar superada la suite hasta confirmarlo.
+
+
+### 2026-10-26 — Suite unitaria completa superada (PR #29)
+- GitHub Actions `40255277404` (ejecución #14) **success** para commit `ddf277c350d870b624787c33212965fca7808968`; job `menu`, instalación `npm ci` y paso de sintaxis/pruebas completados correctamente.
+- Log revisado: **193 pruebas, 193 aprobadas, 0 fallidas, 0 omitidas**. Enlace: https://github.com/josegude-ux/KONTROLA/actions/runs/40255277404
+- Alcance: suite Node de `tests/*.test.mjs` con dependencias instaladas; **no incluye integración PostgreSQL/Supabase**, recursos oficiales aún pendientes ni validación manual iPhone/Android/Windows.
+- Reversión sin riesgo: no fusionar PR #29. La rama y caché de producción no se han modificado.
