@@ -42,12 +42,12 @@ test("La navegación conserva los accesos previos y los regresos al submenú",()
 
 test("La versión y el caché están preparados para instalar nuevas pantallas",()=>{
   const version=JSON.parse(read("version.json")).version;
-  assert.equal(version,"0.3.33");
+  assert.equal(version,"0.3.34");
   assert.equal(JSON.parse(read("package.json")).version,version);
   assert.equal(JSON.parse(read("package-lock.json")).version,version);
   assert.ok(read("src/config.mjs").includes(`APP_VERSION="${version}"`));
   assert.ok(html.includes(`id="appVersion">${version}<`));
-  assert.match(read("sw.js"),/kontrola-integral-visura-v066/);
+  assert.match(read("sw.js"),/kontrola-integral-visura-v067/);
 });
 
 test("Las consultas descartan respuestas de sesiones o almacenes anteriores",()=>{
@@ -212,4 +212,32 @@ test("la importación conserva las observaciones y los huecos del PDF sin migrac
   assert.match(admin,/huecos_palets_pequenos:parsed\.palletsSmall/);
   assert.match(admin,/observations:payload\.observaciones/);
   assert.match(read("src/core.mjs"),/leerObservacionesCabecera\(pages\)/);
+});
+
+
+test("la lectura de PDF antiguos es voluntaria y no modifica Supabase ni relojes",()=>{
+ const pdf=read("src/legacy-header.mjs");
+ assert.match(html,/id="readLegacyHeaders"/);
+ assert.match(html,/id="legacyHeaderStatus"/);
+ assert.match(app,/\$\("readLegacyHeaders"\)\.addEventListener\("click"/);
+ assert.match(app,/client\.storage\.from\(PDF_BUCKET\)\.download\(load\.documento_ruta\)/);
+ assert.match(app,/await parsePdfFile\(original,\{warehouse\}\)/);
+ assert.match(app,/cargasCabeceraPendiente\(/);
+ assert.match(app,/legacyHeaderCache\.clear\(\)/);
+ assert.match(app,/serial!==loadsRequestSerial/);
+ assert.match(app,/if\(!validRequest\(warehouse,userId\)\|\|serial!==loadsRequestSerial\)return/);
+ assert.match(app,/statusElement\.textContent="Leyendo cabecera "/);
+ for(const mutation of [".insert(", ".upsert(", ".update(", ".delete(", ".rpc("])assert.ok(!pdf.includes(mutation),"Prohibida escritura en helper: "+mutation);
+ const start=app.indexOf("async function leerCabecerasAntiguas()");
+ const end=app.indexOf("function renderLoadList()",start);
+ const legacy=app.slice(start,end);
+ for(const mutation of [".insert(", ".upsert(", ".update(", ".delete(", ".rpc(", "startCurrentPreparation(", "openLoad("])assert.ok(!legacy.includes(mutation),"Prohibida escritura en lectura PDF: "+mutation);
+});
+
+test("los PDF leídos se muestran solo durante la sesión y se mantienen al refrescar",()=>{
+ assert.match(app,/legacyHeaderCache\.set\(load\.documento_ruta,extras\)/);
+ assert.match(app,/const cached=legacyHeaderCache\.get\(load\.documento_ruta\)/);
+ assert.match(app,/cached&&cabeceraSinMetadatos\(enriched\)/);
+ assert.match(app,/legacyHeaderCache\.clear\(\)/);
+ assert.match(app,/id\.textContent=r\.codigo\+\(observaciones\?" - "\+observaciones:""\)/);
 });

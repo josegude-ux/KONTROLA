@@ -40,7 +40,7 @@
       <button class="primary full" type="submit" id="loginButton">Entrar</button>
     </form>
     <p id="authMessage" class="status" role="status" aria-live="polite"></p>
-    <p class="hint">Las cuentas son habilitadas por administración. No existen usuarios de demostración.<br>Versión <span id="loginVersion">0.3.33</span></p>
+    <p class="hint">Las cuentas son habilitadas por administración. No existen usuarios de demostración.<br>Versión <span id="loginVersion">0.3.34</span></p>
   </div>
 </section>
 <div id="shell" hidden>
@@ -100,7 +100,8 @@
     <section id="loadsView" class="view" hidden>
       <div class="page-heading"><button type="button" id="backFromLoads" class="back-button">← Volver</button><h1 id="loadsHeading">Preparación de cargas</h1><p id="loadsDescription" class="muted">Al seleccionar una carga publicada se inicia automáticamente la preparación. Para consultar sin iniciar, usa Control de Cargas → Consultar cargas.</p></div>
       <div id="prepWarehouseTabs" class="warehouse-tabs" role="tablist" aria-label="Almacén"></div><p id="loadsWarehouseHint" class="active-warehouse-hint" role="status"></p>
-      <div class="toolbar"><label class="search-wrap">Buscar carga<input id="loadSearch" type="search" placeholder="Nº de carga, ruta, matrícula o repartidor"></label><button type="button" id="reloadLoads" class="secondary">Actualizar</button></div>
+      <div class="toolbar"><label class="search-wrap">Buscar carga<input id="loadSearch" type="search" placeholder="Nº de carga, ruta, matrícula, observaciones o repartidor"></label><button type="button" id="reloadLoads" class="secondary">Actualizar</button></div>
+      <div class="legacy-header-actions"><button id="readLegacyHeaders" type="button" class="secondary">Leer cabeceras antiguas (máx. 5)</button><p id="legacyHeaderStatus" role="status" aria-live="polite"></p></div>
       <div id="loadsList" class="loads-list" aria-live="polite"></div>
     </section>
     <section id="detailView" class="view" hidden>
@@ -200,7 +201,7 @@
     <section id="settingsView" class="view" hidden>
       <div class="page-heading"><button type="button" data-back="home" class="back-button">← Volver</button><h1>Ajustes</h1></div>
       <section class="panel">
-        <p><b>Aplicación:</b> VISURA PREPARA</p><p><b>Versión:</b> <span id="appVersion">0.3.33</span></p>
+        <p><b>Aplicación:</b> VISURA PREPARA</p><p><b>Versión:</b> <span id="appVersion">0.3.34</span></p>
         <p><b>Usuario:</b> <span id="profileName"></span></p><p><b>Perfil:</b> <span id="profileRole"></span></p>
         <div class="actions"><button type="button" id="checkUpdates" class="secondary">Buscar actualización</button><button id="logout" type="button" class="ghost-danger">Cerrar sesión</button></div>
         <div class="status" id="settingsStatus" role="status" aria-live="polite"></div>
