@@ -1,0 +1,67 @@
+name: VISURA AUTO-DEV - Zero Cost PR Pilot
+# Manual, deterministic pilot. No AI, external services, or production access.
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      issues: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Validate pilot task and safety tests
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          python3 -m unittest discover -s tests -p 'test_visura_*.py' -v
+          python3 -m scripts.visura_safety_smoke
+          python3 scripts/visura_queue_audit.py
+  draft_pr:
+    needs: prepare
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: read
+    steps:
+      - name: Create deterministic draft PR from approved task
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          BASE: chore/visura-auto-dev-guardrails
+          HEAD: chore/visura-auto-dev-generated-31
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$REPO" = "josegude-ux/KONTROLA"
+          # Never use issue body as executable code or instructions.
+          state="$(gh api "repos/$REPO/issues/31" --jq '.state')"
+          is_pr="$(gh api "repos/$REPO/issues/31" --jq 'has("pull_request")')"
+          test "$state" = "open"
+          test "$is_pr" = "false"
+          # Idempotent: existing branch/PR is not overwritten.
+          if gh api "repos/$REPO/git/ref/heads/$HEAD" >/dev/null 2>&1; then
+            echo "Pilot branch already exists; no writes performed."
+            exit 0
+          fi
+          base_sha="$(gh api "repos/$REPO/git/ref/heads/$BASE" --jq '.object.sha')"
+          gh api --method POST "repos/$REPO/git/refs" \
+            -f "ref=refs/heads/$HEAD" -f "sha=$base_sha" >/dev/null
+          text="$(printf '# VISURA AUTO-DEV: tarea 31\n\nDocumento generado automáticamente por un workflow determinista, sin IA de pago.\n\n- Origen: issue #31 (solo metadatos).\n- Sin acceso a Business Central ni Supabase.\n- No autoriza fusiones ni despliegues.\n')"
+          encoded="$(printf '%s' "$text" | base64 -w0)"
+          gh api --method PUT "repos/$REPO/contents/docs/VISURA_AUTO_DEV_GENERADO_31.md" \
+            -f "message=docs: generate safe zero-cost pilot from issue 31" \
+            -f "content=$encoded" -f "branch=$HEAD" >/dev/null
+          gh api --method POST "repos/$REPO/pulls" \
+            -f "title=docs: VISURA AUTO-DEV zero-cost generated pilot #31" \
+            -f "head=$HEAD" -f "base=$BASE" \
+            -f "body=Automatically generated from approved issue #31 metadata only. No AI calls. Human review required. Do not merge without explicit approval." \
+            -F "draft=true" >/dev/null
+          echo "Draft PR created; no merge or deployment."
