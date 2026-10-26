@@ -624,3 +624,10 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 - Se evaluaron directamente sobre el contenido de `src/app.mjs` los cuatro patrones de controladores de navegación que usa el test de menú; los cuatro coincidieron. Esta comprobación de patrones **no equivale a ejecutar** `npm test` ni a una prueba de navegación real.
 - Corregida la ficha `docs/VISURA_PREPARA_MENU_OFICIAL_PENDIENTE.md` para reflejar que los títulos visibles ya están implementados; no repetir trabajo.
 - Pendientes sin cambio: subida de ocho imágenes binarias, actualización de cuatro rutas y caché PWA, ejecución CI, capturas y validación real en dispositivos. Último commit anterior a esta entrada: `ba11aa144583f291614fa5683cef121d97d9cadc`. PR #29 en borrador, sin fusionar.
+
+
+### 2026-10-26 — CI específica para menú oficial (sin despliegue)
+- Se detectó que el workflow general `.github/workflows/ci.yml` no incluye ni la rama `feature/visura-prepara-menu-oficial-20261026` ni PR con base `branding/visura-prepara-20261026`; por eso no había ejecuciones asociadas a los commits de la PR #29.
+- Creado `.github/workflows/visura-menu-ci.yml`, activado por push a la rama aislada y PR hacia la rama de branding, con permisos mínimos de lectura. Comprueba sintaxis de `src/app.mjs`, sintaxis de la prueba y ejecuta `node --test tests/visura-menu.test.mjs`. **No contiene pasos de publicación ni cambios de datos.**
+- Commit del workflow: `7c6e79bb81253783a56f89f94261b02260f3f5d1`. A la hora de comprobar, la API todavía devolvía cero ejecuciones asociadas al commit; no declarar pruebas aprobadas.
+- Pendiente: observar CI, corregir fallos, incorporar recursos oficiales binarios y validar en dispositivo. Reversión: no fusionar PR #29.
