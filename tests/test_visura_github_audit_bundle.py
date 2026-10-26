@@ -168,7 +168,7 @@ class AuditBundleTests(unittest.TestCase):
             return_value=fixture_pr(),
         ):
             result = inspect_readonly_audit_bundle(REPO, 37, "main", "secret", opener=lambda *a: None)
-        self.assertEqual(policy_calls, ["chore/visura-auto-dev-guardrails", "main"])
+        self.assertEqual(policy_calls, ["chore/visura-auto-dev-guardrails", "main", "chore/visura-auto-dev-guardrails"])
         self.assertTrue(result["target_differs_from_default"])
         self.assertEqual(
             result["target_branch_policy"]["branch"],
@@ -352,7 +352,7 @@ class AuditBundleTests(unittest.TestCase):
             result = inspect_readonly_audit_bundle(
                 REPO, 37, "main", "secret", opener=lambda *args: None
             )
-        self.assertEqual(calls, ["chore/visura-auto-dev-guardrails", "main"])
+        self.assertEqual(calls, ["chore/visura-auto-dev-guardrails", "main", "chore/visura-auto-dev-guardrails"])
         self.comparison_mock.assert_called_once()
         self.assertEqual(
             self.comparison_mock.call_args.args[0]["branch"],
@@ -408,8 +408,94 @@ class AuditBundleTests(unittest.TestCase):
             return_value=fixture_pr(branch="main"),
         ):
             result = inspect_readonly_audit_bundle(REPO, 37, "main", "secret", opener=lambda *a: None)
-        self.assertEqual(policy.call_count, 1)
+        self.assertEqual(policy.call_count, 2)
         self.assertFalse(result["target_differs_from_default"])
+
+    def test_target_policy_is_rechecked_after_evidence_before_final_pr(self):
+        events = []
+
+        def policy(repo, branch, token, opener):
+            events.append("policy:" + branch)
+            return {"branch": branch, "lookup": "inaccessible"}
+
+        def final_pr(*args):
+            events.append("final_pr")
+            return fixture_pr()
+
+        with patch(
+            "scripts.visura_github_audit_bundle.fetch_readonly_review_snapshot",
+            return_value=fixture_snapshot(),
+        ), patch(
+            "scripts.visura_github_audit_bundle.inspect_branch_policy",
+            side_effect=policy,
+        ), patch(
+            "scripts.visura_github_audit_bundle._get_json",
+            side_effect=final_pr,
+        ):
+            result = inspect_readonly_audit_bundle(
+                REPO, 37, "main", "secret", opener=lambda *a: None
+            )
+        self.assertEqual(events, [
+            "policy:chore/visura-auto-dev-guardrails",
+            "policy:main",
+            "policy:chore/visura-auto-dev-guardrails",
+            "final_pr",
+        ])
+        self.assertTrue(result["same_target_policy_after_audit"])
+        self.assertFalse(result["repository_policy_verified"])
+        self.assertFalse(result["merge_authorized"])
+
+    def test_changed_target_policy_during_checks_fails_closed(self):
+        counter = [0]
+
+        def changing_policy(repo, branch, token, opener):
+            if branch == "chore/visura-auto-dev-guardrails":
+                counter[0] += 1
+                return {"branch": branch, "observed_rule_count": counter[0]}
+            return {"branch": branch, "observed_rule_count": 1}
+
+        with patch(
+            "scripts.visura_github_audit_bundle.fetch_readonly_review_snapshot",
+            return_value=fixture_snapshot(),
+        ), patch(
+            "scripts.visura_github_audit_bundle.inspect_branch_policy",
+            side_effect=changing_policy,
+        ), patch(
+            "scripts.visura_github_audit_bundle._get_json",
+        ) as final_pr:
+            with self.assertRaisesRegex(
+                ValueError, "Target branch policy changed during the audit"
+            ):
+                inspect_readonly_audit_bundle(
+                    REPO, 37, "main", "secret", opener=lambda *a: None
+                )
+            final_pr.assert_not_called()
+        self.assertEqual(counter[0], 2)
+
+    def test_target_policy_becoming_inaccessible_is_not_treated_as_absence(self):
+        target_reads = [0]
+
+        def changing_policy(repo, branch, token, opener):
+            if branch == "chore/visura-auto-dev-guardrails":
+                target_reads[0] += 1
+                return {"branch": branch, "lookup": (
+                    "retrieved" if target_reads[0] == 1 else "inaccessible"
+                )}
+            return {"branch": branch, "lookup": "retrieved"}
+
+        with patch(
+            "scripts.visura_github_audit_bundle.fetch_readonly_review_snapshot",
+            return_value=fixture_snapshot(),
+        ), patch(
+            "scripts.visura_github_audit_bundle.inspect_branch_policy",
+            side_effect=changing_policy,
+        ):
+            with self.assertRaisesRegex(
+                ValueError, "Target branch policy changed during the audit"
+            ):
+                inspect_readonly_audit_bundle(
+                    REPO, 37, "main", "secret", opener=lambda *a: None
+                )
 
     def test_pr_retargeting_during_policy_fetch_rejected(self):
         with patch(
