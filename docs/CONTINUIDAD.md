@@ -596,3 +596,11 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 - Iconos PNG 192/512 integrados y enlazados al manifest; iPhone usa apple-touch-icon PNG. La imagen de VISURA MATRIZ se conserva por separado en `assets/brand/visura-matriz-3d.webp` como recurso reservado: **no se muestra ni comparte imagen principal con PREPARA**.
 - Caché actualizado a `kontrola-integral-visura-v062` para asegurar disponibilidad de los nuevos archivos en PWA. Continúan intactos los módulos de operario, administración, Supabase y BC.
 - Pendientes: confirmar CI de este commit, instalación/actualización iPhone y Android, validación visual real. No fusionado ni desplegado.
+
+
+### 2026-10-26 — Menú oficial VISURA PREPARA, PR #29 (parcial, NO desplegar)
+- Rama `feature/visura-prepara-menu-oficial-20261026`, basada en `branding/visura-prepara-20261026`. PR borrador #29 sin fusionar.
+- Modificados **solo textos visibles** de dos tarjetas: `openReview` pasa a «Control de Cargas» (mantiene verificación física); `openCargas` pasa a «Operaciones» (mantiene menú completo). `openPreparation` y `openAdmin` no cambian.
+- Añadidas pruebas estáticas `tests/visura-menu.test.mjs` de IDs, títulos, imágenes de respaldo y precarga existente; pendiente confirmar ejecución en CI. No se han modificado los controladores de navegación.
+- **Pendiente**: subir al repositorio los 4 WEBP aprobados y 4 originales del ZIP, sustituir las cuatro rutas de imagen, actualizar caché PWA y pruebas para los recursos definitivos, capturas reales y validación en dispositivos. No declarar completado. Los WEBP antiguos siguen visibles hasta integrar los oficiales.
+- Sin cambios en Supabase, Business Central, roles, usuarios o datos. Los commits parciales de etiquetas/pruebas se han hecho por separado; esta actualización de continuidad documenta el conjunto. En el commit final de integración se debe incluir también esta ficha.
