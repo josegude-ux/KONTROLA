@@ -329,3 +329,12 @@ footer{padding:18px;text-align:center;background:#fff;border-top:1px solid #e6e8
 .truck-capacity [hidden]{display:none!important}
 @media(max-width:600px){.truck-grid,.truck-grid-span{grid-template-columns:1fr}}
 @media print{#truckCapacityPanel{display:none!important}}
+
+/* Piloto de usuarios y selección no destructiva de cargas antiguas */
+.pilot-roster{margin-top:20px;padding:17px;border:1px solid #d4e2ee;border-radius:15px;background:#f8fbff}
+.pilot-roster-grid{display:grid;grid-template-columns:1fr 1fr;gap:15px}
+.pilot-roster-grid>div{padding:12px;border-radius:12px;background:#fff}
+.pilot-roster-grid p{font-size:14px;line-height:1.6;margin:9px 0}
+.old-load-choice{display:block;margin:8px 0;max-width:100%;text-align:left}
+#choosePasswordForm{border-top:1px solid #e0e7ef;margin-top:18px;padding-top:16px}
+@media(max-width:600px){.pilot-roster-grid{grid-template-columns:1fr}}

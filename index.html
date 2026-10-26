@@ -40,7 +40,7 @@
       <button class="primary full" type="submit" id="loginButton">Entrar</button>
     </form>
     <p id="authMessage" class="status" role="status" aria-live="polite"></p>
-    <p class="hint">Las cuentas son habilitadas por administración. No existen usuarios de demostración.<br>Versión <span id="loginVersion">0.3.39</span></p>
+    <p class="hint">Las cuentas son habilitadas por administración. No existen usuarios de demostración.<br>Versión <span id="loginVersion">0.3.40</span></p>
   </div>
 </section>
 <div id="shell" hidden>
@@ -59,21 +59,22 @@
         <button id="openCargas" class="feature feature-lilac" type="button"><span class="feature-copy"><b>Operaciones</b><small>Consulta documentos y gestiona tus cargas</small><span class="feature-go" aria-hidden="true">→</span></span><span class="feature-art" aria-hidden="true"><span class="feature-art-glow"></span><img class="feature-illustration" src="./assets/home/visura-prepara-operaciones-3d.webp" alt="" width="640" height="640" loading="eager" decoding="async"></span></button>
         <button id="openAdmin" class="feature feature-cream" type="button" hidden><span class="feature-copy"><b>Administración</b><small>Publica documentos y supervisa las operaciones</small><span class="feature-go" aria-hidden="true">→</span></span><span class="feature-art" aria-hidden="true"><span class="feature-art-glow"></span><img class="feature-illustration" src="./assets/home/visura-prepara-administracion-3d.webp" alt="" width="640" height="640" loading="eager" decoding="async"></span></button>
       </div>
-      <section class="panel"><div class="line"><h2>Mi actividad</h2><select id="homeWarehouse" class="warehouse-select" aria-label="Almacén activo"></select></div><div id="operatorSummary" class="facts"></div><div class="home-summary-bottom"><p id="operatorSummaryStatus" class="status" role="status" aria-live="polite"></p><button id="refreshHomeSummary" type="button" class="secondary">Actualizar</button></div></section>
+      <section class="panel"><div class="line"><h2>Estado del almacén</h2><select id="homeWarehouse" class="warehouse-select" aria-label="Almacén activo"></select></div><div id="operatorSummary" class="facts"></div><div class="home-summary-bottom"><p id="operatorSummaryStatus" class="status" role="status" aria-live="polite"></p><button id="refreshHomeSummary" type="button" class="secondary">Actualizar</button></div></section>
     </section>
     <section id="cargasMenuView" class="view" hidden>
       <div class="page-heading">
         <button type="button" data-back="home" class="back-button">← Volver al inicio</button>
         <p class="eyebrow">VISURA PREPARA / CONTROL DE CARGAS</p>
         <h1>Control de Cargas</h1>
-        <p class="muted">Accede a las funciones de las cargas. Consultar un documento no inicia ningún reloj.</p>
+        <p class="muted">Accede a las funciones de las cargas. Consultar no inicia ni modifica la preparación.</p>
       </div>
       <div class="submenu-grid" aria-label="Funciones de Control de Cargas">
         <button id="cargasConsultar" type="button" class="submenu-card"><span class="submenu-icon" aria-hidden="true">📄</span><span><b>Consultar cargas</b><small>Documentos, referencias y mercancía por pasillos</small></span><span class="submenu-arrow" aria-hidden="true">›</span></button>
-        <button id="cargasPreparar" type="button" class="submenu-card"><span class="submenu-icon" aria-hidden="true">📦</span><span><b>Preparación de cargas</b><small>Inicia el reloj solo cuando comiences a preparar</small></span><span class="submenu-arrow" aria-hidden="true">›</span></button>
+        <button id="cargasPreparar" type="button" class="submenu-card"><span class="submenu-icon" aria-hidden="true">📦</span><span><b>Preparación de cargas</b><small>Comprueba la carga con calma antes de iniciar</small></span><span class="submenu-arrow" aria-hidden="true">›</span></button>
         <button id="cargasVerificar" type="button" class="submenu-card"><span class="submenu-icon" aria-hidden="true">✅</span><span><b>Verificación física</b><small>Comprueba cantidades de cargas preparadas por otra persona</small></span><span class="submenu-arrow" aria-hidden="true">›</span></button>
         <button id="cargasHistorial" type="button" class="submenu-card"><span class="submenu-icon" aria-hidden="true">📊</span><span><b>Historial y resumen</b><small>Buscar por fecha, estado, ruta y repartidor</small></span><span class="submenu-arrow" aria-hidden="true">›</span></button>
         <button id="cargasAdministrar" type="button" class="submenu-card" hidden><span class="submenu-icon" aria-hidden="true">🗂️</span><span><b>Documentos y administración</b><small>Importar, revisar y publicar PDF descargados manualmente</small></span><span class="submenu-arrow" aria-hidden="true">›</span></button>
+        <button id="cargasAntiguas" type="button" class="submenu-card" hidden><span class="submenu-icon" aria-hidden="true">🗃️</span><span><b>Cargas antiguas</b><small>Consultar, seleccionar y restaurar cargas históricas (solo administración)</small></span><span class="submenu-arrow" aria-hidden="true">›</span></button>
       </div>
       <p class="hint">Este menú reúne funciones existentes. El picking y las regularizaciones se realizan en Business Central.</p>
     </section>
@@ -107,7 +108,6 @@
     <section id="detailView" class="view" hidden>
       <div class="page-heading"><button type="button" id="backToLoads" class="back-button">← Volver a cargas</button><p id="detailModeLabel" class="eyebrow">PREPARACIÓN POR PASILLOS</p><h1 id="detailTitle"></h1><p class="muted" id="detailSubtitle"></p></div>
       <div id="prepStatus" class="info-bar" aria-live="polite"></div>
-      <div id="prepClock" class="prep-clock" role="timer" aria-live="off" hidden></div>
 
       <section id="truckCapacityPanel" class="panel truck-capacity" hidden>
         <h2>Comprobar huecos del camión</h2>
@@ -152,7 +152,7 @@
       </section>
     </section>
     <section id="reviewLoadsView" class="view" hidden>
-      <div class="page-heading"><button type="button" id="backFromReviewLoads" class="back-button">← Volver</button><h1>Verificación física</h1><p class="muted">Aparecen cargas preparadas por otra persona, incluso si su reloj sigue abierto. Selecciona una para comprobarla línea por línea.</p></div>
+      <div class="page-heading"><button type="button" id="backFromReviewLoads" class="back-button">← Volver</button><h1>Verificación física</h1><p class="muted">Aparecen cargas preparadas por otra persona, aunque su preparación siga en curso. Selecciona una para comprobarla línea por línea.</p></div>
       <div id="reviewWarehouseTabs" class="warehouse-tabs" role="tablist" aria-label="Almacén"></div><p id="reviewWarehouseHint" class="active-warehouse-hint" role="status"></p>
       <div class="toolbar"><label class="search-wrap">Buscar carga<input id="reviewSearch" type="search" placeholder="Nº de carga, ruta, matrícula o repartidor"></label><button type="button" id="reloadReviewLoads" class="secondary">Actualizar</button></div>
       <div id="reviewLoadsList" class="loads-list" aria-live="polite"></div>
@@ -172,7 +172,7 @@
       </section>
     </section>
     <section id="adminView" class="view" hidden>
-      <div class="page-heading"><button type="button" data-back="home" class="back-button">← Volver</button><h1>Administración</h1><p class="muted">Documentos, operación, tiempos e incidencias por almacén.</p></div>
+      <div class="page-heading"><button type="button" data-back="home" class="back-button">← Volver</button><h1>Administración</h1><p class="muted">Documentos, operación e incidencias por almacén.</p></div>
       <nav class="admin-tabs" aria-label="Funciones de Administración"><button type="button" class="admin-tab active" data-admin-tab="0" aria-controls="adminSection0" aria-selected="true" role="tab">Importar PDF</button><button type="button" class="admin-tab" data-admin-tab="1" aria-controls="adminSection1" aria-selected="false" role="tab">Pendientes</button><button type="button" class="admin-tab" data-admin-tab="2" aria-controls="adminSection2" aria-selected="false" role="tab">Impresión</button><button type="button" class="admin-tab" data-admin-tab="3" aria-controls="adminSection3" aria-selected="false" role="tab">Operarios</button><button type="button" class="admin-tab" data-admin-tab="4" aria-controls="adminSection4" aria-selected="false" role="tab">Incidencias</button><button type="button" class="admin-tab" data-admin-tab="5" aria-controls="adminSection5" aria-selected="false" role="tab">Historial</button><button type="button" class="admin-tab" data-admin-tab="6" aria-controls="adminSection6" aria-selected="false" role="tab">Archivo OneDrive</button><button type="button" class="admin-tab" data-admin-tab="7" aria-controls="adminSection7" aria-selected="false" role="tab">Resumen</button><button type="button" class="admin-tab" data-admin-tab="8" aria-controls="adminSection8" aria-selected="false" role="tab">Archivo de cargas</button></nav>
       <section class="panel" id="adminSection0" role="tabpanel">
         <h2>Importar → procesar → revisar → publicar</h2><p class="muted">Carga manual desde Business Central. VISURA PREPARA conserva el original y usa el motor v0.5.26 de Control de Cargas.</p>
@@ -196,10 +196,11 @@
         <button id="batchPrintOpen" type="button" class="primary" disabled>Preparar impresión de hojas seleccionadas</button>
       </section>
       <section class="panel" id="adminSection3" role="tabpanel" hidden id="operatorStatsPanel">
-        <div class="line"><div><h2>Actividad por operario</h2><p class="muted">Estadísticas del almacén seleccionado. Solo visibles para administración.</p></div><button id="operatorStatsRefresh" type="button" class="secondary">Actualizar</button></div>
+        <div class="line"><div><h2>Estado de operaciones</h2><p class="muted">Recuento de cargas y verificaciones. No se muestran duraciones individuales.</p></div><button id="operatorStatsRefresh" type="button" class="secondary">Actualizar</button></div>
         <label>Fecha de inicio de la operación<input id="operatorStatsDate" type="date"></label>
         <div id="operatorStatsStatus" class="status" role="status" aria-live="polite"></div>
         <div id="operatorStatsList" aria-live="polite"></div>
+        <section id="pilotRoster" class="pilot-roster" aria-label="Usuarios previstos de pruebas"><h3>Usuarios previstos para las pruebas</h3><p class="muted">Pendientes de alta y activación individual. Seleccionar un nombre no concede acceso ni crea contraseñas.</p><div class="pilot-roster-grid"><div><b>OPERARIOS</b><p>MANUEL RIVADAS · DIEGO PARDO · RODOLFO · DIEGO BUDIÑO · GROS · JAVI SÁNCHEZ</p></div><div><b>SUPERVISORES</b><p>RÍOS · BRUNO · GUDE · FERMÍN</p><small>El rol supervisor necesita permisos de servidor antes de activarse.</small></div></div></section>
       </section>
       <section class="panel" id="adminSection4" role="tabpanel" hidden>
         <div class="line"><div><h2>Incidencias pendientes</h2><p class="muted">Agrupadas por carga. Confirma aquí únicamente una regularización ya realizada manualmente en Business Central.</p></div><button id="reloadIncidents" type="button" class="secondary">Actualizar</button></div>
@@ -229,15 +230,15 @@
         <p class="muted">Este procedimiento es manual. VISURA PREPARA no envía documentos ni elimina versiones automáticamente.</p>
       </section>
       <section class="panel" id="adminSection7" role="tabpanel" hidden><div class="line"><h2>Resumen diario por zona</h2><select id="adminWarehouse" class="warehouse-select" aria-label="Almacén administrativo"></select></div><div id="adminSummary" class="facts"></div><div id="adminActivity" class="activity-list"></div></section>
-      <section class="panel" id="adminSection8" role="tabpanel" hidden><h2>Archivo lógico de cargas</h2><p class="muted">Conservación mínima de 90 días. No se eliminan registros. Solo administración puede archivar o restaurar.</p><label>Código de carga <input id="archiveCode" autocomplete="off" placeholder="Código exacto"></label><div class="line"><button type="button" id="archiveLoad">Archivar</button><button type="button" id="restoreLoad" class="secondary">Restaurar</button><button type="button" id="refreshArchived" class="secondary">Consultar archivadas</button></div><p id="archiveStatus" role="status" aria-live="polite"></p><div id="archivedLoadsList" aria-live="polite"></div></section>
+      <section class="panel" id="adminSection8" role="tabpanel" hidden><h2>Cargas antiguas · archivo y restauración</h2><p class="muted">Conservación mínima de 90 días. No se eliminan registros. Solo administración puede archivar o restaurar.</p><div class="line"><button id="browseOldLoads" type="button" class="secondary">Buscar cargas anteriores</button><span class="hint">Consulta únicamente; ninguna carga se borra ni modifica sin confirmación.</span></div><div id="oldLoadsList" role="status" aria-live="polite"></div><label>Código de carga <input id="archiveCode" autocomplete="off" placeholder="Código exacto"></label><div class="line"><button type="button" id="archiveLoad">Archivar</button><button type="button" id="restoreLoad" class="secondary">Restaurar</button><button type="button" id="refreshArchived" class="secondary">Consultar archivadas</button></div><p id="archiveStatus" role="status" aria-live="polite"></p><div id="archivedLoadsList" aria-live="polite"></div></section>
     </section>
     <section id="settingsView" class="view" hidden>
       <div class="page-heading"><button type="button" data-back="home" class="back-button">← Volver</button><h1>Ajustes</h1></div>
       <section class="panel">
-        <p><b>Aplicación:</b> VISURA PREPARA</p><p><b>Versión:</b> <span id="appVersion">0.3.39</span></p>
+        <p><b>Aplicación:</b> VISURA PREPARA</p><p><b>Versión:</b> <span id="appVersion">0.3.40</span></p>
         <p><b>Usuario:</b> <span id="profileName"></span></p><p><b>Perfil:</b> <span id="profileRole"></span></p>
         <div class="actions"><button type="button" id="checkUpdates" class="secondary">Buscar actualización</button><button id="logout" type="button" class="ghost-danger">Cerrar sesión</button></div>
-        <div class="status" id="settingsStatus" role="status" aria-live="polite"></div>
+        <form id="choosePasswordForm" autocomplete="off"><h3>Establecer mi contraseña</h3><p class="muted">Para usuarios que ya hayan validado su invitación individual. La contraseña la elige el titular y no se comparte con administración.</p><label>Contraseña nueva (mínimo 12 caracteres)<input id="ownPassword" type="password" minlength="12" autocomplete="new-password" required></label><label>Repetir contraseña<input id="ownPasswordConfirm" type="password" minlength="12" autocomplete="new-password" required></label><button type="submit" class="secondary">Guardar mi contraseña</button><p id="ownPasswordStatus" class="status" role="status"></p></form><div class="status" id="settingsStatus" role="status" aria-live="polite"></div>
       </section>
     </section>
   </main>

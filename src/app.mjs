@@ -13,7 +13,7 @@ const $=id=>document.getElementById(id);
 let client=null,user=null,profile=null,loads=[],current=null,currentPreparation=null,groups=[],selectedAisle="TODOS",busy=false,opening=false;
 let reviewLoads=[],currentVerification=null,verificationLines=[];
 let warehouses=[],selectedWarehouse=localStorage.getItem("kontrola-warehouse")||"COR_01_COR",adminController=null;
-let loadsParent="homeView",reviewLoadsParent="homeView",loadsMode="preparacion",currentReadOnly=false,detailBackView="loadsView",historyRows=[],historyReady=false,adminParent="homeView",prepTimerId=null;
+let loadsParent="homeView",reviewLoadsParent="homeView",loadsMode="preparacion",currentReadOnly=false,detailBackView="loadsView",historyRows=[],historyReady=false,adminParent="homeView";
 let loadsRequestSerial=0,legacyHeaderBusy=false;
 const legacyHeaderCache=new Map();
 const truckCapacitySession=new Map();
@@ -35,14 +35,12 @@ function switchView(id,{force=false}={}){
   for(const element of document.querySelectorAll(".view"))visible(element,element.id===id);
   // El único botón visible de retorno se mantiene en la barra superior fija.
   $("globalBack").hidden=id==="homeView";
-  if(id!=="detailView")stopPreparationClock();
   global();
   window.scrollTo({top:0,behavior:"instant"});
   return true;
 }
 function loggedOut(message=""){
   user=null;profile=null;loads=[];historyRows=[];historyReady=false;current=null;currentPreparation=null;currentReadOnly=false;reviewLoads=[];currentVerification=null;verificationLines=[];
-  stopPreparationClock();
   loadsRequestSerial++;legacyHeaderCache.clear();legacyHeaderBusy=false;
   truckCapacitySession.clear();truckCapacityTouched=false;
   $("truckCapacityPanel").hidden=true;
@@ -60,6 +58,7 @@ function loggedOut(message=""){
     const node=$(id);if(node)node.replaceChildren();
   }
   $("loginPassword").value="";
+  $("ownPassword").value="";$("ownPasswordConfirm").value="";$("ownPasswordStatus").textContent="";
   $("historyDownload").disabled=true;$("historyPrint").disabled=true;
   visible($("reportView"),false);
   document.body.classList.remove("report-open");
@@ -77,6 +76,7 @@ async function authorize(authUser){
   $("profileRole").textContent=ownProfile.rol;
   visible($("openAdmin"),ownProfile.rol==="administrador");
   visible($("cargasAdministrar"),ownProfile.rol==="administrador");
+  visible($("cargasAntiguas"),ownProfile.rol==="administrador");
   visible($("loginView"),false);visible($("shell"),true);switchView("homeView");
   await loadWarehouses();
   await refreshOperatorDashboard().catch(()=>{});
@@ -176,6 +176,21 @@ async function initialize(){
     });
   }catch(e){loggedOut("No se ha podido conectar con Supabase: "+errorText(e));}
 }
+$("choosePasswordForm").addEventListener("submit",async(event)=>{
+  event.preventDefault();
+  const button=$("choosePasswordForm").querySelector('button[type="submit"]');
+  const password=$("ownPassword").value,confirm=$("ownPasswordConfirm").value;
+  const output=$("ownPasswordStatus");
+  if(!client||!user){output.textContent="Primero debes iniciar sesión con tu invitación individual.";return;}
+  if(password.length<12||password!==confirm){output.textContent="Las contraseñas deben coincidir y tener al menos 12 caracteres.";return;}
+  button.disabled=true;output.textContent="Guardando contraseña personal…";
+  try{
+    const {error}=await client.auth.updateUser({password});
+    if(error)throw error;
+    output.textContent="Contraseña actualizada para tu cuenta.";
+  }catch(error){output.textContent="No se ha podido cambiar la contraseña: "+errorText(error);}
+  finally{$("ownPassword").value="";$("ownPasswordConfirm").value="";button.disabled=false;}
+});
 $("loginForm").addEventListener("submit",async e=>{
   e.preventDefault();
   if(!client)return status("authMessage","No hay conexión con Supabase.","error");
@@ -235,7 +250,7 @@ async function refreshLoads(){
   renderLoadList();
 }
 // La recuperación es optativa, de solo lectura y limitada a cinco PDF por clic.
-// No ejecuta ninguna RPC de escritura ni abre una preparación o reloj.
+// No ejecuta ninguna RPC de escritura ni abre una preparación o proceso.
 async function leerCabecerasAntiguas(){
   if(legacyHeaderBusy||!client||!user)return;
   const warehouse=selectedWarehouse,userId=user.id,serial=loadsRequestSerial;
@@ -462,6 +477,11 @@ $("cargasVerificar").addEventListener("click",()=>openReviewMenu("cargasMenuView
 $("cargasHistorial").addEventListener("click",()=>{if(switchView("cargasHistoryView"))refreshHistory().catch(()=>{});});
 $("backFromHistory").addEventListener("click",()=>switchView("cargasMenuView"));
 $("cargasAdministrar").addEventListener("click",()=>openAdminMenu("cargasMenuView"));
+$("cargasAntiguas").addEventListener("click",async()=>{
+  if(profile?.rol!=="administrador")return;
+  await openAdminMenu("cargasMenuView");
+  await adminController?.openArchive?.();
+});
 $("openAdmin").addEventListener("click",()=>openAdminMenu("homeView"));
 $("backFromLoads").addEventListener("click",()=>switchView(loadsParent));
 $("backFromReviewLoads").addEventListener("click",()=>switchView(reviewLoadsParent));
@@ -483,34 +503,6 @@ $("globalBack").addEventListener("click",()=>{
   else if(view==="adminView")switchView(adminParent);
   else if(backButtons[view])$(backButtons[view]).click();
 });
-function stopPreparationClock(){
-  if(prepTimerId!==null){clearInterval(prepTimerId);prepTimerId=null;}
-}
-function formatPreparationDuration(start,end=Date.now()){
-  const began=new Date(start).getTime();
-  const ended=typeof end==="number"?end:new Date(end).getTime();
-  if(!Number.isFinite(began)||!Number.isFinite(ended))return "—";
-  const seconds=Math.max(0,Math.floor((ended-began)/1000));
-  const hours=String(Math.floor(seconds/3600)).padStart(2,"0");
-  const minutes=String(Math.floor(seconds%3600/60)).padStart(2,"0");
-  return hours+":"+minutes+":"+String(seconds%60).padStart(2,"0");
-}
-function renderPreparationClock(){
-  const clock=$("prepClock");
-  if(currentReadOnly||!current||!current.preparacion_inicio){clock.hidden=true;return;}
-  clock.hidden=false;
-  if(currentPreparation?.active)clock.textContent="Tiempo de preparación · "+formatPreparationDuration(current.preparacion_inicio);
-  else if(currentPreparation?.finalized&&current.preparacion_fin)
-    clock.textContent="Tiempo de preparación finalizado · "+formatPreparationDuration(current.preparacion_inicio,current.preparacion_fin);
-  else clock.hidden=true;
-}
-function startPreparationClock(){
-  stopPreparationClock();
-  renderPreparationClock();
-  if(currentPreparation?.active)prepTimerId=setInterval(()=>{
-    if(!document.hidden)renderPreparationClock();
-  },1000);
-}
 async function startCurrentPreparation(){
   if(busy||!current||currentReadOnly||currentPreparation?.active||currentPreparation?.finalized||current.estado==="cerrada")return;
   if(assessment().estado!=="viable"){
@@ -527,7 +519,7 @@ async function startCurrentPreparation(){
     if(user?.id!==requestUser||current?.codigo!==code)return;
     const result=Array.isArray(data)?data[0]:data;
     if(!result?.inicio)throw Error("El servidor no ha confirmado la hora de inicio.");
-    // Las cargas finalizadas no vuelven a abrirse ni crean relojes nuevos.
+    // Las cargas finalizadas no vuelven a abrirse ni crean procesoes nuevos.
     if(current.preparacion_fin){
       currentPreparation={active:false,finalized:true};
       $("prepStatus").textContent="Esta preparación ya estaba finalizada.";
@@ -538,8 +530,7 @@ async function startCurrentPreparation(){
     current.preparador_id=requestUser;current.preparacion_inicio=result.inicio;current.estado="preparacion_en_curso";
     visible($("startPreparation"),false);visible($("finishPreparation"),true);
     $("prepStatus").className="info-bar";
-    $("prepStatus").textContent="Preparación activa. Inicio registrado por el servidor; el tiempo continúa al salir de esta pantalla.";
-    startPreparationClock();
+    $("prepStatus").textContent="Preparación activa. Inicio registrado por el servidor; puedes continuarla con calma al volver a esta pantalla.";
     global("Preparación de "+code+" iniciada correctamente.","success");
     refreshOperatorDashboard().catch(()=>{});
   }catch(error){
@@ -657,7 +648,7 @@ $("truckCapacityStart").addEventListener("click",async()=>{
   if(currentReadOnly||!current||current.estado!=="publicada"||busy)return;
   const result=renderTruckAssessment();
   if(result.estado!=="viable"){
-    $("truckCapacityResult").textContent+="\nNo se inicia el reloj hasta verificar huecos suficientes.";
+    $("truckCapacityResult").textContent+="\nNo se inicia el proceso hasta verificar huecos suficientes.";
     return;
   }
   await startCurrentPreparation();
@@ -667,7 +658,7 @@ $("truckCapacityStart").addEventListener("click",async()=>{
 async function openLoad(code,{source=loads,returnTo="loadsView",readOnly=loadsMode==="consulta"}={}){
   if(opening||busy||!user)return;
   const load=source.find(x=>x.codigo===code);if(!load)return;
-  // Consultar y revisar nunca inicia ni interrumpe relojes de preparación.
+  // Consultar y revisar nunca inicia ni interrumpe procesoes de preparación.
   const assignedToOther=Boolean(load.preparador_id&&load.preparador_id!==user.id);
   currentReadOnly=readOnly||assignedToOther||["cerrada","verificacion_en_curso"].includes(load.estado);
   detailBackView=returnTo;
@@ -681,9 +672,9 @@ async function openLoad(code,{source=loads,returnTo="loadsView",readOnly=loadsMo
   $("detailSubtitle").textContent=[load.repartidor,load.ruta,load.almacen].filter(Boolean).join(" · ")||"Preparación por pasillos";
   const notice=$("prepStatus");
   notice.className="info-bar"+(currentPreparation.finalized?" complete":"");
-  notice.textContent=assignedToOther?"Carga asignada a otro preparador. Puedes consultar sin modificar el reloj."
+  notice.textContent=assignedToOther?"Carga asignada a otro preparador. Puedes consultar sin modificar el proceso."
     :currentReadOnly?"Solo lectura: consultar no inicia, finaliza ni cambia preparaciones."
-    :currentPreparation.active?"Preparación ya iniciada. Tiempo registrado en Supabase."
+    :currentPreparation.active?"Preparación ya iniciada. Estado registrado en el servidor."
     :currentPreparation.finalized?"Preparación finalizada; la consulta no cambia los horarios."
     :"Se registrará automáticamente el inicio al abrir esta carga.";
   visible($("startPreparation"),false);
@@ -698,10 +689,9 @@ async function openLoad(code,{source=loads,returnTo="loadsView",readOnly=loadsMo
   }
   renderAisles();
   if(!switchView("detailView"))return;
-  startPreparationClock();
   openTruckPanel(load);
   if(cargaHuecosPendientes(load))recoverTruckCapacityFromPdf(load).catch(()=>{});
-  // La carga publicada requiere evaluación de huecos antes de iniciar el reloj.
+  // La carga publicada requiere evaluación de huecos antes de iniciar el proceso.
   if(!currentReadOnly&&!currentPreparation.active&&!currentPreparation.finalized&&load.estado==="publicada"){
     $("prepStatus").textContent="Confirma los huecos y las cargas anteriores para iniciar la preparación.";
   }
@@ -714,10 +704,10 @@ $("finishPreparation").addEventListener("click",async()=>{
     const {error}=await client.rpc("kontrola_finalizar_preparacion",{p_codigo:current.codigo});
     if(error)throw error;
     currentPreparation={active:false,finalized:true};current.preparacion_fin=new Date().toISOString();current.estado="preparada";visible($("finishPreparation"),false);
-    stopPreparationClock();renderPreparationClock();refreshOperatorDashboard().catch(()=>{});
+    refreshOperatorDashboard().catch(()=>{});
     $("prepStatus").className="info-bar complete";
     $("prepStatus").textContent="Preparación finalizada. La carga ya puede ser verificada por otra persona.";
-    global("Preparación finalizada con hora del servidor.","success");
+    global("Preparación finalizada correctamente.","success");
   }catch(error){global("No se pudo finalizar la preparación: "+errorText(error),"error");}
   finally{busy=false;$("finishPreparation").disabled=false;}
 });
@@ -980,7 +970,6 @@ window.addEventListener("online",()=>{
 document.addEventListener("visibilitychange",()=>{
   if(!document.hidden&&user){
     if(document.querySelector("#homeView:not([hidden])"))refreshOperatorDashboard().catch(()=>{});
-    if(currentPreparation?.active)renderPreparationClock();
   }
 });
 window.addEventListener("offline",()=>{renderConnection();global("Sin conexión. KONTROLA no confirmará operaciones hasta recuperar la red.","error");});

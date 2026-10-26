@@ -35,7 +35,7 @@ export function configurarEstadisticasOperarios({client,getUser,errorText,getWar
       status.textContent=data.length+" operario(s) con actividad registrada el "+day+".";
       const table=document.createElement("table");table.className="operator-stats-table";
       const header=document.createElement("thead"),tr=document.createElement("tr");
-      for(const value of ["Operario","Preparaciones","Verificaciones","Tiempo prep.","Tiempo ver.","Abiertas"]){
+      for(const value of ["Operario","Preparaciones","Verificaciones","Pendientes"]){
         tr.appendChild(dom("th",value));
       }
       header.append(tr);table.append(header);
@@ -44,7 +44,6 @@ export function configurarEstadisticasOperarios({client,getUser,errorText,getWar
         const row=document.createElement("tr");
         const fields=[
           entry.nombre||"Sin nombre",entry.preparaciones||0,entry.verificaciones||0,
-          duracionOperario(entry.segundos_preparacion),duracionOperario(entry.segundos_verificacion),
           (Number(entry.preparaciones_abiertas)||0)+(Number(entry.verificaciones_abiertas)||0)
         ];
         for(const field of fields)row.appendChild(dom("td",field));
@@ -53,7 +52,7 @@ export function configurarEstadisticasOperarios({client,getUser,errorText,getWar
       table.appendChild(body);
       const wrap=document.createElement("div");wrap.className="operator-stats-scroll";wrap.append(table);
       root.appendChild(wrap);
-      root.appendChild(dom("p","Los tiempos solo incluyen operaciones finalizadas; las abiertas se muestran aparte.","hint"));
+      root.appendChild(dom("p","Vista informativa de operaciones. No se evalúa la rapidez individual.","hint"));
     }catch(error){
       if(request!==requestId||getUser()?.id!==session)return;
       clear();status.textContent="No se pudo consultar: "+errorText(error);
