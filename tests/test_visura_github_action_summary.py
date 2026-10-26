@@ -70,6 +70,33 @@ def bundle(target="chore/visura-auto-dev-guardrails", default="main"):
             "merge_authorized": False,
             "deployment_authorized": False,
         },
+        "legacy_commit_statuses": {
+            "repository": repo, "head_sha": SHA, "lookup": "retrieved",
+            "observed_status_records": 3, "observed_latest_contexts": 2,
+            "latest_context_states": [
+                {"context": "CI / test", "state": "failure"},
+                {"context": "lint", "state": "success"},
+            ],
+            "latest_state_counts": {
+                "success": 1, "failure": 1, "error": 0, "pending": 0,
+            },
+            "required_checks_verified": False,
+            "branch_policy_verified": False,
+            "execution_authorized": False, "merge_authorized": False,
+            "deployment_authorized": False,
+        },
+        "legacy_status_observations": {
+            "lookup": "candidate_contexts_only",
+            "required_context_count": 2,
+            "candidate_context_match_count": 1,
+            "candidate_latest_success_count": 1,
+            "contexts_not_observed_count": 0,
+            "app_pinned_unverifiable_count": 1,
+            "legacy_context_origin_authenticated": False,
+            "required_checks_verified": False,
+            "execution_authorized": False, "merge_authorized": False,
+            "deployment_authorized": False,
+        },
         "target_branch_policy": policy(target),
         "default_branch": default,
         "default_branch_policy": policy(default),
@@ -229,6 +256,67 @@ class GitHubActionSummaryTests(unittest.TestCase):
         data = bundle()
         data["required_check_observations"]["lookup"] = "unknown_check_run_names"
         with self.assertRaisesRegex(ValueError, "Unknown required checks"):
+            render_readonly_audit_summary(data)
+
+    def test_legacy_status_table_is_separate_and_non_authorizing(self):
+        rendered = render_readonly_audit_summary(bundle())
+        self.assertIn("Estados heredados de commit (API separada)", rendered)
+        self.assertIn("Registros históricos observados | 3", rendered)
+        self.assertIn("Últimos estados success | 1", rendered)
+        self.assertIn("Últimos estados coincidentes success | 1", rendered)
+        self.assertIn("aplicación no verificable | 1", rendered)
+        self.assertIn("NO acreditan", rendered)
+        self.assertIn("NO autorización", rendered)
+
+    def test_legacy_access_denied_is_unknown_not_zero(self):
+        data = bundle()
+        data["legacy_commit_statuses"].update({
+            "lookup": "inaccessible_or_not_found",
+            "observed_status_records": None,
+            "observed_latest_contexts": None,
+            "latest_context_states": None,
+            "latest_state_counts": None,
+        })
+        data["legacy_status_observations"].update({
+            "lookup": "unknown_legacy_statuses",
+            "required_context_count": None,
+            "candidate_context_match_count": None,
+            "candidate_latest_success_count": None,
+            "contexts_not_observed_count": None,
+            "app_pinned_unverifiable_count": None,
+        })
+        rendered = render_readonly_audit_summary(data)
+        self.assertIn("Registros históricos observados | desconocido", rendered)
+        self.assertIn("Últimos estados coincidentes success | desconocido", rendered)
+
+    def test_legacy_other_commit_rejected(self):
+        data = bundle()
+        data["legacy_commit_statuses"]["head_sha"] = "b" * 40
+        with self.assertRaisesRegex(ValueError, "Legacy status SHA"):
+            render_readonly_audit_summary(data)
+
+    def test_legacy_forged_required_permission_rejected(self):
+        data = bundle()
+        data["legacy_commit_statuses"]["required_checks_verified"] = True
+        with self.assertRaisesRegex(ValueError, "must not grant authority"):
+            render_readonly_audit_summary(data)
+
+    def test_legacy_inconsistent_status_counts_rejected(self):
+        data = bundle()
+        data["legacy_commit_statuses"]["latest_state_counts"]["success"] = 2
+        with self.assertRaisesRegex(ValueError, "Inconsistent legacy status counts"):
+            render_readonly_audit_summary(data)
+
+    def test_legacy_app_pinned_requirement_cannot_grant_authority(self):
+        data = bundle()
+        data["legacy_status_observations"]["merge_authorized"] = True
+        with self.assertRaisesRegex(ValueError, "Legacy comparison cannot grant"):
+            render_readonly_audit_summary(data)
+
+    def test_legacy_impossible_candidate_counts_rejected(self):
+        data = bundle()
+        data["legacy_status_observations"]["candidate_context_match_count"] = 2
+        with self.assertRaisesRegex(ValueError, "Inconsistent legacy candidate"):
             render_readonly_audit_summary(data)
 
     def test_inaccessible_branch_rule_count_cannot_be_forged(self):
