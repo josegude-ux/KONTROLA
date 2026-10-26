@@ -1,5 +1,5 @@
 # VISURA — CENTRO DE MANDO
-**Versión:** 2026-10-26  
+**Versión:** V4.2 — 2026-10-26  
 **Objetivo:** conservar órdenes copiables de desarrollo y recuperación de contexto para VISURA.
 
 > Este archivo es una **copia maestra de instrucciones**, no un informe del estado actual del software. Antes de cualquier cambio hay que contrastar ramas, commits, PR y documentación con GitHub. No fusionar, desplegar ni borrar datos sin autorización. No se puede garantizar un proceso en segundo plano ni superar límites de Work.
@@ -177,16 +177,16 @@ En INTEGRACIÓN EN RAMA: la imagen aprobada y sus derivados necesarios están re
 En PRUEBA / SIMULACIÓN: se audita la viabilidad, se identifican rutas y alternativas, se detectan bloqueos y se entrega un plan ejecutable SIN modificar sistemas.
 ```
 
-## Menú actual — Accesos directos V4 (2026-10-26)
+## Menú actual — Accesos directos V4.2 (2026-10-26)
 
-El usuario descartó el diseño anterior basado en un desplegable único con flechas. **La interfaz actual V4 lo sustituye** por una portada con siete botones en una cuadrícula de dos columnas; las siete funciones son visibles en la portada y el formulario completo se abre solo al seleccionar la función.
+El diseño anterior de desplegable único con flechas fue descartado. **La interfaz actual V4.2** utiliza una portada con **ocho accesos directos en una cuadrícula de dos columnas** y abre solo el formulario seleccionado.
 
-- Cada vista de tarea ofrece **«Volver al menú»** para regresar a las siete funciones. Los enlaces `#orden-N` continúan abriendo directamente una orden concreta, y `#inicio` abre la portada.
-- El botón **«↻ Actualizar»** permanece visible en la cabecera. La marca **V4** permite detectar si un alojamiento externo está sirviendo una versión anterior.
-- **Acerca del panel y copia en GitHub** se mantiene plegado y cerrado al cargar la página; los avisos redundantes dejan de ocupar espacio en móvil.
-- No cambian los textos de los siete prompts, sus botones de copia, los campos para seleccionar imágenes ni la protección de PRUEBA / SIMULACIÓN de la orden 07.
-- Se actualizan únicamente `docs/index.html`, `docs/VISURA_ORDENES.html` y esta documentación en la rama `visura-panel`. No modificar `main`, datos ni aplicaciones.
-- Esta sección V4 **sustituye la interfaz V3** descrita a continuación; el apartado anterior se conserva únicamente como referencia histórica.
+- Cada vista ofrece **«Volver al menú»**. Los enlaces `#orden-1` a `#orden-8` abren la tarea correspondiente y `#inicio` vuelve a la portada.
+- El botón **«↻ Actualizar»** continúa en la cabecera. La marca **V4.2** distingue la versión nueva de las copias antiguas que puede servir el alojamiento externo.
+- La información complementaria de GitHub sigue plegada y cerrada al cargar la página.
+- Las siete órdenes anteriores, sus campos y protecciones se conservan. Se incorpora únicamente la **orden 08 — Estado de desarrollo de un chat del proyecto EXCELL**, siempre de solo lectura.
+- Los archivos del panel son `docs/index.html` y `docs/VISURA_ORDENES.html`, junto con este documento maestro en la rama `visura-panel`. No se autoriza modificar `main`, aplicaciones ni datos.
+- El apartado de menú compacto V3 de más abajo es un antecedente histórico superado, no la interfaz actual.
 
 ## Evolución de navegación móvil — Panel compacto (2026-10-26)
 
