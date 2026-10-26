@@ -20,6 +20,24 @@ class GitHubReviewAdapterTests(unittest.TestCase):
         self.assertEqual(result["matching_reviews"][0]["reviewer_id"], "reviewer")
         self.assertFalse(result["execution_authorized"])
 
+    def test_rejects_blank_login(self):
+        with self.assertRaisesRegex(ValueError, "Invalid GitHub reviewer login"):
+            inspect_github_reviews([{
+                "user": {"login": " "}, "state": "APPROVED", "commit_id": SHA
+            }], SHA)
+
+    def test_rejects_login_with_slash(self):
+        with self.assertRaisesRegex(ValueError, "Invalid GitHub reviewer login"):
+            inspect_github_reviews([{
+                "user": {"login": "owner/reviewer"}, "state": "APPROVED", "commit_id": SHA
+            }], SHA)
+
+    def test_rejects_overlong_login(self):
+        with self.assertRaisesRegex(ValueError, "Invalid GitHub reviewer login"):
+            inspect_github_reviews([{
+                "user": {"login": "a" * 40}, "state": "APPROVED", "commit_id": SHA
+            }], SHA)
+
     def test_rejects_missing_user(self):
         with self.assertRaisesRegex(ValueError, "Missing GitHub reviewer login"):
             inspect_github_reviews([{"state": "APPROVED", "commit_id": SHA}], SHA)
