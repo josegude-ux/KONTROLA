@@ -106,3 +106,5 @@ La idea de un portal común se documentó separadamente en `docs/MOVENTA_CONCEPT
 - Revisión de integración (26/10/2026): las 11 pruebas CSV específicas pasan en Actions. Se solicita una ejecución final del Code Review Gate sobre el estado actual del PR antes de decidir integración. No se fusiona automáticamente.
 
 - Revisión autónoma adicional: en commits `ae57883` y `efabff7` se mejoró el análisis de cabeceras CSV entrecomilladas con saltos de línea y se convierten errores del parser en `ValueError` claro; commit `33ad648` añade dos pruebas (cabecera multilínea y comillas sin cerrar). Total esperado: 13 pruebas CSV. **CI de estos últimos commits todavía no aparece en la consulta**, por lo que no se consideran verificados. No integrar hasta obtener run verde.
+
+- **CI CSV recuperada y superada**: run #15 (`40260295057`) `success`; compilación correcta y **14/14 pruebas OK**. También Code Review Gate run #12 (`40260295001`) y Queue Audit run #47 (`40260295171`) concluyeron `success`. Evidencia CSV: https://github.com/josegude-ux/KONTROLA/actions/runs/40260295057. El PR #35 continúa sin fusionar.
