@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="color-scheme" content="dark light">
 <title>VISURA · Centro de mando</title>
+<link rel="icon" type="image/svg+xml" href="./assets/logo-visura-centro-mando.svg">
 <style>
 :root{color-scheme:dark;--bg:#0e1724;--panel:#172336;--border:#34465d;--text:#eff5fc;--muted:#a7b8ce;--accent:#bceacc;--accent2:#123d2f;--secondary:#25364d}
 *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,sans-serif;line-height:1.5}
@@ -104,10 +105,22 @@ header .intro{font-size:.85rem;line-height:1.38}
 @media(max-width:380px){.dashboard-action{min-height:91px;padding:12px 8px;gap:7px}.action-mark{width:29px;height:29px;font-size:1.1rem}.action-copy strong{font-size:.86rem}.action-copy small{font-size:.7rem}}
 
 .panel-version{display:inline-block;font-size:.65rem;letter-spacing:0;background:var(--secondary);border:1px solid var(--border);border-radius:6px;padding:2px 5px;margin-left:5px;color:var(--text)}
+
+/* Identidad VISURA: emblema 3D verde y plata + wordmark compacto */
+.header-top{min-height:58px;align-items:center}
+.brand-lockup{display:flex;align-items:center;gap:10px;min-width:0;flex:1}
+.brand-mark{display:block;flex:none;width:54px;height:54px;object-fit:contain;border-radius:13px;filter:drop-shadow(0 3px 6px #002d211a)}
+.brand-text{display:flex;flex-direction:column;gap:3px;min-width:0}
+.brand-text strong{color:#146e45;font-size:1.22rem;line-height:1;letter-spacing:.18em;font-weight:900}
+.brand-text span{display:flex;align-items:center;gap:5px;color:var(--muted);font-size:.64rem;line-height:1.2;font-weight:800;letter-spacing:.055em;white-space:nowrap}
+.brand-text .panel-version{letter-spacing:0;font-size:.58rem;padding:2px 4px;margin-left:0;vertical-align:middle}
+.refresh-panel{margin-left:4px}
+@media(prefers-color-scheme:dark){.brand-text strong{color:#71e9a8}}
+@media(max-width:380px){.brand-lockup{gap:7px}.brand-mark{height:44px;width:44px}.brand-text strong{font-size:1.02rem;letter-spacing:.13em}.brand-text span{font-size:.56rem}.refresh-panel{font-size:.76rem;padding:7px}}
 </style>
 </head>
 <body>
-<main><header><div class="header-top"><div class="kicker">VISURA · CENTRO DE MANDO <span class="panel-version">V4</span></div><button type="button" class="refresh-panel" id="refresh-panel" title="Cargar de nuevo el Centro de mando" aria-label="Actualizar Centro de mando"><span aria-hidden="true">↻</span> Actualizar</button></div><h1>¿Qué quieres hacer?</h1><p class="intro">Siete funciones a un toque, sin recorrer formularios.</p></header>
+<main><header><div class="header-top"><div class="brand-lockup"><img class="brand-mark" src="./assets/logo-visura-centro-mando.svg" width="54" height="54" alt="Emblema VISURA"><div class="brand-text"><strong>VISURA</strong><span>CENTRO DE MANDO <b class="panel-version">V4</b></span></div></div><button type="button" class="refresh-panel" id="refresh-panel" title="Cargar de nuevo el Centro de mando" aria-label="Actualizar Centro de mando"><span aria-hidden="true">↻</span> Actualizar</button></div><h1>¿Qué quieres hacer?</h1><p class="intro">Siete funciones a un toque, sin recorrer formularios.</p></header>
 <nav id="command-menu" class="dashboard-nav" aria-label="Accesos VISURA">
 <div class="dashboard-caption"><strong>ACCESOS DIRECTOS</strong><span>7 funciones</span></div>
 <div class="dashboard-grid"><button type="button" class="dashboard-action" data-open-order="orden-1" aria-controls="orden-1"><span class="action-mark" aria-hidden="true">↻</span><span class="action-copy"><strong>Reactivar</strong><small>Continuar desarrollo</small></span></button>
