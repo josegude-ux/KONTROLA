@@ -20,6 +20,9 @@ from scripts.visura_github_action_summary import render_readonly_audit_summary
 from scripts.visura_github_commit_checks import (
     observe_commit_checks, compare_required_check_observations,
 )
+from scripts.visura_github_legacy_statuses import (
+    observe_legacy_commit_statuses, compare_legacy_status_candidates,
+)
 
 
 def inspect_readonly_audit_bundle(
@@ -50,9 +53,16 @@ def inspect_readonly_audit_bundle(
         repository, pr["head_sha"], token, opener=opener
     )
 
+    # Legacy commit statuses are a different API from check-runs; read both.
     # A candidate name/app match never attests satisfaction of branch rules.
+    legacy_statuses = observe_legacy_commit_statuses(
+        repository, pr["head_sha"], token, opener=opener
+    )
     candidate_requirements = compare_required_check_observations(
         target_policy, head_checks
+    )
+    legacy_candidates = compare_legacy_status_candidates(
+        target_policy, legacy_statuses
     )
 
     # Check the PR again after both policy calls, which are not atomic.
@@ -85,6 +95,8 @@ def inspect_readonly_audit_bundle(
         "review_snapshot": pr,
         "head_check_runs": head_checks,
         "required_check_observations": candidate_requirements,
+        "legacy_commit_statuses": legacy_statuses,
+        "legacy_status_observations": legacy_candidates,
         "target_branch_policy": target_policy,
         "default_branch": default_branch,
         "default_branch_policy": default_policy,
