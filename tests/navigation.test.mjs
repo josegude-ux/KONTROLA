@@ -62,6 +62,22 @@ test("importación F/C prepara COR1, impresión original COR1 y hoja COR2 indepe
  assert.match(core,/fileIdentity\?"COR_01_COR"/);
 });
 
+test("la matriz y el A4 v1.3 son acciones COR1 sin sustituir la hoja detallada",()=>{
+  const admin=read("src/admin.mjs");
+  const css=read("styles.css");
+  for(const id of ["aisleMatrixSummary","aisleMatrixTable","downloadCompactA4","saveCompactA4Admin"])
+    assert.match(html,new RegExp('id="'+id+'"'));
+  assert.match(app,/renderAisleMatrix\(products\)/);
+  assert.match(app,/crearMatrizPasillos\(products\)/);
+  assert.match(app,/crearListadoPasillosA4\(current\)/);
+  assert.match(admin,/crearListadoPasillosA4\(asPayload\(draft\.parsed\)\)/);
+  assert.match(admin,/saveCompactA4Admin"\)\.disabled=busy\|\|!draft\|\|draft\.state!=="publicada"\|\|!isCor1/);
+  assert.match(css,/\.aisle-matrix-scroll/);
+  assert.match(read("sw.js"),/\.\/src\/aisle-matrix\.mjs/);
+  assert.match(html,/id="viewPreparationSheet"/);
+  assert.match(html,/id="previewCor2Detail"/);
+});
+
 test("Tanques permanece totalmente oculto y sin acciones activas",()=>{
   assert.doesNotMatch(html,/tanques/i);
   assert.doesNotMatch(app,/openTanques|cargasTanques/i);
@@ -85,12 +101,12 @@ test("La navegación conserva los accesos previos y los regresos al submenú",()
 
 test("La versión y el caché están preparados para instalar nuevas pantallas",()=>{
   const version=JSON.parse(read("version.json")).version;
-  assert.equal(version,"0.3.43");
+  assert.equal(version,"0.3.44");
   assert.equal(JSON.parse(read("package.json")).version,version);
   assert.equal(JSON.parse(read("package-lock.json")).version,version);
   assert.ok(read("src/config.mjs").includes(`APP_VERSION="${version}"`));
   assert.ok(html.includes(`id="appVersion">${version}<`));
-  assert.match(read("sw.js"),/kontrola-integral-visura-v076/);
+  assert.match(read("sw.js"),/kontrola-integral-visura-v077/);
 });
 
 test("Las consultas descartan respuestas de sesiones o almacenes anteriores",()=>{

@@ -4,6 +4,8 @@ import {SUPABASE_URL,SUPABASE_KEY,PDF_BUCKET,APP_VERSION} from "./config.mjs";
 import {agruparPasillos,ordenarCargas,formatearHuecosPalets} from "./logic.mjs";
 import {buildVerificationLines,parseCheckedQuantity,summarizeVerification} from "./verification.mjs";
 import {buildPreparationReport,filterProducts,desglosarBultos,totalBultosDelDesglose} from "./report.mjs";
+import {crearMatrizPasillos,crearListadoPasillosA4,etiquetaUnidad} from "./aisle-matrix.mjs";
+import {generarPdfHojas} from "./print-pdf.mjs";
 import {filtrarHistorial,resumenHistorial,formatoFechaCarga,csvHistorial,htmlResumenHistorial} from "./history.mjs";
 import {createAdminController} from "./admin.mjs";
 import {parsePdfFile} from "./pdf.mjs";
@@ -715,8 +717,65 @@ $("finishPreparation").addEventListener("click",async()=>{
   }catch(error){global("No se pudo finalizar la preparación: "+errorText(error),"error");}
   finally{busy=false;$("finishPreparation").disabled=false;}
 });
+function renderAisleMatrix(products){
+  const matriz=crearMatrizPasillos(products);
+  const summary=$("aisleMatrixSummary");summary.replaceChildren();
+  const totals=[["Referencias",matriz.referencias],["Unidades (sin convertir formatos)",matriz.total],
+    ["Pasillos y zonas",matriz.zonas],["Sin ubicación",matriz.sinUbicacion.length]];
+  for(const [label,value] of totals){
+    const card=document.createElement("div");card.className="aisle-metric";
+    const strong=document.createElement("b");strong.textContent=fmt(value);
+    const small=document.createElement("small");small.textContent=label;
+    card.append(strong,small);summary.appendChild(card);
+  }
+  const slot=$("aisleMatrixTable");slot.replaceChildren();
+  if(!matriz.pasillos.length){
+    const notice=document.createElement("p");notice.className="muted";
+    notice.textContent="No hay mercancía para mostrar con este filtro.";
+    slot.appendChild(notice);return;
+  }
+  const table=document.createElement("table");table.className="aisle-matrix";
+  const thead=document.createElement("thead"),tr=document.createElement("tr");
+  for(const header of ["PASILLO",...matriz.unidades.map(etiquetaUnidad),"TOTAL"]){
+    const th=document.createElement("th");th.textContent=header;th.scope="col";tr.appendChild(th);
+  }
+  thead.appendChild(tr);table.appendChild(thead);
+  const tbody=document.createElement("tbody");
+  for(const aisle of matriz.pasillos){
+    const row=document.createElement("tr");
+    if(aisle.nombre==="SIN UBICACIÓN")row.className="unlocated";
+    const first=document.createElement("th");first.scope="row";
+    const button=document.createElement("button");button.type="button";button.className="aisle-jump";
+    button.textContent=aisle.nombre;
+    button.setAttribute("aria-label","Ver detalle del pasillo "+aisle.nombre);
+    button.addEventListener("click",()=>{
+      selectedAisle=aisle.nombre;renderAisles();
+      $("productList").scrollIntoView({block:"start",behavior:"smooth"});
+    });
+    first.appendChild(button);row.appendChild(first);
+    for(const u of matriz.unidades){
+      const cell=document.createElement("td");cell.textContent=aisle.valores[u]?fmt(aisle.valores[u]):"";
+      row.appendChild(cell);
+    }
+    const total=document.createElement("td");total.textContent=fmt(aisle.total);total.className="aisle-row-total";
+    row.appendChild(total);tbody.appendChild(row);
+  }
+  const totalsRow=document.createElement("tr");totalsRow.className="total-row";
+  const label=document.createElement("th");label.scope="row";label.textContent="TOTAL";totalsRow.appendChild(label);
+  for(const unit of matriz.unidades){
+    const td=document.createElement("td");td.textContent=fmt(matriz.totales[unit]||0);totalsRow.appendChild(td);
+  }
+  const td=document.createElement("td");td.textContent=fmt(matriz.total);totalsRow.appendChild(td);
+  tbody.appendChild(totalsRow);table.appendChild(tbody);slot.appendChild(table);
+  if(matriz.sinUbicacion.length){
+    const note=document.createElement("p");note.className="hint";
+    note.textContent=matriz.sinUbicacion.length+" referencia(s) SIN UBICACIÓN conservadas. Pulsa esa fila para ver todos los detalles.";
+    slot.appendChild(note);
+  }
+}
 function renderAisles(){
   const products=filterProducts(current?.productos||[],$("productSearch").value);
+  renderAisleMatrix(products);
   groups=agruparPasillos(products);
   const tabs=$("aisleTabs");tabs.replaceChildren();
   for(const name of ["TODOS",...groups.map(x=>x.nombre)]){
@@ -919,6 +978,26 @@ function showCurrentReport(){
 $("viewPdf").addEventListener("click",openCurrentPdf);
 $("reviewPdf").addEventListener("click",openCurrentPdf);
 $("viewPreparationSheet").addEventListener("click",showCurrentReport);
+$("downloadCompactA4").addEventListener("click",async()=>{
+  if(!current)return;
+  try{
+    const bytes=generarPdfHojas([crearListadoPasillosA4(current)]);
+    const name="VISURA_"+current.codigo+"_COR1_LISTADO_PASILLOS_A4.pdf";
+    const file=new File([bytes],name,{type:"application/pdf"});
+    const ios=/iPhone|iPad|iPod/i.test(navigator.userAgent||"");
+    if(ios&&navigator.share&&(typeof navigator.canShare!=="function"||navigator.canShare({files:[file]}))){
+      await navigator.share({files:[file],title:"Listado por pasillos COR1 · "+current.codigo});
+      global("Listado A4 creado. Comprueba el documento antes de imprimir.","success");
+    }else{
+      const url=URL.createObjectURL(file),link=document.createElement("a");
+      link.href=url;link.download=name;document.body.appendChild(link);link.click();link.remove();
+      setTimeout(()=>URL.revokeObjectURL(url),60000);
+      global("Listado A4 descargado: una sola página, casillas HECHO y referencias SIN UBICACIÓN.","success");
+    }
+  }catch(error){
+    if(error?.name!=="AbortError")global("No se pudo generar el listado A4: "+errorText(error),"error");
+  }
+});
 $("reviewSheet").addEventListener("click",showCurrentReport);
 $("homeWarehouse").addEventListener("change",event=>selectWarehouse(event.target.value,"home"));
 $("refreshHomeSummary").addEventListener("click",()=>refreshOperatorDashboard().catch(error=>{

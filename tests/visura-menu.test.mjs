@@ -104,5 +104,5 @@ test("las cuatro imagenes oficiales son WEBP validos y optimizados", () => {
 });
 
 test("la caché PWA usa la version v064 tras cambiar las ilustraciones oficiales", () => {
-  assert.match(sw, /kontrola-integral-visura-v076/);
+  assert.match(sw, /kontrola-integral-visura-v077/);
 });

@@ -40,7 +40,7 @@
       <button class="primary full" type="submit" id="loginButton">Entrar</button>
     </form>
     <p id="authMessage" class="status" role="status" aria-live="polite"></p>
-    <p class="hint">Las cuentas son habilitadas por administración. No existen usuarios de demostración.<br>Versión <span id="loginVersion">0.3.43</span></p>
+    <p class="hint">Las cuentas son habilitadas por administración. No existen usuarios de demostración.<br>Versión <span id="loginVersion">0.3.44</span></p>
   </div>
 </section>
 <div id="shell" hidden>
@@ -143,8 +143,10 @@
       <button id="finishPreparation" class="primary full" type="button" hidden>Finalizar preparación</button>
       <div class="facts" id="detailFacts"></div>
       <section class="panel">
-        <div class="line"><div><h2>Mercancía por pasillos</h2><p class="muted">Solo consulta. El picking se registra con la pistola y Business Central.</p></div><div class="actions"><button id="viewPdf" class="secondary" type="button">PDF original</button><button id="viewPreparationSheet" class="secondary" type="button">Hoja procesada</button></div></div>
+        <div class="line"><div><h2>Mercancía por pasillos</h2><p class="muted">Solo consulta. El picking se registra con la pistola y Business Central.</p></div><div class="actions"><button id="viewPdf" class="secondary" type="button">PDF original</button><button id="viewPreparationSheet" class="secondary" type="button">Hoja detallada</button><button id="downloadCompactA4" class="primary" type="button">Guardar listado A4</button></div></div>
         <label class="search-wrap">Buscar referencia, ubicación o descripción<input id="productSearch" type="search"></label>
+        <div id="aisleMatrixSummary" class="aisle-matrix-summary" aria-live="polite"></div>
+        <div id="aisleMatrixTable" class="aisle-matrix-scroll" aria-label="Totales por pasillo y tipo de unidad"></div>
         <div id="aisleTabs" class="pills" role="group" aria-label="Filtrar por pasillo"></div>
         <div id="productList"></div>
       </section>
@@ -187,7 +189,7 @@
             <button id="previewCor2Detail" type="button" class="secondary" disabled>Generar hoja detalle COR2 (sin procesar)</button>
           </div>
         </div>
-        <div id="postPublishActions" class="post-publish-actions" hidden><p class="muted">Carga publicada. Siguiente paso:</p><button id="generateSheet" type="button" class="primary" disabled>Generar hoja de preparación COR1</button><button id="goToBatchPrint" type="button" class="secondary">Imprimir varias cargas</button></div>
+        <div id="postPublishActions" class="post-publish-actions" hidden><p class="muted">Carga publicada. Siguiente paso:</p><button id="generateSheet" type="button" class="primary" disabled>Generar hoja de preparación COR1</button><button id="saveCompactA4Admin" type="button" class="secondary" disabled>Guardar listado A4 COR1</button><button id="goToBatchPrint" type="button" class="secondary">Imprimir varias cargas</button></div>
       </section>
       <section class="panel" id="adminSection1" role="tabpanel" hidden><div class="line"><div><h2>Necesitan atención</h2><p class="muted">Documentos, clasificaciones, verificaciones e incidencias pendientes.</p></div><button id="reloadAttention" type="button" class="secondary">Actualizar</button></div><div id="pendingPublishSummary" class="status" role="status"></div><div class="actions"><button id="pendingSelectAll" type="button" class="secondary">Seleccionar aprobadas</button><button id="pendingPublishSelected" type="button" class="primary" disabled>Publicar seleccionadas</button></div><div id="pendingPublishList" class="attention-list"></div><div id="pendingPublishResult" class="status" role="status"></div><h3>Otros avisos</h3><div id="attentionList" class="attention-list"></div></section>
       <section class="panel" id="adminSection2" role="tabpanel" hidden id="batchPrintPanel">
@@ -239,7 +241,7 @@
     <section id="settingsView" class="view" hidden>
       <div class="page-heading"><button type="button" data-back="home" class="back-button">← Volver</button><h1>Ajustes</h1></div>
       <section class="panel">
-        <p><b>Aplicación:</b> VISURA PREPARA</p><p><b>Versión:</b> <span id="appVersion">0.3.43</span></p>
+        <p><b>Aplicación:</b> VISURA PREPARA</p><p><b>Versión:</b> <span id="appVersion">0.3.44</span></p>
         <p><b>Usuario:</b> <span id="profileName"></span></p><p><b>Perfil:</b> <span id="profileRole"></span></p>
         <div class="actions"><button type="button" id="checkUpdates" class="secondary">Buscar actualización</button><button id="logout" type="button" class="ghost-danger">Cerrar sesión</button></div>
         <div class="status" id="settingsStatus" role="status" aria-live="polite"></div>
