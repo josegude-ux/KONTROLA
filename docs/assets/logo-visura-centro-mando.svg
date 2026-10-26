@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="160" height="160" viewBox="0 0 160 160" role="img" aria-labelledby="t d">
+<title id="t">VISURA — Centro de mando</title>
+<desc id="d">Emblema en tonos verdes y plata con letra V tridimensional y anillo orbital, adaptado al encabezado de la aplicación.</desc>
+<defs>
+ <linearGradient id="rim" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#4fffa1"/><stop offset=".35" stop-color="#046d3c"/><stop offset=".8" stop-color="#06452c"/><stop offset="1" stop-color="#00291b"/></linearGradient>
+ <linearGradient id="body" x1="0" y1="0" x2=".9" y2="1"><stop stop-color="#e5fff1"/><stop offset=".27" stop-color="#118c53"/><stop offset=".6" stop-color="#043721"/><stop offset="1" stop-color="#001b13"/></linearGradient>
+ <linearGradient id="silver" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#fff"/><stop offset=".3" stop-color="#e8f4f0"/><stop offset=".55" stop-color="#aabfb8"/><stop offset=".83" stop-color="#fff"/><stop offset="1" stop-color="#6f9987"/></linearGradient>
+ <linearGradient id="orbit" x1="0" y1="0" x2="1" y2=".6"><stop stop-color="#08bc69"/><stop offset=".55" stop-color="#e7fff0"/><stop offset="1" stop-color="#21df7d"/></linearGradient>
+ <filter id="shadow" x="-30%" y="-30%" width="160%" height="160%"><feDropShadow dx="0" dy="4" stdDeviation="3" flood-color="#001b10" flood-opacity=".72"/></filter>
+</defs>
+<rect x="3" y="3" width="154" height="154" rx="36" fill="#fff" stroke="url(#rim)" stroke-width="5"/>
+<rect x="10" y="10" width="140" height="140" rx="29" fill="url(#body)" stroke="#b7f5d3" stroke-width="1.8"/>
+<circle cx="80" cy="75" r="58" fill="#013a25" stroke="#15bb6b" stroke-width="2.8"/>
+<circle cx="80" cy="75" r="45" fill="none" stroke="#1f9860" stroke-opacity=".65" stroke-width="1.5"/>
+<path d="M28 30 L55 30 L80 98 L105 30 L132 30 L95 132 L65 132 Z" fill="#045e3a" stroke="#03d275" stroke-width="5" stroke-linejoin="round" filter="url(#shadow)"/>
+<path d="M31 29 L54 29 L80 100 L106 29 L130 29 L93 127 L67 127 Z" fill="url(#silver)" stroke="#9ef3c1" stroke-width="1.2" stroke-linejoin="round"/>
+<ellipse cx="80" cy="80" rx="69" ry="23" transform="rotate(-21 80 80)" fill="none" stroke="#044e36" stroke-width="12"/>
+<ellipse cx="80" cy="79" rx="69" ry="23" transform="rotate(-21 80 79)" fill="none" stroke="url(#orbit)" stroke-width="7" stroke-linecap="round"/>
+<circle cx="139" cy="55" r="8" fill="#dfffee" stroke="#10cb73" stroke-width="3"/>
+<rect x="16" y="120" width="128" height="23" rx="11" fill="#003a29" stroke="#4edd95" stroke-opacity=".75"/>
+<text x="80" y="137" font-size="14" font-weight="850" font-family="Arial,Helvetica,sans-serif" text-anchor="middle" letter-spacing="2" fill="#e9fff0">VISURA</text>
+</svg>
