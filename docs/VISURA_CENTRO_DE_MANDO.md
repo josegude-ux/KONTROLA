@@ -21,6 +21,14 @@ PREPARAR TRASPASO WORK. Antes de cualquier aviso de fin de créditos, verifica y
 ## 3. RECUPERAR VISURA EN NUEVO CHAT
 **Cuándo:** continuar desde otra conversación, especialmente al agotar Work.
 
+**Selector de origen en el panel:** antes de copiar la orden 03, elige exactamente el chat a continuar. Por defecto se selecciona **VISURA WORK (fin de créditos)**. También puedes elegir «PROMPT E IMÁGENES», «VISURA 0.2», «VISURA 0.1», «MOVENTA 0.3» u «Otro chat», en cuyo caso debes introducir el nombre.
+
+**Referencia opcional:** puedes pegar el enlace de la conversación anterior, si está disponible. Un título o enlace **no garantiza acceso** a su contenido: el chat receptor debe comprobar si realmente puede recuperar el historial y contrastar el estado con GitHub.
+
+**Comportamiento del botón:** genera un único prompt con el nombre exacto del chat seleccionado, el enlace opcional y la orden general de recuperación siguiente. No presume que las herramientas del nuevo chat puedan acceder al anterior. Si no pueden, exige continuar únicamente desde ramas, commits, PR y documentos verificables.
+
+**Uso actual:** elegir **VISURA WORK** para el traspaso provocado por el agotamiento de créditos de Work.
+
 ```text
 RECUPERAR VISURA. Debes continuar el desarrollo previo, no reiniciarlo. Localiza y lee en GitHub los documentos actualizados docs/CONTINUIDAD.md, CONTINUIDAD_WORK_A_CHAT_NORMAL.md y PROMPT_CONTINUAR_SIN_WORK.md disponibles, además de ramas, commits, PR y archivos relacionados. Contrasta su contenido con el estado real y prioriza la versión verificada más avanzada, aunque no esté en main. Recupera decisiones, imágenes y tareas pendientes. No inventes información inaccesible. No repitas ni sobrescribas avances. Evita solapamientos con los demás chats. Ejecuta la primera tarea segura y autorizada con las herramientas disponibles en este chat; informa de cualquier herramienta exclusiva de Work que falte. Mantén actualizados los registros de continuidad. No fusiones, publiques ni borres información sin la autorización que corresponda.
 ```
