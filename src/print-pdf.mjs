@@ -101,7 +101,7 @@ export function generarPdfHojas(hojas){
       continue;
     }
     addLine(hoja.titulo||'HOJA DE PREPARACIÓN POR PASILLOS',{size:15,bold:true,space:4});
-    addLine('Exclusivamente mercancía procesada',{size:9,space:8});rule();
+    addLine(hoja.subtitulo||'Exclusivamente mercancía procesada',{size:9,space:8});rule();
     for(const campo of hoja.cabecera||[])addLine(campo,{size:9.5,space:2});
     rule();
     for(const pasillo of hoja.pasillos||[]){
@@ -130,6 +130,7 @@ export function extraerHojasDeInforme(reportPaper){
   }
   for(const article of reportPaper.querySelectorAll('article.preparation-report')){
     hojas.push({tipo:'carga',titulo:article.querySelector('header h1')?.textContent,
+      subtitulo:article.querySelector('header p')?.textContent,
       cabecera:[...article.querySelectorAll('dl div')].map(el=>el.querySelector('dt')?.textContent+': '+(el.querySelector('dd')?.textContent||'')),
       pasillos:[...article.querySelectorAll('.report-aisle')].map(section=>({
         titulo:section.querySelector('h2')?.textContent,
