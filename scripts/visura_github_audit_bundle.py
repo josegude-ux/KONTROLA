@@ -16,6 +16,7 @@ from scripts.visura_github_readonly_snapshot import (
 from scripts.visura_github_policy_probe import (
     _validate_branch, inspect_branch_policy,
 )
+from scripts.visura_github_reviewer_permissions import observe_snapshot_reviewer_permissions
 from scripts.visura_github_action_summary import render_readonly_audit_summary
 from scripts.visura_github_commit_checks import (
     observe_commit_checks, compare_required_check_observations,
@@ -65,7 +66,11 @@ def inspect_readonly_audit_bundle(
         target_policy, legacy_statuses
     )
 
-    # Check the PR again after both policy calls, which are not atomic.
+    reviewer_permissions = observe_snapshot_reviewer_permissions(
+        repository, pr, token, opener=opener
+    )
+
+    # Check the PR again after all observations, which are not atomic.
     # Even a consistent report can become stale immediately after return.
     endpoint = "/repos/" + repository + "/pulls/" + str(pr_number)
     latest = _get_json(endpoint, token, opener)
@@ -93,6 +98,7 @@ def inspect_readonly_audit_bundle(
         "repository": repository,
         "pr_number": pr_number,
         "review_snapshot": pr,
+        "reviewer_repository_permissions": reviewer_permissions,
         "head_check_runs": head_checks,
         "required_check_observations": candidate_requirements,
         "legacy_commit_statuses": legacy_statuses,
