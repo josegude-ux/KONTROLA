@@ -30,6 +30,19 @@ jobs:
           python3 -m py_compile scripts/integrar_menu_oficial.py
           python3 -m unittest discover -s tests -p 'test_integrar_menu_oficial.py' -v
           npm run check
+      - name: Prueba visual Chromium en escritorio y móvil
+        run: |
+          npm install --no-save @playwright/test
+          npx playwright install --with-deps chromium
+          mkdir -p artifacts
+          npx playwright test tests/visual-menu.spec.mjs --reporter=line
+      - name: Guardar capturas de comprobación visual
+        if: always()
+        uses: actions/upload-artifact@ea5499005e8fc4a4f1e4e7b6f9c2f6e2c9b9a2a # v4
+        with:
+          name: visura-prepara-menu-visual
+          path: artifacts/*.png
+          if-no-files-found: ignore
           node --check tests/visura-menu.test.mjs
 
       - name: Guardar recursos integrados despues de pasar pruebas
