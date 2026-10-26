@@ -78,6 +78,38 @@ No te detengas a solicitar preferencias adicionales si la finalidad ya está ind
 - Tipo: `Icono`.
 - Para qué sirve: `Acceso directo al Centro de mando VISURA en la pantalla de inicio del iPhone. Permite abrir el panel de órdenes para reactivar, recuperar y controlar el desarrollo de VISURA. Debe ser un símbolo corporativo tridimensional, reconocible a tamaño pequeño y coherente con la estética VISURA.`
 
+## 7. INTEGRAR IMAGEN APROBADA EN VISURA
+
+**Cuándo:** después de elegir una de las propuestas A/B/C o una imagen definitiva, para incorporarla al destino concreto del desarrollo.
+
+**Cómo usar:** en el Centro de mando, selecciona la aplicación o panel de destino, dónde se utilizará y qué propuesta aprobaste. Puedes añadir enlace/ruta del archivo y notas. Pulsa **Copiar orden de integración** y pégala en un chat con acceso a GitHub. **Adjunta allí el archivo original de la imagen seleccionada**, salvo que el chat ya tenga acceso verificado al archivo. El panel solo prepara una orden: no sube imágenes ni altera repositorios por sí mismo.
+
+**Caso de prueba recomendado:** VISURA CENTRO DE MANDO → «Icono de acceso iPhone / favicon» → imagen final elegida. El destino de referencia actual es `josegude-ux/KONTROLA` en rama `visura-panel`, con `docs/index.html`. No usar ni sustituir automáticamente el icono de VISURA INVENTA o VISURA PREPARA.
+
+**Prompt parametrizado:** `{{DESTINO}}`, `{{UBICACION}}`, `{{SELECCION}}`, `{{RECURSO}}` y `{{OBSERVACIONES}}` se rellenan desde el panel.
+
+```text
+INTEGRAR IMAGEN APROBADA EN VISURA.
+
+DESTINO ELEGIDO: {{DESTINO}}
+UBICACIÓN O USO EN LA APLICACIÓN: {{UBICACION}}
+IDENTIFICADOR DE LA IMAGEN ELEGIDA: {{SELECCION}}
+FUENTE DEL ARCHIVO APROBADO (si existe): {{RECURSO}}
+INDICACIONES ADICIONALES: {{OBSERVACIONES}}
+
+ORDEN: integra la imagen definitiva que ya he elegido, no generes nuevas propuestas ni rediseñes el recurso. Considera la selección aprobada para el destino indicado, pero NO autoriza fusionar ramas, publicar/desplegar a producción ni borrar datos.
+
+1. Antes de tocar el código, comprueba que dispones del ARCHIVO ORIGINAL de la imagen elegida, preferentemente adjunto a este chat, o de un enlace directo verificable al archivo. La letra A, B o C, el título del chat o una captura por sí solos NO garantizan acceso a la imagen original. Si no tienes el archivo o no puedes obtenerlo, solicita exclusivamente ese recurso; no inventes una imagen alternativa ni afirmes que la has integrado.
+2. Identifica y verifica la aplicación/repositorio correspondiente, la rama de desarrollo realmente vigente, los commits, PR, archivos actuales y docs/CONTINUIDAD.md. Para «VISURA CENTRO DE MANDO» usa de partida el repositorio josegude-ux/KONTROLA y la rama visura-panel, donde está docs/index.html; comprueba antes que siga siendo la ubicación válida. Para otros destinos identifica el repositorio y no confundas main con la rama de desarrollo más avanzada. Evita solapamientos con otros chats.
+3. Localiza la pantalla, componente, icono, manifest o entrada HTML donde debe aparecer. Inspecciona cómo están gestionados los recursos existentes y determina formatos/tamaños adecuados al destino: conserva el diseño elegido, crea derivados técnicos si son necesarios y optimiza peso y nitidez sin alterar la estética aprobada.
+4. Implementa mediante cambios mínimos y reversibles en una rama de trabajo segura, conservando la versión anterior y sin modificar funciones de negocio. Si el destino es el icono del Centro de mando web en iPhone, verifica la compatibilidad de favicon y apple-touch-icon y la representación cuadrada, además del uso de manifest solo si corresponde a la arquitectura real del panel. Nunca presupongas que el archivo está disponible o que una URL del chat es descargable.
+5. Comprueba que los archivos se han incluido realmente en el repositorio, que las rutas y referencias son correctas, que el HTML/app compila o carga según corresponda y que la imagen aparece visualmente en su ubicación. En móviles revisa también escala, legibilidad y ausencia de cortes. Diferencia verificaciones realizadas de pruebas pendientes.
+6. Guarda los cambios comprobados con commit, identifica rama y archivos modificados y actualiza los documentos de continuidad y el inventario de imágenes aprobadas/asignadas/integradas/verificadas. Proporciona una vista previa o instrucciones de validación si aún falta comprobar el resultado en un dispositivo real.
+7. No declares «imagen integrada» hasta verificar los archivos y referencias. No fusiones, despliegues ni sustituyas activos compartidos irreversiblemente sin autorización explícita para esas operaciones. No te detengas entre tareas no destructivas autorizadas; si una herramienta no permite subir el archivo binario, explica el bloqueo concreto y utiliza una alternativa segura disponible.
+
+RESULTADO ESPERADO: la imagen seleccionada está incorporada en el destino correcto, sin perder funciones existentes, con registro de integración, evidencias de comprobación y estado listo para aprobación de publicación.
+```
+
 ## Reglas comunes
 1. Consultar primero el estado verificado en GitHub, **sin tratar la documentación antigua de main como último estado**.
 2. Evitar repetir tareas y sobrescribir trabajo paralelo.
