@@ -39,6 +39,27 @@ def fixture_pr(branch="chore/visura-auto-dev-guardrails", head=HEAD, base=BASE):
 
 class AuditBundleTests(unittest.TestCase):
     def setUp(self):
+        self.preflight_mock_patch = patch(
+            "scripts.visura_github_audit_bundle.inspect_readonly_auth_preflight",
+            return_value={
+                "repository": REPO,
+                "pr_number": 37,
+                "repository_lookup": "retrieved",
+                "pull_request_lookup": "retrieved",
+                "observed_base_branch": "chore/visura-auto-dev-guardrails",
+                "observed_head_sha": HEAD,
+                "get_only_transport": True,
+                "token_scopes_verified": False,
+                "authenticated_caller_identity_verified": False,
+                "effective_branch_policy_verified": False,
+                "reviewer_eligibility_verified": False,
+                "execution_authorized": False,
+                "merge_authorized": False,
+                "deployment_authorized": False,
+            },
+        )
+        self.preflight_mock = self.preflight_mock_patch.start()
+        self.addCleanup(self.preflight_mock_patch.stop)
         self.codeowners_mock_patch = patch(
             "scripts.visura_github_audit_bundle.observe_codeowners",
             return_value={
@@ -177,6 +198,92 @@ class AuditBundleTests(unittest.TestCase):
             REPO, "chore/visura-auto-dev-guardrails", "secret",
         ))
         self.assertFalse(result["target_branch_codeowners"]["file_absence_verified"])
+        self.assertFalse(result["execution_authorized"])
+
+    def test_preflight_scopes_repo_and_pr_with_single_supplied_token(self):
+        with patch(
+            "scripts.visura_github_audit_bundle.fetch_readonly_review_snapshot",
+            return_value=fixture_snapshot(),
+        ), patch(
+            "scripts.visura_github_audit_bundle.inspect_branch_policy",
+            return_value={"branch": "any"},
+        ), patch(
+            "scripts.visura_github_audit_bundle._get_json",
+            return_value=fixture_pr(),
+        ):
+            result = inspect_readonly_audit_bundle(
+                REPO, 37, "main", "secret", opener=lambda *args: None
+            )
+        self.preflight_mock.assert_called_once()
+        self.assertEqual(
+            self.preflight_mock.call_args.args[:3], (REPO, 37, "secret")
+        )
+        self.assertIs(
+            result["github_transport_preflight"]["execution_authorized"], False
+        )
+
+    def test_changed_sha_between_preflight_and_snapshot_fails_closed(self):
+        self.preflight_mock.return_value = dict(
+            self.preflight_mock.return_value,
+            observed_head_sha="b" * 40,
+        )
+        with patch(
+            "scripts.visura_github_audit_bundle.fetch_readonly_review_snapshot",
+            return_value=fixture_snapshot(),
+        ), patch(
+            "scripts.visura_github_audit_bundle.inspect_branch_policy",
+        ) as policy:
+            with self.assertRaisesRegex(
+                ValueError, "changed between transport preflight"
+            ):
+                inspect_readonly_audit_bundle(
+                    REPO, 37, "main", "secret", opener=lambda *args: None
+                )
+            policy.assert_not_called()
+
+    def test_changed_base_between_preflight_and_snapshot_fails_closed(self):
+        self.preflight_mock.return_value = dict(
+            self.preflight_mock.return_value, observed_base_branch="main"
+        )
+        with patch(
+            "scripts.visura_github_audit_bundle.fetch_readonly_review_snapshot",
+            return_value=fixture_snapshot(),
+        ), patch(
+            "scripts.visura_github_audit_bundle.inspect_branch_policy",
+        ) as policy:
+            with self.assertRaisesRegex(
+                ValueError, "changed between transport preflight"
+            ):
+                inspect_readonly_audit_bundle(
+                    REPO, 37, "main", "secret", opener=lambda *args: None
+                )
+            policy.assert_not_called()
+
+    def test_inaccessible_preflight_cannot_authorize_and_audit_continues(self):
+        self.preflight_mock.return_value = dict(
+            self.preflight_mock.return_value,
+            repository_lookup="inaccessible",
+            pull_request_lookup="not_queried",
+            observed_head_sha=None,
+            observed_base_branch=None,
+        )
+        with patch(
+            "scripts.visura_github_audit_bundle.fetch_readonly_review_snapshot",
+            return_value=fixture_snapshot(),
+        ), patch(
+            "scripts.visura_github_audit_bundle.inspect_branch_policy",
+            return_value={"branch": "any"},
+        ), patch(
+            "scripts.visura_github_audit_bundle._get_json",
+            return_value=fixture_pr(),
+        ):
+            result = inspect_readonly_audit_bundle(
+                REPO, 37, "main", "secret", opener=lambda *args: None
+            )
+        self.assertEqual(
+            result["github_transport_preflight"]["repository_lookup"],
+            "inaccessible",
+        )
         self.assertFalse(result["execution_authorized"])
 
     def test_ci_evidence_uses_exact_pr_head_not_base_sha(self):
