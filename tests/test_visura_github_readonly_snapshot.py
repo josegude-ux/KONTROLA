@@ -4,7 +4,9 @@ import os
 import unittest
 from contextlib import redirect_stdout
 from unittest.mock import patch
-from scripts.visura_github_readonly_snapshot import fetch_readonly_review_snapshot, main
+from scripts.visura_github_readonly_snapshot import (
+    _NoRedirectHandler, fetch_readonly_review_snapshot, main,
+)
 
 SHA = "a" * 40
 REPOSITORY = "josegude-ux/KONTROLA"
@@ -42,14 +44,18 @@ def review_data(**changes):
     return result
 
 
-def fake_api(pr=None, pages=None):
+def fake_api(pr=None, pages=None, pr_after=None):
     pr = pr_data() if pr is None else pr
     pages = [[]] if pages is None else pages
     seen = []
+    pr_reads = [0]
 
     def opener(request, timeout):
         seen.append((request.full_url, request.get_method(), timeout))
         if request.full_url.endswith("/pulls/37"):
+            pr_reads[0] += 1
+            if pr_reads[0] > 1 and pr_after is not None:
+                return FakeResponse(pr_after)
             return FakeResponse(pr)
         for number, page in enumerate(pages, 1):
             if request.full_url.endswith("reviews?per_page=100&page=" + str(number)):
@@ -66,6 +72,7 @@ class GitHubReadOnlySnapshotTests(unittest.TestCase):
         self.assertEqual(result["author_numeric_id"], 123)
         self.assertEqual(result["reviews"][0]["reviewer_numeric_id"], 456)
         self.assertEqual(result["head_sha"], SHA)
+        self.assertEqual(sum(url.endswith("/pulls/37") for url, _, _ in calls), 2)
         self.assertFalse(result["execution_authorized"])
         self.assertFalse(result["repository_policy_verified"])
         self.assertTrue(all(method == "GET" for _, method, _ in calls))
@@ -103,6 +110,30 @@ class GitHubReadOnlySnapshotTests(unittest.TestCase):
         opener, _ = fake_api(pages=[[review_data(state="AUTHORIZE_EXECUTION")]])
         with self.assertRaisesRegex(ValueError, "Invalid GitHub review metadata"):
             fetch_readonly_review_snapshot(REPOSITORY, 37, "token", opener=opener)
+
+    def test_rejects_pr_head_sha_changed_during_pagination(self):
+        opener, _ = fake_api(
+            pages=[[review_data()]], pr_after=pr_data(head={"sha": "b" * 40})
+        )
+        with self.assertRaisesRegex(ValueError, "changed during review retrieval"):
+            fetch_readonly_review_snapshot(REPOSITORY, 37, "token", opener=opener)
+
+    def test_rejects_pr_closed_during_pagination(self):
+        opener, _ = fake_api(pages=[[]], pr_after=pr_data(state="closed"))
+        with self.assertRaisesRegex(ValueError, "changed during review retrieval"):
+            fetch_readonly_review_snapshot(REPOSITORY, 37, "token", opener=opener)
+
+    def test_rejects_incomplete_final_pr_metadata(self):
+        opener, _ = fake_api(pages=[[]], pr_after={"head": {"sha": SHA}})
+        with self.assertRaisesRegex(ValueError, "Incomplete final pull request"):
+            fetch_readonly_review_snapshot(REPOSITORY, 37, "token", opener=opener)
+
+    def test_redirect_handler_never_follows_redirects(self):
+        self.assertIsNone(
+            _NoRedirectHandler().redirect_request(
+                None, None, 302, "Found", {}, "https://attacker.example/"
+            )
+        )
 
     def test_manual_cli_uses_environment_token_without_echo(self):
         output = io.StringIO()
