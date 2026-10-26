@@ -408,5 +408,91 @@ class ReviewerPermissionSummaryTests(unittest.TestCase):
             self.render(data)
 
 
+class ReviewControlSummaryTests(unittest.TestCase):
+    def test_reports_known_false_true_and_unknown_without_granting_authority(self):
+        data = bundle()
+        data["target_branch_policy"]["effective_ruleset_rules"].update({
+            "review_requirements_available": True,
+            "pull_request_approval_requirements": [{
+                "ruleset_id": 123,
+                "required_approving_review_count": 0,
+                "require_code_owner_review": False,
+                "dismiss_stale_reviews_on_push": True,
+                "required_review_thread_resolution": None,
+            }],
+        })
+        text = render_readonly_audit_summary(data)
+        self.assertIn("Controles de revisión observados", text)
+        self.assertIn("Revisión de CODEOWNERS", text)
+        self.assertIn("| Destino | 123 | 0 | sí | no | desconocido | desconocido | desconocido |", text)
+        self.assertIn("NO acreditan elegibilidad ni autorizan acciones", text)
+
+    def test_unavailable_rules_show_unknown_not_zero(self):
+        data = bundle()
+        data["target_branch_policy"]["effective_ruleset_rules"] = {
+            "lookup": "inaccessible",
+            "observed_rule_count": None,
+            "pull_request_approval_requirements": None,
+            "review_requirements_available": False,
+        }
+        text = render_readonly_audit_summary(data)
+        self.assertIn("| Destino | desconocido | desconocido |", text)
+        self.assertNotIn("| Destino | 0 |", text)
+
+    def test_no_observed_pr_rules_does_not_imply_no_review_policy(self):
+        data = bundle()
+        data["target_branch_policy"]["effective_ruleset_rules"].update({
+            "review_requirements_available": True,
+            "pull_request_approval_requirements": [],
+        })
+        text = render_readonly_audit_summary(data)
+        self.assertIn("sin regla PR observada", text)
+        self.assertIn("NO acreditan elegibilidad", text)
+
+    def test_rejects_inconsistent_known_rule_for_inaccessible_endpoint(self):
+        data = bundle()
+        data["target_branch_policy"]["effective_ruleset_rules"].update({
+            "lookup": "inaccessible",
+            "observed_rule_count": None,
+            "review_requirements_available": True,
+            "pull_request_approval_requirements": [{
+                "ruleset_id": 123, "required_approving_review_count": 2,
+            }],
+        })
+        with self.assertRaisesRegex(ValueError, "Inaccessible review controls"):
+            render_readonly_audit_summary(data)
+
+    def test_invalid_control_value_or_count_fails_closed(self):
+        for key, invalid in (
+            ("require_code_owner_review", "yes"),
+            ("required_review_thread_resolution", 0),
+            ("required_approving_review_count", True),
+            ("ruleset_id", "<table>"),
+        ):
+            with self.subTest(key=key):
+                data = bundle()
+                row = {"ruleset_id": 12, "required_approving_review_count": 1,
+                       key: invalid}
+                data["target_branch_policy"]["effective_ruleset_rules"].update({
+                    "review_requirements_available": True,
+                    "pull_request_approval_requirements": [row],
+                })
+                with self.assertRaises(ValueError):
+                    render_readonly_audit_summary(data)
+
+    def test_untrusted_rule_extra_fields_are_not_rendered(self):
+        data = bundle()
+        data["target_branch_policy"]["effective_ruleset_rules"].update({
+            "review_requirements_available": True,
+            "pull_request_approval_requirements": [{
+                "ruleset_id": 15, "required_approving_review_count": 2,
+                "source_name": "<script>SECRET_MARKER</script>",
+            }],
+        })
+        text = render_readonly_audit_summary(data)
+        self.assertNotIn("SECRET_MARKER", text)
+        self.assertNotIn("<script>", text)
+
+
 if __name__ == "__main__":
     unittest.main()
