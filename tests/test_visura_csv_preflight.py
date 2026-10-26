@@ -38,6 +38,20 @@ class CsvPreflightTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "Empty CSV"):
             inspect_csv(self.path, ["Pedido"])
 
+    def test_quoted_delimiter_in_header(self):
+        self.write('"Pedido, interno";Cantidad\nA01;2\n')
+        result = inspect_csv(self.path, ["Pedido, interno", "Cantidad"])
+        self.assertEqual(result["delimiter"], ";")
+        self.assertEqual(result["rows"], 1)
+
+    def test_tab_separated(self):
+        self.write("Pedido\tCantidad\nA01\t2\n")
+        self.assertEqual(inspect_csv(self.path, ["Pedido", "Cantidad"])["delimiter"], "\t")
+
+    def test_quoted_data_with_separator(self):
+        self.write('Pedido;Nota\nA01;"Frágil; urgente"\n')
+        self.assertEqual(inspect_csv(self.path, ["Pedido", "Nota"])["rows"], 1)
+
     def test_size_limit(self):
         self.write("Pedido;Cantidad\nA01;2\n")
         with self.assertRaisesRegex(ValueError, "safety limit"):
