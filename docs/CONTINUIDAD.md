@@ -1,3 +1,32 @@
+## Punto actual — auditor local de cambios (2026-10-26)
+
+PR #43, rama feat/visura-work-reviewer-evidence-20261026, base #37.
+Código verificado: 4e0d2a5fdca6b216a4411915a9df459c0da560bd.
+306 pruebas locales correctas; compilación, bloqueo de IA de pago y diff check correctos.
+CI verde: Code Review Gate #174, CSV Pilot Tests #181, Queue Audit #209.
+https://github.com/josegude-ux/KONTROLA/actions/runs/40294529499
+
+Nueva función: scripts/visura_local_diff_audit.py inspecciona metadatos de dos
+commits completos con Git local. No hace checkout ni ejecuta código del PR,
+textconv o diff externo. Solo admite archivos normales no ejecutables del piloto
+(scripts/visura_*.py, tests/test_visura_*.py, docs/*.md). Bloquea borrados, enlaces,
+submódulos, rutas fuera de alcance, diff vacío y más de 50 archivos.
+No revisa contenido, secretos, pruebas ni cambios sin commit; no es un sandbox.
+Sus indicadores de autorización permanecen falsos incluso si el alcance es válido.
+
+Prueba real ejecutada: comparación 0756bad9e17652dc3b77c626700df05ec09bf9ea ->
+4e0d2a5fdca6b216a4411915a9df459c0da560bd: 12 archivos, sin bloqueos de alcance.
+Uso desde la raíz: python -m scripts.visura_local_diff_audit . BASE_SHA HEAD_SHA
+Salida JSON y código 0 si el alcance encaja, 2 si hay bloqueos; nunca permiso de ejecución.
+
+Pendientes: transporte autenticado real para el auditor GitHub, políticas efectivas,
+CODEOWNERS y autorización externa; después ejecutar tareas únicamente en aislamiento
+real. No habilitar ejecución basándose en este auditor ni introducir tokens en archivos.
+La siguiente sesión debe verificar SHAs y evaluar ese transporte antes de activar nada.
+PREPARA, INVENTA, Supabase, Business Central y workflows no modificados.
+
+---
+
 # KONTROLA — Ficha maestra de continuidad
 
 **Actualizada:** 2026-10-25
