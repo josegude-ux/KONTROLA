@@ -1,4 +1,4 @@
 {
-  "version": "0.3.41",
-  "notes": "Hotfix de importación: PDF F/C por almacén, accesos administrativos y revisión de lotes sin borrar pendientes"
+  "version": "0.3.42",
+  "notes": "Corrección de PDFs mixtos: revisión e impresión de mercancía separada por almacén sin mezclar COR1/COR2"
 }
