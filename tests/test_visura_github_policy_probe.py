@@ -225,6 +225,84 @@ class GitHubPolicyProbeTests(unittest.TestCase):
             "/rules/branches/release%2Ftest?" in u for u, _ in calls
         ))
 
+    def test_classic_required_check_contexts_and_app_id_are_extracted(self):
+        opener, _ = fake_api(classic={"required_status_checks": {
+            "checks": [
+                {"context": "test / build", "app_id": 123},
+                {"context": "lint", "app_id": -1},
+            ],
+            "contexts": ["legacy-name"],
+        }})
+        result = inspect_branch_policy(REPO, "main", "secret", opener=opener)
+        self.assertEqual(result["classic_protection"]["required_check_contexts"], [
+            {"context": "test / build", "app_id": 123},
+            {"context": "lint", "app_id": -1},
+        ])
+        self.assertFalse(result["repository_policy_verified"])
+
+    def test_classic_contexts_fallback_does_not_claim_app_identity(self):
+        opener, _ = fake_api(classic={"required_status_checks": {
+            "contexts": ["build", "tests"],
+        }})
+        result = inspect_branch_policy(REPO, "main", "secret", opener=opener)
+        self.assertEqual(result["classic_protection"]["required_check_contexts"], [
+            {"context": "build", "app_id": None},
+            {"context": "tests", "app_id": None},
+        ])
+
+    def test_no_classic_status_checks_means_empty_classic_only(self):
+        opener, _ = fake_api()
+        result = inspect_branch_policy(REPO, "main", "secret", opener=opener)
+        self.assertEqual(result["classic_protection"]["required_check_contexts"], [])
+        self.assertEqual(result["effective_ruleset_rules"]["required_check_contexts"], [])
+        self.assertFalse(result["repository_policy_verified"])
+
+    def test_inaccessible_classic_requirements_are_unknown(self):
+        opener, _ = fake_api(classic_error=403)
+        result = inspect_branch_policy(REPO, "main", "secret", opener=opener)
+        self.assertIsNone(result["classic_protection"]["required_check_contexts"])
+
+    def test_active_ruleset_required_check_contexts_are_extracted(self):
+        opener, _ = fake_api(effective=[[{
+            "type": "required_status_checks", "ruleset_id": 1,
+            "parameters": {"required_status_checks": [
+                {"context": "CI / test", "integration_id": 321}
+            ]},
+        }]])
+        result = inspect_branch_policy(REPO, "main", "secret", opener=opener)
+        applied = result["effective_ruleset_rules"]
+        self.assertTrue(applied["required_contexts_available"])
+        self.assertEqual(applied["required_check_contexts"], [
+            {"context": "CI / test", "app_id": 321},
+        ])
+        self.assertFalse(result["merge_authorized"])
+
+    def test_missing_ruleset_parameters_never_looks_like_no_requirements(self):
+        opener, _ = fake_api(effective=[[{
+            "type": "required_status_checks", "ruleset_id": 2,
+        }]])
+        result = inspect_branch_policy(REPO, "main", "secret", opener=opener)
+        applied = result["effective_ruleset_rules"]
+        self.assertIsNone(applied["required_check_contexts"])
+        self.assertFalse(applied["required_contexts_available"])
+
+    def test_bad_required_app_id_rejected(self):
+        opener, _ = fake_api(classic={"required_status_checks": {
+            "checks": [{"context": "CI", "app_id": True}],
+        }})
+        with self.assertRaisesRegex(ValueError, "Invalid required check"):
+            inspect_branch_policy(REPO, "main", "secret", opener=opener)
+
+    def test_duplicate_required_checks_rejected(self):
+        opener, _ = fake_api(effective=[[{
+            "type": "required_status_checks", "ruleset_id": 3,
+            "parameters": {"required_status_checks": [
+                {"context": "tests"}, {"context": "tests"},
+            ]},
+        }]])
+        with self.assertRaisesRegex(ValueError, "Duplicate required check"):
+            inspect_branch_policy(REPO, "main", "secret", opener=opener)
+
     def test_cli_prints_no_token_or_execution_authorization(self):
         output = io.StringIO()
         with patch.dict(os.environ, {"GITHUB_TOKEN": "hidden-token"}):
