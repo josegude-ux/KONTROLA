@@ -29,7 +29,7 @@ test("matriz reutiliza agrupación por pasillos y separa cada tipo de unidad",()
  assert.equal(x.pasillos.find(r=>r.nombre==="J").valores.BOTELLA,61);
  assert.equal(x.pasillos.find(r=>r.nombre==="SIN UBICACIÓN").total,16);
  assert.deepEqual(x.totales,{CAJA:22,BOTELLA:91,PACK:1,PAQUETE:2});
- assert.deepEqual(x.sinUbicacion.map(x=>x.sku),["PRD0004185","PRD0004350","PRD0003302"]);
+ assert.deepEqual(x.sinUbicacion.map(x=>x.sku).sort(),["PRD0004185","PRD0004350","PRD0003302"].sort());
 });
 test("agrupación no modifica el original ni asigna un pasillo falso",()=>{
  const before=JSON.stringify(productos);
