@@ -11,6 +11,8 @@ def snapshot(reviews=None, **changes):
         "pr_number": 37,
         "head_sha": SHA,
         "author_numeric_id": 123,
+        "base_branch": "chore/guardrails",
+        "base_sha": "c" * 40,
         "pr_state": "open",
         "reviews": [] if reviews is None else reviews,
         "retrieval_method": "github_rest_https_token",
@@ -40,6 +42,10 @@ class GitHubReviewAuditTests(unittest.TestCase):
         self.assertEqual(result["observed_current_commit_approvals"], [])
         self.assertFalse(result["execution_authorized"])
         self.assertFalse(result["merge_authorized"])
+
+    def test_rejects_invalid_base_branch(self):
+        with self.assertRaisesRegex(ValueError, "Invalid GitHub review snapshot"):
+            summarize_readonly_review_snapshot(snapshot(base_branch="../escape"))
 
     def test_matching_approval_is_observation_only(self):
         result = summarize_readonly_review_snapshot(snapshot([review()]))
