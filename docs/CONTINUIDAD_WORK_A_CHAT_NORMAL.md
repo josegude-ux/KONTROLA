@@ -22,3 +22,17 @@ Si faltan herramientas en chat normal, entregar cambios revisables sin inventar
 commits ni verificaciones. No depender de Work, Cursor o memoria del chat.
 
 PR de referencia: https://github.com/josegude-ux/KONTROLA/pull/43 (borrador, destino #37).
+
+
+## Verificación adicional — resumen de permisos
+
+Código remoto 15f416576371256395705974bb97bd7a1a3e263b, mismo PR #43.
+293 pruebas locales correctas (8 nuevas), compilación, safety smoke y diff check
+correctos. El resumen Actions muestra recuentos de permisos, desconocidos y
+mismatches, sin nombres ni tokens; rechaza indicadores de autorización y datos
+incoherentes. Prueba integrada del transporte GET hasta el informe unificado y
+la reconsulta final del PR. CI del nuevo commit pendiente de consulta.
+La autenticación real del módulo sigue pendiente: este avance usa pruebas
+simuladas y no resuelve elegibilidad, CODEOWNERS ni políticas efectivas.
+Primera tarea de continuación: verificar CI del último SHA de #43 y realizar
+prueba autenticada de solo lectura cuando exista transporte confiable disponible.
