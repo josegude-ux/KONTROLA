@@ -643,3 +643,9 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 ### 2026-10-26 — Ampliación de regresión en CI de PR #29
 - El workflow aislado ahora ejecuta `node --test tests/*.test.mjs` en lugar de solo el test de menú; conserva `node --check src/app.mjs` y `node --check tests/visura-menu.test.mjs`. No ejecuta tests de integración PostgreSQL/Supabase y no despliega.
 - Commit de ampliación: `0b343ba6476d9ff6986f8c3194a8746d61ebdc58`. La ejecución previa `40254280063` solo cubría el test de menú; **pendiente comprobar el resultado del nuevo workflow ampliado**.
+
+
+### 2026-10-26 — Fallo de suite completa diagnosticado y corregido en CI
+- La ejecución `40254682111` del workflow ampliado **falló**: 192 pruebas, 191 correctas, una fallida por `ERR_MODULE_NOT_FOUND: Cannot find package 'pdf-lib'` en `tests/pdf-real.test.mjs`. Las seis comprobaciones nuevas del menú pasaron.
+- Causa: al ampliar la suite se omitió instalar dependencias; el workflow aislado solo configuraba Node. Se añadió `npm ci` antes de ejecutar pruebas, sin tocar lógica de la aplicación.
+- Commit de corrección `632879bedbcb3c525a445161a2bcc034f61b752e`. **Pendiente comprobar nueva ejecución**; no declarar superada la suite hasta confirmarlo.
