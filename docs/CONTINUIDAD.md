@@ -112,3 +112,6 @@ La idea de un portal común se documentó separadamente en `docs/MOVENTA_CONCEPT
 - Pruebas en `tests/test_visura_task_spec.py`; pendientes de CI y revisión. Sin llamadas de IA, sin shell, sin escritura en aplicaciones, sin despliegue.
 
 - Refuerzo del validador de tareas: se detectó que `NaN` podía superar comparaciones normales de presupuesto. `scripts/visura_task_spec.py` ahora exige coste finito con `math.isfinite` (commit `6cc8ab7`). Añadidas pruebas para `NaN`, infinito y alcance demasiado largo (commit `121a414`). El PR #37 sigue en borrador; CI de estos últimos cambios pendiente de confirmar.
+
+- CI detectó un error de sintaxis en `visura_task_spec.py` (literal `\\n` insertado en una condición). Corregido en commit `31dd33c`; la ejecución posterior aún no está confirmada.
+- Siguiente componente de diseño: `scripts/visura_review_plan.py` genera una lista fija de revisión a partir de una tarea válida, sin ejecutar comandos ni autorizar ejecución/merge. Pruebas en `tests/test_visura_review_plan.py` (commits `12cd4de`, `3560057`); pendiente CI.
