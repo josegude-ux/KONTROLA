@@ -78,36 +78,75 @@ No te detengas a solicitar preferencias adicionales si la finalidad ya está ind
 - Tipo: `Icono`.
 - Para qué sirve: `Acceso directo al Centro de mando VISURA en la pantalla de inicio del iPhone. Permite abrir el panel de órdenes para reactivar, recuperar y controlar el desarrollo de VISURA. Debe ser un símbolo corporativo tridimensional, reconocible a tamaño pequeño y coherente con la estética VISURA.`
 
-## 7. INTEGRAR IMAGEN APROBADA EN VISURA
+## 7. INTEGRAR IMAGEN APROBADA EN VISURA — V2
 
-**Cuándo:** después de elegir una de las propuestas A/B/C o una imagen definitiva, para incorporarla al destino concreto del desarrollo.
+**Cuándo:** una vez aprobada una imagen concreta, para integrarla en el destino correcto; se mantiene separada de la orden 06 que genera tres propuestas.
 
-**Cómo usar:** en el Centro de mando, selecciona la aplicación o panel de destino, dónde se utilizará y qué propuesta aprobaste. Puedes añadir enlace/ruta del archivo y notas. Pulsa **Copiar orden de integración** y pégala en un chat con acceso a GitHub. **Adjunta allí el archivo original de la imagen seleccionada**, salvo que el chat ya tenga acceso verificado al archivo. El panel solo prepara una orden: no sube imágenes ni altera repositorios por sí mismo.
+**Modo de ejecución obligatorio:** «PRUEBA / SIMULACIÓN» (valor por defecto, sin escrituras) o «INTEGRACIÓN EN RAMA» (solo en un chat de desarrollo autorizado, sin publicar, desplegar ni fusionar). El panel solo prepara y copia una orden; no ejecuta por sí mismo sus instrucciones.
 
-**Caso de prueba recomendado:** VISURA CENTRO DE MANDO → «Icono de acceso iPhone / favicon» → imagen final elegida. El destino de referencia actual es `josegude-ux/KONTROLA` en rama `visura-panel`, con `docs/index.html`. No usar ni sustituir automáticamente el icono de VISURA INVENTA o VISURA PREPARA.
+**Cómo usar:** identifica aplicación/panel, ubicación exacta, imagen aprobada y su archivo original o enlace directo verificable. Si procede, adjunta el archivo en el chat de implementación. Pulsa «Copiar orden V2». El prompt exige comprobar recursos ya accesibles y agotar alternativas técnicas, incluida GitHub Git Data API con blobs Base64, antes de declarar un bloqueo.
 
-**Prompt parametrizado:** `{{DESTINO}}`, `{{UBICACION}}`, `{{SELECCION}}`, `{{RECURSO}}` y `{{OBSERVACIONES}}` se rellenan desde el panel.
+**Continuidad del caso Centro de mando:** repositorio `josegude-ux/KONTROLA`, rama de panel `visura-panel`; existe la rama de trabajo `feat/visura-centro-mando-icono-b-20261026` con referencias y documentación preparadas, pero los binarios aún requieren verificación. No crear otra rama por defecto ni dar por terminada la instalación por crear un ZIP.
+
+**Variables generadas por el panel:** `{{MODO}}`, `{{DESTINO}}`, `{{UBICACION}}`, `{{SELECCION}}`, `{{RECURSO}}`, `{{OBSERVACIONES}}`.
 
 ```text
-INTEGRAR IMAGEN APROBADA EN VISURA.
+VISURA — ORDEN 07 V2: INTEGRAR IMAGEN APROBADA SIN INTERRUPCIONES EVITABLES
 
+MODO DE EJECUCIÓN: {{MODO}}
 DESTINO ELEGIDO: {{DESTINO}}
-UBICACIÓN O USO EN LA APLICACIÓN: {{UBICACION}}
-IDENTIFICADOR DE LA IMAGEN ELEGIDA: {{SELECCION}}
-FUENTE DEL ARCHIVO APROBADO (si existe): {{RECURSO}}
+UBICACIÓN O USO: {{UBICACION}}
+IMAGEN APROBADA: {{SELECCION}}
+ARCHIVO ORIGINAL O FUENTE: {{RECURSO}}
 INDICACIONES ADICIONALES: {{OBSERVACIONES}}
 
-ORDEN: integra la imagen definitiva que ya he elegido, no generes nuevas propuestas ni rediseñes el recurso. Considera la selección aprobada para el destino indicado, pero NO autoriza fusionar ramas, publicar/desplegar a producción ni borrar datos.
+MISIÓN
+Incorpora la imagen ya aprobada en el destino seleccionado, conservando su diseño original y todas las funciones existentes. NO generes propuestas nuevas ni rediseñes la imagen. Continúa de forma autónoma, con herramientas realmente disponibles y dentro de esta sesión, hasta completar todas las tareas técnicas seguras permitidas o hasta demostrar un bloqueo real. No prometas trabajo en segundo plano.
 
-1. Antes de tocar el código, comprueba que dispones del ARCHIVO ORIGINAL de la imagen elegida, preferentemente adjunto a este chat, o de un enlace directo verificable al archivo. La letra A, B o C, el título del chat o una captura por sí solos NO garantizan acceso a la imagen original. Si no tienes el archivo o no puedes obtenerlo, solicita exclusivamente ese recurso; no inventes una imagen alternativa ni afirmes que la has integrado.
-2. Identifica y verifica la aplicación/repositorio correspondiente, la rama de desarrollo realmente vigente, los commits, PR, archivos actuales y docs/CONTINUIDAD.md. Para «VISURA CENTRO DE MANDO» usa de partida el repositorio josegude-ux/KONTROLA y la rama visura-panel, donde está docs/index.html; comprueba antes que siga siendo la ubicación válida. Para otros destinos identifica el repositorio y no confundas main con la rama de desarrollo más avanzada. Evita solapamientos con otros chats.
-3. Localiza la pantalla, componente, icono, manifest o entrada HTML donde debe aparecer. Inspecciona cómo están gestionados los recursos existentes y determina formatos/tamaños adecuados al destino: conserva el diseño elegido, crea derivados técnicos si son necesarios y optimiza peso y nitidez sin alterar la estética aprobada.
-4. Implementa mediante cambios mínimos y reversibles en una rama de trabajo segura, conservando la versión anterior y sin modificar funciones de negocio. Si el destino es el icono del Centro de mando web en iPhone, verifica la compatibilidad de favicon y apple-touch-icon y la representación cuadrada, además del uso de manifest solo si corresponde a la arquitectura real del panel. Nunca presupongas que el archivo está disponible o que una URL del chat es descargable.
-5. Comprueba que los archivos se han incluido realmente en el repositorio, que las rutas y referencias son correctas, que el HTML/app compila o carga según corresponda y que la imagen aparece visualmente en su ubicación. En móviles revisa también escala, legibilidad y ausencia de cortes. Diferencia verificaciones realizadas de pruebas pendientes.
-6. Guarda los cambios comprobados con commit, identifica rama y archivos modificados y actualiza los documentos de continuidad y el inventario de imágenes aprobadas/asignadas/integradas/verificadas. Proporciona una vista previa o instrucciones de validación si aún falta comprobar el resultado en un dispositivo real.
-7. No declares «imagen integrada» hasta verificar los archivos y referencias. No fusiones, despliegues ni sustituyas activos compartidos irreversiblemente sin autorización explícita para esas operaciones. No te detengas entre tareas no destructivas autorizadas; si una herramienta no permite subir el archivo binario, explica el bloqueo concreto y utiliza una alternativa segura disponible.
+0. CORTAFUEGOS DE PRUEBAS Y AUTORIZACIONES
+- Si el MODO es «PRUEBA / SIMULACIÓN», o si la conversación receptora está reservada a pruebas, SOLO audita, simula y explica qué se ejecutaría. Prohibido escribir en GitHub, bases de datos, alojamientos o aplicaciones, aunque el resto de la orden pida integrar.
+- Si el MODO es «INTEGRACIÓN EN RAMA» y la conversación receptora permite desarrollos reales, está autorizado preparar, verificar y confirmar cambios reversibles únicamente en una rama de trabajo aislada y en el destino indicado. No se autoriza fusionar ramas, modificar producción, cambiar configuración de despliegue, publicar ni borrar datos o imágenes ajenas.
+- Ante cualquier duda entre prueba y ejecución real, prevalece PRUEBA / SIMULACIÓN. No conviertas una prueba en una intervención real. Una petición explícita e independiente de mantener el propio Centro de mando no significa autorización para ejecutar esta orden sobre una aplicación.
 
-RESULTADO ESPERADO: la imagen seleccionada está incorporada en el destino correcto, sin perder funciones existentes, con registro de integración, evidencias de comprobación y estado listo para aprobación de publicación.
+1. IDENTIFICAR EL ARCHIVO APROBADO
+- Busca el archivo original entre los adjuntos accesibles, los archivos de Biblioteca/Proyecto disponibles, las rutas locales verificadas y los enlaces directos realmente descargables. Valida formato, dimensiones y contenido; conserva la fuente y registra SHA-256 cuando sea posible.
+- No asumas que una letra A/B/C, una captura o un enlace al chat dan acceso al fichero binario. Verifica que la imagen corresponde a la elección aprobada; si no puedes confirmarlo, solicita solo el recurso o la aclaración imprescindible.
+- Si el archivo está disponible, NO te detengas solicitando que el usuario lo adjunte otra vez.
+
+2. RECUPERAR EL DESARROLLO REAL SIN DUPLICAR
+- Confirma repositorio, ramas, commits, PR y documentos de continuidad vigentes. Antes de crear una rama nueva, busca si existe una rama de integración previa y reutilízala si conserva el trabajo correcto. No uses documentación antigua de main como estado actual por defecto.
+- Para VISURA CENTRO DE MANDO, comienza comprobando josegude-ux/KONTROLA, rama visura-panel, docs/index.html y la posible rama feat/visura-centro-mando-icono-b-20261026. Para otros módulos, identifica su repositorio real.
+- Detecta cambios ajenos o trabajo paralelo; no los sobrescribas. Mantén la implementación estrictamente acotada al recurso solicitado.
+
+3. PREPARAR LOS RECURSOS
+- Comprueba cómo se insertan iconos/imágenes en la aplicación: HTML, componentes, favicon, apple-touch-icon, manifest, etc. Conserva el original como fuente y genera únicamente los tamaños, formatos y optimizaciones técnicos necesarios, sin rediseñarla.
+- Revisa tamaños, relación de aspecto, bordes, fondo y legibilidad. Usa rutas nuevas y reversibles para no destruir recursos anteriores.
+
+4. SUBIR LOS ARCHIVOS A GITHUB: ESCALERA OBLIGATORIA
+- Nunca declares que «GitHub no admite archivos binarios» solo porque una función de creación de archivos acepta únicamente UTF-8.
+- Primero comprueba una función nativa de subida binaria, si existe.
+- Si no existe y está disponible la API Git de GitHub, evalúa y prueba la ruta correcta: codificar los bytes reales en Base64, crear el blob con create_blob y encoding=base64, añadirlo al árbol existente con create_tree, crear el commit con create_commit y el padre verificado, y actualizar la rama mediante update_ref con SHA esperado, sin forzar y sin tocar otras ramas. Verifica que los blobs corresponden a los bytes originales o derivados. NO uses una función exclusiva para texto UTF-8 para grabar una cadena Base64 como si fuera un archivo .png.
+- Si esa ruta falla, registra el error exacto y evalúa otra herramienta conectada y autorizada compatible con binarios. Si hay límite de tamaño, prueba optimización técnica razonable sin alterar la estética ni perder la fuente.
+- Si todas las rutas disponibles fallan, prepara un paquete local completo con rutas exactas, instrucciones de carga y cambios preservados. Marca «PENDIENTE DE SUBIDA BINARIA» y especifica UNA acción humana concreta necesaria. Es un bloqueo real, NO una integración terminada. Completa las otras tareas seguras que aún sean posibles.
+
+5. CERRAR EL CIRCUITO DE INTEGRACIÓN
+- En la rama aislada, enlaza la imagen real desde las pantallas o metadatos pertinentes. Verifica que los binarios existen en GitHub, las rutas coinciden, los archivos son legibles y los derivados tienen dimensiones correctas. Comprueba el HTML o aplicación y el manifest cuando corresponda.
+- Verifica visualmente cuando las herramientas lo permitan. Si no puedes probar físicamente en Safari/iPhone, indica esa limitación con precisión y aporta comprobaciones reproducibles. No inventes pruebas en un dispositivo.
+- Confirma que no se han alterado funciones existentes, que el diff es mínimo y que el repositorio base/productivo sigue intacto.
+
+6. AVANZAR SIN DETENCIONES ARTIFICIALES
+- Tras cada hito, continúa automáticamente con el siguiente paso seguro. No finalices la ejecución solo por haber creado un ZIP, manifest, documento o rama, ni por el primer error subsanable.
+- No preguntes por datos ya disponibles. Solo solicita intervención ante falta efectiva del original, ambigüedad material de la selección, permisos negados después de probar alternativas compatibles, conflicto de rama imposible de resolver sin sobrescribir trabajo, o autorización necesaria para fusionar/publicar/operar datos.
+- No repitas intentos idénticos que hayan fallado sin cambiar el método. No declares acciones ejecutadas sin evidencia; no prometas trabajo fuera de la sesión ni que superarás límites de herramientas.
+
+7. EVIDENCIA, CONTINUIDAD Y ENTREGA
+- Documenta en la rama segura rutas, hashes si procede, archivos modificados, commit, pruebas ejecutadas y pendientes. Mantén diferenciados: APROBADA, ORIGINAL RECUPERADO, DERIVADOS CREADOS, BINARIOS EN GITHUB, REFERENCIAS VALIDADAS, INTEGRADA EN RAMA, PUBLICADA, VERIFICADA EN DISPOSITIVO.
+- Al concluir informa brevemente del estado real, rama, commits, evidencias, URL de revisión si existe y siguiente acción concreta. Si falta una etapa, indica cuál y por qué.
+- Espera autorización explícita antes de fusionar, publicar/desplegar, sustituir recursos compartidos irreversiblemente o borrar datos.
+
+CRITERIO DE ÉXITO
+En INTEGRACIÓN EN RAMA: la imagen aprobada y sus derivados necesarios están realmente en la rama correcta, la aplicación los referencia, se han realizado las comprobaciones técnicas disponibles y la continuidad está documentada, sin publicación no autorizada.
+En PRUEBA / SIMULACIÓN: se audita la viabilidad, se identifican rutas y alternativas, se detectan bloqueos y se entrega un plan ejecutable SIN modificar sistemas.
 ```
 
 ## Reglas comunes
