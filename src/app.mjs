@@ -1,7 +1,7 @@
 import {fechaAlmacen} from "./business-date.mjs";
 import {filtrarArchivoLogico} from "./archive-view.mjs";
 import {SUPABASE_URL,SUPABASE_KEY,PDF_BUCKET,APP_VERSION} from "./config.mjs";
-import {agruparPasillos,ordenarCargas,formatearHuecosPalets} from "./logic.mjs";
+import {agruparPasillos,ordenarCargas,formatearHuecosPalets,combinarHuecosConOrigen,textoHuecosConOrigen} from "./logic.mjs";
 import {buildVerificationLines,parseCheckedQuantity,summarizeVerification} from "./verification.mjs";
 import {buildPreparationReport,filterProducts,desglosarBultos,totalBultosDelDesglose} from "./report.mjs";
 import {filtrarHistorial,resumenHistorial,formatoFechaCarga,csvHistorial,htmlResumenHistorial} from "./history.mjs";
@@ -202,7 +202,7 @@ async function refreshLoads(){
   if(!validRequest(warehouse,userId))return;
   if(panel.error||archivo.error){const err=panel.error||archivo.error;$("loadsList").textContent="No se pueden cargar los documentos: "+errorText(err);throw err;}
   const archivados=new Set((archivo.data||[]).map(r=>r.codigo));
-  loads=ordenarCargas(filtrarArchivoLogico((panel.data||[]).map(r=>({...r,archivado:archivados.has(r.codigo)})),{vista:"activas"}));
+  loads=ordenarCargas(filtrarArchivoLogico((panel.data||[]).map(r=>combinarHuecosConOrigen({...r,archivado:archivados.has(r.codigo)})),{vista:"activas"}));
   renderLoadList();
   // El panel actual no devuelve los campos opcionales de la cabecera del PDF.
   // Consultar SOLO la revisión vigente autorizada de cada carga; no descargar PDFs.
@@ -228,11 +228,9 @@ async function refreshLoads(){
   }
   if(!validRequest(warehouse,userId))return;
   if(requestSerial!==loadsRequestSerial)return;
-  loads=loads.map(load=>{
-    const enriched={...load,...(extras.get(load.codigo)||{})};
-    const cached=legacyHeaderCache.get(load.documento_ruta);
-    return cached&&cabeceraSinMetadatos(enriched)?{...enriched,...cached}:enriched;
-  });
+  loads=loads.map(load=>combinarHuecosConOrigen(
+    load,extras.get(load.codigo)||null,legacyHeaderCache.get(load.documento_ruta)||null
+  ));
   renderLoadList();
 }
 // La recuperación es optativa, de solo lectura y limitada a cinco PDF por clic.
@@ -268,7 +266,7 @@ async function leerCabecerasAntiguas(){
         const index=loads.findIndex(item=>item.codigo===load.codigo&&item.documento_ruta===load.documento_ruta);
         if(index<0)continue;
         legacyHeaderCache.set(load.documento_ruta,extras);
-        loads[index]={...loads[index],...extras};
+        loads[index]=combinarHuecosConOrigen(loads[index],null,extras);
         renderLoadList();
         if(cabeceraSinMetadatos(extras))withoutData++;
         else recovered++;
@@ -308,7 +306,10 @@ function renderLoadList(){
     const palletsLabel=document.createElement("span");palletsLabel.className="load-pallets-label";palletsLabel.textContent="HUECOS PALÉS";
     const palletsValue=document.createElement("strong");palletsValue.className="load-pallets-value";
     palletsValue.textContent=formatearHuecosPalets(r.huecos_palets_grandes,r.huecos_palets_pequenos,r.huecos_palets_total);
-    pallets.title="Huecos disponibles del camión: G = grandes, P = pequeños. No son palés ya preparados.";
+    palletsValue.textContent=textoHuecosConOrigen(r);
+    pallets.title=r.huecos_origen==="pdf_leido"?"Lectura local del PDF sin modificar Supabase: confirma el dato al abrir la carga.":
+      r.huecos_origen==="revision"?"Huecos guardados en la revisión vigente del PDF.":
+      "No se conoce la capacidad. Abre la carga para consultar el PDF y poner los huecos del camión.";
     pallets.append(palletsLabel,palletsValue);vehicle.append(plate,pallets);
     const bundles=document.createElement("span");bundles.className="load-bundles";
     // Reutiliza el desglose por unidades de la hoja de preparación.
@@ -616,10 +617,7 @@ async function recoverTruckCapacityFromPdf(load){
     const extras=cabeceraLeida(load,parsed,warehouse);
     if(!extras)throw Error("El PDF no coincide con carga/almacén");
     legacyHeaderCache.set(route,extras);
-    for(const field of ["huecos_palets_grandes","huecos_palets_pequenos","huecos_palets_total"]){
-      if(extras[field]!==null)load[field]=extras[field];
-    }
-    if(!load.observaciones&&extras.observaciones)load.observaciones=extras.observaciones;
+    Object.assign(load,combinarHuecosConOrigen(load,null,extras));
     renderLoadList();
     if(!truckCapacityTouched){
       const supplied=capacidadDeCarga(load);

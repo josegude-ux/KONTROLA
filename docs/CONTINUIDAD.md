@@ -906,3 +906,10 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 - Primera CI del commit d46c352b detectó una expectativa obsoleta en tests/print-pdf.test.mjs, v069 frente a v070. Corregida en el siguiente commit. No se cambia el módulo PDF.
 
 - Segunda CI run `40321901143` para HEAD `bd3f68799dc3a6b1e66cb9433cb4740f284c900e` terminó SUCCESS (240 pruebas, 0 fallos). Se añade defensa adicional directamente en `startCurrentPreparation` para impedir iniciar por botón de reintento si el formulario ha pasado a estado no viable. Revalidar CI del nuevo commit.
+
+
+### 2026-10-26 — Corrección de huecos de camión sin datos: candidata 0.3.38
+- El usuario mostró 0 huecos en LP26-19519, LP26-19531 y LP26-19525. Consulta directa de Supabase: las tres revisiones vigentes no tienen `huecos_palets_grandes`, `huecos_palets_pequenos` ni `huecos_palets_total`. Conteo de todas las 14 cargas: 0 revisiones con esos campos. No asumir que cero es capacidad real del camión.
+- La lectura local de cabeceras antiguas puede dar 0 desde el PDF. La nueva tarjeta distingue `Sin dato` (ninguna fuente acreditada) y `0 en PDF · confirmar` (cero recibido de la lectura local), sin inventar capacidad. La revisión vigente tiene prioridad. El RPC inicial no se considera prueba de huecos (sus valores por defecto no equivalen a una revisión).
+- Los datos manuales siguen entrando al abrir la carga y se mantienen en sesión sin persistencia. No altera PDF, Supabase, reloj de preparación ni cálculos de bultos.
+- Versión candidata 0.3.38; caché v071; rama independiente desde HEAD operativo e453c6e9cd04b7e92daea54bb95bcc53c2fb5c16. Validar CI antes de publicar y documentar autorización; no borrar cargas.
