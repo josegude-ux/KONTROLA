@@ -18,11 +18,11 @@ mapping = {
     "openCargas": ("kontrola-control-cargas-3d.webp", "visura-prepara-operaciones-3d.webp"),
     "openAdmin": ("kontrola-administracion-3d.webp", "visura-prepara-administracion-3d.webp"),
 }
-paths = ("index.html", "sw.js", "tests/visura-menu.test.mjs")
+paths = ("index.html", "sw.js", "tests/visura-menu.test.mjs", "tests/navigation.test.mjs")
 for path in paths:
     if not (root / path).is_file():
         sys.exit("Falta archivo del proyecto: " + path)
-html, sw, tests = [(root / p).read_text(encoding="utf-8") for p in paths]
+html, sw, tests, navigation = [(root / p).read_text(encoding="utf-8") for p in paths]
 with ZipFile(zip_path) as archive:
     names = set(archive.namelist())
     files = {}
@@ -61,6 +61,8 @@ for card, (old, new) in mapping.items():
     if '"'+old+'"' not in tests and '"'+new+'"' not in tests:
         sys.exit("Test no reconoce imagen: " + old)
     tests = tests.replace('"'+old+'"', '"'+new+'"')
+if "kontrola-integral-visura-v062" in navigation:
+    navigation = navigation.replace("kontrola-integral-visura-v062", "kontrola-integral-visura-v063")
 if "kontrola-integral-visura-v062" in sw:
     sw = sw.replace("kontrola-integral-visura-v062", "kontrola-integral-visura-v063")
 elif "kontrola-integral-visura-v063" not in sw:
@@ -69,7 +71,7 @@ for name, data in files.items():
     dest = root / name
     dest.parent.mkdir(parents=True, exist_ok=True)
     dest.write_bytes(data)
-for path, value in zip(paths, (html, sw, tests)):
+for path, value in zip(paths, (html, sw, tests, navigation)):
     (root / path).write_text(value, encoding="utf-8")
 print("Imagenes oficiales integradas. Ejecutar: npm ci && npm run check")
 print("Revisar git diff antes de cualquier commit. Sin merge ni despliegue.")
