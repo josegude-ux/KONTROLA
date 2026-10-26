@@ -24,7 +24,7 @@
 
 Una vez que la definición del workflow haya sido **revisada y fusionada explícitamente** a la rama predeterminada, un usuario autorizado podrá abrir **GitHub → Actions → VISURA AUTO-DEV - Manual PR Review Audit → Run workflow**, e introducir un número de PR.
 
-La definición preparada usa `contents: read` y `pull-requests: read`; hace checkout de la rama predeterminada, no del código del PR inspeccionado. No ejecuta código del PR objetivo.
+La definición preparada usa exclusivamente `contents: read`, `pull-requests: read` y `checks: read`; hace checkout de la rama predeterminada, no del código del PR inspeccionado. No ejecuta código del PR objetivo.
 
 Para una prueba local en una copia de código confiable, configurar `GITHUB_TOKEN` mediante un mecanismo seguro y ejecutar:
 
@@ -47,7 +47,7 @@ Ambas políticas se leen con `scripts.visura_github_policy_probe`. Su informe di
 - `classic_protection.lookup: inaccessible`: respuesta HTTP 403, sin permisos de lectura suficientes.
 - `rulesets.listed_count` y `listed_active_count`: reglas listadas, sin comprobar si se aplican a `main`. Si la lista no se puede consultar, los valores son `null`.
 
-**Limitación de permisos:** GitHub exige normalmente `Administration: read` para consultar la protección clásica (https://docs.github.com/en/rest/branches/branch-protection). El `GITHUB_TOKEN` del workflow está restringido a `contents: read` y `pull-requests: read`, por lo que no se espera que pueda verificar esa protección clásica. El flujo **no eleva privilegios ni solicita tokens de administrador**: informa de la falta de acceso y mantiene `repository_policy_verified: false`.
+**Limitación de permisos:** GitHub exige normalmente `Administration: read` para consultar la protección clásica (https://docs.github.com/en/rest/branches/branch-protection). El `GITHUB_TOKEN` del workflow está restringido a `contents: read`, `pull-requests: read` y `checks: read`, por lo que no se espera que pueda verificar esa protección clásica. El flujo **no eleva privilegios ni solicita tokens de administrador**: informa de la falta de acceso y mantiene `repository_policy_verified: false`.
 
 La existencia de un ruleset no significa necesariamente que proteja la rama inspeccionada; pueden intervenir condiciones, excepciones y *bypass*. Ninguna de estas consultas de lectura es una puerta de autorización para ejecutar o fusionar código.
 
@@ -71,7 +71,7 @@ Documentación oficial: https://docs.github.com/en/rest/repos/rules#get-rules-fo
 Se han añadido ocho pruebas de contrato en `tests/test_visura_manual_audit_workflow.py` que inspeccionan el YAML de la auditoría manual. Comprueban que:
 
 - La única activación prevista es `workflow_dispatch` y existe un único trabajo de auditoría.
-- Los únicos permisos declarados son `contents: read` y `pull-requests: read`.
+- Los únicos permisos declarados son `contents: read`, `pull-requests: read` y `checks: read`; no se conceden permisos de escritura.
 - Se hace checkout de la **rama predeterminada** con `persist-credentials: false`, sin ejecutar código del PR inspeccionado.
 - El **único comando autorizado** llama a `scripts.visura_github_audit_bundle`, que consulta el PR y ambas políticas mediante componentes de solo lectura.
 - El token procede del `GITHUB_TOKEN` facilitado por Actions, sin secretos adicionales.
@@ -88,8 +88,9 @@ móvil. El JSON técnico sigue apareciendo en la salida del comando.
 
 La vista presenta la identificación del repositorio y del PR, su commit, la
 rama de destino real, la rama principal, recuentos de revisiones observadas
-y una tabla que distingue tres consultas por rama: protección clásica,
-rulesets aplicables y rulesets listados.
+una tabla que distingue tres consultas por rama: protección clásica,
+rulesets aplicables y rulesets listados, más un recuento separado de checks de CI
+observados para el SHA exacto del PR.
 
 Se muestran los estados `retrieved`, `inaccessible` y
 `not_found_or_inaccessible`; la ausencia de datos se presenta como
@@ -108,6 +109,32 @@ Este resumen es un instrumento informativo. Las reglas de rama pueden cambiar
 después de la consulta, y una autorización real requiere verificaciones externas
 y aprobación humana.
 
+## Evidencia de CI ligada al commit exacto
+
+El lector de solo lectura `scripts/visura_github_commit_checks.py` consulta
+`GET /repos/{owner}/{repo}/commits/{sha}/check-runs` con `filter=latest` y
+paginación controlada. Los checks que devuelva GitHub han de corresponder al
+`head_sha` del PR inspeccionado. Se rechazan respuestas incompletas,
+identificadores repetidos y checks vinculados a un commit diferente. Un 403/404
+se registra como `inaccessible_or_not_found`, nunca como éxito de las pruebas.
+
+El informe JSON unificado añade `head_check_runs`, y la vista de GitHub
+Actions muestra los **recuentos observados**: checks encontrados, conclusiones
+`success`, conclusiones negativas y checks todavía sin completar. No copia
+nombres arbitrarios de checks ni comentarios a las tablas Markdown.
+
+**Importante:** `success` significa un resultado observado de la API; no
+demuestra que todas las comprobaciones *obligatorias* de la rama sean esas,
+que sus editores sean confiables, ni que las revisiones humanas estén vigentes.
+Los campos `required_checks_verified`, `execution_authorized`,
+`merge_authorized` y `deployment_authorized` permanecen siempre en `false`.
+Una lista vacía de checks tampoco autoriza nada.
+
+El permiso adicional `checks: read` es exclusivamente de lectura, está
+fijado por pruebas de contrato del workflow y no concede privilegios de
+escritura. Esta integración se ha probado con respuestas REST simuladas;
+**no** se ha ejecutado todavía el workflow manual en la rama predeterminada.
+
 ## Qué NO demuestra
 
 La vista de últimas decisiones presupone que los IDs numéricos de las revisiones reflejan su orden de creación; **no comprueba marcas de tiempo, reglas de dismiss ni la última decisión efectiva en GitHub**. La API puede devolver una aprobación aunque esta no sea válida para las reglas vigentes de la rama. Puede existir una revisión posterior, un cambio de política, una eliminación de permisos o un cambio del PR después de la consulta. El informe clasifica **registros observados**, no toma decisiones de seguridad.
@@ -116,4 +143,4 @@ Antes de habilitar cualquier automatización con escritura será imprescindible 
 
 ## Validación
 
-Code Review Gate #125: **176 de 176 pruebas correctas** para el primer flujo unificado. Se añadió después una prueba integrada adicional con respuestas REST simuladas; su CI queda pendiente. El workflow manual sigue sin activarse. La consulta de producción y las reglas de protección de rama siguen pendientes de validación independiente.
+Code Review Gate #135: **200 de 200 pruebas correctas** para el primer flujo unificado. Se añadió después una prueba integrada adicional con respuestas REST simuladas; su CI queda pendiente. El workflow manual sigue sin activarse. La consulta de producción y las reglas de protección de rama siguen pendientes de validación independiente.
