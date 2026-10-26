@@ -131,3 +131,49 @@ class SnapshotReviewerPermissionsTests(unittest.TestCase):
                 {'reviewer_numeric_id': 12, 'reviewer_login': 'reviewer'}]}, 'token')
         self.assertEqual(result['lookup'], 'incomplete')
         self.assertFalse(result['execution_authorized'])
+
+
+class BatchPrevalidationTests(unittest.TestCase):
+    def run_batch(self, reviews, token='token'):
+        from scripts.visura_github_reviewer_permissions import observe_snapshot_reviewer_permissions
+        return observe_snapshot_reviewer_permissions('owner/repo', {'reviews': reviews},
+                                                     token, opener=self.transport)
+
+    def setUp(self):
+        self.calls = []
+        def transport(request, timeout):
+            self.calls.append(request.full_url)
+            return io.BytesIO(json.dumps({'permission': 'write',
+                'user': {'id': 1, 'login': 'valid'}}).encode())
+        self.transport = transport
+        self.valid = {'reviewer_numeric_id': 1, 'reviewer_login': 'valid'}
+
+    def test_invalid_last_login_prevents_all_network_calls(self):
+        for login in ['../other', 'x?query=1', 'x\n', '', 'x'*40]:
+            with self.subTest(login=login), self.assertRaises(ValueError):
+                self.run_batch([self.valid, {'reviewer_numeric_id': 2, 'reviewer_login': login}])
+            self.assertEqual(self.calls, [])
+
+    def test_reassigned_login_in_same_batch_prevents_all_calls(self):
+        with self.assertRaises(ValueError):
+            self.run_batch([self.valid, {'reviewer_numeric_id': 2, 'reviewer_login': 'VALID'}])
+        self.assertEqual(self.calls, [])
+
+    def test_invalid_token_rejected_even_for_empty_batch(self):
+        for token in ['', ' ', 'token\nHeader: bad', None]:
+            with self.subTest(token=token), self.assertRaises(ValueError):
+                self.run_batch([], token)
+        self.assertEqual(self.calls, [])
+
+    def test_case_variations_of_same_identity_cost_one_request(self):
+        result = self.run_batch([self.valid, {'reviewer_numeric_id': 1, 'reviewer_login': 'VALID'}])
+        self.assertEqual(len(self.calls), 1)
+        self.assertEqual(result['lookup'], 'observed')
+        self.assertFalse(result['execution_authorized'])
+
+    def test_invalid_final_record_prevents_calls_for_other_fifty_reviewers(self):
+        reviews = [{'reviewer_numeric_id': n, 'reviewer_login': 'user'+str(n)} for n in range(1, 51)]
+        reviews.append({'reviewer_numeric_id': True, 'reviewer_login': 'bad'})
+        with self.assertRaises(ValueError):
+            self.run_batch(reviews)
+        self.assertEqual(self.calls, [])
