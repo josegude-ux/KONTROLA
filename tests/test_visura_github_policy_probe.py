@@ -328,11 +328,86 @@ class AppliedPullRequestApprovalObservationsTests(unittest.TestCase):
         self.assertTrue(applied["review_requirements_available"])
         self.assertEqual(applied["pull_request_approval_requirements"], [{
             "ruleset_id": 25846536, "required_approving_review_count": 0,
+            "dismiss_stale_reviews_on_push": None,
+            "require_code_owner_review": None,
+            "require_last_push_approval": None,
+            "required_review_thread_resolution": None,
+            "require_extra_approval_for_unattributed_changes": None,
         }])
+        self.assertFalse(applied["active_review_control_fields_complete"])
         self.assertFalse(result["repository_policy_verified"])
         self.assertFalse(result["execution_authorized"])
         self.assertFalse(result["merge_authorized"])
         self.assertTrue(all(method == "GET" for _, method in calls))
+
+    def test_all_active_review_controls_are_observed_without_authorization(self):
+        controls = {
+            "dismiss_stale_reviews_on_push": True,
+            "require_code_owner_review": False,
+            "require_last_push_approval": True,
+            "required_review_thread_resolution": True,
+            "require_extra_approval_for_unattributed_changes": False,
+        }
+        opener, calls = fake_api(effective=[[{
+            "type": "pull_request", "ruleset_id": 10,
+            "parameters": {"required_approving_review_count": 2, **controls},
+        }]])
+        result = inspect_branch_policy(REPO, "base/agent", "test-token", opener=opener)
+        policy = result["effective_ruleset_rules"]
+        self.assertTrue(policy["review_requirements_available"])
+        self.assertTrue(policy["active_review_control_fields_complete"])
+        self.assertEqual(policy["pull_request_approval_requirements"], [{
+            "ruleset_id": 10, "required_approving_review_count": 2, **controls,
+        }])
+        for field in ("repository_policy_verified", "execution_authorized",
+                      "merge_authorized", "deployment_authorized"):
+            self.assertFalse(result[field])
+        self.assertTrue(all(method == "GET" for _, method in calls))
+
+    def test_incomplete_review_controls_remain_unknown(self):
+        opener, _ = fake_api(effective=[[{
+            "type": "pull_request", "ruleset_id": 10,
+            "parameters": {
+                "required_approving_review_count": 1,
+                "require_code_owner_review": False,
+            },
+        }]])
+        policy = inspect_branch_policy(
+            REPO, "main", "token", opener=opener
+        )["effective_ruleset_rules"]
+        self.assertTrue(policy["review_requirements_available"])
+        self.assertFalse(policy["active_review_control_fields_complete"])
+        observation = policy["pull_request_approval_requirements"][0]
+        self.assertIs(observation["require_code_owner_review"], False)
+        self.assertIsNone(observation["require_last_push_approval"])
+
+    def test_invalid_review_control_types_fail_closed(self):
+        for field in (
+            "dismiss_stale_reviews_on_push",
+            "require_code_owner_review",
+            "require_last_push_approval",
+            "required_review_thread_resolution",
+            "require_extra_approval_for_unattributed_changes",
+        ):
+            for invalid in ("false", 0, None, [], {}):
+                with self.subTest(field=field, invalid=invalid):
+                    opener, _ = fake_api(effective=[[{
+                        "type": "pull_request", "ruleset_id": 10,
+                        "parameters": {"required_approving_review_count": 1,
+                                       field: invalid},
+                    }]])
+                    with self.assertRaisesRegex(
+                        ValueError, "Invalid active pull request review control"
+                    ):
+                        inspect_branch_policy(REPO, "main", "token", opener=opener)
+
+    def test_inaccessible_active_controls_do_not_claim_completeness(self):
+        opener, _ = fake_api(effective_error=403)
+        policy = inspect_branch_policy(
+            REPO, "main", "token", opener=opener
+        )["effective_ruleset_rules"]
+        self.assertFalse(policy["active_review_control_fields_complete"])
+        self.assertIsNone(policy["pull_request_approval_requirements"])
 
     def test_missing_review_parameters_stay_unknown(self):
         opener, _ = fake_api(effective=[[{
