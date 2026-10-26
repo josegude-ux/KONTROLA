@@ -24,11 +24,16 @@ button:focus-visible,a:focus-visible{outline:3px solid #a7d6ff;outline-offset:3p
 .generator :is(textarea,select):focus-visible{outline:3px solid #86afdb;outline-offset:2px}
 .field-hint{font-size:.8rem;margin:8px 0 15px}
 .recovery-generator{padding:2px 0 16px}.recovery-generator select,.recovery-generator input{display:block;width:100%;border:1px solid var(--border);border-radius:12px;background:var(--bg);color:var(--text);font:inherit;font-size:16px;padding:11px 12px;margin-bottom:7px}.recovery-generator [hidden]{display:none!important}.recovery-generator :is(select,input):focus-visible{outline:3px solid #86afdb;outline-offset:2px}
+.integrator{margin-top:12px}
+.integrator select,.integrator input,.integrator textarea{display:block;width:100%;border:1px solid var(--border);border-radius:12px;background:var(--bg);color:var(--text);font:inherit;font-size:16px;padding:11px 12px}
+.integrator textarea{resize:vertical;min-height:70px;line-height:1.45}
+.integrator :is(textarea,select,input):focus-visible{outline:3px solid #86afdb;outline-offset:2px}
+.integrator [hidden]{display:none!important}
 </style>
 </head>
 <body>
 <main><header><div class="kicker">VISURA · CENTRO DE MANDO</div><h1>Todas tus órdenes.<br>Siempre a mano.</h1><p class="intro">Elige la situación, pulsa «Copiar orden» y pégala en el chat correspondiente. Este panel funciona independientemente de la longitud de tus conversaciones.</p></header>
-<nav class="quick" aria-label="Ir a una orden"><a href="#orden-1">Reactivar</a><a href="#orden-2">Traspaso Work</a><a href="#orden-3">Nuevo chat</a><a href="#orden-4">Imágenes</a><a href="#orden-5">Solapamientos</a><a href="#orden-6">Crear icono / imagen</a></nav>
+<nav class="quick" aria-label="Ir a una orden"><a href="#orden-1">Reactivar</a><a href="#orden-2">Traspaso Work</a><a href="#orden-3">Nuevo chat</a><a href="#orden-4">Imágenes</a><a href="#orden-5">Solapamientos</a><a href="#orden-6">Crear icono / imagen</a><a href="#orden-7">Integrar imagen</a></nav>
 <article class="command" id="orden-1"><div class="top"><div class="symbol">↻</div><div><div class="eyebrow">ORDEN 01 · Reanudar desarrollo</div><h2>REACTIVAR VISURA</h2></div></div><p class="when">se para el desarrollo pero sigues en el mismo chat.</p><div class="actions"><button type="button" class="primary" data-copy="0">Copiar orden</button><button type="button" class="secondary" aria-controls="prompt-0" aria-expanded="false" data-toggle="0">Ver texto</button></div><pre id="prompt-0" hidden>REACTIVAR VISURA. Retoma el desarrollo desde la última tarea realmente comprobada, respetando las decisiones y el prompt maestro de este chat. Antes de modificar código, verifica la rama, los commits, los PR y docs/CONTINUIDAD.md de los repositorios implicados. No repitas tareas finalizadas, no sobrescribas cambios ajenos y evita solapamientos entre chats. Continúa con la siguiente tarea autorizada y segura. Después de cada hito, comprueba, guarda y documenta los cambios. No te detengas salvo bloqueo real o necesidad de autorización.</pre></article>
 <article class="command" id="orden-2"><div class="top"><div class="symbol">↗</div><div><div class="eyebrow">ORDEN 02 · Preparar fin de créditos</div><h2>PREPARAR TRASPASO WORK</h2></div></div><p class="when">Work está cerca de su límite o quieres protegerte antes de perder acceso.</p><div class="actions"><button type="button" class="primary" data-copy="1">Copiar orden</button><button type="button" class="secondary" aria-controls="prompt-1" aria-expanded="false" data-toggle="1">Ver texto</button></div><pre id="prompt-1" hidden>PREPARAR TRASPASO WORK. Antes de cualquier aviso de fin de créditos, verifica y guarda los avances reales; actualiza docs/CONTINUIDAD.md, CONTINUIDAD_WORK_A_CHAT_NORMAL.md y PROMPT_CONTINUAR_SIN_WORK.md donde corresponda. Incluye repositorios, ramas, commits, PR, imágenes aprobadas, decisiones, pruebas, bloqueos y la primera tarea pendiente. Comprueba que los documentos sean accesibles y entrega aquí el prompt completo, autocontenido y copiable para continuar desde un chat normal. Si no puedes guardar en GitHub, entrega la recuperación en esta conversación y declara qué no quedó persistido. Solo emite «DESARROLLO FIN DE CRÉDITOS WORK» si realmente no puedes continuar y después de entregar la recuperación disponible.</pre></article>
 <article class="command" id="orden-3"><div class="top"><div class="symbol">⇄</div><div><div class="eyebrow">ORDEN 03 · Continuar en otro chat</div><h2>RECUPERAR VISURA EN NUEVO CHAT</h2></div></div><p class="when">Selecciona la conversación de origen. Si se han agotado los créditos, elige VISURA WORK.</p><div class="recovery-generator">
@@ -62,6 +67,44 @@ button:focus-visible,a:focus-visible{outline:3px solid #a7d6ff;outline-offset:3p
 <p class="field-hint">Escribe aquí el nombre del botón o pantalla y su función. El panel lo añadirá al prompt automáticamente.</p>
 <div class="actions"><button type="button" class="primary" id="copy-visual-command">Copiar prompt para nuevo chat</button><button type="button" class="secondary" aria-controls="visual-command-template" aria-expanded="false" id="show-visual-command">Ver prompt</button></div>
 <pre id="visual-command-template" hidden></pre>
+</div>
+</article>
+<article class="command" id="orden-7">
+<div class="top"><div class="symbol" aria-hidden="true">↳</div><div><div class="eyebrow">ORDEN 07 · IMAGEN APROBADA</div><h2>INTEGRAR IMAGEN EN LA APLICACIÓN</h2></div></div>
+<p class="when">Después de elegir una imagen, indica en qué aplicación y lugar debe utilizarse. Prepara una orden de integración segura, sin modificar nada desde este panel.</p>
+<div class="integrator">
+<label class="field-label" for="integration-target">Aplicación o panel de destino</label>
+<select id="integration-target">
+<option value="VISURA CENTRO DE MANDO — panel web de órdenes" selected>VISURA CENTRO DE MANDO (este panel)</option>
+<option value="VISURA INVENTA">VISURA INVENTA</option>
+<option value="VISURA PREPARA">VISURA PREPARA</option>
+<option value="OTRO">Otro destino</option>
+</select>
+<label class="field-label" id="integration-other-label" for="integration-other" hidden>Nombre de la aplicación</label>
+<input id="integration-other" type="text" placeholder="Escribe el nombre exacto" hidden>
+<label class="field-label" for="integration-placement">Dónde aparecerá la imagen</label>
+<select id="integration-placement">
+<option value="Icono de acceso iPhone / favicon" selected>Icono de acceso iPhone / favicon</option>
+<option value="Icono de una función o botón">Icono de una función o botón</option>
+<option value="Logo o cabecera">Logo o cabecera</option>
+<option value="Imagen de menú o pantalla">Imagen de menú o pantalla</option>
+<option value="Portada o bienvenida">Portada o bienvenida</option>
+<option value="Otra ubicación (detallada en observaciones)">Otra ubicación</option>
+</select>
+<label class="field-label" for="integration-choice">¿Cuál has aprobado?</label>
+<select id="integration-choice">
+<option value="Imagen final aprobada (sin letra)" selected>Imagen final aprobada</option>
+<option value="Propuesta A aprobada">Propuesta A</option>
+<option value="Propuesta B aprobada">Propuesta B</option>
+<option value="Propuesta C aprobada">Propuesta C</option>
+</select>
+<label class="field-label" for="integration-resource">Enlace directo o ruta al archivo original (opcional)</label>
+<input id="integration-resource" type="text" placeholder="URL pública o ruta verificable, si existe">
+<label class="field-label" for="integration-notes">Ubicación exacta o indicaciones adicionales (opcional)</label>
+<textarea id="integration-notes" rows="2" placeholder="Ejemplo: será el icono al añadir el Centro de mando a la pantalla de inicio del iPhone."></textarea>
+<p class="field-hint"><strong>Esencial:</strong> al enviar esta orden en ChatGPT, adjunta el archivo original de la imagen elegida si no está ya accesible en esa conversación. El panel no transfiere imágenes por sí mismo.</p>
+<div class="actions"><button type="button" class="primary" id="copy-integration-command">Copiar orden de integración</button><button type="button" class="secondary" id="show-integration-command" aria-controls="integration-prompt-preview" aria-expanded="false">Ver prompt</button></div>
+<pre id="integration-prompt-preview" hidden></pre>
 </div>
 </article>
 <div class="foot"><h2>Copia maestra en GitHub</h2>
@@ -136,5 +179,50 @@ otherChat.addEventListener("input",syncRecoveryPreview);
 sourceLink.addEventListener("input",syncRecoveryPreview);
 syncRecoveryPreview();
 
+
+const integrationTemplate="INTEGRAR IMAGEN APROBADA EN VISURA.\n\nDESTINO ELEGIDO: {{DESTINO}}\nUBICACIÓN O USO EN LA APLICACIÓN: {{UBICACION}}\nIDENTIFICADOR DE LA IMAGEN ELEGIDA: {{SELECCION}}\nFUENTE DEL ARCHIVO APROBADO (si existe): {{RECURSO}}\nINDICACIONES ADICIONALES: {{OBSERVACIONES}}\n\nORDEN: integra la imagen definitiva que ya he elegido, no generes nuevas propuestas ni rediseñes el recurso. Considera la selección aprobada para el destino indicado, pero NO autoriza fusionar ramas, publicar/desplegar a producción ni borrar datos.\n\n1. Antes de tocar el código, comprueba que dispones del ARCHIVO ORIGINAL de la imagen elegida, preferentemente adjunto a este chat, o de un enlace directo verificable al archivo. La letra A, B o C, el título del chat o una captura por sí solos NO garantizan acceso a la imagen original. Si no tienes el archivo o no puedes obtenerlo, solicita exclusivamente ese recurso; no inventes una imagen alternativa ni afirmes que la has integrado.\n2. Identifica y verifica la aplicación/repositorio correspondiente, la rama de desarrollo realmente vigente, los commits, PR, archivos actuales y docs/CONTINUIDAD.md. Para «VISURA CENTRO DE MANDO» usa de partida el repositorio josegude-ux/KONTROLA y la rama visura-panel, donde está docs/index.html; comprueba antes que siga siendo la ubicación válida. Para otros destinos identifica el repositorio y no confundas main con la rama de desarrollo más avanzada. Evita solapamientos con otros chats.\n3. Localiza la pantalla, componente, icono, manifest o entrada HTML donde debe aparecer. Inspecciona cómo están gestionados los recursos existentes y determina formatos/tamaños adecuados al destino: conserva el diseño elegido, crea derivados técnicos si son necesarios y optimiza peso y nitidez sin alterar la estética aprobada.\n4. Implementa mediante cambios mínimos y reversibles en una rama de trabajo segura, conservando la versión anterior y sin modificar funciones de negocio. Si el destino es el icono del Centro de mando web en iPhone, verifica la compatibilidad de favicon y apple-touch-icon y la representación cuadrada, además del uso de manifest solo si corresponde a la arquitectura real del panel. Nunca presupongas que el archivo está disponible o que una URL del chat es descargable.\n5. Comprueba que los archivos se han incluido realmente en el repositorio, que las rutas y referencias son correctas, que el HTML/app compila o carga según corresponda y que la imagen aparece visualmente en su ubicación. En móviles revisa también escala, legibilidad y ausencia de cortes. Diferencia verificaciones realizadas de pruebas pendientes.\n6. Guarda los cambios comprobados con commit, identifica rama y archivos modificados y actualiza los documentos de continuidad y el inventario de imágenes aprobadas/asignadas/integradas/verificadas. Proporciona una vista previa o instrucciones de validación si aún falta comprobar el resultado en un dispositivo real.\n7. No declares «imagen integrada» hasta verificar los archivos y referencias. No fusiones, despliegues ni sustituyas activos compartidos irreversiblemente sin autorización explícita para esas operaciones. No te detengas entre tareas no destructivas autorizadas; si una herramienta no permite subir el archivo binario, explica el bloqueo concreto y utiliza una alternativa segura disponible.\n\nRESULTADO ESPERADO: la imagen seleccionada está incorporada en el destino correcto, sin perder funciones existentes, con registro de integración, evidencias de comprobación y estado listo para aprobación de publicación.";
+const integrationTarget=document.getElementById("integration-target");
+const integrationOther=document.getElementById("integration-other");
+const integrationOtherLabel=document.getElementById("integration-other-label");
+const integrationPlacement=document.getElementById("integration-placement");
+const integrationChoice=document.getElementById("integration-choice");
+const integrationResource=document.getElementById("integration-resource");
+const integrationNotes=document.getElementById("integration-notes");
+const integrationPreview=document.getElementById("integration-prompt-preview");
+function chosenIntegrationTarget(){
+ return integrationTarget.value==="OTRO" ? integrationOther.value.trim() : integrationTarget.value;
+}
+function preparedIntegrationPrompt(){
+ return integrationTemplate
+  .replaceAll("{{DESTINO}}",chosenIntegrationTarget()||"[INDICAR APLICACIÓN O PANEL]")
+  .replaceAll("{{UBICACION}}",integrationPlacement.value)
+  .replaceAll("{{SELECCION}}",integrationChoice.value)
+  .replaceAll("{{RECURSO}}",integrationResource.value.trim()||"Archivo original que adjuntaré a la conversación de implementación; si no está disponible, solicítalo antes de integrar.")
+  .replaceAll("{{OBSERVACIONES}}",integrationNotes.value.trim()||"Sin indicaciones adicionales. Conserva proporción, diseño y función existentes.");
+}
+function refreshIntegrationPreview(){
+ if(!integrationPreview.hidden)integrationPreview.textContent=preparedIntegrationPrompt();
+}
+integrationTarget.addEventListener("change",()=>{
+ const other=integrationTarget.value==="OTRO";
+ integrationOther.hidden=!other;
+ integrationOtherLabel.hidden=!other;
+ if(other)integrationOther.focus();
+ refreshIntegrationPreview();
+});
+[integrationOther,integrationPlacement,integrationChoice,integrationResource,integrationNotes].forEach(el=>{
+ el.addEventListener(el.tagName==="SELECT"?"change":"input",refreshIntegrationPreview);
+});
+document.getElementById("copy-integration-command").addEventListener("click",()=>{
+ if(!chosenIntegrationTarget()){integrationOther.focus();showStatus("Indica la aplicación de destino");return;}
+ copyCommand(preparedIntegrationPrompt());
+});
+document.getElementById("show-integration-command").addEventListener("click",()=>{
+ integrationPreview.hidden=!integrationPreview.hidden;
+ refreshIntegrationPreview();
+ const btn=document.getElementById("show-integration-command");
+ btn.textContent=integrationPreview.hidden?"Ver prompt":"Ocultar prompt";
+ btn.setAttribute("aria-expanded",String(!integrationPreview.hidden));
+});
 </script>
 </body></html>
