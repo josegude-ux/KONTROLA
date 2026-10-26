@@ -19,7 +19,7 @@ BASE = "c" * 40
 
 def fixture_snapshot(branch="chore/visura-auto-dev-guardrails"):
     return {
-        "repository": REPO,
+        "repository": REPO, "pr_number": 37, "reviews": [],
         "head_sha": HEAD, "base_branch": branch, "base_sha": BASE,
         "author_numeric_id": 123, "pr_state": "open",
         "execution_authorized": False,
@@ -581,7 +581,7 @@ class AuditBundleTests(unittest.TestCase):
         )
         self.assertEqual(result["default_branch_policy"]["branch"], "main")
         self.assertEqual(result["review_snapshot"]["review_audit"]["observed_review_count"], 0)
-        self.assertEqual(sum(url.endswith("/pulls/37") for url, _ in called), 3)
+        self.assertEqual(sum(url.endswith("/pulls/37") for url, _ in called), 5)
         self.assertTrue(all(method == "GET" for _, method in called))
         self.assertTrue(all(url.startswith("https://api.github.com/") for url, _ in called))
         self.assertFalse(result["repository_policy_verified"])
@@ -666,7 +666,7 @@ class AuditBundleTests(unittest.TestCase):
         self.assertIn("Coincidencias candidatas", markdown)
         self.assertIn("NO confirma", markdown)
         self.assertTrue(all(method == "GET" for _, method in calls))
-        self.assertEqual(sum(url.endswith("/pulls/37") for url, _ in calls), 3)
+        self.assertEqual(sum(url.endswith("/pulls/37") for url, _ in calls), 5)
 
     def test_cli_writes_step_summary_without_exposing_token(self):
         output = io.StringIO()
@@ -725,7 +725,8 @@ class AuditBundleTests(unittest.TestCase):
 
     def test_real_permission_observer_runs_before_final_pr_recheck(self):
         snapshot = fixture_snapshot()
-        snapshot['reviews'] = [{'reviewer_numeric_id': 456, 'reviewer_login': 'reviewer'}]
+        snapshot['reviews'] = [{'review_id': 600, 'reviewer_numeric_id': 456,
+            'reviewer_login': 'reviewer', 'state': 'APPROVED', 'commit_sha': HEAD}]
         events = []
         def transport(request, timeout):
             events.append('permission')
