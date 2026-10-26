@@ -783,3 +783,10 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 - CI más reciente #118 (`1867f8d47f1d30bff49b63ee3ba7d93f13d898ce`) SUCCESS: regresión, Chromium escritorio/móvil y subida de capturas completadas. Artefacto disponible en Actions.
 - Bloqueo para probar físicamente la rama: `pages.yml` despliega al mismo GitHub Pages público; ejecutar ese workflow con la rama de corrección podría sustituir la app publicada. No se ha desplegado. Hace falta un alojamiento/URL de preview aislada o un método temporal seguro.
 - No se han hecho cambios ni escrituras en Supabase durante esta preparación; sin merge ni despliegue.
+
+
+### 2026-10-26 — Estrategia de validación acordada con el propietario
+- El propietario prefiere actualizar la aplicación ya instalada y no mantener una segunda PWA de prueba.
+- Mantener la app publicada actual intacta mientras se completan las validaciones automatizadas y se prepara un paquete de actualización reversible. No crear una PWA paralela como requisito del flujo.
+- Antes de publicar la actualización en la misma URL, verificar que se conserva el proyecto Supabase configurado, que no hay migraciones ni operaciones destructivas y que el service worker/cache versiona los recursos correctamente. Mantener disponible el commit de la versión actual para revertir el código si fuera necesario.
+- La publicación definitiva sigue requiriendo autorización expresa según la directiva permanente; la preferencia por actualizar la misma aplicación no autoriza por sí sola a desplegar producción.
