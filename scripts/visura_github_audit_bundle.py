@@ -17,6 +17,7 @@ from scripts.visura_github_policy_probe import (
     _validate_branch, inspect_branch_policy,
 )
 from scripts.visura_github_action_summary import render_readonly_audit_summary
+from scripts.visura_github_commit_checks import observe_commit_checks
 
 
 def inspect_readonly_audit_bundle(
@@ -40,6 +41,12 @@ def inspect_readonly_audit_bundle(
         default_policy = inspect_branch_policy(
             repository, default_branch, token, opener=opener
         )
+
+    # Check runs are bound to the reviewed head SHA, not the default branch.
+    # They are observations only, not proof of passing required status checks.
+    head_checks = observe_commit_checks(
+        repository, pr["head_sha"], token, opener=opener
+    )
 
     # Check the PR again after both policy calls, which are not atomic.
     # Even a consistent report can become stale immediately after return.
@@ -69,6 +76,7 @@ def inspect_readonly_audit_bundle(
         "repository": repository,
         "pr_number": pr_number,
         "review_snapshot": pr,
+        "head_check_runs": head_checks,
         "target_branch_policy": target_policy,
         "default_branch": default_branch,
         "default_branch_policy": default_policy,
