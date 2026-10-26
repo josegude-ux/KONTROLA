@@ -167,3 +167,27 @@ test("preparación muestra la matrícula destacada y el cálculo desglosado exis
   assert.match(css,/\.load-plate-label\{/);
   assert.match(css,/\.load-plate-value\{/);
 });
+
+test("la preparación sitúa bultos totales sobre el peso con la misma jerarquía visual",()=>{
+  const start=app.indexOf("function renderLoadList()");
+  const end=app.indexOf("// Historial de lectura",start);
+  const preparation=app.slice(start,end);
+  assert.match(preparation,/totalBultosDelDesglose\(breakdown\)/);
+  assert.match(preparation,/total\.textContent=totalBultos===null\?"— bultos"/);
+  assert.ok(preparation.indexOf("summary.append(total,weight)")>0);
+  assert.match(css,/#loadsList \.load-card-summary\{/);
+  assert.match(css,/#loadsList \.load-bundles-total\{font-weight:800;font-size:16px/);
+  assert.match(css,/\.load-weight\{font-weight:800;font-size:16px/);
+});
+
+test("los palés se colocan junto a matrícula sin confundir huecos del camión con palés necesarios",()=>{
+  const start=app.indexOf("function renderLoadList()");
+  const end=app.indexOf("// Historial de lectura",start);
+  const preparation=app.slice(start,end);
+  assert.match(preparation,/vehicle\.append\(plate,pallets\)/);
+  assert.match(preparation,/palletsCount=r\.palets_para_carga/);
+  assert.match(preparation,/palletsValue\.textContent=hasPallets\?fmt\(palletsCount\):"—"/);
+  assert.doesNotMatch(preparation,/palletsLarge|palletsSmall/);
+  assert.match(css,/#loadsList \.load-vehicle\{/);
+  assert.match(css,/#loadsList \.load-pallets\{/);
+});
