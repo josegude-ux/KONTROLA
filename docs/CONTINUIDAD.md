@@ -674,3 +674,8 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 - Log verificado: 196 pruebas aprobadas, cero fallidas, cero omitidas. Paso de sintaxis y regresion completo.
 - Se corrigieron dos patrones regex defectuosos en los tests nuevos; no hubo cambios funcionales de aplicacion en ese commit.
 - Permanecen pendientes la incorporacion de las cuatro imagenes oficiales, pruebas visuales en dispositivos y pruebas de integracion de base de datos. No fusionar ni desplegar sin autorizacion.
+
+
+### 2026-10-26 - Nuevas regresiones de accesibilidad
+- Se añadieron dos tests: las cuatro tarjetas son botones de tipo button (sin submit accidental), y las ilustraciones decorativas permanecen ocultas a lectores de pantalla con alt vacio.
+- Commit 7f7db9f59ea9c746c1fa7e1adfab4b262f73e9f0. Requiere nuevo resultado CI; la ejecucion #26 valida los 196 tests anteriores, no estos dos adicionales.
