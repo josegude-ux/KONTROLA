@@ -29,7 +29,8 @@ class FakeResponse:
 def pr_data(**changes):
     result = {
         "head": {"sha": SHA}, "user": {"id": 123},
-        "base": {"repo": {"full_name": REPOSITORY}}, "state": "open",
+        "base": {"repo": {"full_name": REPOSITORY}, "ref": "chore/guardrails",
+                 "sha": "c" * 40}, "state": "open",
     }
     result.update(changes)
     return result
@@ -78,6 +79,9 @@ class GitHubReadOnlySnapshotTests(unittest.TestCase):
         self.assertFalse(result["review_audit"]["effective_approval_verification"])
         self.assertFalse(result["review_audit"]["merge_authorized"])
         self.assertEqual(result["head_sha"], SHA)
+        self.assertEqual(result["base_branch"], "chore/guardrails")
+        self.assertEqual(result["base_sha"], "c" * 40)
+        self.assertEqual(result["review_audit"]["base_branch"], "chore/guardrails")
         self.assertEqual(sum(url.endswith("/pulls/37") for url, _, _ in calls), 2)
         self.assertFalse(result["execution_authorized"])
         self.assertFalse(result["repository_policy_verified"])
@@ -105,7 +109,8 @@ class GitHubReadOnlySnapshotTests(unittest.TestCase):
             fetch_readonly_review_snapshot(REPOSITORY, 37, "")
 
     def test_rejects_foreign_base_repository(self):
-        opener, _ = fake_api(pr=pr_data(base={"repo": {"full_name": "other/repo"}}))
+        opener, _ = fake_api(pr=pr_data(base={"repo": {"full_name": "other/repo"}, "ref": "main",
+                                    "sha": "c" * 40}))
         with self.assertRaisesRegex(ValueError, "Invalid pull request metadata"):
             fetch_readonly_review_snapshot(REPOSITORY, 37, "token", opener=opener)
 
@@ -124,6 +129,27 @@ class GitHubReadOnlySnapshotTests(unittest.TestCase):
             pages=[[review_data()]], pr_after=pr_data(head={"sha": "b" * 40})
         )
         with self.assertRaisesRegex(ValueError, "changed during review retrieval"):
+            fetch_readonly_review_snapshot(REPOSITORY, 37, "token", opener=opener)
+
+    def test_rejects_pr_retargeted_during_pagination(self):
+        changed = pr_data(base={"repo": {"full_name": REPOSITORY},
+                                "ref": "main", "sha": "c" * 40})
+        opener, _ = fake_api(pages=[[]], pr_after=changed)
+        with self.assertRaisesRegex(ValueError, "changed during review retrieval"):
+            fetch_readonly_review_snapshot(REPOSITORY, 37, "token", opener=opener)
+
+    def test_rejects_pr_base_commit_changed_during_pagination(self):
+        changed = pr_data(base={"repo": {"full_name": REPOSITORY},
+                                "ref": "chore/guardrails", "sha": "d" * 40})
+        opener, _ = fake_api(pages=[[]], pr_after=changed)
+        with self.assertRaisesRegex(ValueError, "changed during review retrieval"):
+            fetch_readonly_review_snapshot(REPOSITORY, 37, "token", opener=opener)
+
+    def test_rejects_unsafe_base_ref(self):
+        changed = pr_data(base={"repo": {"full_name": REPOSITORY},
+                                "ref": "../escape", "sha": "c" * 40})
+        opener, _ = fake_api(pr=changed)
+        with self.assertRaisesRegex(ValueError, "Invalid pull request metadata"):
             fetch_readonly_review_snapshot(REPOSITORY, 37, "token", opener=opener)
 
     def test_rejects_pr_closed_during_pagination(self):
