@@ -720,7 +720,7 @@ $("finishPreparation").addEventListener("click",async()=>{
 function renderAisleMatrix(products){
   const matriz=crearMatrizPasillos(products);
   const summary=$("aisleMatrixSummary");summary.replaceChildren();
-  const totals=[["Referencias",matriz.referencias],["Unidades (sin convertir formatos)",matriz.total],
+  const totals=[["Referencias",matriz.referencias],["Tipos de unidad",matriz.unidades.length],
     ["Pasillos y zonas",matriz.zonas],["Sin ubicación",matriz.sinUbicacion.length]];
   for(const [label,value] of totals){
     const card=document.createElement("div");card.className="aisle-metric";
@@ -736,7 +736,7 @@ function renderAisleMatrix(products){
   }
   const table=document.createElement("table");table.className="aisle-matrix";
   const thead=document.createElement("thead"),tr=document.createElement("tr");
-  for(const header of ["PASILLO",...matriz.unidades.map(etiquetaUnidad),"TOTAL"]){
+  for(const header of ["PASILLO",...matriz.unidades.map(etiquetaUnidad)]){
     const th=document.createElement("th");th.textContent=header;th.scope="col";tr.appendChild(th);
   }
   thead.appendChild(tr);table.appendChild(thead);
@@ -757,15 +757,14 @@ function renderAisleMatrix(products){
       const cell=document.createElement("td");cell.textContent=aisle.valores[u]?fmt(aisle.valores[u]):"";
       row.appendChild(cell);
     }
-    const total=document.createElement("td");total.textContent=fmt(aisle.total);total.className="aisle-row-total";
-    row.appendChild(total);tbody.appendChild(row);
+    // No sumar cajas, botellas y otros formatos en una única columna TOTAL.
+    tbody.appendChild(row);
   }
   const totalsRow=document.createElement("tr");totalsRow.className="total-row";
   const label=document.createElement("th");label.scope="row";label.textContent="TOTAL";totalsRow.appendChild(label);
   for(const unit of matriz.unidades){
     const td=document.createElement("td");td.textContent=fmt(matriz.totales[unit]||0);totalsRow.appendChild(td);
   }
-  const td=document.createElement("td");td.textContent=fmt(matriz.total);totalsRow.appendChild(td);
   tbody.appendChild(totalsRow);table.appendChild(tbody);slot.appendChild(table);
   if(matriz.sinUbicacion.length){
     const note=document.createElement("p");note.className="hint";
