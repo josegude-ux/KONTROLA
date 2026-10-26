@@ -18,6 +18,13 @@ def inspect_github_reviews(api_reviews, expected_head_sha):
         state = item.get("state")
         if not isinstance(user, dict) or not isinstance(user.get("login"), str):
             raise ValueError("Missing GitHub reviewer login")
+        login = user["login"]
+        if (
+            not login or len(login) > 39 or login[0] == "-" or login[-1] == "-"
+            or any(ch not in "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-" for ch in login)
+            or "--" in login
+        ):
+            raise ValueError("Invalid GitHub reviewer login")
         if not isinstance(commit_id, str) or not isinstance(state, str):
             raise ValueError("Missing GitHub review state or commit")
         normalized.append({
