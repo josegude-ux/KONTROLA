@@ -25,9 +25,13 @@ class FakeResponse:
         return self.payload[:limit]
 
 
-def fake_api(classic=None, rulesets=None, classic_error=None, rulesets_error=None):
+def fake_api(
+    classic=None, rulesets=None, classic_error=None, rulesets_error=None,
+    effective=None, effective_error=None,
+):
     classic = {} if classic is None else classic
     rulesets = [[]] if rulesets is None else rulesets
+    effective = [[]] if effective is None else effective
     calls = []
 
     def opener(request, timeout):
@@ -41,6 +45,12 @@ def fake_api(classic=None, rulesets=None, classic_error=None, rulesets_error=Non
             if rulesets_error:
                 raise HTTPError(url, rulesets_error, "No access", {}, None)
             for page, data in enumerate(rulesets, 1):
+                if url.endswith("page=" + str(page)):
+                    return FakeResponse(data)
+        if "/rules/branches/" in url:
+            if effective_error:
+                raise HTTPError(url, effective_error, "No access", {}, None)
+            for page, data in enumerate(effective, 1):
                 if url.endswith("page=" + str(page)):
                     return FakeResponse(data)
         raise AssertionError("Unexpected REST request " + url)
@@ -136,6 +146,84 @@ class GitHubPolicyProbeTests(unittest.TestCase):
         opener, calls = fake_api()
         inspect_branch_policy(REPO, "release/test", "secret", opener=opener)
         self.assertIn("/branches/release%2Ftest/protection", calls[0][0])
+
+    def test_active_branch_rule_endpoint_distinguishes_applied_from_listed(self):
+        opener, calls = fake_api(
+            rulesets=[[{"id": 1, "enforcement": "active"},
+                       {"id": 2, "enforcement": "active"}]],
+            effective=[[{
+                "type": "pull_request",
+                "ruleset_id": 1,
+                "ruleset_source_type": "Repository",
+            }]],
+        )
+        result = inspect_branch_policy(REPO, "main", "secret", opener=opener)
+        self.assertEqual(result["rulesets"]["listed_active_count"], 2)
+        rules = result["effective_ruleset_rules"]
+        self.assertEqual(rules["lookup"], "retrieved")
+        self.assertEqual(rules["observed_rule_count"], 1)
+        self.assertEqual(rules["observed_rule_types"], ["pull_request"])
+        self.assertTrue(rules["applied_ruleset_api_responded"])
+        self.assertFalse(rules["includes_classic_branch_protection"])
+        self.assertFalse(result["repository_policy_verified"])
+        self.assertFalse(result["merge_authorized"])
+        self.assertTrue(any("/rules/branches/main?per_page=" in u for u, _ in calls))
+
+    def test_empty_applied_rules_never_claims_branch_unprotected(self):
+        opener, _ = fake_api(classic_error=404, effective=[[]])
+        result = inspect_branch_policy(REPO, "main", "secret", opener=opener)
+        self.assertEqual(result["effective_ruleset_rules"]["observed_rule_count"], 0)
+        self.assertEqual(
+            result["classic_protection"]["lookup"], "not_found_or_inaccessible"
+        )
+        self.assertFalse(result["repository_policy_verified"])
+
+    def test_active_branch_rule_lookup_403_stays_unknown(self):
+        opener, _ = fake_api(effective_error=403)
+        result = inspect_branch_policy(REPO, "main", "secret", opener=opener)
+        self.assertEqual(result["effective_ruleset_rules"]["lookup"], "inaccessible")
+        self.assertIsNone(
+            result["effective_ruleset_rules"]["observed_rule_count"]
+        )
+        self.assertFalse(result["execution_authorized"])
+
+    def test_active_branch_rule_lookup_404_stays_unknown(self):
+        opener, _ = fake_api(effective_error=404)
+        result = inspect_branch_policy(REPO, "main", "secret", opener=opener)
+        self.assertEqual(
+            result["effective_ruleset_rules"]["lookup"],
+            "not_found_or_inaccessible",
+        )
+        self.assertFalse(result["repository_policy_verified"])
+
+    def test_active_rules_pagination_is_complete(self):
+        first = [{"type": "pull_request", "ruleset_id": 1}] * 100
+        second = [{"type": "required_status_checks", "ruleset_id": 2}]
+        opener, _ = fake_api(effective=[first, second])
+        result = inspect_branch_policy(REPO, "main", "secret", opener=opener)
+        self.assertEqual(result["effective_ruleset_rules"]["observed_rule_count"], 101)
+        self.assertEqual(
+            result["effective_ruleset_rules"]["observed_rule_types"],
+            ["pull_request", "required_status_checks"],
+        )
+
+    def test_active_rules_truncation_fails_closed(self):
+        page = [{"type": "pull_request", "ruleset_id": 1}] * 100
+        opener, _ = fake_api(effective=[page] * 5)
+        with self.assertRaisesRegex(ValueError, "incomplete result"):
+            inspect_branch_policy(REPO, "main", "secret", opener=opener)
+
+    def test_active_rule_invalid_id_fails_closed(self):
+        opener, _ = fake_api(effective=[[{"type": "pull_request", "ruleset_id": True}]])
+        with self.assertRaisesRegex(ValueError, "Invalid active branch rule metadata"):
+            inspect_branch_policy(REPO, "main", "secret", opener=opener)
+
+    def test_branch_name_is_encoded_for_applied_endpoint(self):
+        opener, calls = fake_api()
+        inspect_branch_policy(REPO, "release/test", "secret", opener=opener)
+        self.assertTrue(any(
+            "/rules/branches/release%2Ftest?" in u for u, _ in calls
+        ))
 
     def test_cli_prints_no_token_or_execution_authorization(self):
         output = io.StringIO()
