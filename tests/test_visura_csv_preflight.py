@@ -78,6 +78,12 @@ class CsvPreflightTests(unittest.TestCase):
         result = inspect_csv(self.path, ["Pedido", "Nota"])
         self.assertEqual(result["rows"], 1)
 
+    def test_windows_line_endings_and_blank_rows(self):
+        self.write("Pedido;Cantidad\r\nA01;2\r\n\r\nA02;3\r\n")
+        result = inspect_csv(self.path, ["Pedido", "Cantidad"])
+        self.assertEqual(result["rows"], 2)
+        self.assertEqual(result["delimiter"], ";")
+
     def test_size_limit(self):
         self.write("Pedido;Cantidad\nA01;2\n")
         with self.assertRaisesRegex(ValueError, "safety limit"):
