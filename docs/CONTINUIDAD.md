@@ -692,3 +692,9 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 - Commit 898754396099fd3613e97a9824005318fa47aa91: nuevo scripts/integrar_menu_oficial.py. Lee el ZIP oficial local, valida cabeceras WEBP y cuatro tarjetas, conserva los controladores y sustituye solo imagenes, precarga y version de cache v063. Incluye originales sin tocar imagenes anteriores ni base de datos.
 - Commit a9fdbd40b8720c3fbd24ea113e91407066cf9c40: el CI verifica sintaxis del integrador Python ademas de npm run check.
 - La transferencia de binarios desde el ZIP local a GitHub aun no se ha realizado. El script requiere el ZIP en el equipo donde se ejecute y no hace commits ni despliegues. Pendiente CI de estos cambios.
+
+
+### 2026-10-26 - CI #42 y validacion de originales
+- GitHub Actions run 40257649349: SUCCESS, 198 pruebas aprobadas, cero fallidas, integrador Python sin errores de sintaxis.
+- El integrador ahora exige exactamente cuatro imagenes originales y formatos JPEG/PNG antes de modificar archivos (commit 9a2b7dd0a753815a1d682840c0ba833110216346).
+- Las imagenes oficiales siguen pendientes de transferencia a la rama. Ningun despliegue ni merge realizado.
