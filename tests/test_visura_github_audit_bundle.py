@@ -53,6 +53,25 @@ class AuditBundleTests(unittest.TestCase):
         )
         self.check_mock = self.check_mock_patch.start()
         self.addCleanup(self.check_mock_patch.stop)
+        self.comparison_mock_patch = patch(
+            "scripts.visura_github_audit_bundle.compare_required_check_observations",
+            return_value={
+                "lookup": "unknown_policy_requirements",
+                "required_context_count": None,
+                "candidate_name_match_count": None,
+                "candidate_success_count": None,
+                "without_named_check_run_count": None,
+                "ambiguous_app_provenance_count": None,
+                "legacy_commit_statuses_compared": False,
+                "app_origin_authenticated": False,
+                "required_checks_verified": False,
+                "execution_authorized": False,
+                "merge_authorized": False,
+                "deployment_authorized": False,
+            },
+        )
+        self.comparison_mock = self.comparison_mock_patch.start()
+        self.addCleanup(self.comparison_mock_patch.stop)
 
     def test_inspects_actual_target_and_default_separately(self):
         policy_calls = []
@@ -127,6 +146,38 @@ class AuditBundleTests(unittest.TestCase):
             )
         self.assertIsNone(result["head_check_runs"]["observed_total"])
         self.assertFalse(result["execution_authorized"])
+
+    def test_comparison_uses_target_branch_policy_never_default_policy(self):
+        calls = []
+        def observe_policy(repo, branch, token, opener):
+            calls.append(branch)
+            return {"branch": branch, "repository_policy_verified": False,
+                    "execution_authorized": False, "merge_authorized": False,
+                    "deployment_authorized": False}
+        with patch(
+            "scripts.visura_github_audit_bundle.fetch_readonly_review_snapshot",
+            return_value=fixture_snapshot(),
+        ), patch(
+            "scripts.visura_github_audit_bundle.inspect_branch_policy",
+            side_effect=observe_policy,
+        ), patch(
+            "scripts.visura_github_audit_bundle._get_json",
+            return_value=fixture_pr(),
+        ):
+            result = inspect_readonly_audit_bundle(
+                REPO, 37, "main", "secret", opener=lambda *args: None
+            )
+        self.assertEqual(calls, ["chore/visura-auto-dev-guardrails", "main"])
+        self.comparison_mock.assert_called_once()
+        self.assertEqual(
+            self.comparison_mock.call_args.args[0]["branch"],
+            "chore/visura-auto-dev-guardrails",
+        )
+        self.assertEqual(
+            result["required_check_observations"]["lookup"],
+            "unknown_policy_requirements",
+        )
+        self.assertFalse(result["merge_authorized"])
 
     def test_same_target_as_default_is_queried_once(self):
         with patch(
