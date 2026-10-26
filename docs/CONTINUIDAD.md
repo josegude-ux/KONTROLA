@@ -174,3 +174,6 @@ La idea de un portal común se documentó separadamente en `docs/MOVENTA_CONCEPT
 
 - Code Review Gate #81 (`40263984781`) **success, 97/97 pruebas OK**: https://github.com/josegude-ux/KONTROLA/actions/runs/40263984781. CSV Pilot Tests #89 y Queue Audit #116 también completaron con éxito para el mismo commit `7fcea82`.
 - Descripción y título del PR #37 actualizados para reflejar fielmente el alcance del piloto, las restricciones de seguridad y las limitaciones. El PR continúa **draft**, con base `chore/visura-auto-dev-guardrails`; sin merge y sin despliegue.
+
+- Code Review Gate #84 (`40265037721`) **success, 101/101 pruebas OK**: https://github.com/josegude-ux/KONTROLA/actions/runs/40265037721. CSV Pilot Tests #92 y Queue Audit #119 también `success` para commit `983b259`.
+- Endurecimiento del cliente REST `scripts/visura_github_readonly_snapshot.py` (commit `523ee3e`): no sigue redirecciones HTTP con el token de GitHub; lee los metadatos del PR de nuevo tras paginar revisiones y **rechaza el snapshot si han cambiado SHA, autor numérico, repositorio de destino o estado**. Cuatro pruebas añadidas en `tests/test_visura_github_readonly_snapshot.py` (commit `983b259`). Esta segunda lectura no garantiza que las revisiones sigan vigentes tras devolver el informe: **ningún resultado autoriza ejecución, merge o despliegue**.
