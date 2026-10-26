@@ -1,5 +1,6 @@
 name: VISURA AUTO-DEV - Zero Cost PR Pilot
 # Deterministic zero-cost pilot. No AI, external services, or production access.
+# Recheck draft PR creation after repository permission was enabled.
 on:
   push:
     branches:
