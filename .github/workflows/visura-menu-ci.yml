@@ -21,5 +21,6 @@ jobs:
       - name: Comprobar sintaxis y regresion completa sin despliegue
         run: |
           python3 -m py_compile scripts/integrar_menu_oficial.py
+          python3 -m unittest discover -s tests -p 'test_integrar_menu_oficial.py' -v
           npm run check
           node --check tests/visura-menu.test.mjs
