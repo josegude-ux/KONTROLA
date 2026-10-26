@@ -1,5 +1,5 @@
 # VISURA — CENTRO DE MANDO
-**Versión:** V4.3 — 2026-10-26  
+**Versión:** V4.4 — 2026-10-26  
 **Objetivo:** conservar órdenes copiables de desarrollo y recuperación de contexto para VISURA.
 
 > Este archivo es una **copia maestra de instrucciones**, no un informe del estado actual del software. Antes de cualquier cambio hay que contrastar ramas, commits, PR y documentación con GitHub. No fusionar, desplegar ni borrar datos sin autorización. No se puede garantizar un proceso en segundo plano ni superar límites de Work.
@@ -219,12 +219,12 @@ En INTEGRACIÓN EN RAMA: la imagen aprobada y sus derivados necesarios están re
 En PRUEBA / SIMULACIÓN: se audita la viabilidad, se identifican rutas y alternativas, se detectan bloqueos y se entrega un plan ejecutable SIN modificar sistemas.
 ```
 
-## Menú actual — Accesos directos V4.3 (2026-10-26)
+## Menú actual — Accesos directos V4.4 (2026-10-26)
 
-El diseño anterior de desplegable único con flechas fue descartado. **La interfaz actual V4.3** utiliza una portada con **ocho accesos directos en una cuadrícula de dos columnas** y abre solo el formulario seleccionado.
+El diseño anterior de desplegable único con flechas fue descartado. **La interfaz actual V4.4** utiliza una portada con **ocho accesos directos en una cuadrícula de dos columnas** y abre solo el formulario seleccionado.
 
 - Cada vista ofrece **«Volver al menú»**. Los enlaces `#orden-1` a `#orden-8` abren la tarea correspondiente y `#inicio` vuelve a la portada.
-- El botón **«↻ Actualizar»** continúa en la cabecera. La marca **V4.3** distingue la versión nueva de las copias antiguas que puede servir el alojamiento externo.
+- El botón **«↻ Actualizar»** continúa en la cabecera. La marca **V4.4** distingue la versión nueva de las copias antiguas que puede servir el alojamiento externo.
 - La información complementaria de GitHub sigue plegada y cerrada al cargar la página.
 - Las siete órdenes anteriores, sus campos y protecciones se conservan. Se incorpora únicamente la **orden 08 — Estado de desarrollo de un chat del proyecto EXCELL**, siempre de solo lectura.
 - Los archivos del panel son `docs/index.html` y `docs/VISURA_ORDENES.html`, junto con este documento maestro en la rama `visura-panel`. No se autoriza modificar `main`, aplicaciones ni datos.
@@ -310,7 +310,7 @@ Antes de redactar, guardar, proponer o añadir un prompt/botón al Centro de man
 4. Probar el generador con al menos dos opciones diferentes y con opciones vacías; verificar que cambia correctamente origen/destino y que no mezcla chats ni ejecuta acciones desde el panel.
 5. Mantener las dos copias HTML, el documento maestro y la numeración sincronizados. No tocar `main`, no fusionar ni desplegar aplicaciones sin autorización.
 
-**Separación de funciones actual:** 01 Reactivar mismo chat; 02 Preparar Work antes del límite; 03 Trasladar el desarrollo de un chat Work agotado a otro; 08 Consultar el estado de un chat sin modificarlo. Son funciones relacionadas pero no duplicadas.
+**Separación de funciones actual:** 01 Reanudar desarrollo en el chat original o en un continuador que YA trabajó en él (como VISURA WORK → VISURA AUTO-DEV); 02 Preparar Work antes del límite; 03 Hacer un traspaso NUEVO a otra conversación; 08 Consultar el estado de un chat sin modificarlo. Son funciones relacionadas pero no duplicadas.
 
 ## Reglas comunes
 1. Consultar primero el estado verificado en GitHub, **sin tratar la documentación antigua de main como último estado**.
