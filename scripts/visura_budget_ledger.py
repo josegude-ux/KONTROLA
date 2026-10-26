@@ -5,6 +5,7 @@ GitHub Actions. Paid API calls remain disabled. Amounts are EUR cents.
 """
 import sqlite3
 import uuid
+import re
 from contextlib import closing
 
 LIMIT_CENTS = 1000
@@ -15,7 +16,7 @@ def reserve(db_path, *, month, amount_cents, reservation_id=None):
 
     Returns (allowed, reservation_id). Idempotent by reservation ID.
     """
-    if not isinstance(month, str) or len(month) != 7 or month[4] != "-":
+    if not isinstance(month, str) or not re.fullmatch(r"[0-9]{4}-(0[1-9]|1[0-2])", month):
         raise ValueError("month must be YYYY-MM")
     try:
         year, number = (int(x) for x in month.split("-"))
