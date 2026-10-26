@@ -6,6 +6,7 @@ on:
       - tests/test_visura_csv_preflight.py
       - .github/workflows/visura-auto-dev-csv-tests.yml
       - docs/CONTINUIDAD.md
+      - tests/test_visura_csv_preflight.py
       - docs/CONTINUIDAD.md
 permissions:
   contents: read
