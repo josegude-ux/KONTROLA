@@ -29,13 +29,13 @@ No se inicia un cronómetro ni se registra automáticamente «preparación inici
 
 ## Seguridad / trabajo pendiente
 
-- El PR #56 de la misma aplicación modifica también `src/app.mjs` (funciones A4 y pasillos); **hay solapamiento a reconciliar** antes de fusionar. No integrar ni publicar directamente esta rama sin esa revisión.
-- La propuesta SQL parte de las firmas y estructura de la migración histórica `20261026_kontrola_operacion_integral.sql`; revisar en el entorno de PRUEBAS las versiones actualmente instaladas y contratos de permisos/RLS antes de generar una migración incremental formal con CLI. No editar/reaplicar migraciones antiguas.
+- **Reconciliación realizada:** el PR #56 fue fusionado en la rama de desarrollo `cursor/verificacion-fisica-cargas-8ba0` (merge `fb2d0e6`). El código de los flujos paralelos se integró mediante commit de reconciliación de dos padres `c7b9317`, conservando la función de matriz por pasillos `renderAisleMatrix` y la generación del listado A4 `crearListadoPasillosA4`. No se ha fusionado este PR a la rama de destino ni desplegado.
+- **SQL actualizado desde funciones instaladas:** se inspeccionó en modo solo lectura el proyecto Supabase `control-cargas-movil` (ID `oevetnszmfxeukcncwji`) y se reconstruyó el borrador de las cinco RPC a partir de `pg_get_functiondef`, conservando en particular la protección de revisiones PDF mediante `c.documento_hash=v_i.documento_hash`. **No se ejecutó SQL de modificación**. Falta comprobar RLS, permisos efectivos y ejecutar el borrador en un entorno de pruebas aislado con autorización expresa. No editar/reaplicar migraciones históricas.
 - La propuesta SQL no crea tablas nuevas ni expone nuevas rutas públicas. Conserva `REVOKE` a `PUBLIC, anon` y `GRANT EXECUTE` a `authenticated`, pero debe someterse a asesores de seguridad y pruebas reales antes de ejecutarla.
 - El frontend aún contiene lógica heredada de tiempos de preparación de BC y del flujo de importación; la línea de desarrollo que retira el cronómetro debe reconciliarse con esta rama, sin reintroducir métricas de control.
 - El botón de preparación puede mostrar estado de una sesión de VISURA, pero nunca supone que refleja el progreso físico de picking BC.
 - Los escenarios de roles «Operario», «Supervisor» y «Administrador» deberán comprobarse contra las políticas realmente vigentes, sin conceder nuevos accesos indirectos.
-- Ejecutar pruebas automáticas del repositorio en CI y, después de autorización separada, pruebas integradas con dos operarios distintos y una carga de prueba en Supabase. No hay aquí evidencia de CI ni de piloto real superado.
+- **Pruebas evaluadas:** 8 casos de `tests/parallel-workflows.test.mjs` ejecutados en un intérprete JavaScript aislado con adaptadores para `node:test`, `assert` y lectura del SQL: 8/8 correctos. El código `src/app.mjs` y el módulo auxiliar superaron una comprobación de sintaxis JS. **Pendiente** ejecución nativa de `npm test` y CI, revisión estática avanzada del SQL, y ensayo real con dos operarios y carga de prueba. No existe evidencia de piloto real superado.
 
 ## Criterios de aceptación
 
@@ -55,3 +55,11 @@ No se inicia un cronómetro ni se registra automáticamente «preparación inici
 - Auditoría estática de 5 RPC y filtros de interfaz: requisitos principales presentes.
 - Archivo `tests/parallel-workflows.test.mjs` incluido en la rama: **ejecución de Node/CI aún pendiente** por ausencia de repositorio ejecutable en el entorno de estas herramientas.
 - **No** se han validado SQL ni concurrencia en una base real. El borrador no se ha aplicado.
+
+## Estado tras la reconciliación (26/10/2026)
+
+- Rama de desarrollo combinada: `feat/visura-prepara-flujos-paralelos-implementacion-20261026`.
+- Base actual para revisión: `cursor/verificacion-fisica-cargas-8ba0` después del merge del PR #56.
+- El PR #57 sigue siendo un registro documental; el PR #58 incluye la especificación y el código en un solo diff contra la base actualizada.
+- La cola de Verificación se habilita desde `publicada`; su inicio se registra cuando un verificador realiza la acción. No se inventa inicio de picking de BC ni se garantiza conocimiento de palés terminados.
+- Advertencia: la aplicación contiene un cronómetro legado y otros módulos cuyo reemplazo pertenece a trabajos distintos. No se ha reintroducido ni aumentado su uso como parte de esta implementación.
