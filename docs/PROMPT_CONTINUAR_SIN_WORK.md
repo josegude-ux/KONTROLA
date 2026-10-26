@@ -54,3 +54,38 @@ PREPARA, INVENTA, Supabase, Business Central y workflows no modificados.
 
 ---
 
+
+
+ACTUALIZACIÓN PARA CONTINUAR:
+## Punto actual — tarea e informe local unidos (2026-10-26)
+
+Código: 9d88d39fb2af0cc06f874bbec0a00c9ac4562640. Mismo PR #43 y rama
+feat/visura-work-reviewer-evidence-20261026; base #37 sin cambios.
+313 pruebas locales correctas, compilación, safety smoke y diff check correctos.
+Se comprobó igualdad entre los dos archivos remotos y los probados.
+
+scripts/visura_task_review_packet.py conecta validate_task, preview_task y el
+auditor Git local. Lee JSON limitado a 16384 caracteres por stdin, rechaza claves
+duplicadas y campos desconocidos, genera huellas SHA256 de la tarea y los commits.
+Las huellas identifican entradas, NO son firmas ni aprobaciones. No ejecuta checks
+ni comandos propuestos por la tarea. Los checks quedan como not_executed.
+Prueba real con commits 0756bad9 -> 01b9a391: 12 archivos dentro del alcance,
+seis bloqueos explícitos y autorización falsa. La tarea de demostración es
+sintética: no se afirma que exista aprobación autenticada para ejecutarla.
+
+Uso: python -m scripts.visura_task_review_packet . BASE_SHA HEAD_SHA < tarea.json
+Esquema JSON: task_id, title, scope, checks (lista de textos), max_cost_eur.
+Código de salida 0 significa informe generado, NO permiso de ejecución.
+
+Componente diseñado, programado y probado localmente con Git real. No conectado
+a un ejecutor ni autorizado para crear/fusionar PR automáticamente. El módulo
+HTTP conserva pruebas simuladas; no existe credencial accesible para Python.
+Pendientes: transporte autenticado, políticas efectivas, revisión de contenido,
+pruebas aisladas y aprobación externa. No presentar los informes como agente
+operativo ni resolver el bloqueo exponiendo tokens. Centro de Mando tiene cambios
+en docs/visura-centro-de-mando-20261026, solo panel HTML; no se tocó esa rama.
+
+---
+
+
+CI de 9d88d39f confirmada: Code Review Gate #176, CSV Pilot Tests #183 y Queue Audit #211 correctos. https://github.com/josegude-ux/KONTROLA/actions/runs/40295392197
