@@ -1,3 +1,7 @@
+> **VISURA AUTO-DEV — revalidación de revisiones (26/10/2026)**: PR [#47](https://github.com/josegude-ux/KONTROLA/pull/47), rama `fix/visura-work-review-policy-flags-20261026`, código `e92effb54965e2055247bef9841f41d56ba1ba6e` verificado. El auditor relee las revisiones y detecta cambios de voto aunque el SHA no varíe; tolera orden variable de páginas y nunca interpreta coincidencia como aprobación. +4 pruebas de auditoría y +3 de resumen. GitHub Actions: Code Review Gate [40340744201](https://github.com/josegude-ux/KONTROLA/actions/runs/40340744201), CSV Pilot Tests [40340744017](https://github.com/josegude-ux/KONTROLA/actions/runs/40340744017), Queue Audit [40340744828](https://github.com/josegude-ux/KONTROLA/actions/runs/40340744828): `success`. Workflow manual intacto, sin token Python real ni permiso de ejecución/fusión/despliegue. Documento: [VISURA_WORK_REVALIDACION_REVISIONES_20261026.md](VISURA_WORK_REVALIDACION_REVISIONES_20261026.md).
+
+---
+
 # VISURA AUTO-DEV — detección de cambios en políticas durante auditoría
 
 **Fecha:** 26/10/2026. **PR:** [#47](https://github.com/josegude-ux/KONTROLA/pull/47), borrador. **Rama:** `fix/visura-work-review-policy-flags-20261026`.
