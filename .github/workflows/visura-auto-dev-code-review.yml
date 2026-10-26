@@ -1,6 +1,13 @@
 name: VISURA AUTO-DEV - Code Review Gate
 # Zero-cost validation for code pilots; no writes or external AI.
 on:
+  push:
+    branches:
+      - chore/visura-auto-dev-guardrails
+    paths:
+      - .github/workflows/visura-auto-dev-code-review.yml
+      - scripts/visura_*.py
+      - tests/test_visura_*.py
   pull_request:
     paths:
       - scripts/visura_*.py
