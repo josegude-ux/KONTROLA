@@ -84,6 +84,13 @@ class CsvPreflightTests(unittest.TestCase):
         self.assertEqual(result["rows"], 2)
         self.assertEqual(result["delimiter"], ";")
 
+    def test_long_quoted_header_over_4096_bytes(self):
+        long_name = "P" * 5000
+        self.write(f'"{long_name}";Cantidad\nA01;2\n')
+        result = inspect_csv(self.path, [long_name, "Cantidad"])
+        self.assertEqual(result["delimiter"], ";")
+        self.assertEqual(result["rows"], 1)
+
     def test_size_limit(self):
         self.write("Pedido;Cantidad\nA01;2\n")
         with self.assertRaisesRegex(ValueError, "safety limit"):
