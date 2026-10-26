@@ -147,3 +147,6 @@ La idea de un portal común se documentó separadamente en `docs/MOVENTA_CONCEPT
 
 - Code Review Gate #54 (`40262299261`) `success`, **60/60 pruebas OK** y llamadas de pago bloqueadas: https://github.com/josegude-ux/KONTROLA/actions/runs/40262299261.
 - Se documentaron los controles externos necesarios antes de permitir un ejecutor real en `docs/VISURA_AUTO_DEV_EXECUTION_GATE.md` (commit `d32c812`). **La protección de ramas no está verificada** con las herramientas disponibles; no se ha activado ejecución automática ni gasto de IA.
+
+- Code Review Gate #56 (`40262422865`) **success, 60/60 pruebas OK**: https://github.com/josegude-ux/KONTROLA/actions/runs/40262422865.
+- Se incorporó `scripts/visura_activation_gate.py` como **evaluador inerte fail-closed**, más cinco pruebas en `tests/test_visura_activation_gate.py` (commits `ba7d75c`, `069fda5`). Incluso si un payload declara todas las comprobaciones externas como verdaderas, **no se autentica la evidencia ni se concede ejecución, merge o despliegue**. No es un sistema de autorización real; CI de estas pruebas pendiente.
