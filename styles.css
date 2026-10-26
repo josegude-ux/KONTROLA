@@ -151,6 +151,88 @@ footer{padding:18px;text-align:center;background:#fff;border-top:1px solid #e6e8
 .load-bundles{display:block;margin-top:9px;color:#254a70;font-weight:750;font-size:14px;line-height:1.5;overflow-wrap:anywhere}
 @media(max-width:540px){#loadsList .load-card{align-items:flex-start}#loadsList .load-card>span:first-child{min-width:0;flex:1}#loadsList .load-card-summary{align-self:center}#loadsList .load-bundles-total,#loadsList .load-weight{font-size:15px;text-align:right}#loadsList .load-plate-value,#loadsList .load-pallets-value{font-size:19px}}
 
+/* Tarjetas de cargas: la fila de vehículo no compite con peso/bultos.
+   Es el mismo diseño en móvil, tableta y escritorio. */
+#loadsList .load-card{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) max-content;
+  grid-template-areas:"info summary" "vehicle vehicle" "breakdown breakdown";
+  gap:8px 12px;
+  align-items:start;
+  justify-content:stretch;
+}
+#loadsList .load-card-info{grid-area:info;min-width:0;overflow-wrap:anywhere}
+#loadsList .load-card-summary{grid-area:summary;align-self:start;justify-self:end;margin-top:4px}
+#loadsList .load-vehicle{
+  grid-area:vehicle;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);
+  gap:9px;width:100%;margin-top:4px;min-width:0;
+}
+#loadsList .load-vehicle .load-plate,#loadsList .load-vehicle .load-pallets{
+  width:100%;min-width:0;max-width:none;min-height:72px;margin:0;
+}
+#loadsList .load-bundles{grid-area:breakdown;margin-top:2px;min-width:0}
+@media(max-width:540px){
+  #loadsList .load-card{gap:8px 10px;padding:16px}
+  #loadsList .load-card-info{min-width:0;flex:none}
+  #loadsList .load-card-summary{align-self:start;margin-top:2px}
+  #loadsList .load-vehicle .load-plate,#loadsList .load-vehicle .load-pallets{padding:9px 10px;min-height:69px}
+  #loadsList .load-plate-label,#loadsList .load-pallets-label{font-size:9px;letter-spacing:.055em}
+  #loadsList .load-plate-value,#loadsList .load-pallets-value{font-size:clamp(16px,4.6vw,19px);letter-spacing:.035em;overflow-wrap:anywhere}
+}
+
+/* La hoja A4 conserva sus tablas en PDF/impresión. Solo la vista de pantalla
+   estrecha transforma cada fila en ficha de lectura; no cambia cantidades. */
+@media screen and (max-width:700px){
+  #reportView{overflow-x:hidden}
+  #reportView .report-controls{min-width:0;padding:12px;gap:8px}
+  #reportView .report-controls h1{min-width:0;width:100%;overflow-wrap:anywhere;font-size:22px;line-height:1.25}
+  #reportView .report-paper{box-sizing:border-box;width:100%;min-width:0;max-width:100%;padding:14px;overflow-wrap:anywhere}
+  #reportView .preparation-report{min-width:0;max-width:100%}
+  #reportView .preparation-report .report-aisle{min-width:0;margin:18px 0 22px}
+  #reportView .preparation-report .report-aisle>table{display:block;width:100%;max-width:100%;border:none;margin-top:10px}
+  #reportView .preparation-report .report-aisle>table thead{
+    position:absolute;width:1px;height:1px;overflow:hidden;
+    clip-path:inset(50%);white-space:nowrap
+  }
+  #reportView .preparation-report .report-aisle>table tbody{display:grid;gap:9px;width:100%}
+  #reportView .preparation-report .report-aisle>table tbody tr{
+    display:grid;grid-template-columns:minmax(0,1fr) auto auto;
+    grid-template-areas:"reference quantity unit" "description description description" "location location location";
+    gap:5px 9px;min-width:0;background:#fff;border:1px solid #d8e2eb;
+    border-radius:11px;padding:12px;box-shadow:0 1px 4px #0b264711
+  }
+  #reportView .preparation-report .report-aisle>table tbody td{
+    display:block;min-width:0;padding:0;border:0;line-height:1.4;
+    overflow-wrap:anywhere;font-size:14px;vertical-align:baseline
+  }
+  #reportView .preparation-report .report-aisle>table tbody td:nth-child(1){
+    grid-area:location;color:#526b82;font-size:12px
+  }
+  #reportView .preparation-report .report-aisle>table tbody td:nth-child(1)::before{content:"Ubicación: ";font-weight:700}
+  #reportView .preparation-report .report-aisle>table tbody td:nth-child(2){
+    grid-area:reference;color:#0b2647;font-size:16px;font-weight:800
+  }
+  #reportView .preparation-report .report-aisle>table tbody td:nth-child(3){
+    grid-area:description;line-height:1.48;color:#253b52
+  }
+  #reportView .preparation-report .report-aisle>table tbody td:nth-child(4){
+    grid-area:quantity;white-space:nowrap;text-align:right;font-weight:850;font-size:16px
+  }
+  #reportView .preparation-report .report-aisle>table tbody td:nth-child(5){
+    grid-area:unit;font-size:12px;max-width:72px;font-weight:700;
+    color:#63768c;overflow-wrap:anywhere;align-self:center
+  }
+  #reportView .preparation-report .report-aisle>table tfoot{display:block;margin-top:8px}
+  #reportView .preparation-report .report-aisle>table tfoot tr{display:block}
+  #reportView .preparation-report .report-aisle>table tfoot th{
+    display:block;text-align:left;white-space:normal;border:1px solid #ccdae8;
+    border-radius:8px;font-size:13px;line-height:1.45;padding:10px;
+    overflow-wrap:anywhere
+  }
+  #reportView .preparation-report dl{grid-template-columns:repeat(2,minmax(0,1fr))}
+  #reportView .preparation-report dl div{min-width:0;overflow-wrap:anywhere}
+}
+
 /* Subtotales de pasillo visibles en pantalla y en impresión. */
 .preparation-report .report-aisle-total th{font-weight:800;text-align:right;background:#edf3f8;color:#092c50;border-top:2px solid #819bb3;padding:9px 8px;white-space:normal}
 @media print{.preparation-report .report-aisle-total{break-inside:avoid;page-break-inside:avoid}.preparation-report .report-aisle-total th{background:#e9e9e9!important;color:#000!important;border-top:2px solid #555}}
