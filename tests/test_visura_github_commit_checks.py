@@ -166,7 +166,7 @@ class CommitCheckTests(unittest.TestCase):
             observe_commit_checks(REPO, SHA, "token", opener=opener)
 
     def test_check_name_control_character_is_rejected(self):
-        opener, _ = fake_api([[{**check(), "name": "test\\nforged"}]])
+        opener, _ = fake_api([[{**check(), "name": "test\nforged"}]])
         with self.assertRaisesRegex(ValueError, "Invalid check run name"):
             observe_commit_checks(REPO, SHA, "token", opener=opener)
 
