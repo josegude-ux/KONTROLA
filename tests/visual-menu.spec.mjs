@@ -32,6 +32,8 @@ for (const viewport of [
 ]) {
   test(`menu layout and official images: ${viewport.name}`, async ({ page }) => {
     await page.setViewportSize({ width: viewport.width, height: viewport.height });
+    // La prueba es de maquetación: evitar que la autenticación asíncrona oculte el menú.
+    await page.route("**/src/app.mjs", route => route.fulfill({ status: 200, contentType: "text/javascript", body: "" }));
     await page.goto("http://127.0.0.1:4173/", { waitUntil: "domcontentloaded" });
     await page.evaluate(() => {
       document.querySelector("#loginView")?.setAttribute("hidden", "");
