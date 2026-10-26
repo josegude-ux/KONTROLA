@@ -159,3 +159,6 @@ La idea de un portal común se documentó separadamente en `docs/MOVENTA_CONCEPT
 
 - Code Review Gate #65 (`40262803031`) **success, 74/74 pruebas OK**: https://github.com/josegude-ux/KONTROLA/actions/runs/40262803031.
 - Comprobador de contexto de revisión inerte `scripts/visura_review_context.py` (commit `6a6c0ff`), con cinco pruebas `tests/test_visura_review_context.py` (commit `42a64af`). Exige coincidencia de repositorio, PR, tarea y SHA, detecta auto-revisión, pero **no autentica fuentes ni autoriza acciones**. Pendiente CI.
+
+- Code Review Gate #68 (`40263039956`) **success, 79/79 pruebas OK**: https://github.com/josegude-ux/KONTROLA/actions/runs/40263039956.
+- Adaptador GitHub endurecido: valida la sintaxis del login del revisor (longitud 1-39, alfanuméricos/guiones, sin guiones al inicio/final ni dobles) en `scripts/visura_github_review_adapter.py` (commit `775002b`), con tres pruebas nuevas (commit `19ca268`). No autentica la identidad; CI pendiente.
