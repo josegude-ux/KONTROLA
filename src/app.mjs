@@ -711,6 +711,7 @@ $("finishPreparation").addEventListener("click",async()=>{
     const {error}=await client.rpc("kontrola_finalizar_preparacion",{p_codigo:current.codigo});
     if(error)throw error;
     currentPreparation={active:false,finalized:true};current.preparacion_fin=new Date().toISOString();current.estado=estadoTrasPreparar(current);visible($("finishPreparation"),false);
+    refreshLoads().catch(()=>{});
     stopPreparationClock();renderPreparationClock();refreshOperatorDashboard().catch(()=>{});
     $("prepStatus").className="info-bar complete";
     $("prepStatus").textContent="Sesión de preparación finalizada en VISURA. La verificación ha estado disponible desde que se publicó la carga.";
@@ -801,7 +802,7 @@ async function startOrResumeVerification(load){
       .eq("verificacion_id",id).order("linea",{ascending:true});
     if(linesError)throw linesError;
     load.verificador_id=user.id;load.verificacion_inicio=started.inicio;
-    if(started.estado==="finalizada")load.verificacion_fin=load.verificacion_fin||started.inicio;
+    // La fecha de cierre viene del panel de cargas; no confundirla con started.inicio.
     load.estado=started.estado==="finalizada"?estadoTrasVerificar(load):"verificacion_en_curso";
     currentVerification={id,load,finished:started.estado==="finalizada"};
     verificationLines=(lines||[]).map(line=>({
@@ -894,6 +895,8 @@ $("finishVerification").addEventListener("click",async()=>{
     currentVerification.finished=true;
     currentVerification.load.verificacion_fin=result?.finalizada_en||new Date().toISOString();
     currentVerification.load.estado=estadoTrasVerificar(currentVerification.load);
+    // Refrescar desde el servidor evita mostrar un cierre obsoleto si otro operario trabajó en paralelo.
+    refreshReviewLoads().catch(()=>{});
     currentVerification.load.incidencias_pendientes=Number(result?.incidencias_pendientes||0);
     global("Verificación finalizada. Incidencias pendientes: "+Number(result?.incidencias_pendientes||0)+".","success");
   }catch(error){global("No se pudo finalizar: "+errorText(error),"error");}
