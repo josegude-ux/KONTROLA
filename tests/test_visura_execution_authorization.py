@@ -38,6 +38,21 @@ class ExecutionAuthorizationTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             assess_execution_request(self.task, self.review)
 
+    def test_unhashable_decision_fails_closed(self):
+        self.review["decision"] = ["approve"]
+        with self.assertRaisesRegex(ValueError, "Invalid review decision"):
+            assess_execution_request(self.task, self.review)
+
+    def test_review_cannot_add_execution_permission(self):
+        self.review["execution_authorized"] = True
+        with self.assertRaisesRegex(ValueError, "Invalid review fields"):
+            assess_execution_request(self.task, self.review)
+
+    def test_identity_flag_must_be_boolean(self):
+        self.review["trusted_identity_verified"] = "true"
+        with self.assertRaisesRegex(ValueError, "Invalid identity verification flag"):
+            assess_execution_request(self.task, self.review)
+
     def test_task_id_must_match(self):
         self.review["task_id"] = "VISURA-OTHER"
         with self.assertRaisesRegex(ValueError, "mismatch"):
