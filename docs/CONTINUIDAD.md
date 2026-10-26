@@ -138,3 +138,6 @@ La idea de un portal común se documentó separadamente en `docs/MOVENTA_CONCEPT
 
 - Code Review Gate #45 (`40262000611`) **success, 51/51 pruebas OK** y smoke de pagos bloqueados: https://github.com/josegude-ux/KONTROLA/actions/runs/40262000611.
 - La proyección de revisiones valida ahora el SHA de cada revisión antes de compararlo, y permite diferencias de mayúsculas/minúsculas hexadecimales (`af90e6e`); dos pruebas nuevas (`59cc574`). Pendiente CI. No se ha conectado ninguna API ni concedido permisos.
+
+- Code Review Gate #48 (`40262080409`) `success`, **53/53 pruebas OK** y pagos bloqueados: https://github.com/josegude-ux/KONTROLA/actions/runs/40262080409.
+- Consulta real de revisiones del PR #37 vía conector GitHub: `reviews=[]` en el momento de la comprobación; no hay aprobación que pueda usarse como evidencia. Se añadió adaptador **offline no autenticador** de respuesta REST (`scripts/visura_github_review_adapter.py`) y tres pruebas (`tests/test_visura_github_review_adapter.py`), commits `a110e44` y `e269986`. No autoriza ejecutar, no conecta por sí mismo y está pendiente CI.
