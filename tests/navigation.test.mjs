@@ -213,3 +213,31 @@ test("la importación conserva las observaciones y los huecos del PDF sin migrac
   assert.match(admin,/observations:payload\.observaciones/);
   assert.match(read("src/core.mjs"),/leerObservacionesCabecera\(pages\)/);
 });
+
+
+test("la lectura de PDF antiguos es voluntaria y no modifica Supabase ni relojes",()=>{
+ const pdf=read("src/legacy-header.mjs");
+ assert.match(html,/id="readLegacyHeaders"/);
+ assert.match(html,/id="legacyHeaderStatus"/);
+ assert.match(app,/\$\("readLegacyHeaders"\)\.addEventListener\("click"/);
+ assert.match(app,/client\.storage\.from\(PDF_BUCKET\)\.download\(load\.documento_ruta\)/);
+ assert.match(app,/await parsePdfFile\(original,\{warehouse\}\)/);
+ assert.match(app,/cargasCabeceraPendiente\(/);
+ assert.match(app,/legacyHeaderCache\.clear\(\)/);
+ assert.match(app,/serial!==loadsRequestSerial/);
+ assert.match(app,/if\(!validRequest\(warehouse,userId\)\|\|serial!==loadsRequestSerial\)return/);
+ assert.match(app,/statusElement\.textContent="Leyendo cabecera "/);
+ assert.doesNotMatch(pdf,/\\.insert\\(|\\.upsert\\(|\\.update\\(|\\.delete\\(|\\.rpc\\(/);
+ const start=app.indexOf("async function leerCabecerasAntiguas()");
+ const end=app.indexOf("function renderLoadList()",start);
+ const legacy=app.slice(start,end);
+ assert.doesNotMatch(legacy,/\\.insert\\(|\\.upsert\\(|\\.update\\(|\\.delete\\(|\\.rpc\\(|startCurrentPreparation|openLoad\\(/);
+});
+
+test("los PDF leídos se muestran solo durante la sesión y se mantienen al refrescar",()=>{
+ assert.match(app,/legacyHeaderCache\.set\(load\.documento_ruta,extras\)/);
+ assert.match(app,/const cached=legacyHeaderCache\.get\(load\.documento_ruta\)/);
+ assert.match(app,/cached&&cabeceraSinMetadatos\(enriched\)/);
+ assert.match(app,/legacyHeaderCache\.clear\(\)/);
+ assert.match(app,/id\.textContent=r\.codigo\+\(observaciones\?" - "\+observaciones:""\)/);
+});
