@@ -4,11 +4,33 @@
 
 > Este archivo es una **copia maestra de instrucciones**, no un informe del estado actual del software. Antes de cualquier cambio hay que contrastar ramas, commits, PR y documentación con GitHub. No fusionar, desplegar ni borrar datos sin autorización. No se puede garantizar un proceso en segundo plano ni superar límites de Work.
 
-## 1. REACTIVAR VISURA
-**Cuándo:** se para el desarrollo pero sigues en el mismo chat.
+## 1. REACTIVAR VISURA — SELECTOR DE CHAT (V2)
+
+**Cuándo:** se ha detenido el trabajo en un chat de desarrollo y quieres que continúe **en esa misma conversación**.
+
+**Causa de la corrección:** el botón 01 anterior copiaba siempre una orden genérica que decía «este chat», sin distinguir VISURA WORK, VISURA 0.1, VISURA 0.2 ni los demás. Podía reactivar una línea equivocada cuando se pegaba en otro chat.
+
+**Interfaz actualizada:** antes de copiar debes elegir el **chat que quieres reactivar**. El panel incluye los nombres de chats VISURA conocidos y «Otro chat» para escribir el nombre exacto. Opcionalmente puedes facilitar un enlace directo para abrirlo, pero el panel **no puede recuperar automáticamente todos tus chats, pegar ni enviar el mensaje en una conversación existente**. No inventa enlaces. La elección sin enlace permite copiar la orden pero exige navegar manualmente a la conversación.
+
+**Regla de destino:** pega la orden 01 **solo en el chat seleccionado**. Para trasladar trabajo desde una conversación a otra utiliza el botón 03, que distingue origen y destino. Un enlace o nombre no prueba acceso al historial; se debe comprobar en GitHub el avance real antes de cualquier acción.
+
+**Variables de la plantilla:** `{{NOMBRE_CHAT}}` y `{{ENLACE_CHAT}}` se sustituyen por los campos del panel. No deben quedar sin resolver.
 
 ```text
-REACTIVAR VISURA. Retoma el desarrollo desde la última tarea realmente comprobada, respetando las decisiones y el prompt maestro de este chat. Antes de modificar código, verifica la rama, los commits, los PR y docs/CONTINUIDAD.md de los repositorios implicados. No repitas tareas finalizadas, no sobrescribas cambios ajenos y evita solapamientos entre chats. Continúa con la siguiente tarea autorizada y segura. Después de cada hito, comprueba, guarda y documenta los cambios. No te detengas salvo bloqueo real o necesidad de autorización.
+REACTIVAR DESARROLLO VISURA — CHAT SELECCIONADO.
+
+CHAT QUE QUIERO REACTIVAR: {{NOMBRE_CHAT}}
+ENLACE DE REFERENCIA DEL CHAT ELEGIDO: {{ENLACE_CHAT}}
+
+PRIORIDAD ABSOLUTA: Esta orden es EXCLUSIVAMENTE para reanudar el desarrollo del chat indicado arriba. Debe pegarse en ESA conversación de ChatGPT, no en cualquier otro chat. Si se ha pegado en una conversación distinta o reservada a pruebas, NO ejecutes cambios reales: indica la discrepancia y explica dónde pegarla. Si el usuario quiere continuar un desarrollo en un chat distinto del de origen, debe usar la orden 03 (RECUPERAR EN OTRO CHAT).
+
+VERIFICACIÓN: No supongas que el nombre o enlace del chat permite leer automáticamente su historial. Comprueba qué contexto está realmente accesible. Si el historial está disponible, respeta el último avance y todas las decisiones comprobadas. Si no está disponible, dilo expresamente y contrasta el desarrollo concreto mediante documentos actualizados, ramas, commits, archivos, PR y pruebas de los repositorios GitHub correspondientes. No confundas el desarrollo seleccionado con otros proyectos VISURA relacionados ni consideres main automáticamente la versión más avanzada.
+
+CONTINUACIÓN: Desde la última tarea verdaderamente comprobada de ESE desarrollo, continúa con la siguiente acción autorizada y segura. No reconstruyas tareas ya completadas, no sobrescribas trabajo ajeno y evita simultaneidades entre chats. Después de cada hito verifica, guarda en la rama correcta y actualiza la documentación de continuidad pertinente. Mantén separadas las imágenes aprobadas, integradas y verificadas.
+
+LÍMITES: No fusiones, publiques, despliegues ni borres datos sin autorización explícita. Si el chat receptor está reservado a pruebas, limítate a analizar o simular sin escribir en GitHub o aplicaciones. No te detengas por obstáculos subsanables; busca alternativas compatibles con las herramientas disponibles y solo solicita intervención ante un bloqueo real o una autorización imprescindible. No inventes accesos, pruebas ni trabajo futuro en segundo plano.
+
+RESULTADO: comunica la rama o evidencia verificada, la tarea que has retomado, los cambios efectivamente realizados y cualquier paso que siga pendiente.
 ```
 
 ## 2. PREPARAR TRASPASO WORK
