@@ -102,3 +102,11 @@ La idea de un portal común se documentó separadamente en `docs/MOVENTA_CONCEPT
 - Seguimiento autónomo 26/10: se añadió la prueba `test_multiline_quoted_data_row` (commit `94500a5`), que verifica que un registro con salto de línea entre comillas cuenta como una sola fila. El total esperado ahora es **14 pruebas CSV**. Como la consulta de Actions no devolvió runs para `33ad648`, `6b29d2b` ni `94500a5`, se amplió el filtro del workflow CSV para que cambios en esta documentación disparen una nueva comprobación (commit `341092c3`). Pendiente confirmar run verde antes de integrar.
 
 - Iteración autónoma 26/10: se ha endurecido el detector CSV para cabeceras largas (más de 4096 bytes) y registros lógicos multilínea; commits `4968461`, `f412028` y `edead73` en la rama del piloto. Total esperado: **16 pruebas CSV**. CI de estos cambios pendiente; PR #35 permanece en borrador.
+
+
+## Piloto 2 — validador de especificaciones de tarea (26/10/2026)
+
+- Rama aislada `feat/visura-auto-dev-task-spec`.
+- `scripts/visura_task_spec.py` valida campos permitidos, identificador, límites de texto, lista de comprobaciones y coste máximo declarado de 10 €. Rechaza campos desconocidos como `shell_command`.
+- El resultado siempre establece `execution_authorized=False` y `requires_human_approval=True`: validar una especificación **no ejecuta** la tarea ni demuestra que el proveedor respete un límite real de facturación.
+- Pruebas en `tests/test_visura_task_spec.py`; pendientes de CI y revisión. Sin llamadas de IA, sin shell, sin escritura en aplicaciones, sin despliegue.
