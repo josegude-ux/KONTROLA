@@ -1,0 +1,26 @@
+name: VISURA AUTO-DEV - Code Review Gate
+# Zero-cost validation for code pilots; no writes or external AI.
+on:
+  pull_request:
+    paths:
+      - scripts/visura_*.py
+      - tests/test_visura_*.py
+      - .github/workflows/visura-auto-dev-code-review.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout untrusted PR without credentials
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Compile all VISURA Python modules
+        run: python3 -m compileall -q scripts tests
+      - name: Execute isolated unit tests
+        run: python3 -m unittest discover -s tests -p 'test_visura_*.py' -v
+      - name: Enforce paid API block
+        run: python3 -m scripts.visura_safety_smoke
