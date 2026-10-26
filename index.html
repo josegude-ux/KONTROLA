@@ -40,7 +40,7 @@
       <button class="primary full" type="submit" id="loginButton">Entrar</button>
     </form>
     <p id="authMessage" class="status" role="status" aria-live="polite"></p>
-    <p class="hint">Las cuentas son habilitadas por administración. No existen usuarios de demostración.<br>Versión <span id="loginVersion">0.3.42</span></p>
+    <p class="hint">Las cuentas son habilitadas por administración. No existen usuarios de demostración.<br>Versión <span id="loginVersion">0.3.43</span></p>
   </div>
 </section>
 <div id="shell" hidden>
@@ -174,13 +174,20 @@
       <nav class="admin-tabs" aria-label="Funciones de Administración"><button type="button" class="admin-tab active" data-admin-tab="0" aria-controls="adminSection0" aria-selected="true" role="tab">Importar PDF</button><button type="button" class="admin-tab" data-admin-tab="1" aria-controls="adminSection1" aria-selected="false" role="tab">Pendientes</button><button type="button" class="admin-tab" data-admin-tab="2" aria-controls="adminSection2" aria-selected="false" role="tab">Impresión</button><button type="button" class="admin-tab" data-admin-tab="3" aria-controls="adminSection3" aria-selected="false" role="tab">Operarios</button><button type="button" class="admin-tab" data-admin-tab="4" aria-controls="adminSection4" aria-selected="false" role="tab">Incidencias</button><button type="button" class="admin-tab" data-admin-tab="5" aria-controls="adminSection5" aria-selected="false" role="tab">Historial</button><button type="button" class="admin-tab" data-admin-tab="6" aria-controls="adminSection6" aria-selected="false" role="tab">Archivo OneDrive</button><button type="button" class="admin-tab" data-admin-tab="7" aria-controls="adminSection7" aria-selected="false" role="tab">Resumen</button><button type="button" class="admin-tab" data-admin-tab="8" aria-controls="adminSection8" aria-selected="false" role="tab">Archivo de cargas</button></nav>
       <section class="panel" id="adminSection0" role="tabpanel">
         <h2>Importar → procesar → revisar → publicar</h2><p class="muted">Carga manual desde Business Central. VISURA PREPARA conserva el original y usa el motor v0.5.26 de Control de Cargas.</p>
-        <label>PDF de cargas de Business Central (hasta 20 archivos)<input type="file" accept=".pdf,application/pdf" id="pdfInput" multiple></label><p class="hint">Nombre de PDF: F19711.pdf = Ferrol, C19711.pdf = A Coruña. El año se comprueba con la fecha del PDF. Puedes seleccionar varios documentos; quedan para revisión y no se publican automáticamente.</p>
+        <label>PDF de cargas de Business Central (hasta 20 archivos)<input type="file" accept=".pdf,application/pdf" id="pdfInput" multiple></label><p class="hint">Nombre de PDF: F19711.pdf = carga con destino Ferrol (puede contener COR1 y COR2); C19711.pdf = carga de A Coruña. Solo COR1 se prepara; COR2 tiene hoja detalle independiente. El año se comprueba con la fecha del PDF. Puedes seleccionar varios documentos; quedan para revisión y no se publican automáticamente.</p>
         <button id="processPdf" type="button" class="primary">Importar y procesar</button>
         <div class="status" id="importStatus" role="status" aria-live="polite"></div><details id="importResultDetails" hidden><summary>Ver archivos con error</summary><div id="importResultList"></div></details>
-        <div class="review-switch"><label for="reviewLoadSelect">Cambiar de carga pendiente</label><select id="reviewLoadSelect" aria-label="Seleccionar otra carga para revisar"><option value="">Seleccionar carga…</option></select><button id="reviewLoadRefresh" type="button" class="secondary">Actualizar</button></div><div id="reviewLoadMessage" class="muted" role="status"></div>
+        <div class="review-switch"><label for="reviewLoadSelect">Cambiar de carga (pendiente o publicada)</label><select id="reviewLoadSelect" aria-label="Seleccionar otra carga para revisar"><option value="">Seleccionar carga…</option></select><button id="reviewLoadRefresh" type="button" class="secondary">Actualizar</button></div><div id="reviewLoadMessage" class="muted" role="status"></div>
         <div id="documentReview" class="document-review">Procesa un PDF para iniciar la revisión.</div>
         <p id="reviewReadiness" class="status"></p>
-        <div class="actions"><button id="saveDocumentReview" type="button" class="secondary" disabled>Guardar revisión</button><button id="locationReport" type="button" class="secondary" disabled>Informe ubicaciones BC</button><button id="publishReviewedLoad" type="button" class="primary" disabled>Publicar carga</button></div><div id="postPublishActions" class="post-publish-actions" hidden><p class="muted">Carga publicada. Siguiente paso:</p><button id="generateSheet" type="button" class="primary" disabled>Generar hoja de preparación</button><button id="goToBatchPrint" type="button" class="secondary">Imprimir varias cargas</button></div>
+        <div class="actions"><button id="saveDocumentReview" type="button" class="secondary" disabled>Guardar revisión</button><button id="locationReport" type="button" class="secondary" disabled>Informe ubicaciones BC</button><button id="publishReviewedLoad" type="button" class="primary" disabled>Publicar carga</button></div><div id="warehousePrintActions" class="post-publish-actions" hidden>
+          <p class="muted">La preparación procesa exclusivamente COR1 (A Coruña). COR2 es consulta independiente.</p>
+          <div class="actions">
+            <button id="printCor1Pack" type="button" class="primary" disabled>Imprimir COR1: PDF original + hoja detalle</button>
+            <button id="previewCor2Detail" type="button" class="secondary" disabled>Generar hoja detalle COR2 (sin procesar)</button>
+          </div>
+        </div>
+        <div id="postPublishActions" class="post-publish-actions" hidden><p class="muted">Carga publicada. Siguiente paso:</p><button id="generateSheet" type="button" class="primary" disabled>Generar hoja de preparación COR1</button><button id="goToBatchPrint" type="button" class="secondary">Imprimir varias cargas</button></div>
       </section>
       <section class="panel" id="adminSection1" role="tabpanel" hidden><div class="line"><div><h2>Necesitan atención</h2><p class="muted">Documentos, clasificaciones, verificaciones e incidencias pendientes.</p></div><button id="reloadAttention" type="button" class="secondary">Actualizar</button></div><div id="pendingPublishSummary" class="status" role="status"></div><div class="actions"><button id="pendingSelectAll" type="button" class="secondary">Seleccionar aprobadas</button><button id="pendingPublishSelected" type="button" class="primary" disabled>Publicar seleccionadas</button></div><div id="pendingPublishList" class="attention-list"></div><div id="pendingPublishResult" class="status" role="status"></div><h3>Otros avisos</h3><div id="attentionList" class="attention-list"></div></section>
       <section class="panel" id="adminSection2" role="tabpanel" hidden id="batchPrintPanel">
@@ -232,7 +239,7 @@
     <section id="settingsView" class="view" hidden>
       <div class="page-heading"><button type="button" data-back="home" class="back-button">← Volver</button><h1>Ajustes</h1></div>
       <section class="panel">
-        <p><b>Aplicación:</b> VISURA PREPARA</p><p><b>Versión:</b> <span id="appVersion">0.3.42</span></p>
+        <p><b>Aplicación:</b> VISURA PREPARA</p><p><b>Versión:</b> <span id="appVersion">0.3.43</span></p>
         <p><b>Usuario:</b> <span id="profileName"></span></p><p><b>Perfil:</b> <span id="profileRole"></span></p>
         <div class="actions"><button type="button" id="checkUpdates" class="secondary">Buscar actualización</button><button id="logout" type="button" class="ghost-danger">Cerrar sesión</button></div>
         <div class="status" id="settingsStatus" role="status" aria-live="polite"></div>

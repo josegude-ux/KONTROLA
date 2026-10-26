@@ -39,9 +39,27 @@ test("PDF mixto: administración reprocesa solo el almacén elegido sin copiar l
   assert.match(source,/next\.id!==previous\.id\|\|next\.warehouse!==target\|\|next\.mixedWarehouse/);
   assert.doesNotMatch(source,/products:draft\.parsed\.products/);
   assert.doesNotMatch(source,/actualTotal:draft\.parsed\.actualTotal/);
-  assert.match(source,/Reprocesar solo /);
+  assert.match(source,/Reprocesar SOLO COR1/);
   assert.match(source,/El PDF original sigue intacto/);
   assert.match(source,/Guardar revisión para actualizar la carga pendiente/);
+});
+
+test("importación F/C prepara COR1, impresión original COR1 y hoja COR2 independiente",()=>{
+ const admin=read("src/admin.mjs");
+ const core=read("src/core.mjs");
+ const vendor=read("scripts/build-vendor.mjs");
+ for(const id of ["printCor1Pack","previewCor2Detail","warehousePrintActions"])
+   assert.match(html,new RegExp('id="'+id+'"'));
+ assert.match(admin,/parsePdfFile\(file,\{warehouse:"COR_01_COR"\}\)/);
+ assert.match(admin,/if\(draft\.parsed\.warehouse!=="COR_01_COR"\)return setStatus\("No se puede publicar COR2/);
+ assert.match(admin,/numeroPaginasCor1:parsed\.pageNumbers/);
+ assert.match(admin,/unirPaginasCor1YDetalle/);
+ assert.match(admin,/buildPreparationReport\(asPayload\(parsed\),\{informativoCor2:true\}\)/);
+ assert.match(admin,/draft\.state!=="publicada"\|\|!isCor1/);
+ assert.match(read("sw.js"),/\.\/vendor\/pdf-lib\.min\.mjs/);
+ assert.match(read("sw.js"),/\.\/src\/mixed-print\.mjs/);
+ assert.match(vendor,/outfile:"vendor\/pdf-lib\.min\.mjs"/);
+ assert.match(core,/fileIdentity\?"COR_01_COR"/);
 });
 
 test("Tanques permanece totalmente oculto y sin acciones activas",()=>{
@@ -67,12 +85,12 @@ test("La navegación conserva los accesos previos y los regresos al submenú",()
 
 test("La versión y el caché están preparados para instalar nuevas pantallas",()=>{
   const version=JSON.parse(read("version.json")).version;
-  assert.equal(version,"0.3.42");
+  assert.equal(version,"0.3.43");
   assert.equal(JSON.parse(read("package.json")).version,version);
   assert.equal(JSON.parse(read("package-lock.json")).version,version);
   assert.ok(read("src/config.mjs").includes(`APP_VERSION="${version}"`));
   assert.ok(html.includes(`id="appVersion">${version}<`));
-  assert.match(read("sw.js"),/kontrola-integral-visura-v075/);
+  assert.match(read("sw.js"),/kontrola-integral-visura-v076/);
 });
 
 test("Las consultas descartan respuestas de sesiones o almacenes anteriores",()=>{
