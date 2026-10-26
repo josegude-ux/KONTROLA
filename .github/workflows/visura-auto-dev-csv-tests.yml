@@ -1,0 +1,21 @@
+name: VISURA AUTO-DEV - CSV Pilot Tests
+on:
+  pull_request:
+    paths:
+      - scripts/visura_csv_preflight.py
+      - tests/test_visura_csv_preflight.py
+      - .github/workflows/visura-auto-dev-csv-tests.yml
+permissions:
+  contents: read
+jobs:
+  csv-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Compile CSV preflight
+        run: python3 -m py_compile scripts/visura_csv_preflight.py tests/test_visura_csv_preflight.py
+      - name: Run CSV unit tests
+        run: python3 -m unittest discover -s tests -p 'test_visura_csv_preflight.py' -v
