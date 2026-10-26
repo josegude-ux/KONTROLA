@@ -73,6 +73,11 @@ class CsvPreflightTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "Malformed CSV data"):
             inspect_csv(self.path, ["Pedido", "Nota"])
 
+    def test_multiline_quoted_data_row(self):
+        self.write('Pedido;Nota\nA01;"primera línea\nsegunda línea"\n')
+        result = inspect_csv(self.path, ["Pedido", "Nota"])
+        self.assertEqual(result["rows"], 1)
+
     def test_size_limit(self):
         self.write("Pedido;Cantidad\nA01;2\n")
         with self.assertRaisesRegex(ValueError, "safety limit"):
