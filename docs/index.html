@@ -252,8 +252,9 @@ openDestinationButton.addEventListener("click",()=>{
  if(!dest){destinationOther.focus();showStatus("Indica el nombre del chat de destino");return;}
  const url=destinationChat.value==="CHAT NUEVO"?"https://chatgpt.com/":validDestinationLink();
  if(!url){destinationLink.focus();showStatus("Necesitas el enlace del chat de destino");return;}
- const opened=window.open(url,"_blank","noopener,noreferrer");
- if(!opened)showStatus("Si no se abre, permite ventanas emergentes o abre el enlace manualmente.");
+ const opened=window.open(url,"_blank");
+ if(opened){try{opened.opener=null;}catch(_){}}
+ else showStatus("Si no se abre, permite ventanas emergentes o abre el enlace manualmente.");
 });
 syncDestinationUI();
 
