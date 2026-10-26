@@ -100,3 +100,5 @@ La idea de un portal común se documentó separadamente en `docs/MOVENTA_CONCEPT
 - CI inicial PR #35: 23/24 pruebas correctas; falló detección de delimitador ante una fila con columnas extra. Corregido en commit `20f7db4` tomando el delimitador de la cabecera. **Pendiente de confirmar CI tras el cambio.**
 
 - **CI verificada**: workflow Queue Audit runs #34 (`40259234346`) y #35 (`40259243634`) concluyeron `success`. El registro del run #35 confirma **24 pruebas OK**, smoke test de bloqueo de llamadas de pago y auditoría de issue #31. Evidencia: https://github.com/josegude-ux/KONTROLA/actions/runs/40259243634. El PR #35 sigue en borrador, sin fusionar ni desplegar.
+
+- **CSV Pilot Tests superadas**: run #6, ID `40259958857`, conclusión `success`; compilación correcta y **11/11 pruebas CSV OK** (incluye separadores entrecomillados, tabuladores, cabeceras obligatorias, filas irregulares y límite de tamaño). Evidencia: https://github.com/josegude-ux/KONTROLA/actions/runs/40259958857. PR #35 sigue en borrador y sin fusionar.
