@@ -207,16 +207,33 @@ function renderLoadList(){
     const plateLabel=document.createElement("span");plateLabel.className="load-plate-label";plateLabel.textContent="MATRÍCULA";
     const plateValue=document.createElement("strong");plateValue.className="load-plate-value";plateValue.textContent=r.matricula||"—";
     plate.append(plateLabel,plateValue);
+    // El campo "huecos de palés del camión" no equivale a palés que hay que preparar.
+    // El espacio queda previsto, sin derivar cantidades de capacidad del vehículo.
+    const vehicle=document.createElement("span");vehicle.className="load-vehicle";
+    const pallets=document.createElement("span");pallets.className="load-pallets";
+    const palletsLabel=document.createElement("span");palletsLabel.className="load-pallets-label";palletsLabel.textContent="PALÉS PARA CARGA";
+    const palletsValue=document.createElement("strong");palletsValue.className="load-pallets-value";
+    const palletsCount=r.palets_para_carga;
+    const hasPallets=palletsCount!==null&&palletsCount!==undefined&&palletsCount!==""&&Number.isInteger(Number(palletsCount))&&Number(palletsCount)>=0;
+    palletsValue.textContent=hasPallets?fmt(palletsCount):"—";
+    if(!hasPallets)pallets.title="Pendiente de identificar el número real de palés para preparar la carga";
+    pallets.append(palletsLabel,palletsValue);vehicle.append(plate,pallets);
     const bundles=document.createElement("span");bundles.className="load-bundles";
-    // Reutiliza el desglose por unidades de la hoja de preparación; no suma formatos distintos.
+    // Reutiliza el desglose por unidades de la hoja de preparación.
     const breakdown=desglosarBultos(r.productos);
     bundles.textContent="Bultos desglosados: "+(breakdown.length
       ?breakdown.map(({cantidad,unidad})=>fmt(cantidad)+" "+unidad).join(" · ")
       :"Sin desglose disponible");
-
-    a.append(id,meta,plate,bundles);
+    // Total únicamente de líneas válidas, calculado sobre ese mismo desglose.
+    // Nunca mostrar cero cuando no existe desglose.
+    const totalBultos=breakdown.length?breakdown.reduce((sum,item)=>sum+item.cantidad,0):null;
+    a.append(id,meta,vehicle,bundles);
+    const summary=document.createElement("span");summary.className="load-card-summary";
+    const total=document.createElement("span");total.className="load-bundles-total";
+    total.textContent=totalBultos===null?"— bultos":fmt(totalBultos)+" bultos";
     const weight=document.createElement("span");weight.className="load-weight";weight.textContent=fmt(r.peso_kg)+" kg";
-    b.append(a,weight);
+    summary.append(total,weight);
+    b.append(a,summary);
     b.addEventListener("click",()=>openLoad(r.codigo));
     target.appendChild(b);
   }
