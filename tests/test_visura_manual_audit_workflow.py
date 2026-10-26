@@ -38,7 +38,7 @@ class ManualAuditWorkflowContractTests(unittest.TestCase):
         permission_lines = [
             line.strip() for line in match.group(1).splitlines() if line.strip()
         ]
-        self.assertEqual(permission_lines, ["contents: read", "pull-requests: read"])
+        self.assertEqual(permission_lines, ["contents: read", "pull-requests: read", "checks: read"])
 
     def test_only_one_audit_job(self):
         jobs_text = self.text.split("\njobs:\n", 1)[1]
