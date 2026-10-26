@@ -904,3 +904,5 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 - Rama aislada `feat/visura-prepara-pales-previos-viabilidad-20261026` parte de la corrección de impresión PR #45, SHA `c12375bc1a5967dc046216e63da58c8ec8e73345`. Versión candidata 0.3.37 y caché v070. El usuario autorizó publicar tras integrar y comprobar esta función; hacer HEAD y CI y validar despliegue. Sin SQL, cambios en Supabase ni eliminación de datos.
 
 - Primera CI del commit d46c352b detectó una expectativa obsoleta en tests/print-pdf.test.mjs, v069 frente a v070. Corregida en el siguiente commit. No se cambia el módulo PDF.
+
+- Segunda CI run `40321901143` para HEAD `bd3f68799dc3a6b1e66cb9433cb4740f284c900e` terminó SUCCESS (240 pruebas, 0 fallos). Se añade defensa adicional directamente en `startCurrentPreparation` para impedir iniciar por botón de reintento si el formulario ha pasado a estado no viable. Revalidar CI del nuevo commit.

@@ -511,6 +511,10 @@ function startPreparationClock(){
 }
 async function startCurrentPreparation(){
   if(busy||!current||currentReadOnly||currentPreparation?.active||currentPreparation?.finalized||current.estado==="cerrada")return;
+  if(assessment().estado!=="viable"){
+    $("prepStatus").textContent="Antes de iniciar, comprueba que el camión dispone de huecos suficientes para esta carga.";
+    return;
+  }
   const code=current.codigo,requestUser=user?.id;
   busy=true;$("startPreparation").disabled=true;
   $("prepStatus").textContent="Iniciando automáticamente la preparación con hora del servidor…";
