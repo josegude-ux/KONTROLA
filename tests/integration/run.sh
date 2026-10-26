@@ -45,4 +45,9 @@ grep -q "KONTROLA_OPERATOR_STATS_OK" /tmp/kontrola-operator-stats.log
 # Propuesta de archivo: ejecutar SOLO en base aislada tras las pruebas principales.
 "${PSQL[@]}" -f tests/integration/archive.sql >/tmp/kontrola-archivo.log
 grep -q "KONTROLA_ARCHIVE_OK" /tmp/kontrola-archivo.log
-echo "KONTROLA_DATABASE_OK migrations=6 workflow=passed revisions=passed stats=passed concurrency=passed archive=passed"
+# Validar el cambio propuesto solo DESPUÉS de las regresiones del esquema histórico,
+# exclusivamente en la BD efímera local que crea este script. Jamás en Supabase.
+"${PSQL[@]}" -f supabase/proposals/kontrola_prepara_verificacion_paralelas.sql >/tmp/kontrola-parallel-migration.log
+"${PSQL[@]}" -f tests/integration/parallel.sql >/tmp/kontrola-parallel.log
+grep -q "KONTROLA_PARALLEL_OK" /tmp/kontrola-parallel.log
+echo "KONTROLA_DATABASE_OK migrations=6 workflow=passed revisions=passed stats=passed concurrency=passed archive=passed parallel=passed"
