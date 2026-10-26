@@ -212,7 +212,7 @@ export function createAdminController({client,getUser,bucket,global,errorText,on
       select.appendChild(option);
     }
     if(rows.some(row=>row.id===previous))select.value=previous;
-    message.textContent=rows.length+" carga(s) disponibles para revisar o imprimir.";"
+    message.textContent=rows.length+" carga(s) disponibles para revisar o imprimir.";
   }
   $("reviewLoadSelect").addEventListener("change",async()=>{
     const id=$("reviewLoadSelect").value;
