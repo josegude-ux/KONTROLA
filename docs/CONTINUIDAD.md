@@ -667,3 +667,10 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 - GitHub Actions `40257146159` confirmó `npm run check` **success**: 193 pruebas aprobadas, cero fallidas, sintaxis de módulos superada. https://github.com/josegude-ux/KONTROLA/actions/runs/40257146159
 - Se añadieron tres regresiones en `tests/visura-menu.test.mjs`: administración oculta por defecto, cuatro imágenes WEBP distintas y precarga offline explícita de las cuatro imágenes en `sw.js`.
 - Commit funcional `3274d135754aef43b611e5bcc2b2a9cfc30339c8`. **Pendiente verificar CI tras añadir las tres pruebas.** No se han sustituido imágenes ni cambiado roles o datos.
+
+
+### 2026-10-26 - CI de regresion de menu confirmada
+- Ejecucion GitHub Actions 40257289902 (#26), commit 0a069a5fd3411539dfed7bc0ed8fbd1fb1928d2a: SUCCESS.
+- Log verificado: 196 pruebas aprobadas, cero fallidas, cero omitidas. Paso de sintaxis y regresion completo.
+- Se corrigieron dos patrones regex defectuosos en los tests nuevos; no hubo cambios funcionales de aplicacion en ese commit.
+- Permanecen pendientes la incorporacion de las cuatro imagenes oficiales, pruebas visuales en dispositivos y pruebas de integracion de base de datos. No fusionar ni desplegar sin autorizacion.
