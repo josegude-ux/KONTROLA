@@ -775,3 +775,11 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 - Añadida además una aserción geométrica a `tests/visual-menu.spec.mjs` para fallar si el área de texto se extiende sobre el área de la ilustración en cualquiera de los dos viewports (commit `b6526c323e7ce3181db1544576602592e9b120a7`). Pendiente resultado de CI para esta nueva aserción.
 
 - La ejecución #114 detectó un falso positivo de la aserción geométrica en escritorio: la estructura de columnas de escritorio permite cajas DOM que se solapan geométricamente aunque la captura no muestre solapamiento visible. Se limitó esa aserción específica al layout móvil, donde se había observado el defecto real. Commit `cc49100a3abe5570df226b5e9ff1deceb5575b0d`; pendiente CI.
+
+
+### 2026-10-26 — Preparación de revisión física con la base de datos actual
+- El propietario ha indicado usar la base de datos Supabase actual para la revisión física; no crear una base paralela ni cambiar la conexión configurada.
+- Añadido `docs/PRUEBA_FISICA_BASE_ACTUAL.md` (commit `e25b945343607fafa0399f90725c983001b065e5`) con el protocolo para iPhone, Android y Windows, límites para evitar operaciones destructivas y evidencias a registrar.
+- CI más reciente #118 (`1867f8d47f1d30bff49b63ee3ba7d93f13d898ce`) SUCCESS: regresión, Chromium escritorio/móvil y subida de capturas completadas. Artefacto disponible en Actions.
+- Bloqueo para probar físicamente la rama: `pages.yml` despliega al mismo GitHub Pages público; ejecutar ese workflow con la rama de corrección podría sustituir la app publicada. No se ha desplegado. Hace falta un alojamiento/URL de preview aislada o un método temporal seguro.
+- No se han hecho cambios ni escrituras en Supabase durante esta preparación; sin merge ni despliegue.
