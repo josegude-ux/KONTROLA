@@ -37,14 +37,6 @@ jobs:
           npx playwright install --with-deps chromium
           mkdir -p artifacts
           npx playwright test tests/visual-menu.spec.mjs --reporter=line
-      - name: Guardar capturas de comprobación visual
-        if: always()
-        uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08 # v4
-        with:
-          name: visura-prepara-menu-visual
-          path: artifacts/*.png
-          if-no-files-found: ignore
-
       - name: Guardar recursos integrados despues de pasar pruebas
         run: |
           git add index.html sw.js tests/visura-menu.test.mjs tests/navigation.test.mjs
