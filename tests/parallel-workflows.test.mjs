@@ -39,7 +39,7 @@ test("carga cerrada no se adjudica a otro verificador",()=>{
 });
 test("SQL de propuesta: no exige preparación para verificar y no cierra la preparación ajena",()=>{
   const sql=readFileSync(new URL("../supabase/proposals/kontrola_prepara_verificacion_paralelas.sql",import.meta.url),"utf8");
-  assert.ok(sql.includes("La preparación se gestiona en BC")||sql.includes("El picking se realiza en BC"));
+  assert.ok(/La preparación del picking se gestiona en Business Central|La preparación se gestiona en BC|El picking se realiza en BC/i.test(sql));
   assert.ok(!sql.includes("La carga no tiene preparación"));
   assert.ok(!sql.includes("set fin=v_now,cierre_motivo='Finalización de verificación'"));
   assert.ok(sql.includes("or exists(select 1 from public.kontrola_verificaciones"));
