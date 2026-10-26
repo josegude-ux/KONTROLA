@@ -91,8 +91,18 @@ def inspect_readonly_audit_bundle(
     # Even a visible file is not an effective reviewer-policy verdict.
     codeowners = observe_codeowners(repository, target_branch, token, opener=opener)
 
-    # Check the PR again after all observations, which are not atomic.
-    # Even a consistent report can become stale immediately after return.
+    # Re-read *effective policy for the real PR target* after observing CI,
+    # CODEOWNERS and reviewers. A branch rule can change independently of
+    # the PR head/base SHA. Compare the full normalized observations, without
+    # turning a matching snapshot into permission to execute or merge.
+    target_policy_recheck = inspect_branch_policy(
+        repository, target_branch, token, opener=opener
+    )
+    if target_policy_recheck != target_policy:
+        raise ValueError("Target branch policy changed during the audit")
+
+    # Check the PR again LAST, after the policy recheck. These reads are
+    # non-atomic: a subsequent edit still invalidates the observation.
     endpoint = "/repos/" + repository + "/pulls/" + str(pr_number)
     latest = _get_json(endpoint, token, opener)
     if not isinstance(latest, dict):
@@ -131,6 +141,7 @@ def inspect_readonly_audit_bundle(
         "default_branch_policy": default_policy,
         "target_differs_from_default": target_branch != default_branch,
         "same_pr_metadata_after_policy_lookup": True,
+        "same_target_policy_after_audit": True,
         "report_is_atomic": False,
         "repository_policy_verified": False,
         "execution_authorized": False,
