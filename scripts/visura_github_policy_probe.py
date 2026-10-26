@@ -45,6 +45,33 @@ def _read_status(path, token, opener):
         raise
 
 
+def _parse_required_checks(rows, app_key):
+    """Normalize required contexts for observation, NOT enforcement."""
+    if not isinstance(rows, list) or len(rows) > 500:
+        raise ValueError("Invalid required checks list")
+    results = []
+    seen = set()
+    for item in rows:
+        if not isinstance(item, dict):
+            raise ValueError("Invalid required check item")
+        context = item.get("context")
+        app_id = item.get(app_key)
+        if (
+            not isinstance(context, str) or not context or len(context) > 255
+            or any(ord(ch) < 32 for ch in context)
+            or (app_id is not None and (
+                type(app_id) is not int or (app_id != -1 and app_id <= 0)
+            ))
+        ):
+            raise ValueError("Invalid required check context or app ID")
+        key = (context, app_id)
+        if key in seen:
+            raise ValueError("Duplicate required check context")
+        seen.add(key)
+        results.append({"context": context, "app_id": app_id})
+    return results
+
+
 def inspect_branch_policy(repository, branch_name, token, opener=None):
     """Return observations, never permissions or a sufficient-policy verdict."""
     _validate_repo(repository)
@@ -76,8 +103,30 @@ def inspect_branch_policy(repository, branch_name, token, opener=None):
             or type(enforce_admins.get("enabled")) is not bool
         ):
             raise ValueError("Invalid enforce_admins setting")
+        classic_status_config = classic.get("required_status_checks")
+        if classic_status_config is None:
+            classic_checks = []
+        else:
+            if not isinstance(classic_status_config, dict):
+                raise ValueError("Invalid classic required status checks")
+            checks = classic_status_config.get("checks")
+            contexts = classic_status_config.get("contexts")
+            if checks:
+                classic_checks = _parse_required_checks(checks, "app_id")
+            elif contexts is not None:
+                if not isinstance(contexts, list):
+                    raise ValueError("Invalid classic check contexts")
+                classic_checks = _parse_required_checks(
+                    [{"context": name} for name in contexts], "app_id"
+                )
+            elif checks == []:
+                classic_checks = []
+            else:
+                # A setting without check details cannot prove no requirements.
+                classic_checks = None
         classic_summary = {
             "lookup": "retrieved",
+            "required_check_contexts": classic_checks,
             "pull_request_reviews_configured": review_details is not None,
             "required_approving_review_count": review_count,
             "status_checks_configured": classic.get("required_status_checks") is not None,
@@ -88,6 +137,7 @@ def inspect_branch_policy(repository, branch_name, token, opener=None):
     else:
         classic_summary = {
             "lookup": status,
+            "required_check_contexts": None,
             "pull_request_reviews_configured": None,
             "required_approving_review_count": None,
             "status_checks_configured": None,
@@ -126,6 +176,8 @@ def inspect_branch_policy(repository, branch_name, token, opener=None):
     # branch, unlike the repository-wide listing above. It does not replace
     # classic branch protection checks or prove bypass permissions.
     applied_rules = []
+    applied_requirements = []
+    applied_requirements_complete = True
     applied_status = "retrieved"
     for page in range(1, MAX_APPLIED_RULE_PAGES + 1):
         lookup, data = _read_status(
@@ -136,6 +188,8 @@ def inspect_branch_policy(repository, branch_name, token, opener=None):
         if lookup != "retrieved":
             applied_status = lookup
             applied_rules = []
+            applied_requirements = []
+            applied_requirements_complete = False
             break
         if not isinstance(data, list) or len(data) > 100:
             raise ValueError("Invalid active branch rules response")
@@ -153,6 +207,20 @@ def inspect_branch_policy(repository, branch_name, token, opener=None):
                 or (source_type is not None and not isinstance(source_type, str))
             ):
                 raise ValueError("Invalid active branch rule metadata")
+            if rule_type == "required_status_checks":
+                parameters = rule.get("parameters")
+                if parameters is None:
+                    applied_requirements_complete = False
+                elif not isinstance(parameters, dict):
+                    raise ValueError("Invalid active required check parameters")
+                else:
+                    rows = parameters.get("required_status_checks")
+                    if rows is None:
+                        applied_requirements_complete = False
+                    else:
+                        applied_requirements.extend(
+                            _parse_required_checks(rows, "integration_id")
+                        )
             applied_rules.append({
                 "type": rule_type,
                 "ruleset_id": rule_id,
@@ -186,6 +254,14 @@ def inspect_branch_policy(repository, branch_name, token, opener=None):
                 if applied_status == "retrieved" else None
             ),
             "rules": applied_rules if applied_status == "retrieved" else None,
+            "required_check_contexts": (
+                applied_requirements
+                if applied_status == "retrieved" and applied_requirements_complete
+                else None
+            ),
+            "required_contexts_available": (
+                applied_status == "retrieved" and applied_requirements_complete
+            ),
             "applied_ruleset_api_responded": applied_status == "retrieved",
             "includes_classic_branch_protection": False,
         },
