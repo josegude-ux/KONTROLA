@@ -142,7 +142,7 @@ header .intro{font-size:.85rem;line-height:1.38}
 </style>
 </head>
 <body>
-<main><header><div class="header-top"><div class="brand-lockup"><img class="brand-mark" src="./assets/icons/visura-centro-mando-logo-64.png" width="54" height="54" alt="Logo aprobado VISURA Centro de mando"><div class="brand-text"><strong>VISURA</strong><span>CENTRO DE MANDO <b class="panel-version">V4.3</b></span></div></div><button type="button" class="refresh-panel" id="refresh-panel" title="Cargar de nuevo el Centro de mando" aria-label="Actualizar Centro de mando"><span aria-hidden="true">↻</span> Actualizar</button></div><h1>¿Qué quieres hacer?</h1><p class="intro">Ocho funciones a un toque, sin recorrer formularios.</p></header>
+<main><header><div class="header-top"><div class="brand-lockup"><img class="brand-mark" src="./assets/icons/visura-centro-mando-logo-64.png" width="54" height="54" alt="Logo aprobado VISURA Centro de mando"><div class="brand-text"><strong>VISURA</strong><span>CENTRO DE MANDO <b class="panel-version">V4.4</b></span></div></div><button type="button" class="refresh-panel" id="refresh-panel" title="Cargar de nuevo el Centro de mando" aria-label="Actualizar Centro de mando"><span aria-hidden="true">↻</span> Actualizar</button></div><h1>¿Qué quieres hacer?</h1><p class="intro">Ocho funciones a un toque, sin recorrer formularios.</p></header>
 <nav id="command-menu" class="dashboard-nav" aria-label="Accesos VISURA">
 <div class="dashboard-caption"><strong>ACCESOS DIRECTOS</strong><span>8 funciones</span></div>
 <div class="dashboard-grid"><button type="button" class="dashboard-action" data-open-order="orden-1" aria-controls="orden-1"><span class="action-mark" aria-hidden="true">↻</span><span class="action-copy"><strong>Reactivar</strong><small>Continuar desarrollo</small></span></button>
@@ -155,27 +155,49 @@ header .intro{font-size:.85rem;line-height:1.38}
 <button type="button" class="dashboard-action" data-open-order="orden-8" aria-controls="orden-8"><span class="action-mark" aria-hidden="true">▤</span><span class="action-copy"><strong>Estado del chat</strong><small>Avance y trabajo pendiente</small></span></button></div>
 </nav>
 <div class="command-toolbar" id="command-toolbar" hidden><button class="back-to-dashboard" type="button" id="back-to-dashboard">‹ Volver al menú</button><span class="toolbar-order" id="current-order-label">ORDEN 01 / 08</span></div>
-<article class="command" id="orden-1"><div class="top"><div class="symbol">↻</div><div><div class="eyebrow">ORDEN 01 · Reanudar desarrollo</div><h2>REACTIVAR VISURA</h2></div></div><p class="when">Elige exactamente qué desarrollo quieres reanudar. Para trasladarlo a otro chat, utiliza la orden 03.</p><div class="reactivation-generator">
-<label class="field-label" for="reactivate-chat">¿Qué chat quieres reactivar?</label>
-<select id="reactivate-chat" required>
-<option value="" selected disabled>Selecciona un chat…</option>
-<option value="VISURA WORK">VISURA WORK</option>
+<article class="command" id="orden-1">
+<div class="top"><div class="symbol">↻</div><div><div class="eyebrow">ORDEN 01 · REANUDAR CONTINUIDAD</div><h2>REANUDAR DESARROLLO EXISTENTE</h2></div></div>
+<p class="when">Para continuar en el chat que ya asumió el desarrollo. Ejemplo: VISURA WORK → VISURA AUTO-DEV. No hace falta volver a Work ni repetir el traspaso.</p>
+<div class="reactivation-generator">
+<label class="field-label" for="reactivate-chat">1. Chat de origen del trabajo</label>
+<select id="reactivate-chat">
+<option value="VISURA WORK" selected>VISURA WORK</option>
+<option value="VISURA AUTO-DEV">VISURA AUTO-DEV</option>
 <option value="VISURA 0.1">VISURA 0.1</option>
 <option value="VISURA 0.2">VISURA 0.2</option>
 <option value="PROMPT E IMÁGENES">PROMPT E IMÁGENES</option>
-<option value="VISURA CENTRO DE MANDO">VISURA CENTRO DE MANDO</option>
-<option value="VISURA — PRUEBAS CENTRO DE MANDO">VISURA — PRUEBAS CENTRO DE MANDO</option>
 <option value="VISURA INVENTA">VISURA INVENTA</option>
 <option value="VISURA PREPARA">VISURA PREPARA</option>
 <option value="MOVENTA 0.3">MOVENTA 0.3</option>
 <option value="OTRO">Otro chat</option>
 </select>
-<label class="field-label" for="reactivate-other" id="reactivate-other-label" hidden>Nombre exacto del chat</label>
-<input id="reactivate-other" type="text" placeholder="Nombre del chat que quieres continuar" hidden>
-<label class="field-label" for="reactivate-chat-link">Enlace directo del chat elegido (opcional)</label>
-<input id="reactivate-chat-link" type="url" inputmode="url" placeholder="https://chatgpt.com/c/…">
-<p class="field-hint" id="reactivate-help">Selecciona el chat antes de copiar. La orden debe pegarse en esa misma conversación. Sin enlace, tendrás que abrirla manualmente.</p>
-</div><div class="actions"><button type="button" class="primary" data-copy="0">Copiar reactivación elegida</button><button type="button" class="secondary" id="open-reactivate-chat" disabled>Abrir chat elegido</button><button type="button" class="secondary" aria-controls="prompt-0" aria-expanded="false" data-toggle="0">Ver texto</button></div><pre id="prompt-0" hidden>Selecciona el chat que quieres reactivar.</pre></article>
+<label class="field-label" for="reactivate-other" id="reactivate-other-label" hidden>Nombre exacto del chat de origen</label>
+<input id="reactivate-other" type="text" placeholder="Nombre del chat de origen" hidden>
+<label class="field-label" for="reactivate-destination">2. Chat que YA continúa ese desarrollo</label>
+<select id="reactivate-destination">
+<option value="VISURA AUTO-DEV" selected>VISURA AUTO-DEV</option>
+<option value="VISURA WORK">VISURA WORK</option>
+<option value="VISURA 0.1">VISURA 0.1</option>
+<option value="VISURA 0.2">VISURA 0.2</option>
+<option value="VISURA — IMPLEMENTACIÓN">VISURA — IMPLEMENTACIÓN</option>
+<option value="VISURA — PRUEBAS CENTRO DE MANDO">VISURA — PRUEBAS CENTRO DE MANDO</option>
+<option value="OTRO">Otro chat</option>
+</select>
+<label class="field-label" for="reactivate-destination-other" id="reactivate-destination-other-label" hidden>Nombre exacto del chat de destino</label>
+<input id="reactivate-destination-other" type="text" placeholder="Nombre de la conversación actual" hidden>
+<details class="status-more">
+<summary>Enlaces de chats (opcionales)</summary>
+<label class="field-label" for="reactivate-chat-link">Enlace del origen</label>
+<input id="reactivate-chat-link" type="url" inputmode="url" placeholder="https://chatgpt.com/c/...">
+<label class="field-label" for="reactivate-destination-link">Enlace del chat de destino (para abrirlo)</label>
+<input id="reactivate-destination-link" type="url" inputmode="url" placeholder="https://chatgpt.com/c/...">
+</details>
+<p class="field-hint" id="reactivate-help">Copia el prompt y pégalo en VISURA AUTO-DEV, que ya está continuando VISURA WORK. Si cambias las selecciones, la orden se adaptará.</p>
+</div><div class="actions">
+<button type="button" class="primary" data-copy="0">Copiar reanudación</button>
+<button type="button" class="secondary" id="open-reactivate-chat" disabled>Abrir chat de destino</button>
+<button type="button" class="secondary" aria-controls="prompt-0" aria-expanded="false" data-toggle="0">Ver texto</button></div>
+<pre id="prompt-0" hidden>Preparando orden para VISURA WORK → VISURA AUTO-DEV.</pre></article>
 <article class="command" id="orden-2"><div class="top"><div class="symbol">↗</div><div><div class="eyebrow">ORDEN 02 · Preparar fin de créditos</div><h2>PREPARAR TRASPASO WORK</h2></div></div><p class="when">Work está cerca de su límite o quieres protegerte antes de perder acceso.</p><div class="actions"><button type="button" class="primary" data-copy="1">Copiar orden</button><button type="button" class="secondary" aria-controls="prompt-1" aria-expanded="false" data-toggle="1">Ver texto</button></div><pre id="prompt-1" hidden>PREPARAR TRASPASO WORK. Antes de cualquier aviso de fin de créditos, verifica y guarda los avances reales; actualiza docs/CONTINUIDAD.md, CONTINUIDAD_WORK_A_CHAT_NORMAL.md y PROMPT_CONTINUAR_SIN_WORK.md donde corresponda. Incluye repositorios, ramas, commits, PR, imágenes aprobadas, decisiones, pruebas, bloqueos y la primera tarea pendiente. Comprueba que los documentos sean accesibles y entrega aquí el prompt completo, autocontenido y copiable para continuar desde un chat normal. Si no puedes guardar en GitHub, entrega la recuperación en esta conversación y declara qué no quedó persistido. Solo emite «DESARROLLO FIN DE CRÉDITOS WORK» si realmente no puedes continuar y después de entregar la recuperación disponible.</pre></article>
 <article class="command" id="orden-3">
 <div class="top"><div class="symbol">⇄</div><div><div class="eyebrow">ORDEN 03 · WORK AGOTADO / CAMBIO DE CHAT</div><h2>CONTINUAR WORK EN OTRO CHAT</h2></div></div>
@@ -366,52 +388,67 @@ document.querySelectorAll("[data-toggle]").forEach(b=>b.addEventListener("click"
 
 
 /* Orden 01 V2: distingue el chat de desarrollo que se pretende reactivar. */
-const reactivateTemplate="REACTIVAR DESARROLLO VISURA — CHAT SELECCIONADO.\n\nCHAT QUE QUIERO REACTIVAR: {{NOMBRE_CHAT}}\nENLACE DE REFERENCIA DEL CHAT ELEGIDO: {{ENLACE_CHAT}}\n\nPRIORIDAD ABSOLUTA: Esta orden es EXCLUSIVAMENTE para reanudar el desarrollo del chat indicado arriba. Debe pegarse en ESA conversación de ChatGPT, no en cualquier otro chat. Si se ha pegado en una conversación distinta o reservada a pruebas, NO ejecutes cambios reales: indica la discrepancia y explica dónde pegarla. Si el usuario quiere continuar un desarrollo en un chat distinto del de origen, debe usar la orden 03 (RECUPERAR EN OTRO CHAT).\n\nVERIFICACIÓN: No supongas que el nombre o enlace del chat permite leer automáticamente su historial. Comprueba qué contexto está realmente accesible. Si el historial está disponible, respeta el último avance y todas las decisiones comprobadas. Si no está disponible, dilo expresamente y contrasta el desarrollo concreto mediante documentos actualizados, ramas, commits, archivos, PR y pruebas de los repositorios GitHub correspondientes. No confundas el desarrollo seleccionado con otros proyectos VISURA relacionados ni consideres main automáticamente la versión más avanzada.\n\nCONTINUACIÓN: Desde la última tarea verdaderamente comprobada de ESE desarrollo, continúa con la siguiente acción autorizada y segura. No reconstruyas tareas ya completadas, no sobrescribas trabajo ajeno y evita simultaneidades entre chats. Después de cada hito verifica, guarda en la rama correcta y actualiza la documentación de continuidad pertinente. Mantén separadas las imágenes aprobadas, integradas y verificadas.\n\nLÍMITES: No fusiones, publiques, despliegues ni borres datos sin autorización explícita. Si el chat receptor está reservado a pruebas, limítate a analizar o simular sin escribir en GitHub o aplicaciones. No te detengas por obstáculos subsanables; busca alternativas compatibles con las herramientas disponibles y solo solicita intervención ante un bloqueo real o una autorización imprescindible. No inventes accesos, pruebas ni trabajo futuro en segundo plano.\n\nRESULTADO: comunica la rama o evidencia verificada, la tarea que has retomado, los cambios efectivamente realizados y cualquier paso que siga pendiente.";
+/* Orden 01 V4: reanudar trabajo ya traspasado, distinguiendo origen y destino. */
+const reactivateTemplate="REANUDAR DESARROLLO VISURA EN SU CHAT CONTINUADOR YA ACTIVO.\n\nCHAT DE ORIGEN DEL DESARROLLO: {{ORIGEN}}\nCHAT ACTUAL DONDE DEBES CONTINUAR: {{DESTINO}}\nENLACE DE REFERENCIA AL ORIGEN: {{ENLACE_ORIGEN}}\nENLACE DE REFERENCIA AL DESTINO: {{ENLACE_DESTINO}}\n\nINSTRUCCIÓN FUNDAMENTAL\nESTA ORDEN SE PEGA EN EL CHAT DE DESTINO, que ya ha recibido y continuado el desarrollo del chat de origen. El chat elegido como destino es el RESPONSABLE ACTUAL del trabajo. NO ordenes regresar al chat original, NO solicites repetir el traspaso y NO bloquees el desarrollo solo porque en mensajes previos se denominara «CHAT NUEVO», porque los títulos sean diferentes o porque se agotaran los créditos de Work. Para realizar un traspaso NUEVO que aún no se haya establecido, corresponde la orden 03, NO esta.\n\nCASO VISURA WORK → VISURA AUTO-DEV\nSi el origen es VISURA WORK y el destino es VISURA AUTO-DEV, el usuario confirma que esta última conversación YA continuó VISURA AUTO-DEV procedente de VISURA WORK. Usa esa confirmación para interpretar el encargo, pero verifica el estado técnico antes de editar. Como pistas concretas, revisa el PR #44 del repositorio josegude-ux/KONTROLA, el commit b934a2c (abreviatura) y la rama docs/visura-work-chat-nuevo-20261026, además de los avances posteriores. Son referencias, NO una orden de usar esos hitos si ya han sido superados. La tarea pendiente mencionada anteriormente fue la autenticación real del agente y la revisión de políticas de seguridad: contrasta si continúa pendiente antes de implementarla.\n\nRECUPERACIÓN Y VERIFICACIÓN\n1. Lee el historial REALMENTE disponible en ESTE chat de destino para identificar lo ya desarrollado y su relación con el origen. No afirmes haber leído el chat de origen cuando no sea accesible; puedes usar contexto previamente recuperado aquí y evidencias técnicas verificables.\n2. Revisa repositorios pertinentes, ramas activas, commits, PR, archivos, pruebas y documentación de continuidad más reciente; verifica cuál es el avance real y cuál fue la última tarea terminada. No presupongas que main o un documento antiguo reflejan el estado más avanzado.\n3. Distingue lo aprobado, implementado, probado y pendiente. Evita reconstruir aplicaciones o repetir tareas finalizadas; comprueba que otros chats no estén desarrollando la misma funcionalidad ni vayas a sobrescribir trabajo ajeno.\n\nCONTINUACIÓN\n4. En este chat de destino, si está dedicado al DESARROLLO, reanuda la primera tarea pendiente que resulte realmente comprobada y autorizada. Continúa de forma autónoma con las tareas siguientes seguras. No termines con una respuesta administrativa sobre el título del chat, el traspaso o la elección de conversación.\n5. Antes de cada cambio comprueba la rama y el estado remoto; después de cada hito valida, guarda los commits y actualiza la continuidad correspondiente. No declares trabajo completado sin evidencia.\n6. Si este chat receptor está expresamente reservado a PRUEBAS, no ejecutes cambios reales. Si hay incertidumbre técnica material, primero verifica en solo lectura; no trates una simple diferencia de nombres como bloqueo.\n7. No fusiones, despliegues, publiques, sustituyas cambios ajenos ni borres datos sin autorización expresa. No prometas trabajo en segundo plano y no insistas en intentos idénticos fallidos.\n\nRESULTADO REQUERIDO\nEnuncia brevemente ORIGEN, DESTINO, repositorio, rama/commit/PR verificados, última tarea finalizada, tarea pendiente actual y primera acción que vas a realizar. A continuación, EJECUTA la tarea segura en este mismo chat de destino sin pedir un nuevo traspaso.";
 const reactivateChat=document.getElementById("reactivate-chat");
 const reactivateOther=document.getElementById("reactivate-other");
 const reactivateOtherLabel=document.getElementById("reactivate-other-label");
+const reactivateDestination=document.getElementById("reactivate-destination");
+const reactivateDestinationOther=document.getElementById("reactivate-destination-other");
+const reactivateDestinationOtherLabel=document.getElementById("reactivate-destination-other-label");
 const reactivateChatLink=document.getElementById("reactivate-chat-link");
+const reactivateDestinationLink=document.getElementById("reactivate-destination-link");
 const reactivateOpen=document.getElementById("open-reactivate-chat");
 const reactivateHelp=document.getElementById("reactivate-help");
-function selectedReactivateChat(){
- return reactivateChat.value==="OTRO"?reactivateOther.value.trim():reactivateChat.value;
-}
-function validatedReactivateLink(){
- const raw=reactivateChatLink.value.trim();
- if(!raw)return "";
+function selectedReactivateChat(){return reactivateChat.value==="OTRO"?reactivateOther.value.trim():reactivateChat.value;}
+function selectedReactivateDestination(){return reactivateDestination.value==="OTRO"?reactivateDestinationOther.value.trim():reactivateDestination.value;}
+function validatedReactivateLink(input){
+ const value=input.value.trim();
+ if(!value)return "";
  try{
-  const url=new URL(raw);
-  if(url.protocol!=="https:"||!["chatgpt.com","chat.openai.com"].includes(url.hostname)||!url.pathname.includes("/c/"))return "";
+  const url=new URL(value);
+  if(url.protocol!=="https:"||!["chatgpt.com","chat.openai.com"].includes(url.hostname)||!url.pathname.startsWith("/c/"))return "";
   return url.href;
  }catch(_){return "";}
 }
 function reactivatePrompt(){
- const chat=selectedReactivateChat();
- if(!chat)return "";
- return reactivateTemplate.replaceAll("{{NOMBRE_CHAT}}",chat).replaceAll("{{ENLACE_CHAT}}",validatedReactivateLink()||"No proporcionado; el nombre no garantiza acceso al historial.");
+ const source=selectedReactivateChat(),dest=selectedReactivateDestination();
+ if(!source||!dest)return "";
+ return reactivateTemplate
+  .replaceAll("{{ORIGEN}}",source)
+  .replaceAll("{{DESTINO}}",dest)
+  .replaceAll("{{ENLACE_ORIGEN}}",validatedReactivateLink(reactivateChatLink)||"No proporcionado; verificar solo fuentes accesibles.")
+  .replaceAll("{{ENLACE_DESTINO}}",validatedReactivateLink(reactivateDestinationLink)||"No proporcionado; esta orden se pegará manualmente en el destino.");
 }
 function syncReactivate(){
- const other=reactivateChat.value==="OTRO";
- reactivateOther.hidden=!other;
- reactivateOtherLabel.hidden=!other;
- const link=validatedReactivateLink();
- reactivateOpen.disabled=!selectedReactivateChat()||!link;
- const badLink=reactivateChatLink.value.trim()&&!link;
- reactivateHelp.textContent=badLink
-  ?"Para abrir el chat, pega un enlace directo válido de ChatGPT (https://chatgpt.com/c/…). Los enlaces compartidos no sirven para escribir en él."
-  :(!selectedReactivateChat()?"Elige primero un chat para reactivar.":"Copia la orden y pégala en el chat elegido. "+(link?"Puedes abrirlo con el enlace.":"Si no tienes su enlace, ábrelo manualmente en ChatGPT."));
- document.getElementById("prompt-0").textContent=reactivatePrompt()||"Selecciona el chat que quieres reactivar.";
+ const otherSource=reactivateChat.value==="OTRO";
+ const otherDest=reactivateDestination.value==="OTRO";
+ reactivateOther.hidden=!otherSource;
+ reactivateOtherLabel.hidden=!otherSource;
+ reactivateDestinationOther.hidden=!otherDest;
+ reactivateDestinationOtherLabel.hidden=!otherDest;
+ const destinationUrl=validatedReactivateLink(reactivateDestinationLink);
+ reactivateOpen.disabled=!selectedReactivateDestination()||!destinationUrl;
+ const source=selectedReactivateChat(),dest=selectedReactivateDestination();
+ reactivateHelp.textContent=!source||!dest
+  ?"Indica los nombres exactos de origen y destino."
+  :reactivateDestinationLink.value.trim()&&!destinationUrl
+    ?"El enlace de destino debe ser un enlace directo de conversación en chatgpt.com/c/."
+    :"Copia la orden y pégala en "+dest+". Reanudará el trabajo procedente de "+source+" sin pedir un traspaso ya realizado.";
+ document.getElementById("prompt-0").textContent=reactivatePrompt()||"Indica origen y destino antes de copiar.";
 }
 reactivateChat.addEventListener("change",()=>{syncReactivate();if(reactivateChat.value==="OTRO")reactivateOther.focus();});
 reactivateOther.addEventListener("input",syncReactivate);
+reactivateDestination.addEventListener("change",()=>{syncReactivate();if(reactivateDestination.value==="OTRO")reactivateDestinationOther.focus();});
+reactivateDestinationOther.addEventListener("input",syncReactivate);
 reactivateChatLink.addEventListener("input",syncReactivate);
+reactivateDestinationLink.addEventListener("input",syncReactivate);
 reactivateOpen.addEventListener("click",()=>{
- const url=validatedReactivateLink();
- if(!selectedReactivateChat()){reactivateChat.focus();showStatus("Elige el chat que quieres reactivar");return;}
- if(!url){reactivateChatLink.focus();showStatus("Necesitas el enlace directo del chat");return;}
+ const url=validatedReactivateLink(reactivateDestinationLink);
+ if(!url){reactivateDestinationLink.focus();showStatus("Indica el enlace directo del chat de destino para abrirlo.");return;}
  const opened=window.open(url,"_blank");
  if(opened){try{opened.opener=null;}catch(_){}}
- else showStatus("Tu navegador ha bloqueado la apertura; abre el enlace manualmente.");
+ else showStatus("Si no se abre, entra al chat seleccionado desde la lista de conversaciones.");
 });
 syncReactivate();
 
