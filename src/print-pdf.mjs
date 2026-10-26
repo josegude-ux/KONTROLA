@@ -177,7 +177,8 @@ export function generarPdfHojas(hojas){
   for(const hoja of hojas){
     if(!hoja||!['carga','portada','resumen_pasillos'].includes(hoja.tipo))throw Error("Tipo de informe PDF no reconocido.");
     newPage();
-    if(hoja.tipo==='resumen_pasillos'){resumenPasillosA4(hoja);continue;}\n    if(hoja.tipo==='portada'){
+    if(hoja.tipo==='resumen_pasillos'){resumenPasillosA4(hoja);continue;}
+    if(hoja.tipo==='portada'){
       addLine(hoja.titulo||'RELACIÓN DE HOJAS DE PREPARACIÓN',{size:15,bold:true,space:10});rule();
       for(const linea of hoja.detalles||[])addLine(linea,{size:10,space:4});
       rule();
