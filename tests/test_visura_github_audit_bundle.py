@@ -986,7 +986,7 @@ class AuditBundleTests(unittest.TestCase):
             'scripts.visura_github_audit_bundle.inspect_branch_policy', return_value={}), patch(
             'scripts.visura_github_audit_bundle._get_json', side_effect=final):
             result = inspect_readonly_audit_bundle(REPO, 37, 'main', 'token', opener=transport)
-        self.assertEqual(events, ['permission', 'final_pr'])
+        self.assertEqual(events, ['permission', 'permission', 'final_pr'])
         evidence = result['reviewer_repository_permissions']
         self.assertEqual(evidence['lookup'], 'observed')
         self.assertEqual(evidence['observations'][0]['reviewer_numeric_id'], 456)
