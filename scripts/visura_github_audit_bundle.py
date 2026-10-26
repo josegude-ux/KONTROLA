@@ -18,6 +18,7 @@ from scripts.visura_github_policy_probe import (
 )
 from scripts.visura_github_reviewer_permissions import observe_snapshot_reviewer_permissions
 from scripts.visura_github_codeowners_probe import observe_codeowners
+from scripts.visura_github_auth_preflight import inspect_readonly_auth_preflight
 from scripts.visura_github_action_summary import render_readonly_audit_summary
 from scripts.visura_github_commit_checks import (
     observe_commit_checks, compare_required_check_observations,
@@ -38,7 +39,22 @@ def inspect_readonly_audit_bundle(
         raise ValueError("Missing or invalid GitHub token")
 
     opener = build_opener(_NoRedirectHandler()).open if opener is None else opener
+
+    # One trusted workflow command, one supplied token: observe fixed GET
+    # transport before running the existing unified audit. Never authorization.
+    transport_evidence = inspect_readonly_auth_preflight(
+        repository, pr_number, token, opener=opener
+    )
     pr = fetch_readonly_review_snapshot(repository, pr_number, token, opener=opener)
+    if transport_evidence["repository_lookup"] == "retrieved" and (
+        transport_evidence["pull_request_lookup"] == "retrieved"
+    ):
+        if (
+            transport_evidence["observed_base_branch"] != pr["base_branch"]
+            or transport_evidence["observed_head_sha"].lower()
+            != pr["head_sha"].lower()
+        ):
+            raise ValueError("PR changed between transport preflight and review snapshot")
     target_branch = pr["base_branch"]
     _validate_branch(target_branch)
     target_policy = inspect_branch_policy(repository, target_branch, token, opener=opener)
@@ -103,6 +119,7 @@ def inspect_readonly_audit_bundle(
         "repository": repository,
         "pr_number": pr_number,
         "review_snapshot": pr,
+        "github_transport_preflight": transport_evidence,
         "reviewer_repository_permissions": reviewer_permissions,
         "target_branch_codeowners": codeowners,
         "head_check_runs": head_checks,
