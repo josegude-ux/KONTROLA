@@ -147,8 +147,8 @@ class ReadonlyAuthPreflightTests(unittest.TestCase):
         invalid = (
             ("owner/../repo", 47, "token"), (REPO, True, "token"),
             (REPO, 0, "token"), (REPO, 47, ""),
-            (REPO, 47, " test-token"), (REPO, 47, "token\\nInjected: x"),
-            (REPO, 47, "token\\rBad: x"), (REPO, 47, "token\\x00"),
+            (REPO, 47, " test-token"), (REPO, 47, "token\nInjected: x"),
+            (REPO, 47, "token\rBad: x"), (REPO, 47, "token\x00"),
             (REPO, 47, "x" * 2049), (REPO, 47, None),
         )
         for repository, number, token in invalid:
