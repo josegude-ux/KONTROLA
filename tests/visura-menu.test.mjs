@@ -88,3 +88,21 @@ test("las ilustraciones decorativas no se anuncian como contenido funcional", ()
     assert.match(card, /<img[^>]*alt=""/);
   }
 });
+
+
+test("las cuatro imagenes oficiales son WEBP validos y optimizados", () => {
+  for (const [id, , image] of cards) {
+    const match = html.match(new RegExp(`<button id="${id}"[\\s\\S]*?</button>`));
+    const src = match?.[0].match(/<img[^>]*src="([^"]+)"/)?.[1];
+    assert.ok(src, `Falta src de ${id}`);
+    const bytes = readFileSync(resolve(root, src));
+    assert.equal(bytes.toString("ascii", 0, 4), "RIFF", `Cabecera RIFF invalida: ${src}`);
+    assert.equal(bytes.toString("ascii", 8, 12), "WEBP", `Cabecera WEBP invalida: ${src}`);
+    assert.ok(bytes.length > 1000 && bytes.length <= 2_000_000, `Tamano inesperado: ${src}`);
+    assert.equal(src.split("/").pop(), image);
+  }
+});
+
+test("la caché PWA usa la version v063 tras cambiar las ilustraciones oficiales", () => {
+  assert.match(sw, /kontrola-integral-visura-v063/);
+});
