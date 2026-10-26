@@ -59,7 +59,7 @@ export function leerObservacionesCabecera(pages=[]){
     const value=rows[j].items.map(item=>item.text.trim()).join(" ").replace(/\s+/g," ").trim();
     if(!value||nextField.test(value)||/\b(?:Observaciones?|M\s*E\s*R\s*C\s*A\s*N\s*C\s*[IÍ]\s*A)\b/i.test(value))break;
     if(/^(?:Devoluciones?|unidad|C[oó]d\.?|situaci[oó]n|Prevista|Real)\b/i.test(value))break;
-    if(Math.abs(rows[j].items[0].x-obsX)>120)break;
+    if(Math.abs(rows[j].items[0].x-obsX)>160)break;
     chunks.push(value.split(nextField)[0].trim());
     if(nextField.test(value))break;
    }
