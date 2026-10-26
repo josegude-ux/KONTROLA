@@ -318,6 +318,7 @@ def inspect_branch_policy(repository, branch_name, token, opener=None):
             "active_review_control_fields_complete": (
                 applied_status == "retrieved" and review_requirements_complete
                 and review_control_fields_complete
+                and bool(observed_review_requirements)
             ),
             "applied_ruleset_api_responded": applied_status == "retrieved",
             "includes_classic_branch_protection": False,
