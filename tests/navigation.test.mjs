@@ -19,6 +19,22 @@ test("Control de Cargas aparece como submenú navegable sin duplicar operaciones
   assert.match(css,/\.submenu-grid\{/);
 });
 
+test("importar cargas dispone de accesos directos visibles solo al administrador",()=>{
+  const admin=read("src/admin.mjs");
+  for(const id of ["cargasImportar","importLoadsShortcut"]){
+    assert.ok(html.includes('id="'+id+'"'),"Falta botón "+id);
+    assert.ok(new RegExp('id="'+id+'"[^>]*hidden').test(html),"El botón debe iniciar oculto: "+id);
+    assert.ok(app.includes('visible($("'+id+'"),ownProfile.rol==="administrador");'),"Permisos de "+id);
+  }
+  assert.ok(html.includes("<b>Importar cargas</b>"));
+  assert.ok(app.includes('$("cargasImportar").addEventListener("click",()=>openAdminMenu("cargasMenuView"));'));
+  assert.ok(app.includes('$("importLoadsShortcut").addEventListener("click",()=>openAdminMenu("loadsView"));'));
+  assert.ok(app.includes('if(profile?.rol!=="administrador"||!switchView("adminView"))return;'));
+  assert.ok(admin.includes("selectAdminTab(0);"),"La importación debe abrir la primera pestaña");
+  assert.ok(admin.includes('$("processPdf").addEventListener("click",processPdf);'));
+  assert.ok(new RegExp('id="publishReviewedLoad"[^>]*disabled').test(html),"Publicación requiere revisión");
+});
+
 test("Tanques permanece totalmente oculto y sin acciones activas",()=>{
   assert.doesNotMatch(html,/tanques/i);
   assert.doesNotMatch(app,/openTanques|cargasTanques/i);
