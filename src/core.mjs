@@ -104,6 +104,8 @@ export function parseDocumentPages(pages, fileName='Documento.pdf', options={}) 
  }else if(mixedWarehouse){
   pages=[];
  }
+ if(warehouse&&warehouses.length&&!pages.length)
+  throw Error("El PDF no contiene páginas del almacén "+warehouse+"; COR2 no puede sustituir la preparación COR1.");
  const pageNumbers=pages.map(p=>p.number);
  const every=pages.flatMap(p=>p.items.map(it=>({...it,page:p.number})));
  const textAll=every.map(i=>i.text).join(' ').replace(/\s+/g,' ');
@@ -218,7 +220,7 @@ export function parseDocumentPages(pages, fileName='Documento.pdf', options={}) 
    merchandise=false;
   }else if(controlLabel||palletsLabel){merchandise=false}
  }
- if(warehouse&&warehouses.length&&!pages.length)throw Error('El PDF no contiene páginas del almacén '+warehouse);
+
  const sum=products.reduce((a,p)=>a+Number(p.qty||0),0);
  const countOK=refs!==null&&refs===products.length;
  const amountOK=declaredTotal===null?null:Math.abs(declaredTotal-sum)<0.000001;
