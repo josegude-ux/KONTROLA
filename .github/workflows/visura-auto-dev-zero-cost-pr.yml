@@ -1,6 +1,11 @@
 name: VISURA AUTO-DEV - Zero Cost PR Pilot
 # Manual, deterministic pilot. No AI, external services, or production access.
 on:
+  push:
+    branches:
+      - chore/visura-auto-dev-guardrails
+    paths:
+      - .github/workflows/visura-auto-dev-zero-cost-pr.yml
   workflow_dispatch:
 permissions:
   contents: read
