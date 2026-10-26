@@ -1,14 +1,18 @@
 name: VISURA AUTO-DEV - CSV Pilot Tests
 on:
+  push:
+    branches:
+      - chore/visura-auto-dev-guardrails
+    paths:
+      - .github/workflows/visura-auto-dev-csv-tests.yml
+      - docs/CONTINUIDAD.md
   pull_request:
     paths:
       - scripts/visura_csv_preflight.py
       - tests/test_visura_csv_preflight.py
-      - scripts/visura_csv_preflight.py
       - .github/workflows/visura-auto-dev-csv-tests.yml
       - docs/CONTINUIDAD.md
-      - tests/test_visura_csv_preflight.py
-      - docs/CONTINUIDAD.md
+  workflow_dispatch:
 permissions:
   contents: read
 jobs:
