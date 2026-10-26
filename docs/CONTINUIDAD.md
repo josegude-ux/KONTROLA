@@ -751,3 +751,8 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 - Aplicada la correccion en una rama nueva por las reglas de proteccion de GitHub: `fix/visura-menu-playwright-auth-20261026`, commit 65947fef90012ddcd46cc8b8b9da3ca2b66f19c1.
 - La prueba quita el login y muestra el shell/home exclusivamente dentro del DOM del navegador de test; no autentica contra Supabase ni cambia la aplicacion de produccion.
 - Pendiente ejecutar CI en PR; no merge ni despliegue.
+
+
+### Ajuste de CI para PR #36
+- Se detectó que la PR #36 no disparaba Actions: el workflow solo aceptaba PR con base `branding/visura-prepara-20261026`, y además forzaba checkout de la rama principal de feature, ignorando el head de la PR. Se corrigió el destino del trigger para `feature/visura-prepara-menu-oficial-20261026`, se dejó checkout del commit de PR predeterminado y se eliminó el paso que hacía push automático desde el workflow.
+- Commit: 4f14275bc0f30684ecef2285495407b1b605e5a2. Pendiente CI de PR #36.
