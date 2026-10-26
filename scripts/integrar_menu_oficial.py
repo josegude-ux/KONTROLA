@@ -31,6 +31,8 @@ with ZipFile(zip_path) as archive:
         if name not in names:
             sys.exit("Falta imagen oficial: " + name)
         data = archive.read(name)
+        if len(data) > 2_000_000:
+            sys.exit("WEBP demasiado grande: " + name)
         if not data.startswith(b"RIFF") or data[8:12] != b"WEBP":
             sys.exit("WEBP invalido: " + name)
         files[name] = data
@@ -38,6 +40,8 @@ with ZipFile(zip_path) as archive:
         if name.startswith("assets/home/originales/") and not name.endswith("/"):
             if Path(name).suffix.lower() not in (".png", ".jpeg", ".jpg"):
                 sys.exit("Formato original inesperado: " + name)
+            if len(archive.getinfo(name).filename) > 200 or Path(name).is_absolute() or ".." in Path(name).parts:
+                sys.exit("Ruta de original insegura: " + name)
             files[name] = archive.read(name)
     if len([name for name in files if name.startswith("assets/home/originales/")]) != 4:
         sys.exit("El paquete debe contener cuatro imagenes originales")
