@@ -147,8 +147,11 @@ select public.kontrola_regularizar_incidencia(:'inc_id');
 select test.assert((select estado='regularizada' from public.kontrola_incidencias where id=:'inc_id'),'administración debe confirmar la regularización');
 select test.assert((select count(*)>=2 from public.kontrola_incidencia_eventos where incidencia_id=:'inc_id'),'la incidencia debe conservar histórico');
 select test.assert((select count(*)=0 from public.kontrola_avisos where entidad_id=:'inc_id' and activo),'el aviso regularizado debe quedar inactivo');
-select test.assert((select cerradas=1 from public.kontrola_resumen_zona('COR_01_COR','2026-10-25')),'el resumen de Coruña debe usar datos reales');
-select test.assert((select cerradas=2 from public.kontrola_resumen_zona('COR_02_NAR','2026-10-25')),'el resumen de Ferrol debe usar datos reales');
+-- "Cerradas" cuenta la fecha de cierre registrada por el servidor, no la fecha del PDF.
+-- Las cargas de prueba se cierran durante la ejecución: usar current_date evita que
+-- las pruebas caduquen al cambiar de día sin alterar el comportamiento real.
+select test.assert((select cerradas=1 from public.kontrola_resumen_zona('COR_01_COR',current_date)),'el resumen de Coruña debe contar los cierres del día de ejecución');
+select test.assert((select cerradas=2 from public.kontrola_resumen_zona('COR_02_NAR',current_date)),'el resumen de Ferrol debe contar los cierres del día de ejecución');
 
 select public.kontrola_configurar_acceso_almacen(
  '00000000-0000-0000-0000-000000000004','COR_02_NAR',true
