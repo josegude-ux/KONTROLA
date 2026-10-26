@@ -60,6 +60,24 @@ class TaskSpecTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "between 0 and 10"):
             validate_task(task)
 
+    def test_rejects_nan_cost(self):
+        task = valid_task()
+        task["max_cost_eur"] = float("nan")
+        with self.assertRaisesRegex(ValueError, "between 0 and 10"):
+            validate_task(task)
+
+    def test_rejects_infinite_cost(self):
+        task = valid_task()
+        task["max_cost_eur"] = float("inf")
+        with self.assertRaisesRegex(ValueError, "between 0 and 10"):
+            validate_task(task)
+
+    def test_rejects_overlong_scope(self):
+        task = valid_task()
+        task["scope"] = "x" * 2001
+        with self.assertRaisesRegex(ValueError, "Invalid scope"):
+            validate_task(task)
+
     def test_rejects_too_many_checks(self):
         task = valid_task()
         task["checks"] = ["check"] * 11
