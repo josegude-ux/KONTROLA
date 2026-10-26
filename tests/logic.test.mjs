@@ -75,3 +75,12 @@ test("la revisión prevalece sobre PDF local antiguo y permite completar G/P fal
  assert.equal(merged.observaciones,"Vigente");
  assert.equal(merged.huecos_origen,"revision");
 });
+
+test("camión 6 G y 1 europeo E, con Observaciones separadas",()=>{
+ assert.equal(formatearHuecosPalets(6,null,null,1),"6 G · 1 E");
+ const row=combinarHuecosConOrigen({codigo:"LP26-20000",observaciones:null},
+   {huecos_palets_grandes:"6",huecos_palets_europeos:"1",observaciones:"CENTRO 1*"});
+ assert.equal(textoHuecosConOrigen(row),"6 G · 1 E");
+ assert.equal(row.observaciones,"CENTRO 1*");
+ assert.equal(row.huecos_palets_pequenos,null);
+});

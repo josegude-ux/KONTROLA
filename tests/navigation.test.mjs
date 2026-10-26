@@ -42,12 +42,12 @@ test("La navegación conserva los accesos previos y los regresos al submenú",()
 
 test("La versión y el caché están preparados para instalar nuevas pantallas",()=>{
   const version=JSON.parse(read("version.json")).version;
-  assert.equal(version,"0.3.38");
+  assert.equal(version,"0.3.39");
   assert.equal(JSON.parse(read("package.json")).version,version);
   assert.equal(JSON.parse(read("package-lock.json")).version,version);
   assert.ok(read("src/config.mjs").includes(`APP_VERSION="${version}"`));
   assert.ok(html.includes(`id="appVersion">${version}<`));
-  assert.match(read("sw.js"),/kontrola-integral-visura-v071/);
+  assert.match(read("sw.js"),/kontrola-integral-visura-v072/);
 });
 
 test("Las consultas descartan respuestas de sesiones o almacenes anteriores",()=>{
@@ -242,4 +242,13 @@ test("los PDF leídos se muestran solo durante la sesión y se mantienen al refr
  assert.match(app,/cached&&cabeceraSinMetadatos\(enriched\)/);
  assert.match(app,/legacyHeaderCache\.clear\(\)/);
  assert.match(app,/id\.textContent=r\.codigo\+\(observaciones\?" - "\+observaciones:""\)/);
+});
+
+test("Observaciones aparece también en detalles y se distingue hueco E",()=>{
+ assert.match(app,/detailTitle"\)\.textContent=load\.codigo\+/);
+ assert.match(app,/reviewDetailTitle"\)\.textContent=load\.codigo\+/);
+ assert.match(app,/truckSecondKind/);
+ assert.match(app,/huecos_palets_europeos:carga_datos->>huecos_palets_europeos/);
+ assert.match(html,/id="truckSecondKind"/);
+ assert.match(html,/id="truckCapacityPLabel"/);
 });
