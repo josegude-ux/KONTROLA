@@ -52,5 +52,5 @@ test("cálculo sin escrituras y protección del inicio, con cache PWA",()=>{
  assert.match(app,/if\(assessment\(\)\.estado!=="viable"\)/);
  assert.match(app,/recoverTruckCapacityFromPdf\(load\)/);
  assert.match(sw,/src\/palet-viabilidad\.mjs/);
- assert.match(sw,/kontrola-integral-visura-v076/);
+ assert.match(sw,/kontrola-integral-visura-v077/);
 });

@@ -6,6 +6,7 @@ import {analyzeDocument,applyLineCorrection,publicationReadiness,warehouseZone,n
 import {fechaISO} from "./logic.mjs";
 import {parsePdfFile} from "./pdf.mjs";
 import {buildPreparationReport} from "./report.mjs";
+import {crearListadoPasillosA4} from "./aisle-matrix.mjs";
 import {generarPdfHojas,extraerHojasDeInforme,nombrePdfInforme} from "./print-pdf.mjs";
 import {unirPaginasCor1YDetalle} from "./mixed-print.mjs";
 import {revisarSustitucion} from "./import-policy.mjs";
@@ -316,6 +317,7 @@ export function createAdminController({client,getUser,bucket,global,errorText,on
     $("saveDocumentReview").disabled=busy||!draft;
     const isCor1=draft?.parsed?.warehouse==="COR_01_COR";
     $("generateSheet").disabled=busy||!draft||draft.state!=="publicada"||!isCor1;
+    $("saveCompactA4Admin").disabled=busy||!draft||draft.state!=="publicada"||!isCor1;
     $("warehousePrintActions").hidden=!draft;
     $("printCor1Pack").disabled=busy||!draft||draft.state!=="publicada"||!isCor1;
     $("previewCor2Detail").disabled=busy||!draft||!(draft.parsed.availableWarehouses||[]).includes("COR_02_NAR");
@@ -381,6 +383,26 @@ export function createAdminController({client,getUser,bucket,global,errorText,on
     $("reportTitle").textContent="Hoja procesada · "+draft.parsed.id;
     $("onedriveArchiveHelp").hidden=false;
     $("reportView").hidden=false;document.body.classList.add("report-open");window.scrollTo(0,0);
+  }
+  async function saveAdminA4(){
+    if(busy||!draft||draft.state!=="publicada"||draft.parsed.warehouse!=="COR_01_COR")return;
+    try{
+      const bytes=generarPdfHojas([crearListadoPasillosA4(asPayload(draft.parsed))]);
+      const name="VISURA_"+draft.parsed.id+"_COR1_LISTADO_PASILLOS_A4.pdf";
+      const file=new File([bytes],name,{type:"application/pdf"});
+      const ios=/iPhone|iPad|iPod/i.test(navigator.userAgent||"");
+      if(ios&&navigator.share&&(typeof navigator.canShare!=="function"||navigator.canShare({files:[file]}))){
+        await navigator.share({files:[file],title:"Listado A4 COR1 · "+draft.parsed.id});
+        setStatus("Listado A4 generado. Revisa el contenido antes de imprimir.","success");
+      }else{
+        const url=URL.createObjectURL(file);
+        const a=document.createElement("a");a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();
+        setTimeout(()=>URL.revokeObjectURL(url),60000);
+        setStatus("Listado A4 COR1 descargado, sin alterar la hoja detallada ni COR2.","success");
+      }
+    }catch(error){
+      if(error?.name!=="AbortError")setStatus("No se pudo generar el listado A4: "+errorText(error),"error");
+    }
   }
   // Documento nuevo de impresión, sin tocar el PDF original ni la importación.
   async function printCor1Bundle(){
@@ -674,6 +696,7 @@ export function createAdminController({client,getUser,bucket,global,errorText,on
   $("processPdf").addEventListener("click",processPdf);
   $("saveDocumentReview").addEventListener("click",saveReview);
   $("generateSheet").addEventListener("click",showReport);
+  $("saveCompactA4Admin").addEventListener("click",saveAdminA4);
   $("printCor1Pack").addEventListener("click",printCor1Bundle);
   $("previewCor2Detail").addEventListener("click",showCor2Detail);
   $("goToBatchPrint").addEventListener("click",()=>{selectAdminTab(2);printBatch.refresh();});

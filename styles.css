@@ -329,3 +329,22 @@ footer{padding:18px;text-align:center;background:#fff;border-top:1px solid #e6e8
 .truck-capacity [hidden]{display:none!important}
 @media(max-width:600px){.truck-grid,.truck-grid-span{grid-template-columns:1fr}}
 @media print{#truckCapacityPanel{display:none!important}}
+
+/* Matriz operativa por pasillos (escritorio v1.3 adaptado a VISURA móvil). */
+.aisle-matrix-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:12px 0}
+.aisle-metric{border:1px solid #dce5eb;border-radius:11px;padding:11px 13px;background:#f8fafc;min-width:0}
+.aisle-metric b{display:block;color:#0b2647;font-size:23px;font-variant-numeric:tabular-nums}
+.aisle-metric small{display:block;margin-top:4px;color:#597084;font-size:11px;line-height:1.35}
+.aisle-matrix-scroll{max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-gutter:stable;margin:12px 0 8px}
+.aisle-matrix{width:100%;border-collapse:separate;border-spacing:0;border:1px solid #dce5eb;font-size:13px;background:#fff;white-space:nowrap;font-variant-numeric:tabular-nums}
+.aisle-matrix thead th{background:#152a40;color:#fff;font-size:11px;letter-spacing:.15px;text-align:center;padding:12px 10px}
+.aisle-matrix thead th:first-child{text-align:left;position:sticky;left:0;z-index:2;min-width:116px}
+.aisle-matrix tbody tr:nth-child(odd){background:#f1f6f8}
+.aisle-matrix tbody th{background:inherit;position:sticky;left:0;z-index:1;text-align:left}
+.aisle-matrix tbody td{padding:9px 12px;text-align:center;border-top:1px solid #edf0f3}
+.aisle-matrix tbody .total-row{background:#e4f1eb;font-weight:850}
+.aisle-matrix tbody .unlocated{background:#fff2df}
+.aisle-matrix .aisle-row-total{font-weight:850}
+.aisle-jump{border:0;background:transparent;color:#0b2647;padding:9px 12px;text-align:left;min-width:100%;font-size:13px;font-weight:760;cursor:pointer}
+.aisle-jump:hover,.aisle-jump:focus-visible{text-decoration:underline;background:#e7f2ed}
+@media(max-width:720px){.aisle-matrix-summary{grid-template-columns:repeat(2,minmax(0,1fr))}.aisle-matrix thead th,.aisle-matrix tbody td{padding-left:8px;padding-right:8px}}
