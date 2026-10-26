@@ -10,7 +10,7 @@ _LOOKUP = {"retrieved", "inaccessible", "not_found_or_inaccessible"}
 
 def _require_str(value, label):
     if not isinstance(value, str) or not value or any(
-        c in value for c in "`\n\r<>"
+        c in value for c in "`\n\r<>|"
     ):
         raise ValueError("Invalid " + label)
     return value
