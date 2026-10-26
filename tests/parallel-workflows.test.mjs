@@ -45,3 +45,20 @@ test("SQL de propuesta: no exige preparación para verificar y no cierra la prep
   assert.ok(sql.includes("or exists(select 1 from public.kontrola_verificaciones"));
   assert.ok(sql.includes("preparacion_registrada_activa"));
 });
+
+test("regresión: al cambiar de carga no se degrada una verificación finalizada",()=>{
+  const sql=readFileSync(new URL("../supabase/proposals/kontrola_prepara_verificacion_paralelas.sql",import.meta.url),"utf8");
+  const pos=sql.indexOf("CREATE OR REPLACE FUNCTION public.kontrola_iniciar_preparacion(");
+  const end=sql.indexOf("$function$;",pos);
+  const rpc=sql.slice(pos,end);
+  assert.ok(rpc.includes("no degradar a 'preparada'"));
+  assert.ok(rpc.includes("when exists(select 1 from public.kontrola_verificaciones v where v.codigo=c.codigo and v.fin is not null) then 'cerrada'"));
+  assert.ok(!rpc.includes("update public.kontrola_cargas c set estado='preparada',actualizado_en=v_now"));
+});
+test("seguridad: las cinco RPC de la propuesta no conceden acceso a anon",()=>{
+  const sql=readFileSync(new URL("../supabase/proposals/kontrola_prepara_verificacion_paralelas.sql",import.meta.url),"utf8");
+  assert.equal((sql.match(/REVOKE ALL ON FUNCTION public\./g)||[]).length,5);
+  assert.equal((sql.match(/GRANT EXECUTE ON FUNCTION public\./g)||[]).length,5);
+  assert.ok(sql.includes("c.documento_hash=v_i.documento_hash"));
+  assert.ok(sql.includes("pg_advisory_xact_lock"));
+});
