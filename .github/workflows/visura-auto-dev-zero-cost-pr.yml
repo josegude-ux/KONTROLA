@@ -7,6 +7,14 @@ on:
     paths:
       - .github/workflows/visura-auto-dev-zero-cost-pr.yml
   workflow_dispatch:
+    inputs:
+      pilot_id:
+        description: 'Pilot identifier (31 only for this safety-limited version)'
+        required: true
+        default: '31'
+        type: choice
+        options:
+          - '31'
 permissions:
   contents: read
 jobs:
@@ -46,6 +54,7 @@ jobs:
         run: |
           set -euo pipefail
           test "$REPO" = "josegude-ux/KONTROLA"
+          # Fixed issue and branch prevent untrusted workflow inputs from controlling writes.
           # Never use issue body as executable code or instructions.
           state="$(gh api "repos/$REPO/issues/31" --jq '.state')"
           is_pr="$(gh api "repos/$REPO/issues/31" --jq 'has("pull_request")')"
