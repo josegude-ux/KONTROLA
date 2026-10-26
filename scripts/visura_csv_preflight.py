@@ -21,11 +21,14 @@ def inspect_csv(path, required_columns, *, max_bytes=20_000_000):
         stream.seek(0)
         if not sample.strip():
             raise ValueError("Empty CSV")
-        try:
-            dialect = csv.Sniffer().sniff(sample, delimiters=",;\t")
-        except csv.Error as exc:
-            raise ValueError("Cannot identify CSV delimiter") from exc
-        reader = csv.reader(stream, dialect)
+        # Choose the separator from the header, not inconsistent data rows.
+        # csv.Sniffer may fail precisely when a row is malformed.
+        header_line = sample.splitlines()[0]
+        counts = {delimiter: header_line.count(delimiter) for delimiter in (",", ";", "\t")}
+        best = max(counts, key=counts.get)
+        if counts[best] == 0 or list(counts.values()).count(counts[best]) != 1:
+            raise ValueError("Cannot identify CSV delimiter")
+        reader = csv.reader(stream, delimiter=best)
         header = next(reader, [])
         if not header or any(not name.strip() for name in header):
             raise ValueError("Missing or blank header")
@@ -41,4 +44,4 @@ def inspect_csv(path, required_columns, *, max_bytes=20_000_000):
             if len(row) != len(header):
                 raise ValueError(f"Invalid field count on data row {count + 1}")
             count += 1
-        return {"delimiter": dialect.delimiter, "columns": header, "rows": count}
+        return {"delimiter": best, "columns": header, "rows": count}
