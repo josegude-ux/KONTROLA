@@ -93,16 +93,18 @@ export function generarPdfHojas(hojas){
     const aisles=hoja.pasillos||[],unidades=hoja.unidades||[],sinUbicacion=hoja.sinUbicacion||[];
     if(!aisles.length||aisles.length>27||!unidades.length||unidades.length>9)
       throw Error("El resumen no cabe en un único A4 (máximo 27 zonas y 9 unidades).");
-    const left=MARGIN,right=PAGE_W-MARGIN,aisleW=90,totalW=44,doneW=44;
-    const unitW=(CONTENT_W-aisleW-totalW-doneW)/unidades.length;
-    const top=674,headerH=28;
+    const left=MARGIN,right=PAGE_W-MARGIN,aisleW=90,doneW=48;
+    // No existe un TOTAL de bultos comparable entre cajas, botellas, packs y UD.
+    // Usar el ancho liberado para mejorar legibilidad y casillas HECHO.
+    const unitW=(CONTENT_W-aisleW-doneW)/unidades.length;
+    const top=666,headerH=28;
     const missingRows=sinUbicacion.map(row=>{
       const descripcion=wrap(row.description||"Sin descripción",CONTENT_W-200,7.1);
       if(descripcion.length>2)throw Error("La descripción SIN UBICACIÓN de "+String(row.sku||"")+" no cabe legible en el A4.");
       return {row,descripcion,h:Math.max(16,descripcion.length*11+5)};
     });
     const missingHeight=missingRows.length?25+missingRows.reduce((acc,d)=>acc+d.h,0):0;
-    const rowH=Math.min(30,Math.floor((top-headerH-124-missingHeight)/aisles.length));
+    const rowH=Math.min(34,Math.floor((top-headerH-124-missingHeight)/aisles.length));
     if(rowH<16)throw Error("El detalle SIN UBICACIÓN no cabe legiblemente en un único A4; no se ha omitido ninguna referencia.");
     // PDF vectorial, una única página. No se altera ningún documento original.
     function rect(x,y,w,h,r=0.94,g=0.96,b=0.98){
@@ -120,8 +122,15 @@ export function generarPdfHojas(hojas){
     label("VISURA PREPARA · MERCANCÍA COR1",left,PAGE_H-42,10,{bold:true,color:"0.68 0.86 0.78"});
     label("LISTADO DE PREPARACIÓN POR PASILLOS",left,PAGE_H-79,17,{bold:true,color:"1 1 1"});
     label("Carga: "+hoja.codigo+"     Fecha: "+hoja.fecha+"     Almacén: COR1 (A Coruña)",left,PAGE_H-107,9,{color:"1 1 1"});
-    label("Repartidor: "+hoja.repartidor,left,696,9,{bold:true});
-    label("Solo MERCANCÍA · sin envases ni palés · casillas HECHO",left+229,696,7.5,{color:"0.11 0.45 0.33"});
+    // Metadata real del LP, con espacio reservado para repartidores largos.
+    const repartidor=wrap("Repartidor: "+String(hoja.repartidor||"—"),CONTENT_W-206,8.6);
+    if(repartidor.length>2)throw Error("El nombre del repartidor no cabe legible en el A4.");
+    repartidor.forEach((line,i)=>label(line,left,697-i*12,8.6,{bold:i===0}));
+    const matricula=String(hoja.matricula||"—");
+    if(estimatedWidth("Matrícula: "+matricula,8.6,true)>180)
+      throw Error("La matrícula no cabe en la cabecera A4.");
+    label("Matrícula: "+matricula,right-184,697,8.6,{bold:true});
+    label("Referencias COR1: "+String(hoja.referencias??"—"),right-184,683,8.6,{bold:true});
     rect(left,top-headerH,CONTENT_W,headerH,0.09,0.16,0.24);
     const columnCenters=unidades.map((_,i)=>left+aisleW+unitW*(i+.5));
     label("PASILLO",left+aisleW/2,top-19,8.6,{bold:true,center:true,color:"1 1 1"});
@@ -131,8 +140,7 @@ export function generarPdfHojas(hojas){
       if(size<6)throw Error("Columna de unidad demasiado larga para un A4: "+name);
       label(name,columnCenters[i],top-19,size,{bold:true,center:true,color:"1 1 1"});
     });
-    const totalX=right-doneW-totalW/2,doneX=right-doneW/2;
-    label("TOTAL",totalX,top-19,8,{bold:true,center:true,color:"1 1 1"});
+    const doneX=right-doneW/2;
     label("HECHO",doneX,top-19,8,{bold:true,center:true,color:"1 1 1"});
     let bottom=top-headerH;
     for(let i=0;i<aisles.length;i++){
@@ -144,8 +152,7 @@ export function generarPdfHojas(hojas){
       unidades.forEach((u,j)=>{
         if(Number(row.valores?.[u])>0)label(String(row.valores[u]),columnCenters[j],y+(rowH-10)/2+3,9,{bold:true,center:true});
       });
-      label(String(row.total),totalX,y+(rowH-10)/2+3,9,{bold:true,center:true});
-      const sq=Math.min(12,Math.max(9,rowH-5));
+      const sq=Math.min(20,Math.max(9,rowH-6));
       commands.push(`q 0.30 G 0.9 w ${(doneX-sq/2).toFixed(2)} ${(y+(rowH-sq)/2).toFixed(2)} ${sq} ${sq} re S Q`);
       bottom=y;
     }
@@ -154,7 +161,6 @@ export function generarPdfHojas(hojas){
     label("TOTAL",left+aisleW/2,totalY+10,9.5,{bold:true,center:true});
     unidades.forEach((u,i)=>label(String(hoja.totales[u]||""),
       columnCenters[i],totalY+10,10,{bold:true,center:true}));
-    label(String(hoja.total),totalX,totalY+10,10,{bold:true,center:true});
     if(missingRows.length){
       let y=totalY-29;
       label("SIN UBICACIÓN · DETALLE DE TODAS LAS REFERENCIAS",left,y,9,
@@ -171,7 +177,7 @@ export function generarPdfHojas(hojas){
     }
     horizontal(60);
     label("PREPARADOR: _________________________",left,76,8.5,{bold:true});
-    label("Totales por formato, sin conversiones. Picking en Business Central.",left,45,7.3);
+    label("Totales solo por formato: NO sumar unidades distintas. Picking en Business Central.",left,45,7.3);
     label("1 / 1",right-30,45,7.3);
   }
   for(const hoja of hojas){
