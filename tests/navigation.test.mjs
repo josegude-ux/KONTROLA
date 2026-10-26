@@ -44,6 +44,24 @@ test("PDF mixto: administración reprocesa solo el almacén elegido sin copiar l
   assert.match(source,/Guardar revisión para actualizar la carga pendiente/);
 });
 
+test("importación F/C prepara COR1, impresión original COR1 y hoja COR2 independiente",()=>{
+ const admin=read("src/admin.mjs");
+ const core=read("src/core.mjs");
+ const vendor=read("scripts/build-vendor.mjs");
+ for(const id of ["printCor1Pack","previewCor2Detail","warehousePrintActions"])
+   assert.match(html,new RegExp('id="'+id+'"'));
+ assert.match(admin,/parsePdfFile\(file,\{warehouse:"COR_01_COR"\}\)/);
+ assert.match(admin,/if\(draft\.parsed\.warehouse!=="COR_01_COR"\)return setStatus\("No se puede publicar COR2/);
+ assert.match(admin,/numeroPaginasCor1:parsed\.pageNumbers/);
+ assert.match(admin,/unirPaginasCor1YDetalle/);
+ assert.match(admin,/buildPreparationReport\(asPayload\(parsed\),\{informativoCor2:true\}\)/);
+ assert.match(admin,/draft\.state!=="publicada"\|\|!isCor1/);
+ assert.match(read("sw.js"),/\.\/vendor\/pdf-lib\.min\.mjs/);
+ assert.match(read("sw.js"),/\.\/src\/mixed-print\.mjs/);
+ assert.match(vendor,/outfile:"vendor\/pdf-lib\.min\.mjs"/);
+ assert.match(core,/fileIdentity\?"COR_01_COR"/);
+});
+
 test("Tanques permanece totalmente oculto y sin acciones activas",()=>{
   assert.doesNotMatch(html,/tanques/i);
   assert.doesNotMatch(app,/openTanques|cargasTanques/i);
