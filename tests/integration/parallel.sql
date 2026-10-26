@@ -63,6 +63,8 @@ end$$;
 
 select * from public.kontrola_registrar_linea(:'ver1_id',1,2);
 select * from public.kontrola_finalizar_verificacion(:'ver1_id');
+-- RLS de preparación: el verificador no lee la fila ajena; validarla como su preparador.
+select set_config('request.jwt.claim.sub','00000000-0000-0000-0000-000000000002',false);
 select test.assert(
  (select fin is null from public.kontrola_preparaciones where codigo='LP26-70001'),
  'cerrar verificación NO puede cerrar automáticamente la preparación de otro operario');
