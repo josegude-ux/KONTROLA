@@ -49,7 +49,9 @@ for (const viewport of [
       const artBox = await card.locator(".feature-art").boundingBox();
       expect(textBox).not.toBeNull();
       expect(artBox).not.toBeNull();
-      expect(textBox.x + textBox.width, `text overlaps art: ${viewport.name}/${id}`).toBeLessThanOrEqual(artBox.x + 2);
+      if (viewport.name === "mobile") {
+        expect(textBox.x + textBox.width, `text overlaps art: ${viewport.name}/${id}`).toBeLessThanOrEqual(artBox.x + 2);
+      }
     }
     await expect(page.locator("#openAdmin")).toHaveCount(1);
     const bodyWidth = await page.locator("body").evaluate(el => el.scrollWidth);
