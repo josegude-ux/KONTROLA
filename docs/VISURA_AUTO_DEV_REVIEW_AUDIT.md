@@ -14,6 +14,10 @@
   - `observed_stale_review_ids`: revisiones de otros commits.
   - `observed_self_review_ids`: revisiones de la misma cuenta numérica que el autor.
   - `observed_dismissed_review_ids` y `observed_pending_review_ids`: registros descartados y pendientes observados.
+  - `observed_latest_decisive_reviews_by_account`: última decisión observada por ID numérico de cuenta entre `APPROVED`, `CHANGES_REQUESTED` y `DISMISSED`, ordenada según el ID numérico de la revisión. Es una vista orientativa, **no una prueba de que GitHub considere esa decisión vigente**.
+  - `observed_latest_approval_records`: entradas de esa vista cuya última decisión observada es `APPROVED`; no se conceden permisos por aparecer aquí.
+  - `observed_superseded_decisive_review_ids`: decisiones anteriores de la misma cuenta sustituidas por otra observación, aunque sigan presentes en `observed_current_commit_approvals`.
+  - Los registros `COMMENTED` y `PENDING` no sustituyen decisiones enviadas; los registros de otro SHA y las auto-revisiones quedan excluidos de la vista de últimas decisiones.
 - Señala `effective_approval_verification: false`, `repository_policy_verified: false`, `execution_authorized: false`, `merge_authorized: false` y `deployment_authorized: false`.
 
 ## Uso previsto
@@ -32,10 +36,10 @@ Nunca pegar el token en el comando, los logs o el chat. No se requiere ni se per
 
 ## Qué NO demuestra
 
-La API puede devolver una aprobación aunque esta no sea válida para las reglas vigentes de la rama. Puede existir una revisión posterior, un cambio de política, una eliminación de permisos o un cambio del PR después de la consulta. El informe clasifica **registros observados**, no toma decisiones de seguridad.
+La vista de últimas decisiones presupone que los IDs numéricos de las revisiones reflejan su orden de creación; **no comprueba marcas de tiempo, reglas de dismiss ni la última decisión efectiva en GitHub**. La API puede devolver una aprobación aunque esta no sea válida para las reglas vigentes de la rama. Puede existir una revisión posterior, un cambio de política, una eliminación de permisos o un cambio del PR después de la consulta. El informe clasifica **registros observados**, no toma decisiones de seguridad.
 
 Antes de habilitar cualquier automatización con escritura será imprescindible verificar, fuera de este módulo, las reglas de protección y permisos de GitHub, revalidar el estado inmediatamente antes de actuar y exigir aprobación humana de merge/despliegue.
 
 ## Validación
 
-Code Review Gate #89: **116 de 116 pruebas correctas**; se probaron respuestas simuladas, sin activar el workflow de auditoría. La consulta de producción y las reglas de protección de rama siguen pendientes de validación independiente.
+Code Review Gate #93: **121 de 121 pruebas correctas** (incluidas cinco pruebas de decisiones sustituidas); se probaron respuestas simuladas, sin activar el workflow de auditoría. La consulta de producción y las reglas de protección de rama siguen pendientes de validación independiente.
