@@ -567,5 +567,80 @@ class CodeownersSummaryTests(unittest.TestCase):
                     render_readonly_audit_summary(data)
 
 
+class GithubTransportSummaryTests(unittest.TestCase):
+    def valid_evidence(self):
+        return {
+            "repository": "josegude-ux/KONTROLA",
+            "pr_number": 37,
+            "repository_lookup": "retrieved",
+            "pull_request_lookup": "retrieved",
+            "observed_base_branch": "chore/visura-auto-dev-guardrails",
+            "observed_head_sha": SHA,
+            "get_only_transport": True,
+            "token_scopes_verified": False,
+            "authenticated_caller_identity_verified": False,
+            "effective_branch_policy_verified": False,
+            "reviewer_eligibility_verified": False,
+            "execution_authorized": False,
+            "merge_authorized": False,
+            "deployment_authorized": False,
+        }
+
+    def test_get_evidence_is_labeled_diagnostic_not_authentication(self):
+        data = bundle()
+        data["github_transport_preflight"] = self.valid_evidence()
+        rendered = render_readonly_audit_summary(data)
+        self.assertIn("Conexión GitHub GET (diagnóstico, no autenticación)", rendered)
+        self.assertIn("Consulta de repositorio: **retrieved**", rendered)
+        self.assertIn("Consulta de PR: **retrieved**", rendered)
+        self.assertIn("no acredita credenciales", rendered)
+        self.assertNotIn("Bearer", rendered)
+
+    def test_missing_preflight_from_historical_audit_is_unknown(self):
+        rendered = render_readonly_audit_summary(bundle())
+        self.assertIn("informe anterior", rendered)
+
+    def test_inaccessible_preflight_cannot_claim_pr_metadata(self):
+        data = bundle()
+        evidence = self.valid_evidence()
+        evidence.update(
+            repository_lookup="inaccessible", pull_request_lookup="not_queried",
+            observed_base_branch=None, observed_head_sha=None
+        )
+        data["github_transport_preflight"] = evidence
+        rendered = render_readonly_audit_summary(data)
+        self.assertIn("Consulta de repositorio: **inaccessible**", rendered)
+        evidence["observed_head_sha"] = SHA
+        with self.assertRaises(ValueError):
+            render_readonly_audit_summary(data)
+
+    def test_mismatched_sha_branch_number_and_permissions_fail_closed(self):
+        for key, value in (
+            ("observed_head_sha", "b" * 40),
+            ("observed_base_branch", "main"),
+            ("pr_number", 99),
+            ("repository", "wrong/repo"),
+            ("token_scopes_verified", True),
+            ("authenticated_caller_identity_verified", True),
+            ("execution_authorized", True),
+            ("get_only_transport", False),
+        ):
+            with self.subTest(key=key):
+                data = bundle()
+                evidence = self.valid_evidence()
+                evidence[key] = value
+                data["github_transport_preflight"] = evidence
+                with self.assertRaises(ValueError):
+                    render_readonly_audit_summary(data)
+
+    def test_unknown_preflight_lookup_is_never_embedded(self):
+        data = bundle()
+        evidence = self.valid_evidence()
+        evidence["repository_lookup"] = "<script>alert('x')</script>"
+        data["github_transport_preflight"] = evidence
+        with self.assertRaises(ValueError):
+            render_readonly_audit_summary(data)
+
+
 if __name__ == "__main__":
     unittest.main()
