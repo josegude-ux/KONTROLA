@@ -27,7 +27,13 @@ button.primary,button.secondary,button.ghost-danger{min-height:46px;border-radiu
 .feature b{display:block;font-size:23px;margin-bottom:8px}.feature small{font-size:14px;color:#51657b;display:block;line-height:1.4}.feature .arrow{font-size:26px;margin-left:auto;flex:none}
 .home-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:17px;margin-top:28px}.home-grid .feature:last-child:nth-child(odd){grid-column:span 2}
 .page-heading{margin-bottom:21px}.back-button{background:transparent;color:#0B2647;border:0;font-weight:750;padding:0;min-height:48px;margin-bottom:10px}
-.toolbar{display:flex;align-items:end;gap:12px;flex-wrap:wrap}.search-wrap{flex:1;min-width:180px}.loads-list{display:grid;gap:12px;margin-top:14px}
+.toolbar{display:flex;align-items:end;gap:12px;flex-wrap:wrap}
+/* Lectura voluntaria de cabeceras antiguas: control separado de tarjetas activadoras. */
+.legacy-header-actions{display:flex;align-items:center;flex-wrap:wrap;gap:10px;margin-top:10px}
+.legacy-header-actions button{flex:none;max-width:100%;font-size:13px;padding:10px 13px;min-height:42px}
+.legacy-header-actions p{font-size:13px;line-height:1.45;color:#49647d;margin:0;min-width:0;overflow-wrap:anywhere}
+@media(max-width:540px){.legacy-header-actions{align-items:flex-start;flex-direction:column}.legacy-header-actions button{width:100%}}
+.search-wrap{flex:1;min-width:180px}.loads-list{display:grid;gap:12px;margin-top:14px}
 .load-card{border:1px solid #e0e6eb;background:#fff;border-radius:17px;display:flex;align-items:center;gap:18px;justify-content:space-between;text-align:left;padding:18px;width:100%;box-shadow:0 2px 9px #0b264708}.load-title{display:block;font-size:20px;font-weight:800}.load-meta{font-size:13px;color:#647386;display:block;line-height:1.5;margin-top:5px}.load-weight{font-weight:800;font-size:16px;white-space:nowrap}
 .panel{border:1px solid #e6eaef;background:white;border-radius:18px;padding:20px;margin-top:17px;box-shadow:0 6px 22px #0b264708}.line{display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap}.facts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}.fact{padding:13px;border:1px solid #e3eaf0;border-radius:12px;background:#fff}.fact small{color:#65778a;display:block;font-size:12px}.fact b{display:block;margin-top:7px;overflow-wrap:anywhere}
 .info-bar{border-radius:12px;background:#eaf3fa;color:#12446b;font-size:13px;line-height:1.5;padding:13px 16px;margin-bottom:15px;font-weight:600}
