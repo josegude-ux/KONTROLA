@@ -50,4 +50,5 @@ grep -q "KONTROLA_ARCHIVE_OK" /tmp/kontrola-archivo.log
 "${PSQL[@]}" -f supabase/proposals/kontrola_prepara_verificacion_paralelas.sql >/tmp/kontrola-parallel-migration.log
 "${PSQL[@]}" -f tests/integration/parallel.sql >/tmp/kontrola-parallel.log
 grep -q "KONTROLA_PARALLEL_OK" /tmp/kontrola-parallel.log
-echo "KONTROLA_DATABASE_OK migrations=6 workflow=passed revisions=passed stats=passed concurrency=passed archive=passed parallel=passed"
+bash tests/integration/parallel-concurrency.sh "$DB"
+echo "KONTROLA_DATABASE_OK migrations=6 workflow=passed revisions=passed stats=passed concurrency=passed archive=passed parallel=passed parallel_race=passed"
