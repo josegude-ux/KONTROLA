@@ -3,8 +3,6 @@
 Not a distributed ledger and NOT suitable as the sole safeguard in ephemeral
 GitHub Actions. Paid API calls remain disabled. Amounts are EUR cents.
 """
-import calendar
-import datetime
 import sqlite3
 import uuid
 
@@ -16,7 +14,7 @@ def reserve(db_path, *, month, amount_cents, reservation_id=None):
 
     Returns (allowed, reservation_id). Idempotent by reservation ID.
     """
-    if not isinstance(month, str) or len(month) != 7:
+    if not isinstance(month, str) or len(month) != 7 or month[4] != "-":
         raise ValueError("month must be YYYY-MM")
     try:
         year, number = (int(x) for x in month.split("-"))
