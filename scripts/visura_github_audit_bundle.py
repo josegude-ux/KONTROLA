@@ -131,6 +131,17 @@ def inspect_readonly_audit_bundle(
     ):
         raise ValueError("Pull request reviews changed during the audit")
 
+    # A reviewer's repository permission can change independently of their
+    # vote, review record, and PR head. Re-fetch from the same validated review
+    # snapshot AFTER confirming reviews unchanged. A change (including a new
+    # access denial) invalidates this point-in-time audit; it never grants
+    # reviewer eligibility, execution, merge or deployment authority.
+    reviewer_permissions_recheck = observe_snapshot_reviewer_permissions(
+        repository, reviews_recheck, token, opener=opener
+    )
+    if reviewer_permissions_recheck != reviewer_permissions:
+        raise ValueError("Reviewer repository permissions changed during the audit")
+
     # Check the PR again LAST, after the review/policy rechecks. These reads
     # are non-atomic: a subsequent edit still invalidates the observation.
     endpoint = "/repos/" + repository + "/pulls/" + str(pr_number)
@@ -173,6 +184,7 @@ def inspect_readonly_audit_bundle(
         "same_pr_metadata_after_policy_lookup": True,
         "same_target_policy_after_audit": True,
         "same_review_records_after_audit": True,
+        "same_reviewer_repository_permissions_after_audit": True,
         "report_is_atomic": False,
         "repository_policy_verified": False,
         "execution_authorized": False,

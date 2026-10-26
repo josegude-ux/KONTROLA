@@ -606,6 +606,142 @@ class AuditBundleTests(unittest.TestCase):
         self.assertTrue(result["same_review_records_after_audit"])
         self.assertFalse(result["merge_authorized"])
 
+
+    def test_reviewer_permission_downgrade_same_review_and_sha_rejected(self):
+        initial = fixture_snapshot()
+        initial["reviews"] = [{
+            "review_id": 55, "reviewer_numeric_id": 7,
+            "reviewer_login": "reviewer", "state": "APPROVED",
+            "commit_sha": HEAD,
+        }]
+        first = {
+            "lookup": "observed",
+            "observations": [{"reviewer_numeric_id": 7,
+                              "lookup": "retrieved", "observed_base_permission": "write"}],
+            "reviewer_eligibility_verified": False,
+            "execution_authorized": False, "merge_authorized": False,
+            "deployment_authorized": False,
+        }
+        downgraded = {
+            **first, "observations": [{
+                "reviewer_numeric_id": 7,
+                "lookup": "retrieved", "observed_base_permission": "read",
+            }],
+        }
+        with patch(
+            "scripts.visura_github_audit_bundle.observe_snapshot_reviewer_permissions",
+            side_effect=[first, downgraded],
+        ) as permissions, patch(
+            "scripts.visura_github_audit_bundle.fetch_readonly_review_snapshot",
+            return_value=initial,
+        ), patch(
+            "scripts.visura_github_audit_bundle.inspect_branch_policy",
+            return_value={"branch": "any"},
+        ), patch(
+            "scripts.visura_github_audit_bundle._get_json",
+        ) as final_get:
+            with self.assertRaisesRegex(
+                ValueError, "Reviewer repository permissions changed during the audit"
+            ):
+                inspect_readonly_audit_bundle(
+                    REPO, 37, "main", "secret", opener=lambda *a: None
+                )
+            final_get.assert_not_called()
+        self.assertEqual(permissions.call_count, 2)
+        self.assertEqual(
+            [call.args[:3] for call in permissions.call_args_list],
+            [(REPO, initial, "secret"), (REPO, initial, "secret")],
+        )
+
+    def test_reviewer_permission_access_lost_during_audit_rejected(self):
+        initial = fixture_snapshot()
+        initial["reviews"] = [{
+            "review_id": 59, "reviewer_numeric_id": 8,
+            "reviewer_login": "reviewer", "state": "COMMENTED",
+            "commit_sha": HEAD,
+        }]
+        observed = {"lookup": "observed", "observations": [{
+            "reviewer_numeric_id": 8, "lookup": "retrieved",
+            "observed_base_permission": "write",
+        }]}
+        inaccessible = {"lookup": "incomplete", "observations": [{
+            "reviewer_numeric_id": 8, "lookup": "inaccessible",
+            "observed_base_permission": None,
+        }]}
+        with patch(
+            "scripts.visura_github_audit_bundle.observe_snapshot_reviewer_permissions",
+            side_effect=[observed, inaccessible],
+        ), patch(
+            "scripts.visura_github_audit_bundle.fetch_readonly_review_snapshot",
+            return_value=initial,
+        ), patch(
+            "scripts.visura_github_audit_bundle.inspect_branch_policy",
+            return_value={"branch": "any"},
+        ), patch(
+            "scripts.visura_github_audit_bundle._get_json",
+        ) as final_get:
+            with self.assertRaisesRegex(
+                ValueError, "Reviewer repository permissions changed during the audit"
+            ):
+                inspect_readonly_audit_bundle(
+                    REPO, 37, "main", "secret", opener=lambda *a: None
+                )
+            final_get.assert_not_called()
+
+    def test_same_reviewer_permissions_rechecked_but_not_authority(self):
+        initial = fixture_snapshot()
+        first = {"lookup": "observed", "observations": [],
+                 "reviewer_eligibility_verified": False,
+                 "execution_authorized": False, "merge_authorized": False,
+                 "deployment_authorized": False}
+        with patch(
+            "scripts.visura_github_audit_bundle.observe_snapshot_reviewer_permissions",
+            return_value=first,
+        ) as permissions, patch(
+            "scripts.visura_github_audit_bundle.fetch_readonly_review_snapshot",
+            return_value=initial,
+        ), patch(
+            "scripts.visura_github_audit_bundle.inspect_branch_policy",
+            return_value={"branch": "any"},
+        ), patch(
+            "scripts.visura_github_audit_bundle._get_json",
+            return_value=fixture_pr(),
+        ):
+            result = inspect_readonly_audit_bundle(
+                REPO, 37, "main", "secret", opener=lambda *a: None
+            )
+        self.assertTrue(result["same_reviewer_repository_permissions_after_audit"])
+        self.assertFalse(result["execution_authorized"])
+        self.assertFalse(result["merge_authorized"])
+        self.assertFalse(result["reviewer_repository_permissions"]["reviewer_eligibility_verified"])
+        self.assertEqual(permissions.call_count, 2)
+
+    def test_reviewer_permissions_recheck_occurs_before_last_pr_get(self):
+        initial = fixture_snapshot()
+        stages = []
+        def observe(*args, **kwargs):
+            stages.append("permissions")
+            return {"lookup": "observed", "observations": [],
+                    "execution_authorized": False}
+        def final(*args, **kwargs):
+            stages.append("final_pr")
+            return fixture_pr()
+        with patch(
+            "scripts.visura_github_audit_bundle.observe_snapshot_reviewer_permissions",
+            side_effect=observe,
+        ), patch(
+            "scripts.visura_github_audit_bundle.fetch_readonly_review_snapshot",
+            return_value=initial,
+        ), patch(
+            "scripts.visura_github_audit_bundle.inspect_branch_policy",
+            return_value={"branch": "any"},
+        ), patch(
+            "scripts.visura_github_audit_bundle._get_json",
+            side_effect=final,
+        ):
+            inspect_readonly_audit_bundle(REPO, 37, "main", "secret", opener=lambda *a: None)
+        self.assertEqual(stages, ["permissions", "permissions", "final_pr"])
+
     def test_pr_retargeting_during_policy_fetch_rejected(self):
         with patch(
             "scripts.visura_github_audit_bundle.fetch_readonly_review_snapshot",
@@ -850,7 +986,7 @@ class AuditBundleTests(unittest.TestCase):
             'scripts.visura_github_audit_bundle.inspect_branch_policy', return_value={}), patch(
             'scripts.visura_github_audit_bundle._get_json', side_effect=final):
             result = inspect_readonly_audit_bundle(REPO, 37, 'main', 'token', opener=transport)
-        self.assertEqual(events, ['permission', 'final_pr'])
+        self.assertEqual(events, ['permission', 'permission', 'final_pr'])
         evidence = result['reviewer_repository_permissions']
         self.assertEqual(evidence['lookup'], 'observed')
         self.assertEqual(evidence['observations'][0]['reviewer_numeric_id'], 456)

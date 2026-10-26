@@ -165,6 +165,29 @@ class GitHubActionSummaryTests(unittest.TestCase):
                 with self.assertRaisesRegex(ValueError, "review records recheck claim"):
                     render_readonly_audit_summary(data)
 
+
+    def test_reviewer_permission_recheck_observed_not_eligibility(self):
+        data = bundle()
+        data["same_reviewer_repository_permissions_after_audit"] = True
+        report = render_readonly_audit_summary(data)
+        self.assertIn(
+            "Permisos de revisores releídos | coincidentes al releer (no elegibilidad)",
+            report,
+        )
+        self.assertIn("NO autorización", report)
+
+    def test_legacy_report_reviewer_permission_recheck_unknown(self):
+        report = render_readonly_audit_summary(bundle())
+        self.assertIn("Permisos de revisores releídos | desconocido", report)
+
+    def test_forged_reviewer_permission_recheck_flag_rejected(self):
+        for value in (False, 0, 1, "true", [], {}):
+            with self.subTest(value=value):
+                data = bundle()
+                data["same_reviewer_repository_permissions_after_audit"] = value
+                with self.assertRaisesRegex(ValueError, "reviewer permissions recheck"):
+                    render_readonly_audit_summary(data)
+
     def test_same_target_as_default_has_only_one_policy_row(self):
         result = render_readonly_audit_summary(bundle(target="main"))
         self.assertEqual(result.count("| Destino `main` |"), 1)

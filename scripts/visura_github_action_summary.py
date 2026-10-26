@@ -325,6 +325,16 @@ def render_readonly_audit_summary(bundle):
         "coincidentes al releer (no aprobación)"
         if rechecked_review_records is True else "desconocido"
     )
+    rechecked_reviewer_permissions = bundle.get(
+        "same_reviewer_repository_permissions_after_audit"
+    )
+    if (rechecked_reviewer_permissions is not None
+            and rechecked_reviewer_permissions is not True):
+        raise ValueError("Invalid reviewer permissions recheck claim")
+    rechecked_reviewer_text = (
+        "coincidentes al releer (no elegibilidad)"
+        if rechecked_reviewer_permissions is True else "desconocido"
+    )
     if any(target.get(key) is not False for key in (
         "repository_policy_verified", "execution_authorized",
         "merge_authorized", "deployment_authorized",
@@ -565,6 +575,7 @@ def render_readonly_audit_summary(bundle):
         "| Snapshot atómico | No |",
         "| Política de destino releída | " + rechecked_target_text + " |",
         "| Revisiones releídas | " + rechecked_review_text + " |",
+        "| Permisos de revisores releídos | " + rechecked_reviewer_text + " |",
         "",
         "## Revisiones registradas (no autorizaciones)",
         "",
