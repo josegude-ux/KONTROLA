@@ -1,0 +1,39 @@
+name: Integrar imagenes oficiales VISURA PREPARA (manual por ZIP)
+on:
+  push:
+    branches:
+      - feature/visura-prepara-menu-oficial-20261026
+    paths:
+      - VISURA_PREPARA_SOLO_IMAGENES_GITHUB.zip
+      - .github/workflows/integrar-menu-zip.yml
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  integrar:
+    if: github.ref == 'refs/heads/feature/visura-prepara-menu-oficial-20261026'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: true
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+      - name: Comprobar que el ZIP oficial esta presente
+        run: test -f VISURA_PREPARA_SOLO_IMAGENES_GITHUB.zip
+      - name: Integrar imagenes y ejecutar todas las pruebas
+        run: |
+          python3 scripts/integrar_menu_oficial.py VISURA_PREPARA_SOLO_IMAGENES_GITHUB.zip
+          python3 -m unittest discover -s tests -p 'test_integrar_menu_oficial.py' -v
+          npm ci
+          npm run check
+      - name: Versionar solo menu e imagenes, sin desplegar
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html sw.js tests/visura-menu.test.mjs assets/home/visura-prepara-*.webp assets/home/originales/
+          if ! git diff --cached --quiet; then
+            git commit -m "feat(menu): integrar cuatro imagenes oficiales VISURA PREPARA"
+            git push origin HEAD:feature/visura-prepara-menu-oficial-20261026
+          fi

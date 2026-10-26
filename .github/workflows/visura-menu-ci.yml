@@ -1,0 +1,46 @@
+name: Verificar menu VISURA PREPARA (aislado)
+on:
+  push:
+    branches:
+      - feature/visura-prepara-menu-oficial-20261026
+  pull_request:
+    branches:
+      - feature/visura-prepara-menu-oficial-20261026
+permissions:
+  contents: read
+jobs:
+  menu:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+      - name: Integrar ZIP oficial en rama de trabajo
+        run: |
+          if test -f VISURA_PREPARA_SOLO_IMAGENES_GITHUB.zip && ! test -f assets/home/visura-prepara-preparacion-3d.webp; then
+            python3 scripts/integrar_menu_oficial.py VISURA_PREPARA_SOLO_IMAGENES_GITHUB.zip
+          fi
+      - name: Instalar dependencias de pruebas
+        run: npm ci
+      - name: Comprobar sintaxis y regresion completa sin despliegue
+        run: |
+          python3 -m py_compile scripts/integrar_menu_oficial.py
+          python3 -m unittest discover -s tests -p 'test_integrar_menu_oficial.py' -v
+          npm run check
+          node --check tests/visura-menu.test.mjs
+      - name: Prueba visual Chromium en escritorio y móvil
+        run: |
+          npm install --no-save @playwright/test
+          npx playwright install --with-deps chromium
+          mkdir -p artifacts
+          npx playwright test tests/visual-menu.spec.mjs --reporter=line
+      - name: Publicar capturas de escritorio y móvil como artefacto
+        if: always()
+        uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08 # v4
+        with:
+          name: visura-prepara-menu-visual
+          path: artifacts/*.png
+          if-no-files-found: warn
+          retention-days: 7

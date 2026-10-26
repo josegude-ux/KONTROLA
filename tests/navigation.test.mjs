@@ -42,12 +42,12 @@ test("La navegación conserva los accesos previos y los regresos al submenú",()
 
 test("La versión y el caché están preparados para instalar nuevas pantallas",()=>{
   const version=JSON.parse(read("version.json")).version;
-  assert.equal(version,"0.3.30");
+  assert.equal(version,"0.3.31");
   assert.equal(JSON.parse(read("package.json")).version,version);
   assert.equal(JSON.parse(read("package-lock.json")).version,version);
-  assert.match(read("src/config.mjs"),/APP_VERSION="0\.3\.30"/);
-  assert.match(html,/id="appVersion">0\.3\.30</);
-  assert.match(read("sw.js"),/kontrola-integral-visura-v062/);
+  assert.ok(read("src/config.mjs").includes(`APP_VERSION="${version}"`));
+  assert.ok(html.includes(`id="appVersion">${version}<`));
+  assert.match(read("sw.js"),/kontrola-integral-visura-v064/);
 });
 
 test("Las consultas descartan respuestas de sesiones o almacenes anteriores",()=>{
@@ -96,8 +96,9 @@ test("KONTROLA usa cuatro imágenes 3D exclusivas, distintas y precargadas sin c
  const names=["preparacion","verificacion","control-cargas","administracion"];
  const images=names.map(name=>{
    const asset="assets/home/kontrola-"+name+"-3d.webp";
-   assert.match(html,new RegExp('src="\\./'+asset+'"'));
-   assert.match(read("sw.js"),new RegExp('\\./'+asset.replaceAll(".","\\.")));
+   const official={preparacion:"preparacion",verificacion:"control-cargas","control-cargas":"operaciones",administracion:"administracion"}[name];
+   assert.match(html,new RegExp('src="\\./assets/home/visura-prepara-'+official+'-3d\\.webp"'));
+   assert.match(read("sw.js"),new RegExp('\\./assets/home/visura-prepara-'+official+'-3d\\.webp'));
    const bytes=readFileSync(new URL("../"+asset,import.meta.url));
    assert.ok(bytes.length>10000,asset+" debe tener contenido gráfico");
    assert.equal(bytes.subarray(0,4).toString("ascii"),"RIFF");
