@@ -902,3 +902,5 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 - Si faltan metadatos, se intenta descargar en modo solo lectura un PDF autorizado y recuperar su cabecera. Si no contiene huecos, el operario los teclea. Sin capacidad completa no se muestra viabilidad.
 - Las cantidades manuales permanecen en memoria de sesión por cuenta/carga/almacén y desaparecen al cerrar sesión. No se persisten ni se comparten entre dispositivos. Persistencia real sería una fase de backend aparte.
 - Rama aislada `feat/visura-prepara-pales-previos-viabilidad-20261026` parte de la corrección de impresión PR #45, SHA `c12375bc1a5967dc046216e63da58c8ec8e73345`. Versión candidata 0.3.37 y caché v070. El usuario autorizó publicar tras integrar y comprobar esta función; hacer HEAD y CI y validar despliegue. Sin SQL, cambios en Supabase ni eliminación de datos.
+
+- Primera CI del commit d46c352b detectó una expectativa obsoleta en tests/print-pdf.test.mjs, v069 frente a v070. Corregida en el siguiente commit. No se cambia el módulo PDF.
