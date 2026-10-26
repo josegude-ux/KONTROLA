@@ -227,3 +227,13 @@ La idea de un portal común se documentó separadamente en `docs/MOVENTA_CONCEPT
 - **Code Review Gate #161** (`40288785299`) **success: 269/269 pruebas OK**; Queue Audit #196 y CSV Pilot Tests #169 también en verde: https://github.com/josegude-ux/KONTROLA/actions/runs/40288785299.
 - La consulta real a GitHub mediante `get_commit_combined_status` del SHA `bade9d53f38f15024096f0ef9697fa5cea59c850` del PR #37 devolvió `statuses: []` en el instante consultado. **No equivale a ausencia de check-runs ni a prueba de política CI cumplida**; los checks de Actions están en otro endpoint.
 - Documentos `docs/VISURA_AUTO_DEV_REVIEW_AUDIT.md` y `docs/VISURA_AUTO_DEV_EXECUTION_GATE.md` actualizados para reflejar ambas fuentes y las restricciones; ninguna consulta valida protección clásica inaccesible, elegibilidad de revisores, *merge queue*, excepciones ni permisos de aplicación. El workflow manual sigue inactivo al permanecer el PR en borrador. No fusionar, desplegar, activar IA de pago ni modificar Business Central, PREPARA o INVENTA.
+
+
+## VISURA WORK — rama aislada de permisos (2026-10-26)
+
+Base #37 0756bad9; rama feat/visura-work-reviewer-evidence-20261026.
+Código 203c9305: observador de permisos numéricos integrado, 285 pruebas locales
+correctas; sin activación ni integración en ramas operativas.
+Ver VISURA_WORK_ESTADO.md y CONTINUIDAD_WORK_A_CHAT_NORMAL.md en esta rama.
+
+PR de referencia: https://github.com/josegude-ux/KONTROLA/pull/43 (borrador, destino #37).
