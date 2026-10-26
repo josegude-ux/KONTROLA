@@ -316,5 +316,54 @@ class GitHubPolicyProbeTests(unittest.TestCase):
         self.assertFalse(json.loads(output.getvalue())["execution_authorized"])
 
 
+
+class AppliedPullRequestApprovalObservationsTests(unittest.TestCase):
+    def test_zero_approvals_is_observed_without_authorization(self):
+        opener, calls = fake_api(effective=[[{
+            "type": "pull_request", "ruleset_id": 25846536,
+            "parameters": {"required_approving_review_count": 0},
+        }]])
+        result = inspect_branch_policy(REPO, "main", "secret", opener=opener)
+        applied = result["effective_ruleset_rules"]
+        self.assertTrue(applied["review_requirements_available"])
+        self.assertEqual(applied["pull_request_approval_requirements"], [{
+            "ruleset_id": 25846536, "required_approving_review_count": 0,
+        }])
+        self.assertFalse(result["repository_policy_verified"])
+        self.assertFalse(result["execution_authorized"])
+        self.assertFalse(result["merge_authorized"])
+        self.assertTrue(all(method == "GET" for _, method in calls))
+
+    def test_missing_review_parameters_stay_unknown(self):
+        opener, _ = fake_api(effective=[[{
+            "type": "pull_request", "ruleset_id": 25846536,
+        }]])
+        applied = inspect_branch_policy(
+            REPO, "main", "secret", opener=opener
+        )["effective_ruleset_rules"]
+        self.assertFalse(applied["review_requirements_available"])
+        self.assertIsNone(applied["pull_request_approval_requirements"])
+
+    def test_inaccessible_effective_rules_stay_unknown(self):
+        opener, _ = fake_api(effective_error=403)
+        applied = inspect_branch_policy(
+            REPO, "main", "secret", opener=opener
+        )["effective_ruleset_rules"]
+        self.assertFalse(applied["review_requirements_available"])
+        self.assertIsNone(applied["pull_request_approval_requirements"])
+
+    def test_invalid_review_counts_fail_closed(self):
+        for bad in (True, -1, "0", None):
+            with self.subTest(bad=bad):
+                opener, _ = fake_api(effective=[[{
+                    "type": "pull_request", "ruleset_id": 25846536,
+                    "parameters": {"required_approving_review_count": bad},
+                }]])
+                with self.assertRaisesRegex(
+                    ValueError, "Invalid active required approving review count"
+                ):
+                    inspect_branch_policy(REPO, "main", "secret", opener=opener)
+
+
 if __name__ == "__main__":
     unittest.main()

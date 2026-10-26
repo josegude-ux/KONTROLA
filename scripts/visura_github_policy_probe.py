@@ -178,6 +178,8 @@ def inspect_branch_policy(repository, branch_name, token, opener=None):
     applied_rules = []
     applied_requirements = []
     applied_requirements_complete = True
+    observed_review_requirements = []
+    review_requirements_complete = True
     applied_status = "retrieved"
     for page in range(1, MAX_APPLIED_RULE_PAGES + 1):
         lookup, data = _read_status(
@@ -190,6 +192,7 @@ def inspect_branch_policy(repository, branch_name, token, opener=None):
             applied_rules = []
             applied_requirements = []
             applied_requirements_complete = False
+            review_requirements_complete = False
             break
         if not isinstance(data, list) or len(data) > 100:
             raise ValueError("Invalid active branch rules response")
@@ -207,6 +210,20 @@ def inspect_branch_policy(repository, branch_name, token, opener=None):
                 or (source_type is not None and not isinstance(source_type, str))
             ):
                 raise ValueError("Invalid active branch rule metadata")
+            if rule_type == "pull_request":
+                parameters = rule.get("parameters")
+                if parameters is None:
+                    review_requirements_complete = False
+                elif not isinstance(parameters, dict):
+                    raise ValueError("Invalid active pull request parameters")
+                else:
+                    count = parameters.get("required_approving_review_count")
+                    if type(count) is not int or count < 0:
+                        raise ValueError("Invalid active required approving review count")
+                    observed_review_requirements.append({
+                        "ruleset_id": rule_id,
+                        "required_approving_review_count": count,
+                    })
             if rule_type == "required_status_checks":
                 parameters = rule.get("parameters")
                 if parameters is None:
@@ -261,6 +278,14 @@ def inspect_branch_policy(repository, branch_name, token, opener=None):
             ),
             "required_contexts_available": (
                 applied_status == "retrieved" and applied_requirements_complete
+            ),
+            "pull_request_approval_requirements": (
+                observed_review_requirements
+                if applied_status == "retrieved" and review_requirements_complete
+                else None
+            ),
+            "review_requirements_available": (
+                applied_status == "retrieved" and review_requirements_complete
             ),
             "applied_ruleset_api_responded": applied_status == "retrieved",
             "includes_classic_branch_protection": False,
