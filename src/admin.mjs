@@ -7,6 +7,7 @@ import {fechaISO} from "./logic.mjs";
 import {parsePdfFile} from "./pdf.mjs";
 import {buildPreparationReport} from "./report.mjs";
 import {generarPdfHojas,extraerHojasDeInforme,nombrePdfInforme} from "./print-pdf.mjs";
+import {unirPaginasCor1YDetalle} from "./mixed-print.mjs";
 import {revisarSustitucion} from "./import-policy.mjs";
 import {configureRevisionHistory} from "./admin-revisions.mjs";
 
@@ -77,8 +78,9 @@ export function createAdminController({client,getUser,bucket,global,errorText,on
     return draft.file;
   }
   async function processSinglePdf(file,seenCodes){
-    setStatus("Analizando "+file.name+"…");
-    const parsed=await parsePdfFile(file);
+    setStatus("Analizando únicamente COR1 de "+file.name+"…");
+    // F designa el destino Ferrol, no autoriza preparar mercancía COR2.
+    const parsed=await parsePdfFile(file,{warehouse:"COR_01_COR"});
     if(!/^LP\d{2}-\d{4,6}$/.test(parsed.id)){
       throw Error("No se pudo identificar el código LP de este PDF ("+file.name+"). Comprueba que el documento incluye un código LP válido y que no está escaneado; no se reservará una importación con un identificador deducido del nombre.");
     }
@@ -197,7 +199,7 @@ export function createAdminController({client,getUser,bucket,global,errorText,on
     message.textContent="Consultando cargas pendientes…";
     const {data,error}=await client.from("kontrola_importaciones")
       .select("id,codigo,estado,almacen_detectado,actualizado_en")
-      .in("estado",["revision_requerida","aprobada"])
+      .in("estado",["revision_requerida","aprobada","publicada"])
       .order("actualizado_en",{ascending:false}).limit(150);
     if(getUser()?.id!==session||$("adminWarehouse").value!==warehouse)return;
     select.replaceChildren();
@@ -206,11 +208,11 @@ export function createAdminController({client,getUser,bucket,global,errorText,on
     const rows=(data||[]).filter(row=>!warehouse||row.almacen_detectado===warehouse||!row.almacen_detectado);
     for(const row of rows){
       const option=document.createElement("option");option.value=row.id;
-      option.textContent=row.codigo+" · "+(row.estado==="aprobada"?"Aprobada":"Pendiente de revisión");
+      option.textContent=row.codigo+" · "+(row.estado==="publicada"?"Publicada":row.estado==="aprobada"?"Aprobada":"Pendiente de revisión");
       select.appendChild(option);
     }
     if(rows.some(row=>row.id===previous))select.value=previous;
-    message.textContent=rows.length+" carga(s) disponibles para revisar.";
+    message.textContent=rows.length+" carga(s) disponibles para revisar o imprimir.";"
   }
   $("reviewLoadSelect").addEventListener("change",async()=>{
     const id=$("reviewLoadSelect").value;
@@ -231,6 +233,7 @@ export function createAdminController({client,getUser,bucket,global,errorText,on
   // Reprocesar es solo lectura hasta que administración pulse Guardar revisión.
   async function reprocessReviewWarehouse(target){
     if(busy||!draft||draft.state==="publicada")return;
+    if(target!=="COR_01_COR")return setStatus("Solo COR1 puede pasar a preparación. COR2 dispone de hoja detalle independiente.","error");
     const previous=draft.parsed;
     if((previous.corrections||[]).length&&!window.confirm(
       "Al reprocesar desde el PDF original se sustituirá la revisión local actual, incluidas sus correcciones manuales. El original y los datos guardados no se borrarán. ¿Continuar?"
@@ -262,22 +265,24 @@ export function createAdminController({client,getUser,bucket,global,errorText,on
     const title=document.createElement("h3");title.textContent=draft.parsed.id+" · "+zone.label;
     const state=document.createElement("span");state.className="state-badge";state.textContent=draft.state;
     const warehouse=document.createElement("select");warehouse.className="warehouse-select";warehouse.setAttribute("aria-label","Clasificar almacén");
-    for(const [value,label] of [["","Pendiente de clasificar"],["COR_01_COR","A Coruña"],["COR_02_NAR","Ferrol"]]){
-      const option=document.createElement("option");option.value=value;option.textContent=label;warehouse.appendChild(option);
+    for(const [value,label] of [["","Pendiente de clasificar"],["COR_01_COR","A Coruña"],["COR_02_NAR","Ferrol (solo consulta)"]]){
+      const option=document.createElement("option");option.value=value;option.textContent=label;
+      if(value==="COR_02_NAR")option.disabled=true;
+      warehouse.appendChild(option);
     }
     warehouse.value=zone.known?zone.code:"";
     warehouse.disabled=busy||draft.state==="publicada";
     warehouse.addEventListener("change",()=>reprocessReviewWarehouse(warehouse.value));
     heading.append(title,warehouse,state);root.appendChild(heading);
-    if((draft.parsed.availableWarehouses||[]).length>1&&zone.known&&draft.state!=="publicada"){
+    if(draft.state!=="publicada"&&draft.parsed.warehouse!=="COR_01_COR"){
       const reprocess=document.createElement("button");
       reprocess.type="button";reprocess.className="secondary";
-      reprocess.textContent="Reprocesar solo "+zone.label+" (sin mezclar almacenes)";
+      reprocess.textContent="Reprocesar SOLO COR1 (A Coruña) para preparación";
       reprocess.disabled=busy;
-      reprocess.addEventListener("click",()=>reprocessReviewWarehouse(zone.code));
+      reprocess.addEventListener("click",()=>reprocessReviewWarehouse("COR_01_COR"));
       root.appendChild(reprocess);
       const help=document.createElement("p");help.className="hint";
-      help.textContent="El PDF original incluye varios almacenes. La hoja de preparación imprimirá únicamente las líneas del almacén seleccionado; el original se conserva sin cambios.";
+      help.textContent="El PDF puede contener también COR2, pero nunca se enviará a preparación. La hoja COR2 se genera aparte.";
       root.appendChild(help);
     }
     const locationIssues=draft.findings.filter(item=>item.code==="missing_location");
