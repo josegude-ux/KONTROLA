@@ -31,3 +31,12 @@ Se mantienen en `false` `repository_policy_verified`, `execution_authorized`, `m
 - **Pendiente independiente:** probar el transporte GitHub GET del **módulo Python**, con origen autenticado y credenciales inyectadas de forma segura por el entorno autorizado; no extraer credenciales del conector ni incluirlas en archivos.
 - **Pendiente:** verificar protección clásica, reglas activas que realmente aplican a la rama base de #43, CODEOWNERS, revisores elegibles, políticas de bypass, vigencia de aprobaciones y controles del eventual ejecutor aislado.
 - No fusionar, desplegar, publicar ni habilitar escritura autónoma sin revisión y autorización expresa. Esta rama es exclusivamente de código piloto y documentos de continuidad.
+
+
+## Continuación — resumen Actions y corrección de exhaustividad (26/10/2026)
+
+- En `scripts/visura_github_action_summary.py` se representa una tabla **no autorizante** de reglas `pull_request` observadas para la rama de destino y la predeterminada (si son distintas): identificador numérico de ruleset, aprobaciones exigidas y cinco controles. Los booleanos se traducen exclusivamente a **sí/no/desconocido**, sin renderizar texto arbitrario de GitHub o nombres de revisores. Falta de evidencia, respuestas inaccesibles o ausencia de reglas se explicitan y no se convierten en «sin protección».
+- En `tests/test_visura_github_action_summary.py` se agregan **seis tests** de renderizado y validación de datos ausentes, malformados y no confiables. Las pruebas no constituyen una llamada HTTP autenticada a GitHub del módulo.
+- En `scripts/visura_github_policy_probe.py`, `active_review_control_fields_complete` solo puede ser verdadero si se observó al menos una regla PR completa; sin reglas queda falso. Test de regresión en `tests/test_visura_github_policy_probe.py`.
+- **Pruebas GitHub Actions verificadas por SHA de código `65ebdea7de7c1ffcfefaf771ee93aa29397741b3`**: [Code Review Gate #40325209234](https://github.com/josegude-ux/KONTROLA/actions/runs/40325209234), [CSV Pilot Tests #40325209324](https://github.com/josegude-ux/KONTROLA/actions/runs/40325209324), [Queue Audit #40325209274](https://github.com/josegude-ux/KONTROLA/actions/runs/40325209274): todas en `success`.
+- No tocar otras ramas, no usar credenciales del conector fuera de su API ni activar ejecución autónoma. **Primera tarea pendiente**: prueba autenticada de solo lectura del módulo Python en entorno aislado con credencial gestionada de forma segura y obtener verificación fiable de políticas efectivas, CODEOWNERS, bypass y elegibilidad de revisión.
