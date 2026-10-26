@@ -183,6 +183,13 @@ El usuario descartó el diseño anterior basado en un desplegable único con fle
 - **Alcance:** actualiza la página en el dispositivo; no ejecuta órdenes, no descarga cambios en GitHub, no fusiona y no despliega versiones. Los cambios del repositorio solo se reflejarán cuando el alojamiento que sirve el HTML los ofrezca realmente.
 - **Advertencias:** si el alojamiento de terceros usa una caché propia que ignora el parámetro o retiene copias, pulsar Actualizar **no garantiza** ver inmediatamente el último commit. Recargar puede perder datos aún no copiados de formularios y archivos locales seleccionados; conviene copiar primero la orden en curso.
 
+## Identidad visual de la cabecera (2026-10-26)
+
+- El panel V4 muestra en la cabecera una **V VISURA verde/plata con anillo orbital**, acompañada del nombre y «CENTRO DE MANDO». Recurso de cabecera: `docs/assets/logo-visura-centro-mando.svg`, referenciado por `docs/index.html` y `docs/VISURA_ORDENES.html`.
+- Se utiliza también como **favicon SVG** del navegador. La adaptación vectorial conserva los rasgos gráficos generales del icono aprobado, pero **no sustituye el archivo PNG original B** ni demuestra que el icono instalado en iPhone haya cambiado.
+- El original aprobado se conserva aparte y la integración de los PNG para el acceso directo iPhone sigue registrada como pendiente en `feat/visura-centro-mando-icono-b-20261026`; evitar declararla completada por esta modificación de cabecera.
+- Cambios únicamente en `visura-panel`; no fusionar `main` ni alterar INVENTA/PREPARA.
+
 ## Reglas comunes
 1. Consultar primero el estado verificado en GitHub, **sin tratar la documentación antigua de main como último estado**.
 2. Evitar repetir tareas y sobrescribir trabajo paralelo.
