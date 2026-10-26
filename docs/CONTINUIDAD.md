@@ -704,3 +704,11 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 - Ejecucion GitHub Actions #52 (run 40258056434): paso de pruebas completado correctamente. 3 pruebas Python de integracion ZIP (correcta, idempotencia, rechazo de originales incompletos o WEBP corruptos) y 198 pruebas Node: 201 comprobaciones, 0 fallidas.
 - El integrador y los tests estan versionados en la rama de PR #29. Los archivos binarios oficiales todavia NO estan incorporados a GitHub; la comprobacion de la interfaz real queda pendiente.
 - No se ha fusionado ni desplegado.
+
+
+### 2026-10-26 - Integracion oficial del menu confirmada en rama de desarrollo
+- GitHub Actions run 40259310736 (#79) finalizo SUCCESS. Logs confirman 198 pruebas Node aprobadas, cero fallidas y paso de guardado de recursos completado.
+- Verificacion directa de GitHub API: existen los cuatro WEBP (preparacion 155418 bytes, control-cargas 150310, operaciones 146572, administracion 159802) y las cuatro imagenes originales en assets/home/originales/.
+- Verificacion directa de index.html y sw.js: las cuatro tarjetas referencian sus WEBP oficiales y las cuatro estan en precarga PWA. Cache actual kontrola-integral-visura-v063.
+- Estado: integracion visual en rama de desarrollo verificada y pruebas automatizadas superadas. No se ha fusionado ni desplegado. Pendiente revision visual real en iPhone/Android/Windows y revisar destino/estado de PR antes de preparar version candidata.
+- Esta entrada sustituye las notas anteriores que decian que los binarios seguian pendientes: esos datos quedaron desactualizados antes de la ejecucion #79.
