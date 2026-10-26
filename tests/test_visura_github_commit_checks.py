@@ -139,6 +139,41 @@ class CommitCheckTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "Too many GitHub check run pages"):
             observe_commit_checks(REPO, SHA, "token", opener=opener)
 
+    def test_named_check_run_includes_app_for_identity_comparison(self):
+        value = {
+            **check(), "name": "test / gate", "app": {"id": 345},
+        }
+        opener, _ = fake_api([[value]])
+        result = observe_commit_checks(REPO, SHA, "token", opener=opener)
+        self.assertTrue(result["named_checks_complete"])
+        self.assertEqual(result["named_check_runs"], [{
+            "name": "test / gate", "app_id": 345,
+            "status": "completed", "conclusion": "success",
+        }])
+        self.assertFalse(result["required_checks_verified"])
+
+    def test_missing_check_name_marks_observation_incomplete(self):
+        opener, _ = fake_api([[check()]])
+        result = observe_commit_checks(REPO, SHA, "token", opener=opener)
+        self.assertFalse(result["named_checks_complete"])
+        self.assertEqual(result["named_check_runs"], [])
+
+    def test_invalid_app_identifier_is_rejected(self):
+        opener, _ = fake_api([[{**check(), "name": "test", "app": {"id": True}}]])
+        with self.assertRaisesRegex(ValueError, "Invalid check run app identity"):
+            observe_commit_checks(REPO, SHA, "token", opener=opener)
+
+    def test_check_name_control_character_is_rejected(self):
+        opener, _ = fake_api([[{**check(), "name": "test\\nforged"}]])
+        with self.assertRaisesRegex(ValueError, "Invalid check run name"):
+            observe_commit_checks(REPO, SHA, "token", opener=opener)
+
+    def test_missing_check_app_keeps_provenance_unknown(self):
+        opener, _ = fake_api([[{**check(), "name": "build"}]])
+        result = observe_commit_checks(REPO, SHA, "token", opener=opener)
+        self.assertEqual(result["named_check_runs"][0]["app_id"], None)
+        self.assertFalse(result["required_checks_verified"])
+
     def test_invalid_sha_rejected_before_network(self):
         with self.assertRaisesRegex(ValueError, "Invalid GitHub commit SHA"):
             observe_commit_checks(REPO, "not-a-sha", "token")
