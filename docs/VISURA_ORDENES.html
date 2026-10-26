@@ -177,19 +177,31 @@ header .intro{font-size:.85rem;line-height:1.38}
 @media(max-width:360px){.header-top{flex-wrap:wrap}.header-tools{margin-left:auto}}
 
 
-/* V5.3 — recuperación segura tras streaming: icono inspirado en el aviso naranja adjunto */
-.streaming-symbol{background:#fff2e9!important;color:#e96a2a!important;padding:4px}
-.streaming-icon{display:block;max-width:100%;height:auto}
-.streaming-action-mark{background:#fff0e4!important;color:#d75b1e!important;border:1px solid #eab18c;font-size:1.42rem;line-height:1}
-.streaming-dashboard-action{border-color:#d49b7c}
+/* V5.4 — aviso auténtico aportado por el usuario, adaptado al panel */
+.streaming-dashboard-action{display:flex;flex-direction:column;align-items:stretch;justify-content:flex-start;gap:6px;border:1px solid #dfb49d;background:#fff5ee!important;padding:10px!important;color:#8e441d!important}
+.streaming-dashboard-action .action-copy{width:100%;text-align:left}
+.streaming-dashboard-action .action-copy strong{color:#b75017!important;font-size:.84rem}
+.streaming-dashboard-action .action-copy small{color:#895f49!important}
+.streaming-menu-shot{display:block;width:100%;height:auto;max-height:78px;object-fit:contain;border-radius:9px;background:#fdfbfa}
+.streaming-command{background:#fff7f1!important;color:#202f3d!important;border:1px solid #e7bdaa!important;box-shadow:0 5px 23px #71350b15}
+.streaming-command h2{color:#d65f20!important}
+.streaming-command .eyebrow{color:#ab5429!important}
+.streaming-command .when,.streaming-command .field-hint,.streaming-command .field-label{color:#6b5548!important}
+.streaming-command .when strong{color:#a04c23}
+.streaming-shot-wrap{border:1px solid #e7c6b5;border-radius:18px;overflow:hidden;background:#fbfaf9;padding:4px;margin:8px 0 15px}
+.streaming-screenshot{display:block;width:100%;height:auto;object-fit:contain;border-radius:13px}
+.streaming-command .top{margin-bottom:9px}
 .streaming-generator{margin:10px 0 14px}
-.streaming-generator textarea{width:100%;display:block;min-height:116px;background:var(--bg);color:var(--text);border:1px solid var(--border);border-radius:12px;padding:12px;font:inherit;font-size:16px;line-height:1.45;resize:vertical}
+.streaming-generator textarea{display:block;width:100%;min-height:116px;padding:12px;border:1px solid #e4bcab;border-radius:12px;background:#fff!important;color:#24313b!important;font:inherit;font-size:16px;line-height:1.45;resize:vertical}
 .streaming-generator textarea:focus-visible{outline:3px solid #e8a16d;outline-offset:2px}
+.streaming-command .actions button.primary{background:#df672b!important;color:#fff!important;border-color:#b84b12!important}
+.streaming-command .actions button.secondary{background:#fff!important;color:#904115!important;border-color:#e5b89d!important}
+.streaming-command pre{background:#fff!important;color:#202f3d!important;border-color:#e6bda8!important}
 
 </style>
 </head>
 <body>
-<main><header><div class="header-top"><div class="brand-lockup"><img class="brand-mark" src="./assets/icons/visura-centro-mando-logo-64.png" width="54" height="54" alt="Logo aprobado VISURA Centro de mando"><div class="brand-text"><strong>VISURA</strong><span>CENTRO DE MANDO <b class="panel-version">V5.3</b></span></div></div><div class="header-tools"><button type="button" class="manage-button" id="open-chat-manager" aria-expanded="false" aria-controls="chat-manager">⚙ Mis chats</button><button type="button" class="refresh-panel" id="refresh-panel" title="Cargar de nuevo el Centro de mando" aria-label="Actualizar Centro de mando"><span aria-hidden="true">↻</span> Actualizar</button></div></div><h1>¿Qué quieres hacer?</h1><p class="intro">Nueve funciones claras, sin órdenes duplicadas.</p></header>
+<main><header><div class="header-top"><div class="brand-lockup"><img class="brand-mark" src="./assets/icons/visura-centro-mando-logo-64.png" width="54" height="54" alt="Logo aprobado VISURA Centro de mando"><div class="brand-text"><strong>VISURA</strong><span>CENTRO DE MANDO <b class="panel-version">V5.4</b></span></div></div><div class="header-tools"><button type="button" class="manage-button" id="open-chat-manager" aria-expanded="false" aria-controls="chat-manager">⚙ Mis chats</button><button type="button" class="refresh-panel" id="refresh-panel" title="Cargar de nuevo el Centro de mando" aria-label="Actualizar Centro de mando"><span aria-hidden="true">↻</span> Actualizar</button></div></div><h1>¿Qué quieres hacer?</h1><p class="intro">Nueve funciones claras, sin órdenes duplicadas.</p></header>
 <section id="chat-manager" class="chat-manager" hidden aria-labelledby="manager-title">
 <div class="manager-head"><h2 id="manager-title">Mis chats VISURA</h2><button class="secondary" type="button" id="manager-close">✕ Cerrar</button></div>
 <p>Registro único para los botones. Lo mantienes tú: esta web no puede consultar automáticamente tus conversaciones de ChatGPT.</p>
@@ -220,7 +232,7 @@ header .intro{font-size:.85rem;line-height:1.38}
 <button type="button" class="dashboard-action" data-open-order="funcion-6" aria-controls="funcion-6"><span class="action-mark" aria-hidden="true">↳</span><span class="action-copy"><strong>Integrar imagen</strong><small>Aplicar la aprobada</small></span></button>
 <button type="button" class="dashboard-action" data-open-order="funcion-7" aria-controls="funcion-7"><span class="action-mark" aria-hidden="true">▤</span><span class="action-copy"><strong>Estado del chat</strong><small>Avance y tareas pendientes</small></span></button>
 <button type="button" class="dashboard-action" data-open-order="funcion-8" aria-controls="funcion-8"><span class="action-mark" aria-hidden="true">✉</span><span class="action-copy"><strong>Orden / consulta</strong><small>Incidencias y peticiones</small></span></button>
-<button type="button" class="dashboard-action streaming-dashboard-action" data-open-order="funcion-9" aria-controls="funcion-9"><span class="action-mark streaming-action-mark" aria-hidden="true">⟳</span><span class="action-copy"><strong>Recuperar tras streaming</strong><small>Respuesta interrumpida</small></span></button></div>
+<button type="button" class="dashboard-action streaming-dashboard-action" data-open-order="funcion-9" aria-controls="funcion-9"><img class="streaming-menu-shot" src="./assets/streaming-aviso-original.webp" alt="" width="500" height="114" loading="lazy"><span class="action-copy"><strong>Recuperar tras streaming</strong><small>Respuesta interrumpida</small></span></button></div>
 </nav>
 <div class="command-toolbar" id="command-toolbar" hidden><button class="back-to-dashboard" type="button" id="back-to-dashboard">‹ Volver al menú</button><span class="toolbar-order" id="current-order-label">ORDEN 01 / 09</span></div>
 <article class="command" id="funcion-1">
@@ -446,12 +458,9 @@ header .intro{font-size:.85rem;line-height:1.38}
 </div>
 <pre id="request-prompt" hidden>Indica asunto y explicación para preparar tu orden.</pre>
 </article>
-<article class="command" id="funcion-9">
-<div class="top"><div class="symbol streaming-symbol"><svg class="streaming-icon" viewBox="0 0 48 48" width="37" height="37" role="img" aria-label="Aviso de transmisión interrumpida">
-<rect x="2" y="4" width="44" height="40" rx="11" fill="#fff2e9" stroke="#f3a36a" stroke-width="1.7"/>
-<path d="M13 15L20 28H6Z" fill="#ed6f2c" opacity=".96"/><path d="M13 18.8V24M13 26.5V26.7" stroke="white" stroke-width="1.8" stroke-linecap="round"/>
-<g stroke="#b97751" stroke-linecap="round" stroke-width="2.9"><path d="M33 13v3.3" opacity=".25"/><path d="M40 16l-2.3 2.3" opacity=".4"/><path d="M43 24h-3.3" opacity=".65"/><path d="M40 32l-2.3-2.3" opacity=".85"/><path d="M33 35v-3.3"/><path d="M26 32l2.3-2.3" opacity=".9"/><path d="M23 24h3.3" opacity=".65"/><path d="M26 16l2.3 2.3" opacity=".4"/></g>
-</svg></div><div><div class="eyebrow">ORDEN 09 · RECUPERACIÓN SEGURA</div><h2>RECUPERAR TRAS STREAMING</h2></div></div>
+<article class="command streaming-command" id="funcion-9">
+<div class="streaming-shot-wrap"><img class="streaming-screenshot" src="./assets/streaming-aviso-original.webp" width="500" height="114" alt="Streaming interrumpido. Esperando el mensaje completo…" loading="lazy"></div>
+<div class="top"><div><div class="eyebrow">ORDEN 09 · RECUPERACIÓN SEGURA</div><h2>RECUPERAR TRAS STREAMING</h2></div></div>
 <p class="when">Cuando se interrumpe una respuesta durante un desarrollo, comprueba qué trabajo quedó realmente guardado y continúa solo lo pendiente. Pega la orden en el <strong>mismo chat afectado</strong>.</p>
 <div class="streaming-generator">
 <label class="field-label" for="streaming-task">Tarea que estaba en curso</label>
