@@ -11,6 +11,11 @@ on:
       - tests/test_visura_budget_gate.py
       - scripts/visura_budget_ledger.py
       - tests/test_visura_budget_ledger.py
+  pull_request:
+    paths:
+      - .github/workflows/visura-auto-dev-queue-audit.yml
+      - scripts/visura_*.py
+      - tests/test_visura_*.py
   workflow_dispatch:
 permissions:
   contents: read
