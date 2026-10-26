@@ -68,10 +68,17 @@ header .intro{font-size:.9rem;line-height:1.43;max-width:650px}
 .visually-hidden:focus-visible+.file-actions .file-trigger{outline:3px solid #86afdb;outline-offset:2px}
 @media(max-width:460px){main{padding:10px 13px 30px}.command{padding:14px}.actions button{min-width:105px}.file-trigger{flex-basis:100%}}
 
+
+/* Recarga manual del panel y bust de caché de navegador/CDN */
+.header-top{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.refresh-panel{display:inline-flex;align-items:center;justify-content:center;gap:5px;min-height:39px;flex-shrink:0;background:var(--secondary);color:var(--text);border:1px solid var(--border);border-radius:10px;padding:7px 11px;font-size:.82rem;font-weight:750}
+.refresh-panel span{font-size:1.32rem;font-weight:600;line-height:1}
+.refresh-panel:active{transform:translateY(1px)}
+
 </style>
 </head>
 <body>
-<main><header><div class="kicker">VISURA · CENTRO DE MANDO</div><h1>Órdenes VISURA</h1><p class="intro">Selecciona una función y copia su orden. Sin desplazarte por todos los formularios.</p></header>
+<main><header><div class="header-top"><div class="kicker">VISURA · CENTRO DE MANDO</div><button type="button" class="refresh-panel" id="refresh-panel" title="Cargar de nuevo el Centro de mando" aria-label="Actualizar Centro de mando"><span aria-hidden="true">↻</span> Actualizar</button></div><h1>Órdenes VISURA</h1><p class="intro">Selecciona una función y copia su orden. Sin desplazarte por todos los formularios.</p></header>
 <div class="command-menu" id="command-menu" aria-label="Navegar entre órdenes">
   <div class="menu-label"><label for="command-select">ELEGIR ORDEN</label><span id="command-counter" aria-live="polite">01 / 07</span></div>
   <div class="menu-controls">
@@ -448,6 +455,18 @@ window.addEventListener("hashchange",()=>{
 let firstCommand=location.hash.slice(1);
 if(indexOfCommand(firstCommand)<0){try{firstCommand=sessionStorage.getItem("visura-command");}catch(_){}}
 showCommand(indexOfCommand(firstCommand)>=0?firstCommand:"orden-3");
+
+
+/* Recarga el HTML del panel con una URL nueva, sin alterar el hash de la orden elegida.
+   La disponibilidad de versiones recientes sigue sujeta a la caché del proveedor externo. */
+document.getElementById("refresh-panel").addEventListener("click",()=>{
+ const btn=document.getElementById("refresh-panel");
+ btn.disabled=true;
+ btn.textContent="Actualizando…";
+ const url=new URL(window.location.href);
+ url.searchParams.set("visura_actualizar",String(Date.now()));
+ window.location.replace(url.toString());
+});
 
 </script>
 </body></html>
