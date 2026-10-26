@@ -5,6 +5,8 @@ on:
       - chore/visura-auto-dev-guardrails
     paths:
       - .github/workflows/visura-auto-dev-queue-audit.yml
+      - scripts/visura_queue_audit.py
+      - tests/test_visura_queue_audit.py
   workflow_dispatch:
 permissions:
   contents: read
@@ -17,30 +19,15 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
+      - name: Checkout without persisted credentials
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Test input validation without network or AI
+        shell: bash
+        run: python3 -m unittest discover -s tests -p test_visura_queue_audit.py -v
       - name: Audit approved pilot issue (read only)
         env:
-          GH_TOKEN: ${{ github.token }}
-          REPO: ${{ github.repository }}
+          GITHUB_TOKEN: ${{ github.token }}
         shell: bash
-        run: |
-          set -euo pipefail
-          python3 - <<'PY'
-          import json, os, urllib.request
-          repo=os.environ["REPO"]
-          request=urllib.request.Request(
-              f"https://api.github.com/repos/{repo}/issues/31",
-              headers={"Authorization": f"Bearer {os.environ['GH_TOKEN']}",
-                       "Accept":"application/vnd.github+json",
-                       "User-Agent":"visura-queue-audit"})
-          with urllib.request.urlopen(request, timeout=15) as response:
-              issue=json.load(response)
-          if issue.get("number") != 31 or "pull_request" in issue:
-              raise SystemExit("Unexpected task type")
-          print("Issue #31 read successfully; no instructions executed.")
-          with open(os.environ["GITHUB_STEP_SUMMARY"],"a") as report:
-              report.write("## VISURA AUTO-DEV — Queue Audit\n")
-              report.write(f"- Issue #31: {issue['state']}\n")
-              report.write("- Permissions: contents/read, issues/read\n")
-              report.write("- OpenRouter API: NOT CALLED\n")
-              report.write("- No code generation, commits, merges or deployments\n")
-          PY
+        run: python3 scripts/visura_queue_audit.py
