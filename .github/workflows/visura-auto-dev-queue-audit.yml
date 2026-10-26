@@ -9,6 +9,8 @@ on:
       - tests/test_visura_queue_audit.py
       - scripts/visura_budget_gate.py
       - tests/test_visura_budget_gate.py
+      - scripts/visura_budget_ledger.py
+      - tests/test_visura_budget_ledger.py
   workflow_dispatch:
 permissions:
   contents: read
