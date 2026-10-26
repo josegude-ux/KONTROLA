@@ -27,13 +27,6 @@ jobs:
         with:
           ref: ${{ github.event.repository.default_branch }}
           persist-credentials: false
-      - name: Preflight read-only GitHub transport (GET only; no authorization)
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          REPOSITORY: ${{ github.repository }}
-          PR_NUMBER: ${{ inputs.pr_number }}
-        run: |
-          python3 -m scripts.visura_github_auth_preflight "$REPOSITORY" "$PR_NUMBER"
       - name: Audit reviews, PR target policy, and default branch policy (GET only)
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
