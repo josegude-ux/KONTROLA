@@ -132,3 +132,6 @@ La idea de un portal común se documentó separadamente en `docs/MOVENTA_CONCEPT
 
 - Code Review Gate #39 (`40261808566`) **success: 44/44 pruebas OK** y bloqueo de pagos: https://github.com/josegude-ux/KONTROLA/actions/runs/40261808566.
 - Endurecimiento de autorización: rechazo explícito de decisiones no textuales (`19e59d4`) y tres pruebas de datos malformados y permisos falsificados (`7c1815e`). La revisión externa real aún no está integrada; el módulo **nunca autoriza ejecutar**. CI de estos cambios pendiente.
+
+- Code Review Gate #42 (`40261921585`) `success`, **47/47 pruebas OK**, compilación y smoke de bloqueo de pagos: https://github.com/josegude-ux/KONTROLA/actions/runs/40261921585.
+- Proyección conservadora de revisiones GitHub en `scripts/visura_github_review_projection.py`: solo acepta estados conocidos, filtra revisiones de un SHA anterior y jamás autoriza ejecución ni merge; 4 pruebas en `tests/test_visura_github_review_projection.py` (commits `7cf72ac`, `23c8851`). **No autentica los datos ni consulta GitHub**, por lo que no debe utilizarse como control de acceso. Pendiente CI.
