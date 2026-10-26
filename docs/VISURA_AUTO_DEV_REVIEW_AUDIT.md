@@ -1,0 +1,41 @@
+# VISURA AUTO-DEV — auditoría manual de revisiones GitHub
+
+**Estado:** implementación de lectura y pruebas simuladas completadas; **no activada en la rama predeterminada**. La PR #37 sigue en borrador. Ninguna salida de este mecanismo autoriza ejecutar, fusionar o desplegar.
+
+## Qué hace
+
+- Consulta por HTTPS la API de GitHub con **GET** para leer un PR y sus revisiones.
+- Usa el ID numérico de la cuenta del revisor para distinguirla del autor.
+- Rechaza datos malformados, revisiones duplicadas y respuestas truncadas.
+- Comprueba que los metadatos principales del PR no cambian mientras se leen sus revisiones.
+- Añade a la respuesta JSON el campo `review_audit`, con observaciones separadas:
+  - `observed_current_commit_approvals`: registros de aprobación que mencionan el SHA actual, **no aprobaciones efectivas verificadas**.
+  - `observed_current_commit_changes_requested`: solicitudes de cambios observadas para ese SHA.
+  - `observed_stale_review_ids`: revisiones de otros commits.
+  - `observed_self_review_ids`: revisiones de la misma cuenta numérica que el autor.
+  - `observed_dismissed_review_ids` y `observed_pending_review_ids`: registros descartados y pendientes observados.
+- Señala `effective_approval_verification: false`, `repository_policy_verified: false`, `execution_authorized: false`, `merge_authorized: false` y `deployment_authorized: false`.
+
+## Uso previsto
+
+Una vez que la definición del workflow haya sido **revisada y fusionada explícitamente** a la rama predeterminada, un usuario autorizado podrá abrir **GitHub → Actions → VISURA AUTO-DEV - Manual PR Review Audit → Run workflow**, e introducir un número de PR.
+
+La definición preparada usa `contents: read` y `pull-requests: read`; hace checkout de la rama predeterminada, no del código del PR inspeccionado. No ejecuta código del PR objetivo.
+
+Para una prueba local en una copia de código confiable, configurar `GITHUB_TOKEN` mediante un mecanismo seguro y ejecutar:
+
+```bash
+python3 -m scripts.visura_github_readonly_snapshot josegude-ux/KONTROLA 37
+```
+
+Nunca pegar el token en el comando, los logs o el chat. No se requiere ni se permite ninguna clave de proveedor de IA.
+
+## Qué NO demuestra
+
+La API puede devolver una aprobación aunque esta no sea válida para las reglas vigentes de la rama. Puede existir una revisión posterior, un cambio de política, una eliminación de permisos o un cambio del PR después de la consulta. El informe clasifica **registros observados**, no toma decisiones de seguridad.
+
+Antes de habilitar cualquier automatización con escritura será imprescindible verificar, fuera de este módulo, las reglas de protección y permisos de GitHub, revalidar el estado inmediatamente antes de actuar y exigir aprobación humana de merge/despliegue.
+
+## Validación
+
+Code Review Gate #89: **116 de 116 pruebas correctas**; se probaron respuestas simuladas, sin activar el workflow de auditoría. La consulta de producción y las reglas de protección de rama siguen pendientes de validación independiente.
