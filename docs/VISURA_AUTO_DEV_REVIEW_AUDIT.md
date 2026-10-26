@@ -29,17 +29,18 @@ La definición preparada usa `contents: read` y `pull-requests: read`; hace chec
 Para una prueba local en una copia de código confiable, configurar `GITHUB_TOKEN` mediante un mecanismo seguro y ejecutar:
 
 ```bash
-python3 -m scripts.visura_github_readonly_snapshot josegude-ux/KONTROLA 37
+python3 -m scripts.visura_github_audit_bundle josegude-ux/KONTROLA 37 main
 ```
 
 Nunca pegar el token en el comando, los logs o el chat. No se requiere ni se permite ninguna clave de proveedor de IA.
 
 ## Observación adicional de protección de ramas
 
-El workflow manual preparado incluye un **segundo paso de lectura** del repositorio:
-`python3 -m scripts.visura_github_policy_probe josegude-ux/KONTROLA main`.
+El workflow manual preparado usa **un solo comando de auditoría unificada** (`scripts.visura_github_audit_bundle`). Lee primero el PR y obtiene de GitHub su rama de destino verdadera (`base.ref`) y SHA base, sin aceptar que la tarea elija la rama. Después consulta las políticas de **esa rama de destino** y, si es distinta, también las de `main` (rama predeterminada del repositorio). Finalmente vuelve a leer el PR y falla si ha cambiado su base, SHA, autor, repositorio o estado durante la auditoría.
 
-Este paso consulta la protección clásica de `main` y la lista de *rulesets* del repositorio y sus posibles reglas heredadas. Su informe distingue explícitamente:
+Por ejemplo, el PR #37 apunta a `chore/visura-auto-dev-guardrails`, **no** a `main`. El nuevo informe `target_branch_policy` inspeccionaría guardrails; `default_branch_policy` ofrecería contexto sobre `main`. El campo `target_differs_from_default` señala la diferencia y `report_is_atomic` permanece `false` porque la API no ofrece un snapshot transaccional.
+
+Ambas políticas se leen con `scripts.visura_github_policy_probe`. Su informe distingue explícitamente:
 
 - `classic_protection.lookup: retrieved`: obtuvo una respuesta de configuración clásica, incluyendo número de aprobaciones exigidas y estado de ciertas comprobaciones, sin interpretar que sean suficientes.
 - `classic_protection.lookup: not_found_or_inaccessible`: respuesta HTTP 404; **no significa** que la rama esté desprotegida.
@@ -48,7 +49,7 @@ Este paso consulta la protección clásica de `main` y la lista de *rulesets* de
 
 **Limitación de permisos:** GitHub exige normalmente `Administration: read` para consultar la protección clásica (https://docs.github.com/en/rest/branches/branch-protection). El `GITHUB_TOKEN` del workflow está restringido a `contents: read` y `pull-requests: read`, por lo que no se espera que pueda verificar esa protección clásica. El flujo **no eleva privilegios ni solicita tokens de administrador**: informa de la falta de acceso y mantiene `repository_policy_verified: false`.
 
-La existencia de un ruleset no significa necesariamente que proteja la rama inspeccionada; pueden intervenir condiciones, excepciones y *bypass*. Ninguno de los dos pasos de lectura es una puerta de autorización para ejecutar o fusionar código.
+La existencia de un ruleset no significa necesariamente que proteja la rama inspeccionada; pueden intervenir condiciones, excepciones y *bypass*. Ninguna de estas consultas de lectura es una puerta de autorización para ejecutar o fusionar código.
 
 ### Reglas activas aplicables específicamente a la rama
 
@@ -72,7 +73,7 @@ Se han añadido ocho pruebas de contrato en `tests/test_visura_manual_audit_work
 - La única activación prevista es `workflow_dispatch` y existe un único trabajo de auditoría.
 - Los únicos permisos declarados son `contents: read` y `pull-requests: read`.
 - Se hace checkout de la **rama predeterminada** con `persist-credentials: false`, sin ejecutar código del PR inspeccionado.
-- Los únicos dos comandos autorizados en el workflow consultan revisiones y políticas mediante los módulos de solo lectura.
+- El **único comando autorizado** llama a `scripts.visura_github_audit_bundle`, que consulta el PR y ambas políticas mediante componentes de solo lectura.
 - El token procede del `GITHUB_TOKEN` facilitado por Actions, sin secretos adicionales.
 - El workflow de revisión de código incluye la definición de auditoría manual entre los archivos que provocan su ejecución.
 
@@ -86,4 +87,4 @@ Antes de habilitar cualquier automatización con escritura será imprescindible 
 
 ## Validación
 
-Code Review Gate #111: **161 de 161 pruebas correctas** (incluidas cinco pruebas de decisiones sustituidas); se probaron respuestas simuladas, sin activar el workflow de auditoría. La consulta de producción y las reglas de protección de rama siguen pendientes de validación independiente.
+Code Review Gate #113: **161 de 161 pruebas correctas** para el primer flujo unificado. Se añadió después una prueba integrada adicional con respuestas REST simuladas; su CI queda pendiente. El workflow manual sigue sin activarse. La consulta de producción y las reglas de protección de rama siguen pendientes de validación independiente.
