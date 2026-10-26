@@ -33,7 +33,7 @@ class BudgetLedgerTests(unittest.TestCase):
         self.assertTrue(reserve(self.db, month="2026-11", amount_cents=1000)[0])
 
     def test_invalid_inputs(self):
-        for month in ("2026-13", "2026-00", "bad", "2026-1"):
+        for month in ("2026-13", "2026-00", "bad", "2026-1", "2026-1x", "2026-+1", "2026- 1", "٢٠٢٦-١٠"):
             with self.assertRaises(ValueError):
                 reserve(self.db, month=month, amount_cents=1)
         for amount in (-1, 0, 1001, 1.2, True):
