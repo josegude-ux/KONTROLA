@@ -79,6 +79,34 @@ Se han añadido ocho pruebas de contrato en `tests/test_visura_manual_audit_work
 
 Estas son pruebas de regresión sobre los archivos del PR, **no una prueba de autenticidad del runner ni sustituyen las políticas y aprobaciones humanas de GitHub**.
 
+## Resumen visible en GitHub Actions
+
+El comando de auditoría unificada crea ahora un **resumen Markdown** directamente
+en la pestaña **Summary** del trabajo, cuando GitHub Actions proporciona
+`GITHUB_STEP_SUMMARY`. Esto evita tener que leer el JSON completo desde el
+móvil. El JSON técnico sigue apareciendo en la salida del comando.
+
+La vista presenta la identificación del repositorio y del PR, su commit, la
+rama de destino real, la rama principal, recuentos de revisiones observadas
+y una tabla que distingue tres consultas por rama: protección clásica,
+rulesets aplicables y rulesets listados.
+
+Se muestran los estados `retrieved`, `inaccessible` y
+`not_found_or_inaccessible`; la ausencia de datos se presenta como
+**desconocido**, nunca como "sin protección". El texto de nombres de revisores,
+comentarios y cuerpos de PR **no** se copia al resumen. Los campos de identidad
+del PR se validan antes de representarlos. Toda la vista advierte que **no
+autoriza ejecución, merge ni despliegue**.
+
+Módulo: `scripts/visura_github_action_summary.py`. La escritura se realiza
+únicamente en el archivo de resumen temporal suministrado por GitHub Actions;
+no modifica archivos del repositorio ni datos de las aplicaciones. En un
+entorno local sin `GITHUB_STEP_SUMMARY` se mantiene la salida JSON habitual.
+
+Este resumen es un instrumento informativo. Las reglas de rama pueden cambiar
+después de la consulta, y una autorización real requiere verificaciones externas
+y aprobación humana.
+
 ## Qué NO demuestra
 
 La vista de últimas decisiones presupone que los IDs numéricos de las revisiones reflejan su orden de creación; **no comprueba marcas de tiempo, reglas de dismiss ni la última decisión efectiva en GitHub**. La API puede devolver una aprobación aunque esta no sea válida para las reglas vigentes de la rama. Puede existir una revisión posterior, un cambio de política, una eliminación de permisos o un cambio del PR después de la consulta. El informe clasifica **registros observados**, no toma decisiones de seguridad.
@@ -87,4 +115,4 @@ Antes de habilitar cualquier automatización con escritura será imprescindible 
 
 ## Validación
 
-Code Review Gate #113: **161 de 161 pruebas correctas** para el primer flujo unificado. Se añadió después una prueba integrada adicional con respuestas REST simuladas; su CI queda pendiente. El workflow manual sigue sin activarse. La consulta de producción y las reglas de protección de rama siguen pendientes de validación independiente.
+Code Review Gate #117: **175 de 175 pruebas correctas** para el primer flujo unificado. Se añadió después una prueba integrada adicional con respuestas REST simuladas; su CI queda pendiente. El workflow manual sigue sin activarse. La consulta de producción y las reglas de protección de rama siguen pendientes de validación independiente.
