@@ -155,6 +155,17 @@ En INTEGRACIÓN EN RAMA: la imagen aprobada y sus derivados necesarios están re
 En PRUEBA / SIMULACIÓN: se audita la viabilidad, se identifican rutas y alternativas, se detectan bloqueos y se entrega un plan ejecutable SIN modificar sistemas.
 ```
 
+## Menú actual — Accesos directos V4 (2026-10-26)
+
+El usuario descartó el diseño anterior basado en un desplegable único con flechas. **La interfaz actual V4 lo sustituye** por una portada con siete botones en una cuadrícula de dos columnas; las siete funciones son visibles en la portada y el formulario completo se abre solo al seleccionar la función.
+
+- Cada vista de tarea ofrece **«Volver al menú»** para regresar a las siete funciones. Los enlaces `#orden-N` continúan abriendo directamente una orden concreta, y `#inicio` abre la portada.
+- El botón **«↻ Actualizar»** permanece visible en la cabecera. La marca **V4** permite detectar si un alojamiento externo está sirviendo una versión anterior.
+- **Acerca del panel y copia en GitHub** se mantiene plegado y cerrado al cargar la página; los avisos redundantes dejan de ocupar espacio en móvil.
+- No cambian los textos de los siete prompts, sus botones de copia, los campos para seleccionar imágenes ni la protección de PRUEBA / SIMULACIÓN de la orden 07.
+- Se actualizan únicamente `docs/index.html`, `docs/VISURA_ORDENES.html` y esta documentación en la rama `visura-panel`. No modificar `main`, datos ni aplicaciones.
+- Esta sección V4 **sustituye la interfaz V3** descrita a continuación; el apartado anterior se conserva únicamente como referencia histórica.
+
 ## Evolución de navegación móvil — Panel compacto (2026-10-26)
 
 **Objetivo:** evitar el desplazamiento vertical por siete órdenes completas en iPhone. El panel web conserva las siete órdenes sin variar sus prompts y muestra solo una a la vez.
