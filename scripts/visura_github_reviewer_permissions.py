@@ -85,6 +85,10 @@ def observe_snapshot_reviewer_permissions(repository, snapshot, token, opener=No
     }
     if reviews is None:
         return result
+    # Never apply review identities from an unbound or different repository.
+    # The trusted REST snapshot includes this field; absence is not evidence.
+    if snapshot.get('repository') != repository:
+        raise ValueError('Review snapshot repository missing or mismatched')
     if not isinstance(reviews, list) or len(reviews) > 500:
         raise ValueError('Invalid review collection')
     identities = {}
