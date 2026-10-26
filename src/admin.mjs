@@ -382,6 +382,65 @@ export function createAdminController({client,getUser,bucket,global,errorText,on
     $("onedriveArchiveHelp").hidden=false;
     $("reportView").hidden=false;document.body.classList.add("report-open");window.scrollTo(0,0);
   }
+  // Documento nuevo de impresión, sin tocar el PDF original ni la importación.
+  async function printCor1Bundle(){
+    if(busy||!draft||draft.state!=="publicada"||draft.parsed.warehouse!=="COR_01_COR")return;
+    const ios=/iPhone|iPad|iPod/i.test(navigator.userAgent||"");
+    // Reservar pestaña antes de la lectura asíncrona para evitar el bloqueo de ventanas.
+    const preview=ios?null:window.open("about:blank","_blank");
+    if(preview)preview.opener=null;
+    setBusy(true);
+    try{
+      const original=await downloadDraftFile();
+      const parsed=await parsePdfFile(original,{warehouse:"COR_01_COR"});
+      if(parsed.id!==draft.parsed.id||parsed.warehouse!=="COR_01_COR"||parsed.mixedWarehouse||
+        !parsed.pageNumbers?.length||parsed.products.length!==draft.parsed.products.length)
+        throw Error("El original no coincide con las referencias COR1 publicadas. No se imprimirá.");
+      const temporary=document.createElement("div");
+      temporary.innerHTML=buildPreparationReport(asPayload(draft.parsed));
+      const detailBytes=generarPdfHojas(extraerHojasDeInforme(temporary));
+      const bytes=await unirPaginasCor1YDetalle({
+        original:new Uint8Array(await original.arrayBuffer()),
+        numeroPaginasCor1:parsed.pageNumbers,
+        detalle:detailBytes
+      });
+      const file=new File([bytes],"VISURA_"+draft.parsed.id+"_COR1_ORIGINAL_Y_DETALLE.pdf",{type:"application/pdf"});
+      if(ios&&typeof navigator.share==="function"&&
+        (typeof navigator.canShare!=="function"||navigator.canShare({files:[file]}))){
+        await navigator.share({files:[file],title:"Impresión COR1 · "+draft.parsed.id});
+        setStatus("Se preparó el PDF COR1. Selecciona imprimir o guardar en el menú de compartir.","success");
+      }else{
+        const url=URL.createObjectURL(file);
+        if(preview&&!preview.closed)preview.location.href=url;
+        else{
+          const link=document.createElement("a");link.href=url;link.download=file.name;link.click();
+        }
+        // Mantener el documento disponible mientras el usuario abre el diálogo de impresión.
+        setTimeout(()=>URL.revokeObjectURL(url),30*60*1000);
+        setStatus("PDF listo: páginas originales COR1 y después nuestra hoja detalle COR1. No incluye COR2.","success");
+      }
+    }catch(error){
+      if(preview&&!preview.closed)preview.close();
+      if(error?.name!=="AbortError")setStatus("No se pudo preparar el PDF COR1: "+errorText(error),"error");
+    }finally{setBusy(false);updateActions();}
+  }
+  async function showCor2Detail(){
+    if(busy||!draft||!(draft.parsed.availableWarehouses||[]).includes("COR_02_NAR"))return;
+    setBusy(true);
+    try{
+      const original=await downloadDraftFile();
+      const parsed=await parsePdfFile(original,{warehouse:"COR_02_NAR"});
+      if(parsed.id!==draft.parsed.id||parsed.warehouse!=="COR_02_NAR"||parsed.mixedWarehouse||
+        !parsed.products.length)throw Error("No se pudo aislar la parte COR2 del PDF original.");
+      // Nunca se guarda ni publica como carga procesable.
+      $("reportPaper").innerHTML=buildPreparationReport(asPayload(parsed),{informativoCor2:true});
+      $("reportTitle").textContent="Hoja detalle COR2 · "+parsed.id+" · SOLO INFORMATIVA";
+      $("onedriveArchiveHelp").hidden=true;
+      $("reportView").hidden=false;document.body.classList.add("report-open");window.scrollTo(0,0);
+      setStatus("Hoja independiente COR2 generada solo para consulta; no entra en preparación ni procesamiento.","success");
+    }catch(error){setStatus("No se pudo generar el detalle COR2: "+errorText(error),"error");}
+    finally{setBusy(false);updateActions();}
+  }
   async function publish(){
     if(busy||!draft)return;
     if(draft.parsed.warehouse!=="COR_01_COR")return setStatus("No se puede publicar COR2 en preparación. Solo se publica COR1.","error");
@@ -615,6 +674,8 @@ export function createAdminController({client,getUser,bucket,global,errorText,on
   $("processPdf").addEventListener("click",processPdf);
   $("saveDocumentReview").addEventListener("click",saveReview);
   $("generateSheet").addEventListener("click",showReport);
+  $("printCor1Pack").addEventListener("click",printCor1Bundle);
+  $("previewCor2Detail").addEventListener("click",showCor2Detail);
   $("goToBatchPrint").addEventListener("click",()=>{selectAdminTab(2);printBatch.refresh();});
   $("locationReport").addEventListener("click",showLocationReport);
   $("publishReviewedLoad").addEventListener("click",publish);
