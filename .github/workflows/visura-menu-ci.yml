@@ -20,5 +20,6 @@ jobs:
         run: npm ci
       - name: Comprobar sintaxis y regresion completa sin despliegue
         run: |
+          python3 -m py_compile scripts/integrar_menu_oficial.py
           npm run check
           node --check tests/visura-menu.test.mjs
