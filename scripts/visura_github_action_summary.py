@@ -318,6 +318,13 @@ def render_readonly_audit_summary(bundle):
         "coincidente al releer (no autorización)"
         if rechecked_target_policy is True else "desconocido"
     )
+    rechecked_review_records = bundle.get("same_review_records_after_audit")
+    if rechecked_review_records is not None and rechecked_review_records is not True:
+        raise ValueError("Invalid review records recheck claim")
+    rechecked_review_text = (
+        "coincidentes al releer (no aprobación)"
+        if rechecked_review_records is True else "desconocido"
+    )
     if any(target.get(key) is not False for key in (
         "repository_policy_verified", "execution_authorized",
         "merge_authorized", "deployment_authorized",
@@ -557,6 +564,7 @@ def render_readonly_audit_summary(bundle):
         "| Rama predeterminada | `" + default + "` |",
         "| Snapshot atómico | No |",
         "| Política de destino releída | " + rechecked_target_text + " |",
+        "| Revisiones releídas | " + rechecked_review_text + " |",
         "",
         "## Revisiones registradas (no autorizaciones)",
         "",
