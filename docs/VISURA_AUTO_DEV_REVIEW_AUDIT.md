@@ -181,4 +181,4 @@ Antes de habilitar cualquier automatización con escritura será imprescindible 
 
 ## Validación
 
-Code Review Gate #149: **232 de 232 pruebas correctas** para el primer flujo unificado. Se añadió después una prueba integrada adicional con respuestas REST simuladas; su CI queda pendiente. El workflow manual sigue sin activarse. La consulta de producción y las reglas de protección de rama siguen pendientes de validación independiente.
+Code Review Gate #149: **232 de 232 pruebas correctas**, incluidas pruebas de extracción de contextos, aplicación de origen y comparación conservadora con check-runs. Todas las lecturas HTTP de estas pruebas están simuladas. El workflow manual sigue sin activarse. La consulta de producción y las reglas de protección de rama siguen pendientes de validación independiente.
