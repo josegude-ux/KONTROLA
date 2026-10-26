@@ -67,3 +67,15 @@ La autenticación real del módulo sigue pendiente: este avance usa pruebas
 simuladas y no resuelve elegibilidad, CODEOWNERS ni políticas efectivas.
 Primera tarea de continuación: verificar CI del último SHA de #43 y realizar
 prueba autenticada de solo lectura cuando exista transporte confiable disponible.
+
+
+## Corrección de validación completa del lote
+
+Código 27941f4d05403a2f7db381c20a9088f8ff3b3c96, PR #43.
+298 pruebas locales correctas; compileall, safety smoke y diff check correctos.
+Se validan token y todas las identidades antes de cualquier llamada de red.
+Un login asociado a dos IDs se rechaza; variaciones de mayúsculas del mismo ID
+se deduplican. Un registro inválido al final ya no provoca consultas parciales.
+La prueba autenticada real y las políticas efectivas continúan pendientes.
+Siguiente paso: comprobar CI del último SHA y validar con un transporte de
+solo lectura autorizado; no habilitar escritura ni ampliar permisos por defecto.
