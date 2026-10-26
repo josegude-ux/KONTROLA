@@ -143,8 +143,10 @@
       <button id="finishPreparation" class="primary full" type="button" hidden>Finalizar preparación</button>
       <div class="facts" id="detailFacts"></div>
       <section class="panel">
-        <div class="line"><div><h2>Mercancía por pasillos</h2><p class="muted">Solo consulta. El picking se registra con la pistola y Business Central.</p></div><div class="actions"><button id="viewPdf" class="secondary" type="button">PDF original</button><button id="viewPreparationSheet" class="secondary" type="button">Hoja procesada</button></div></div>
+        <div class="line"><div><h2>Mercancía por pasillos</h2><p class="muted">Solo consulta. El picking se registra con la pistola y Business Central.</p></div><div class="actions"><button id="viewPdf" class="secondary" type="button">PDF original</button><button id="viewPreparationSheet" class="secondary" type="button">Hoja detallada</button><button id="downloadCompactA4" class="primary" type="button">Guardar listado A4</button></div></div>
         <label class="search-wrap">Buscar referencia, ubicación o descripción<input id="productSearch" type="search"></label>
+        <div id="aisleMatrixSummary" class="aisle-matrix-summary" aria-live="polite"></div>
+        <div id="aisleMatrixTable" class="aisle-matrix-scroll" aria-label="Totales por pasillo y tipo de unidad"></div>
         <div id="aisleTabs" class="pills" role="group" aria-label="Filtrar por pasillo"></div>
         <div id="productList"></div>
       </section>
