@@ -127,6 +127,46 @@ class AuditBundleTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "GitHub token"):
             inspect_readonly_audit_bundle(REPO, 37, "main", "")
 
+    def test_full_readonly_bundle_uses_real_target_from_pr_response(self):
+        class FakeResponse:
+            def __init__(self, value):
+                self.payload = json.dumps(value).encode("utf-8")
+            def __enter__(self):
+                return self
+            def __exit__(self, *args):
+                return False
+            def read(self, limit):
+                return self.payload[:limit]
+
+        called = []
+        def opener(request, timeout):
+            url = request.full_url
+            called.append((url, request.get_method()))
+            if url.endswith("/pulls/37"):
+                return FakeResponse(fixture_pr())
+            if "/pulls/37/reviews?" in url:
+                return FakeResponse([])
+            if "/branches/" in url and url.endswith("/protection"):
+                return FakeResponse({})
+            if "/rulesets?" in url or "/rules/branches/" in url:
+                return FakeResponse([])
+            raise AssertionError("Unexpected URL: " + url)
+
+        result = inspect_readonly_audit_bundle(
+            REPO, 37, "main", "secret", opener=opener
+        )
+        self.assertEqual(
+            result["target_branch_policy"]["branch"],
+            "chore/visura-auto-dev-guardrails",
+        )
+        self.assertEqual(result["default_branch_policy"]["branch"], "main")
+        self.assertEqual(result["review_snapshot"]["review_audit"]["observed_review_count"], 0)
+        self.assertEqual(sum(url.endswith("/pulls/37") for url, _ in called), 3)
+        self.assertTrue(all(method == "GET" for _, method in called))
+        self.assertTrue(all(url.startswith("https://api.github.com/") for url, _ in called))
+        self.assertFalse(result["repository_policy_verified"])
+        self.assertFalse(result["execution_authorized"])
+
     def test_cli_does_not_print_secret(self):
         output = io.StringIO()
         with patch.dict(os.environ, {"GITHUB_TOKEN": "secret-not-for-logs"}):
