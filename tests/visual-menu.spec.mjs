@@ -33,6 +33,11 @@ for (const viewport of [
   test(`menu layout and official images: ${viewport.name}`, async ({ page }) => {
     await page.setViewportSize({ width: viewport.width, height: viewport.height });
     await page.goto("http://127.0.0.1:4173/", { waitUntil: "networkidle" });
+    await page.evaluate(() => {
+      document.querySelector("#loginView")?.setAttribute("hidden", "");
+      document.querySelector("#shell")?.removeAttribute("hidden");
+      document.querySelector("#homeView")?.removeAttribute("hidden");
+    });
     for (const [id, , filename] of cards) {
       const card = page.locator(`#${id}`);
       await expect(card).toBeVisible();
