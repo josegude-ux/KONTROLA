@@ -227,6 +227,33 @@ export function createAdminController({client,getUser,bucket,global,errorText,on
     finally{$("reviewLoadSelect").disabled=false;}
   });
   $("reviewLoadRefresh").addEventListener("click",refreshReviewSelector);
+  // La importación ya reservada conserva su PDF original y su hash.
+  // Reprocesar es solo lectura hasta que administración pulse Guardar revisión.
+  async function reprocessReviewWarehouse(target){
+    if(busy||!draft||draft.state==="publicada")return;
+    const previous=draft.parsed;
+    if((previous.corrections||[]).length&&!window.confirm(
+      "Al reprocesar desde el PDF original se sustituirá la revisión local actual, incluidas sus correcciones manuales. El original y los datos guardados no se borrarán. ¿Continuar?"
+    )){renderDraft();return;}
+    setBusy(true);
+    try{
+      const original=await downloadDraftFile();
+      const next=await parsePdfFile(original,{warehouse:target});
+      if(next.id!==previous.id||next.warehouse!==target||next.mixedWarehouse||!next.products.length)
+        throw Error("No se puede aislar con seguridad el almacén y su mercancía. No se ha cambiado la revisión.");
+      next.corrections=[{line:null,field:"warehouse",before:previous.warehouse||"",after:target,
+        by:getUser().id,at:new Date().toISOString()}];
+      draft.parsed=next;
+      draft.findings=analyzeDocument(next);
+      draft.state="revision_requerida";
+      renderDraft();
+      setStatus("Reprocesado solo "+warehouseZone(target).label+": "+next.products.length+
+        " referencias. El PDF original sigue intacto. Pulsa Guardar revisión para actualizar la carga pendiente.","success");
+    }catch(error){
+      renderDraft();
+      setStatus("No se pudo separar el documento: "+errorText(error),"error");
+    }finally{setBusy(false);updateActions();}
+  }
   function renderDraft(){
     const root=$("documentReview");root.replaceChildren();
     if(!draft){root.textContent="Procesa un PDF para iniciar la revisión.";return;}
@@ -239,22 +266,20 @@ export function createAdminController({client,getUser,bucket,global,errorText,on
       const option=document.createElement("option");option.value=value;option.textContent=label;warehouse.appendChild(option);
     }
     warehouse.value=zone.known?zone.code:"";
-    warehouse.addEventListener("change",async()=>{
-      const before=draft.parsed.warehouse||"";
-      try{
-        const file=await downloadDraftFile();
-        const reparsed=await parsePdfFile(file,{warehouse:warehouse.value});
-        const next={
-          ...reparsed,
-          products:draft.parsed.products,
-          actualTotal:draft.parsed.actualTotal,
-          corrections:draft.parsed.corrections||[]
-        };
-        next.corrections=[...(draft.parsed.corrections||[]),{line:null,field:"warehouse",before,after:warehouse.value,by:getUser().id,at:new Date().toISOString()}];
-        draft.parsed=next;draft.findings=analyzeDocument(next);draft.state="revision_requerida";renderDraft();
-      }catch(error){setStatus("No se pudo reclasificar: "+errorText(error),"error");}
-    });
+    warehouse.disabled=busy||draft.state==="publicada";
+    warehouse.addEventListener("change",()=>reprocessReviewWarehouse(warehouse.value));
     heading.append(title,warehouse,state);root.appendChild(heading);
+    if((draft.parsed.availableWarehouses||[]).length>1&&zone.known&&draft.state!=="publicada"){
+      const reprocess=document.createElement("button");
+      reprocess.type="button";reprocess.className="secondary";
+      reprocess.textContent="Reprocesar solo "+zone.label+" (sin mezclar almacenes)";
+      reprocess.disabled=busy;
+      reprocess.addEventListener("click",()=>reprocessReviewWarehouse(zone.code));
+      root.appendChild(reprocess);
+      const help=document.createElement("p");help.className="hint";
+      help.textContent="El PDF original incluye varios almacenes. La hoja de preparación imprimirá únicamente las líneas del almacén seleccionado; el original se conserva sin cambios.";
+      root.appendChild(help);
+    }
     const locationIssues=draft.findings.filter(item=>item.code==="missing_location");
     const otherFindings=draft.findings.filter(item=>item.code!=="missing_location");
     const summary=document.createElement("p");summary.className="muted";

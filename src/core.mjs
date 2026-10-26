@@ -66,13 +66,15 @@ export function parseDocumentPages(pages, fileName='Documento.pdf', options={}) 
  // Business Central puede incluir varios almacenes dentro del MISMO LP.
  const warehouseOf=page=>{
   const line=page.items.map(it=>it.text||'').join(' ');
-  const hit=line.match(/Almac[eé]n\s*:\s*([A-Z]{2,8}[\s_-]*0?\d{1,3}[\s_-]*[A-Z0-9]{2,12})/i);
-  if(!hit)return null;
-  return normalizeWarehouseCode(hit[1]);
+  const values=[...line.matchAll(/Almac[eé]n\s*:\s*([A-Z]{2,8}[\s_-]*0?\d{1,3}[\s_-]*[A-Z0-9]{2,12})/gi)]
+    .map(hit=>normalizeWarehouseCode(hit[1]));
+  const distinct=[...new Set(values)];
+  // Una página con dos almacenes mezclados no puede imprimirse de forma segura.
+  if(distinct.length>1)throw Error("El PDF contiene COR1 y COR2 en la misma página; no se puede separar con seguridad. Revisa el original.");
+  return distinct[0]||null;
  };
  const identified=pages.map(warehouseOf);
  const warehouses=[...new Set(identified.filter(Boolean))];
- const mixedWarehouse=warehouses.length>1;
  const requestedWarehouse=normalizeWarehouseCode(options.warehouse);
  const fileIdentity=identificarPdfPorAlmacen(fileName);
  if(fileIdentity&&requestedWarehouse&&requestedWarehouse!==fileIdentity.warehouse)
@@ -80,8 +82,14 @@ export function parseDocumentPages(pages, fileName='Documento.pdf', options={}) 
  if(fileIdentity&&warehouses.length&&!warehouses.includes(fileIdentity.warehouse))
   throw Error("El nombre "+fileName+" indica "+fileIdentity.warehouse+", pero la cabecera del PDF indica "+warehouses.join(", ")+". Comprueba el archivo antes de importarlo.");
  const warehouse=requestedWarehouse||fileIdentity?.warehouse||(warehouses.length===1?warehouses[0]:null);
+ // 'Mixto' es bloqueante SOLO si no se ha separado un almacén concreto.
+ // availableWarehouses conserva el hecho de que el PDF original contiene ambos.
+ const mixedWarehouse=warehouses.length>1&&!warehouse;
  const warehouseWarnings=[];
- if(requestedWarehouse&&!warehouses.includes(requestedWarehouse))warehouseWarnings.push('El almacén seleccionado no aparece en el documento');
+ if(requestedWarehouse&&warehouses.length&&!warehouses.includes(requestedWarehouse))
+  throw Error("El almacén seleccionado "+requestedWarehouse+" no aparece en el PDF.");
+ if(warehouses.length>1&&warehouse)warehouseWarnings.push(
+  "El original contiene varios almacenes: se han seleccionado únicamente las páginas de "+warehouse+"; no se imprimirán líneas de los demás.");
  if(mixedWarehouse&&!warehouse)warehouseWarnings.push('El documento contiene varios almacenes; debe seleccionarse uno antes de revisar');
  if(!warehouses.length)warehouseWarnings.push(fileIdentity
   ?'El PDF no indica almacén en su cabecera; se propone '+fileIdentity.warehouse+' por su nombre y requiere revisión administrativa'
@@ -209,7 +217,7 @@ export function parseDocumentPages(pages, fileName='Documento.pdf', options={}) 
    merchandise=false;
   }else if(controlLabel||palletsLabel){merchandise=false}
  }
- if(warehouse&&warehouses.length&&!pages.length)warnings.push('El PDF no contiene mercancía del almacén '+warehouse);
+ if(warehouse&&warehouses.length&&!pages.length)throw Error('El PDF no contiene páginas del almacén '+warehouse);
  const sum=products.reduce((a,p)=>a+Number(p.qty||0),0);
  const countOK=refs!==null&&refs===products.length;
  const amountOK=declaredTotal===null?null:Math.abs(declaredTotal-sum)<0.000001;
