@@ -131,7 +131,11 @@ footer{padding:18px;text-align:center;background:#fff;border-top:1px solid #e6e8
 @media print{.report-paper>table{font-size:9pt;table-layout:auto}.report-paper>table thead{display:table-header-group}.report-paper>table tr{break-inside:avoid;page-break-inside:avoid}.report-paper>table th,.report-paper>table td{padding:5px 4px}.report-paper>table th{background:#f1f1f1!important;color:#000!important}}
 
 /* Datos prioritarios en tarjetas de carga */
-.load-plate{display:inline-block;margin-top:8px;padding:5px 10px;border-radius:8px;background:#dceeff;color:#082b52;font-weight:800;font-size:15px;letter-spacing:.035em}.load-bundles{display:block;margin-top:5px;color:#334f6b;font-weight:650;font-size:13px}
+.load-plate{display:inline-flex;flex-direction:column;align-items:flex-start;gap:3px;margin-top:10px;padding:8px 15px 9px;border:2px solid #a7bdcf;border-radius:10px;background:linear-gradient(180deg,#fff 0%,#e6f3ff 100%);box-shadow:inset 0 0 0 2px #fff,0 2px 7px #0b264718;color:#082b52;max-width:100%;box-sizing:border-box}
+.load-plate-label{font-size:10px;font-weight:800;letter-spacing:.14em;color:#526d86}
+.load-plate-value{font-size:clamp(17px,4.5vw,23px);font-weight:900;letter-spacing:.065em;line-height:1.15;overflow-wrap:anywhere}
+.load-bundles{display:block;margin-top:9px;color:#254a70;font-weight:750;font-size:14px;line-height:1.5;overflow-wrap:anywhere}
+@media(max-width:540px){#loadsList .load-card{align-items:flex-start}#loadsList .load-card>span:first-child{min-width:0;flex:1}#loadsList .load-weight{font-size:15px;align-self:center;text-align:right}#loadsList .load-plate-value{font-size:19px}}
 
 /* Subtotales de pasillo visibles en pantalla y en impresión. */
 .preparation-report .report-aisle-total th{font-weight:800;text-align:right;background:#edf3f8;color:#092c50;border-top:2px solid #819bb3;padding:9px 8px;white-space:normal}
