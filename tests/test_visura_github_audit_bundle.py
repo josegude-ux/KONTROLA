@@ -39,6 +39,26 @@ def fixture_pr(branch="chore/visura-auto-dev-guardrails", head=HEAD, base=BASE):
 
 class AuditBundleTests(unittest.TestCase):
     def setUp(self):
+        self.codeowners_mock_patch = patch(
+            "scripts.visura_github_audit_bundle.observe_codeowners",
+            return_value={
+                "repository": REPO,
+                "branch": "chore/visura-auto-dev-guardrails",
+                "lookup": "no_file_observed",
+                "observations": [],
+                "first_observed_path": None,
+                "unshadowed_candidate_observed": False,
+                "file_absence_verified": False,
+                "effective_code_ownership_verified": False,
+                "reviewer_eligibility_verified": False,
+                "repository_policy_verified": False,
+                "execution_authorized": False,
+                "merge_authorized": False,
+                "deployment_authorized": False,
+            },
+        )
+        self.codeowners_mock = self.codeowners_mock_patch.start()
+        self.addCleanup(self.codeowners_mock_patch.stop)
         self.check_mock_patch = patch(
             "scripts.visura_github_audit_bundle.observe_commit_checks",
             return_value={
@@ -134,6 +154,27 @@ class AuditBundleTests(unittest.TestCase):
         self.assertFalse(result["report_is_atomic"])
         self.assertFalse(result["execution_authorized"])
         self.assertFalse(result["merge_authorized"])
+
+    def test_codeowners_probe_receives_real_target_and_never_authorizes(self):
+        with patch(
+            "scripts.visura_github_audit_bundle.fetch_readonly_review_snapshot",
+            return_value=fixture_snapshot(),
+        ), patch(
+            "scripts.visura_github_audit_bundle.inspect_branch_policy",
+            return_value={"branch": "any"},
+        ), patch(
+            "scripts.visura_github_audit_bundle._get_json",
+            return_value=fixture_pr(),
+        ):
+            result = inspect_readonly_audit_bundle(
+                REPO, 37, "main", "secret", opener=lambda *args: None
+            )
+        self.codeowners_mock.assert_called_once()
+        self.assertEqual(self.codeowners_mock.call_args.args[:3], (
+            REPO, "chore/visura-auto-dev-guardrails", "secret",
+        ))
+        self.assertFalse(result["target_branch_codeowners"]["file_absence_verified"])
+        self.assertFalse(result["execution_authorized"])
 
     def test_ci_evidence_uses_exact_pr_head_not_base_sha(self):
         with patch(
