@@ -1,4 +1,4 @@
 {
-  "version": "0.3.33",
-  "notes": "Preparación: total de bultos, huecos para palés del camión y observaciones de la cabecera del PDF; sin migraciones de base de datos"
+  "version": "0.3.34",
+  "notes": "Consulta voluntaria de cabeceras antiguas, máximo cinco PDF por operación, sin escribir en Supabase ni iniciar preparación"
 }
