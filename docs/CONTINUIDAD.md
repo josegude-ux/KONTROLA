@@ -64,3 +64,8 @@ Al terminar cada avance actualizar **fecha, rama y commit, qué está programado
 ## MOVENTA
 
 La idea de un portal común se documentó separadamente en `docs/MOVENTA_CONCEPTO.md`. No integrar ni modificar MOVENTA en esta fase.
+
+
+## Anexo — VISURA Centro de mando: icono B (26/10/2026)
+
+Esta rama incluye exclusivamente la preparación aislada del icono del Centro de mando. Consultar `docs/ICONO_CENTRO_DE_MANDO_B_INTEGRACION.md` para estado verificado. El original fue recuperado de la Biblioteca y se generaron derivados localmente, pero **los archivos binarios aún no están en GitHub** y **no se ha publicado ni fusionado nada**. No interpretar este anexo como actualización de los estados de KONTROLA/INVENTA en otras ramas.
