@@ -38,8 +38,8 @@ select test.assert(
  'preparación propia continúa abierta y disponible');
 
 -- No se permite a un tercero apropiarse de la sesión de verificación.
-select set_config('request.jwt.claim.sub','00000000-0000-0000-0000-000000000004',false);
-do $$
+select set_config('request.jwt.claim.sub','00000000-0000-0000-0000-000000000001',false);
+do $
 declare blocked boolean:=false;
 begin
  begin
