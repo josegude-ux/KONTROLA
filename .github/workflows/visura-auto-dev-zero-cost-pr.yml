@@ -51,19 +51,23 @@ jobs:
           is_pr="$(gh api "repos/$REPO/issues/31" --jq 'has("pull_request")')"
           test "$state" = "open"
           test "$is_pr" = "false"
-          # Idempotent: existing branch/PR is not overwritten.
-          if gh api "repos/$REPO/git/ref/heads/$HEAD" >/dev/null 2>&1; then
-            echo "Pilot branch already exists; no writes performed."
+          # Idempotent: an existing branch must never be overwritten.
+          if ! gh api "repos/$REPO/git/ref/heads/$HEAD" >/dev/null 2>&1; then
+            base_sha="$(gh api "repos/$REPO/git/ref/heads/$BASE" --jq '.object.sha')"
+            gh api --method POST "repos/$REPO/git/refs" \
+              -f "ref=refs/heads/$HEAD" -f "sha=$base_sha" >/dev/null
+            text="$(printf '# VISURA AUTO-DEV: tarea 31\\n\\nDocumento generado automáticamente por un workflow determinista, sin IA de pago.\\n\\n- Origen: issue #31 (solo metadatos).\\n- Sin acceso a Business Central ni Supabase.\\n- No autoriza fusiones ni despliegues.\\n')"
+            encoded="$(printf '%s' "$text" | base64 -w0)"
+            gh api --method PUT "repos/$REPO/contents/docs/VISURA_AUTO_DEV_GENERADO_31.md" \
+              -f "message=docs: generate safe zero-cost pilot from issue 31" \
+              -f "content=$encoded" -f "branch=$HEAD" >/dev/null
+          fi
+          # Re-runs must not create duplicate PRs. Existing PR may be open or closed.
+          existing="$(gh api "repos/$REPO/pulls?state=all&head=josegude-ux:$HEAD&base=$BASE" --jq 'length')"
+          if [ "$existing" != "0" ]; then
+            echo "Pilot PR already exists; no writes performed."
             exit 0
           fi
-          base_sha="$(gh api "repos/$REPO/git/ref/heads/$BASE" --jq '.object.sha')"
-          gh api --method POST "repos/$REPO/git/refs" \
-            -f "ref=refs/heads/$HEAD" -f "sha=$base_sha" >/dev/null
-          text="$(printf '# VISURA AUTO-DEV: tarea 31\n\nDocumento generado automáticamente por un workflow determinista, sin IA de pago.\n\n- Origen: issue #31 (solo metadatos).\n- Sin acceso a Business Central ni Supabase.\n- No autoriza fusiones ni despliegues.\n')"
-          encoded="$(printf '%s' "$text" | base64 -w0)"
-          gh api --method PUT "repos/$REPO/contents/docs/VISURA_AUTO_DEV_GENERADO_31.md" \
-            -f "message=docs: generate safe zero-cost pilot from issue 31" \
-            -f "content=$encoded" -f "branch=$HEAD" >/dev/null
           gh api --method POST "repos/$REPO/pulls" \
             -f "title=docs: VISURA AUTO-DEV zero-cost generated pilot #31" \
             -f "head=$HEAD" -f "base=$BASE" \
