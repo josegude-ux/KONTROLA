@@ -42,12 +42,12 @@ test("La navegación conserva los accesos previos y los regresos al submenú",()
 
 test("La versión y el caché están preparados para instalar nuevas pantallas",()=>{
   const version=JSON.parse(read("version.json")).version;
-  assert.equal(version,"0.3.37");
+  assert.equal(version,"0.3.40");
   assert.equal(JSON.parse(read("package.json")).version,version);
   assert.equal(JSON.parse(read("package-lock.json")).version,version);
   assert.ok(read("src/config.mjs").includes(`APP_VERSION="${version}"`));
   assert.ok(html.includes(`id="appVersion">${version}<`));
-  assert.match(read("sw.js"),/kontrola-integral-visura-v070/);
+  assert.match(read("sw.js"),/kontrola-integral-visura-v073/);
 });
 
 test("Las consultas descartan respuestas de sesiones o almacenes anteriores",()=>{
@@ -114,17 +114,14 @@ test("KONTROLA usa cuatro imágenes 3D exclusivas, distintas y precargadas sin c
  assert.match(html,/id="openAdmin"[^>]*hidden/);
 });
 
-test("preparación recupera inicio automático con reloj del servidor y consulta sin mutaciones",()=>{
-  assert.match(html,/id="prepClock"[^>]*role="timer"/);
+test("preparación registrada sin cronómetro visible y consulta sin mutaciones",()=>{
+  assert.doesNotMatch(html,/id="prepClock"/);
   assert.match(app,/async function startCurrentPreparation\(\)/);
   assert.match(app,/p_request_id:crypto\.randomUUID\(\)/);
   assert.match(app,/if\(!currentReadOnly&&!currentPreparation\.active&&!currentPreparation\.finalized&&load\.estado==="publicada"\)/);
   assert.match(app,/await startCurrentPreparation\(\)/);
   assert.match(app,/\$\("truckCapacityStart"\)\.addEventListener/);
   assert.match(app,/currentReadOnly=readOnly\|\|assignedToOther/);
-  assert.match(app,/formatPreparationDuration\(current\.preparacion_inicio/);
-  assert.match(app,/setInterval\(\(\)=>/);
-  assert.match(app,/if\(id!=="detailView"\)stopPreparationClock\(\)/);
   assert.match(app,/function openLoadsMenu\(parent="homeView",mode="preparacion"\)/);
   assert.match(app,/openLoadsMenu\("cargasMenuView","consulta"\)/);
 });
@@ -187,6 +184,7 @@ test("los huecos del camión aparecen junto a matrícula con G y P",()=>{
   const preparation=app.slice(start,end);
   assert.match(preparation,/vehicle\.append\(plate,pallets\)/);
   assert.match(preparation,/palletsValue\.textContent=formatearHuecosPalets\(r\.huecos_palets_grandes,r\.huecos_palets_pequenos,r\.huecos_palets_total\)/);
+  assert.match(preparation,/palletsValue\.textContent=textoHuecosConOrigen\(r\)/);
   assert.match(preparation,/HUECOS PALÉS/);
   assert.doesNotMatch(preparation,/palets_para_carga/);
   assert.match(css,/#loadsList \.load-vehicle\{/);
@@ -237,8 +235,35 @@ test("la lectura de PDF antiguos es voluntaria y no modifica Supabase ni relojes
 
 test("los PDF leídos se muestran solo durante la sesión y se mantienen al refrescar",()=>{
  assert.match(app,/legacyHeaderCache\.set\(load\.documento_ruta,extras\)/);
- assert.match(app,/const cached=legacyHeaderCache\.get\(load\.documento_ruta\)/);
- assert.match(app,/cached&&cabeceraSinMetadatos\(enriched\)/);
+ assert.match(app,/legacyHeaderCache\.get\(load\.documento_ruta\)\|\|null/);
+ assert.match(app,/combinarHuecosConOrigen\(/);
  assert.match(app,/legacyHeaderCache\.clear\(\)/);
  assert.match(app,/id\.textContent=r\.codigo\+\(observaciones\?" - "\+observaciones:""\)/);
+});
+
+test("Observaciones aparece también en detalles y se distingue hueco E",()=>{
+ assert.match(app,/detailTitle"\)\.textContent=load\.codigo\+/);
+ assert.match(app,/reviewDetailTitle"\)\.textContent=load\.codigo\+/);
+ assert.match(app,/truckSecondKind/);
+ assert.match(app,/huecos_palets_europeos:carga_datos->>huecos_palets_europeos/);
+ assert.match(html,/id="truckSecondKind"/);
+ assert.match(html,/id="truckCapacityPLabel"/);
+});
+
+test("piloto seguro sin control de velocidad y con acceso a cargas antiguas",()=>{
+ assert.doesNotMatch(html,/id="prepClock"/);
+ assert.doesNotMatch(app,/setInterval\(\(\)=>/);
+ assert.match(html,/id="pilotRoster"/);
+ assert.match(html,/MANUEL RIVADAS/);
+ assert.match(html,/id="cargasAntiguas"/);
+ assert.match(html,/id="browseOldLoads"/);
+ assert.match(app,/client\.auth\.updateUser\(\{password\}\)/);
+ assert.match(app,/profile\?\.rol!=="administrador"/);
+});
+
+test("Control de Cargas usa recursos 3D de PREPARA en lugar de iconos emoji",()=>{
+ for(const id of ["cargasConsultar","cargasPreparar","cargasVerificar","cargasHistorial","cargasAdministrar","cargasAntiguas"]){
+  assert.match(html,new RegExp('id="'+id+'"[^>]*>\\s*<span class="submenu-icon submenu-3d"'));
+ }
+ assert.match(css,/\.submenu-3d img/);
 });

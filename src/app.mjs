@@ -1,7 +1,7 @@
 import {fechaAlmacen} from "./business-date.mjs";
 import {filtrarArchivoLogico} from "./archive-view.mjs";
 import {SUPABASE_URL,SUPABASE_KEY,PDF_BUCKET,APP_VERSION} from "./config.mjs";
-import {agruparPasillos,ordenarCargas,formatearHuecosPalets} from "./logic.mjs";
+import {agruparPasillos,ordenarCargas,formatearHuecosPalets,combinarHuecosConOrigen,textoHuecosConOrigen} from "./logic.mjs";
 import {buildVerificationLines,parseCheckedQuantity,summarizeVerification} from "./verification.mjs";
 import {buildPreparationReport,filterProducts,desglosarBultos,totalBultosDelDesglose} from "./report.mjs";
 import {filtrarHistorial,resumenHistorial,formatoFechaCarga,csvHistorial,htmlResumenHistorial} from "./history.mjs";
@@ -13,7 +13,7 @@ const $=id=>document.getElementById(id);
 let client=null,user=null,profile=null,loads=[],current=null,currentPreparation=null,groups=[],selectedAisle="TODOS",busy=false,opening=false;
 let reviewLoads=[],currentVerification=null,verificationLines=[];
 let warehouses=[],selectedWarehouse=localStorage.getItem("kontrola-warehouse")||"COR_01_COR",adminController=null;
-let loadsParent="homeView",reviewLoadsParent="homeView",loadsMode="preparacion",currentReadOnly=false,detailBackView="loadsView",historyRows=[],historyReady=false,adminParent="homeView",prepTimerId=null;
+let loadsParent="homeView",reviewLoadsParent="homeView",loadsMode="preparacion",currentReadOnly=false,detailBackView="loadsView",historyRows=[],historyReady=false,adminParent="homeView";
 let loadsRequestSerial=0,legacyHeaderBusy=false;
 const legacyHeaderCache=new Map();
 const truckCapacitySession=new Map();
@@ -35,14 +35,12 @@ function switchView(id,{force=false}={}){
   for(const element of document.querySelectorAll(".view"))visible(element,element.id===id);
   // El único botón visible de retorno se mantiene en la barra superior fija.
   $("globalBack").hidden=id==="homeView";
-  if(id!=="detailView")stopPreparationClock();
   global();
   window.scrollTo({top:0,behavior:"instant"});
   return true;
 }
 function loggedOut(message=""){
   user=null;profile=null;loads=[];historyRows=[];historyReady=false;current=null;currentPreparation=null;currentReadOnly=false;reviewLoads=[];currentVerification=null;verificationLines=[];
-  stopPreparationClock();
   loadsRequestSerial++;legacyHeaderCache.clear();legacyHeaderBusy=false;
   truckCapacitySession.clear();truckCapacityTouched=false;
   $("truckCapacityPanel").hidden=true;
@@ -60,6 +58,7 @@ function loggedOut(message=""){
     const node=$(id);if(node)node.replaceChildren();
   }
   $("loginPassword").value="";
+  $("ownPassword").value="";$("ownPasswordConfirm").value="";$("ownPasswordStatus").textContent="";
   $("historyDownload").disabled=true;$("historyPrint").disabled=true;
   visible($("reportView"),false);
   document.body.classList.remove("report-open");
@@ -77,6 +76,7 @@ async function authorize(authUser){
   $("profileRole").textContent=ownProfile.rol;
   visible($("openAdmin"),ownProfile.rol==="administrador");
   visible($("cargasAdministrar"),ownProfile.rol==="administrador");
+  visible($("cargasAntiguas"),ownProfile.rol==="administrador");
   visible($("loginView"),false);visible($("shell"),true);switchView("homeView");
   await loadWarehouses();
   await refreshOperatorDashboard().catch(()=>{});
@@ -176,6 +176,21 @@ async function initialize(){
     });
   }catch(e){loggedOut("No se ha podido conectar con Supabase: "+errorText(e));}
 }
+$("choosePasswordForm").addEventListener("submit",async(event)=>{
+  event.preventDefault();
+  const button=$("choosePasswordForm").querySelector('button[type="submit"]');
+  const password=$("ownPassword").value,confirm=$("ownPasswordConfirm").value;
+  const output=$("ownPasswordStatus");
+  if(!client||!user){output.textContent="Primero debes iniciar sesión con tu invitación individual.";return;}
+  if(password.length<12||password!==confirm){output.textContent="Las contraseñas deben coincidir y tener al menos 12 caracteres.";return;}
+  button.disabled=true;output.textContent="Guardando contraseña personal…";
+  try{
+    const {error}=await client.auth.updateUser({password});
+    if(error)throw error;
+    output.textContent="Contraseña actualizada para tu cuenta.";
+  }catch(error){output.textContent="No se ha podido cambiar la contraseña: "+errorText(error);}
+  finally{$("ownPassword").value="";$("ownPasswordConfirm").value="";button.disabled=false;}
+});
 $("loginForm").addEventListener("submit",async e=>{
   e.preventDefault();
   if(!client)return status("authMessage","No hay conexión con Supabase.","error");
@@ -202,7 +217,7 @@ async function refreshLoads(){
   if(!validRequest(warehouse,userId))return;
   if(panel.error||archivo.error){const err=panel.error||archivo.error;$("loadsList").textContent="No se pueden cargar los documentos: "+errorText(err);throw err;}
   const archivados=new Set((archivo.data||[]).map(r=>r.codigo));
-  loads=ordenarCargas(filtrarArchivoLogico((panel.data||[]).map(r=>({...r,archivado:archivados.has(r.codigo)})),{vista:"activas"}));
+  loads=ordenarCargas(filtrarArchivoLogico((panel.data||[]).map(r=>combinarHuecosConOrigen({...r,archivado:archivados.has(r.codigo)})),{vista:"activas"}));
   renderLoadList();
   // El panel actual no devuelve los campos opcionales de la cabecera del PDF.
   // Consultar SOLO la revisión vigente autorizada de cada carga; no descargar PDFs.
@@ -211,13 +226,14 @@ async function refreshLoads(){
     const codes=[...new Set(loads.map(load=>load.codigo).filter(Boolean))];
     for(let start=0;start<codes.length;start+=50){
       const {data,error}=await client.from("kontrola_carga_revisiones")
-        .select("codigo,observaciones:carga_datos->>observaciones,huecos_palets_grandes:carga_datos->>huecos_palets_grandes,huecos_palets_pequenos:carga_datos->>huecos_palets_pequenos,huecos_palets_total:carga_datos->>huecos_palets_total")
+        .select("codigo,observaciones:carga_datos->>observaciones,huecos_palets_grandes:carga_datos->>huecos_palets_grandes,huecos_palets_europeos:carga_datos->>huecos_palets_europeos,huecos_palets_pequenos:carga_datos->>huecos_palets_pequenos,huecos_palets_total:carga_datos->>huecos_palets_total")
         .eq("vigente",true).eq("almacen",warehouse).in("codigo",codes.slice(start,start+50));
       if(!validRequest(warehouse,userId))return;
       if(error)throw error;
       for(const row of data||[])extras.set(row.codigo,{
         observaciones:row.observaciones,
         huecos_palets_grandes:row.huecos_palets_grandes,
+        huecos_palets_europeos:row.huecos_palets_europeos,
         huecos_palets_pequenos:row.huecos_palets_pequenos,
         huecos_palets_total:row.huecos_palets_total
       });
@@ -228,15 +244,13 @@ async function refreshLoads(){
   }
   if(!validRequest(warehouse,userId))return;
   if(requestSerial!==loadsRequestSerial)return;
-  loads=loads.map(load=>{
-    const enriched={...load,...(extras.get(load.codigo)||{})};
-    const cached=legacyHeaderCache.get(load.documento_ruta);
-    return cached&&cabeceraSinMetadatos(enriched)?{...enriched,...cached}:enriched;
-  });
+  loads=loads.map(load=>combinarHuecosConOrigen(
+    load,extras.get(load.codigo)||null,legacyHeaderCache.get(load.documento_ruta)||null
+  ));
   renderLoadList();
 }
 // La recuperación es optativa, de solo lectura y limitada a cinco PDF por clic.
-// No ejecuta ninguna RPC de escritura ni abre una preparación o reloj.
+// No ejecuta ninguna RPC de escritura ni abre una preparación o proceso.
 async function leerCabecerasAntiguas(){
   if(legacyHeaderBusy||!client||!user)return;
   const warehouse=selectedWarehouse,userId=user.id,serial=loadsRequestSerial;
@@ -268,7 +282,7 @@ async function leerCabecerasAntiguas(){
         const index=loads.findIndex(item=>item.codigo===load.codigo&&item.documento_ruta===load.documento_ruta);
         if(index<0)continue;
         legacyHeaderCache.set(load.documento_ruta,extras);
-        loads[index]={...loads[index],...extras};
+        loads[index]=combinarHuecosConOrigen(loads[index],null,extras);
         renderLoadList();
         if(cabeceraSinMetadatos(extras))withoutData++;
         else recovered++;
@@ -308,7 +322,10 @@ function renderLoadList(){
     const palletsLabel=document.createElement("span");palletsLabel.className="load-pallets-label";palletsLabel.textContent="HUECOS PALÉS";
     const palletsValue=document.createElement("strong");palletsValue.className="load-pallets-value";
     palletsValue.textContent=formatearHuecosPalets(r.huecos_palets_grandes,r.huecos_palets_pequenos,r.huecos_palets_total);
-    pallets.title="Huecos disponibles del camión: G = grandes, P = pequeños. No son palés ya preparados.";
+    palletsValue.textContent=textoHuecosConOrigen(r);
+    pallets.title=r.huecos_origen==="pdf_leido"?"Lectura local del PDF sin modificar Supabase: confirma el dato al abrir la carga.":
+      r.huecos_origen==="revision"?"Huecos guardados en la revisión vigente del PDF.":
+      "No se conoce la capacidad. Abre la carga para consultar el PDF y poner los huecos del camión.";
     pallets.append(palletsLabel,palletsValue);vehicle.append(plate,pallets);
     const bundles=document.createElement("span");bundles.className="load-bundles";
     // Reutiliza el desglose por unidades de la hoja de preparación.
@@ -460,6 +477,11 @@ $("cargasVerificar").addEventListener("click",()=>openReviewMenu("cargasMenuView
 $("cargasHistorial").addEventListener("click",()=>{if(switchView("cargasHistoryView"))refreshHistory().catch(()=>{});});
 $("backFromHistory").addEventListener("click",()=>switchView("cargasMenuView"));
 $("cargasAdministrar").addEventListener("click",()=>openAdminMenu("cargasMenuView"));
+$("cargasAntiguas").addEventListener("click",async()=>{
+  if(profile?.rol!=="administrador")return;
+  await openAdminMenu("cargasMenuView");
+  await adminController?.openArchive?.();
+});
 $("openAdmin").addEventListener("click",()=>openAdminMenu("homeView"));
 $("backFromLoads").addEventListener("click",()=>switchView(loadsParent));
 $("backFromReviewLoads").addEventListener("click",()=>switchView(reviewLoadsParent));
@@ -481,34 +503,6 @@ $("globalBack").addEventListener("click",()=>{
   else if(view==="adminView")switchView(adminParent);
   else if(backButtons[view])$(backButtons[view]).click();
 });
-function stopPreparationClock(){
-  if(prepTimerId!==null){clearInterval(prepTimerId);prepTimerId=null;}
-}
-function formatPreparationDuration(start,end=Date.now()){
-  const began=new Date(start).getTime();
-  const ended=typeof end==="number"?end:new Date(end).getTime();
-  if(!Number.isFinite(began)||!Number.isFinite(ended))return "—";
-  const seconds=Math.max(0,Math.floor((ended-began)/1000));
-  const hours=String(Math.floor(seconds/3600)).padStart(2,"0");
-  const minutes=String(Math.floor(seconds%3600/60)).padStart(2,"0");
-  return hours+":"+minutes+":"+String(seconds%60).padStart(2,"0");
-}
-function renderPreparationClock(){
-  const clock=$("prepClock");
-  if(currentReadOnly||!current||!current.preparacion_inicio){clock.hidden=true;return;}
-  clock.hidden=false;
-  if(currentPreparation?.active)clock.textContent="Tiempo de preparación · "+formatPreparationDuration(current.preparacion_inicio);
-  else if(currentPreparation?.finalized&&current.preparacion_fin)
-    clock.textContent="Tiempo de preparación finalizado · "+formatPreparationDuration(current.preparacion_inicio,current.preparacion_fin);
-  else clock.hidden=true;
-}
-function startPreparationClock(){
-  stopPreparationClock();
-  renderPreparationClock();
-  if(currentPreparation?.active)prepTimerId=setInterval(()=>{
-    if(!document.hidden)renderPreparationClock();
-  },1000);
-}
 async function startCurrentPreparation(){
   if(busy||!current||currentReadOnly||currentPreparation?.active||currentPreparation?.finalized||current.estado==="cerrada")return;
   if(assessment().estado!=="viable"){
@@ -525,7 +519,7 @@ async function startCurrentPreparation(){
     if(user?.id!==requestUser||current?.codigo!==code)return;
     const result=Array.isArray(data)?data[0]:data;
     if(!result?.inicio)throw Error("El servidor no ha confirmado la hora de inicio.");
-    // Las cargas finalizadas no vuelven a abrirse ni crean relojes nuevos.
+    // Las cargas finalizadas no vuelven a abrirse ni crean procesoes nuevos.
     if(current.preparacion_fin){
       currentPreparation={active:false,finalized:true};
       $("prepStatus").textContent="Esta preparación ya estaba finalizada.";
@@ -536,8 +530,7 @@ async function startCurrentPreparation(){
     current.preparador_id=requestUser;current.preparacion_inicio=result.inicio;current.estado="preparacion_en_curso";
     visible($("startPreparation"),false);visible($("finishPreparation"),true);
     $("prepStatus").className="info-bar";
-    $("prepStatus").textContent="Preparación activa. Inicio registrado por el servidor; el tiempo continúa al salir de esta pantalla.";
-    startPreparationClock();
+    $("prepStatus").textContent="Preparación activa. Inicio registrado por el servidor; puedes continuarla con calma al volver a esta pantalla.";
     global("Preparación de "+code+" iniciada correctamente.","success");
     refreshOperatorDashboard().catch(()=>{});
   }catch(error){
@@ -555,7 +548,7 @@ const truckInputs=["truckCapacityTotal","truckCapacityG","truckCapacityP","truck
 const truckKey=()=>user&&current?user.id+"|"+current.almacen+"|"+current.codigo:"";
 function assessment(){
   return evaluarHuecosCamion({
-    modo:$("truckCapacityMode").value,previas:$("truckPreviousChoice").value,
+    modo:$("truckCapacityMode").value,segundoTipo:$("truckSecondKind").value,previas:$("truckPreviousChoice").value,
     capacidadTotal:$("truckCapacityTotal").value,capacidadG:$("truckCapacityG").value,
     capacidadP:$("truckCapacityP").value,
     anterioresTotal:$("truckPreviousTotal").value,anterioresG:$("truckPreviousG").value,
@@ -571,6 +564,10 @@ function renderTruckAssessment(){
   $("truckFieldsBySize").hidden=!bySize;
   $("truckPreviousTotalRow").hidden=bySize||!previous;
   $("truckPreviousSizeRow").hidden=!bySize||!previous;
+  const european=$("truckSecondKind").value==="E";
+  $("truckCapacityPLabel").textContent=european?"Huecos europeos (E) del camión":"Huecos pequeños (P) del camión";
+  $("truckPreviousPLabel").textContent=european?"Europeos ocupados antes":"Pequeños ocupados antes";
+  $("truckCurrentPLabel").textContent=european?"Europeos necesarios ahora":"Pequeños necesarios ahora";
   const result=assessment();
   $("truckCapacityResult").className="truck-result "+result.estado;
   $("truckCapacityResult").textContent=result.detalle+(result.filas.length?"\n"+
@@ -578,7 +575,7 @@ function renderTruckAssessment(){
     ", ocupados antes "+(row.anteriores??"—")+", esta carga "+(row.actual??"—")+
     ", libres después "+(row.restantes??"—")).join("\n"):"");
   if(truckKey())truckCapacitySession.set(truckKey(),{
-    modo:$("truckCapacityMode").value,previas:$("truckPreviousChoice").value,
+    modo:$("truckCapacityMode").value,segundoTipo:$("truckSecondKind").value,previas:$("truckPreviousChoice").value,
     inputs:Object.fromEntries(truckInputs.map(id=>[id,$(id).value]))
   });
   return result;
@@ -589,11 +586,12 @@ function openTruckPanel(load){
   const cached=truckCapacitySession.get(user.id+"|"+load.almacen+"|"+load.codigo);
   $("truckCapacityPanel").hidden=false;
   $("truckCapacityMode").value=cached?.modo||(supplied.modo==="desglose"?"desglose":"total");
+  $("truckSecondKind").value=cached?.segundoTipo||supplied.segundoTipo||"E";
   $("truckPreviousChoice").value=cached?.previas||"";
   for(const id of truckInputs)$(id).value=cached?.inputs?.[id]??"";
   if(!cached){
     $("truckCapacityG").value=supplied.grandes??"";
-    $("truckCapacityP").value=supplied.pequenos??"";
+    $("truckCapacityP").value=$("truckSecondKind").value==="E"?(supplied.europeos??""):(supplied.pequenos??"");
     $("truckCapacityTotal").value=supplied.total??"";
   }
   $("truckCapacitySource").textContent=supplied.modo==="sin_datos"?
@@ -616,16 +614,15 @@ async function recoverTruckCapacityFromPdf(load){
     const extras=cabeceraLeida(load,parsed,warehouse);
     if(!extras)throw Error("El PDF no coincide con carga/almacén");
     legacyHeaderCache.set(route,extras);
-    for(const field of ["huecos_palets_grandes","huecos_palets_pequenos","huecos_palets_total"]){
-      if(extras[field]!==null)load[field]=extras[field];
-    }
-    if(!load.observaciones&&extras.observaciones)load.observaciones=extras.observaciones;
+    Object.assign(load,combinarHuecosConOrigen(load,null,extras));
+    $("detailTitle").textContent=load.codigo+(load.observaciones?" — "+String(load.observaciones).trim():"");
     renderLoadList();
     if(!truckCapacityTouched){
       const supplied=capacidadDeCarga(load);
       if(supplied.modo==="desglose")$("truckCapacityMode").value="desglose";
+      $("truckSecondKind").value=supplied.segundoTipo||"E";
       $("truckCapacityG").value=supplied.grandes??"";
-      $("truckCapacityP").value=supplied.pequenos??"";
+      $("truckCapacityP").value=$("truckSecondKind").value==="E"?(supplied.europeos??""):(supplied.pequenos??"");
       $("truckCapacityTotal").value=supplied.total??"";
       $("truckCapacitySource").textContent=supplied.modo==="sin_datos"?
         "El PDF no trae huecos reconocibles. Introduce manualmente la capacidad real del camión.":
@@ -638,6 +635,10 @@ async function recoverTruckCapacityFromPdf(load){
     }
   }
 }
+$("truckSecondKind").addEventListener("change",()=>{
+  for(const id of ["truckCapacityP","truckPreviousP","truckCurrentP"])$(id).value="";
+  truckCapacityTouched=true;renderTruckAssessment();
+});
 for(const id of [...truckInputs,"truckCapacityMode","truckPreviousChoice"]){
   $(id).addEventListener("input",()=>{truckCapacityTouched=true;renderTruckAssessment();});
   $(id).addEventListener("change",()=>{truckCapacityTouched=true;renderTruckAssessment();});
@@ -647,7 +648,7 @@ $("truckCapacityStart").addEventListener("click",async()=>{
   if(currentReadOnly||!current||current.estado!=="publicada"||busy)return;
   const result=renderTruckAssessment();
   if(result.estado!=="viable"){
-    $("truckCapacityResult").textContent+="\nNo se inicia el reloj hasta verificar huecos suficientes.";
+    $("truckCapacityResult").textContent+="\nNo se inicia el proceso hasta verificar huecos suficientes.";
     return;
   }
   await startCurrentPreparation();
@@ -657,7 +658,7 @@ $("truckCapacityStart").addEventListener("click",async()=>{
 async function openLoad(code,{source=loads,returnTo="loadsView",readOnly=loadsMode==="consulta"}={}){
   if(opening||busy||!user)return;
   const load=source.find(x=>x.codigo===code);if(!load)return;
-  // Consultar y revisar nunca inicia ni interrumpe relojes de preparación.
+  // Consultar y revisar nunca inicia ni interrumpe procesoes de preparación.
   const assignedToOther=Boolean(load.preparador_id&&load.preparador_id!==user.id);
   currentReadOnly=readOnly||assignedToOther||["cerrada","verificacion_en_curso"].includes(load.estado);
   detailBackView=returnTo;
@@ -667,13 +668,13 @@ async function openLoad(code,{source=loads,returnTo="loadsView",readOnly=loadsMo
     finalized:Boolean(load.preparacion_fin)
   };
   $("detailModeLabel").textContent=currentReadOnly?"CONSULTA DE CARGA":"PREPARACIÓN POR PASILLOS";
-  $("detailTitle").textContent=load.codigo;
+  $("detailTitle").textContent=load.codigo+(load.observaciones?" — "+String(load.observaciones).trim():"");
   $("detailSubtitle").textContent=[load.repartidor,load.ruta,load.almacen].filter(Boolean).join(" · ")||"Preparación por pasillos";
   const notice=$("prepStatus");
   notice.className="info-bar"+(currentPreparation.finalized?" complete":"");
-  notice.textContent=assignedToOther?"Carga asignada a otro preparador. Puedes consultar sin modificar el reloj."
+  notice.textContent=assignedToOther?"Carga asignada a otro preparador. Puedes consultar sin modificar el proceso."
     :currentReadOnly?"Solo lectura: consultar no inicia, finaliza ni cambia preparaciones."
-    :currentPreparation.active?"Preparación ya iniciada. Tiempo registrado en Supabase."
+    :currentPreparation.active?"Preparación ya iniciada. Estado registrado en el servidor."
     :currentPreparation.finalized?"Preparación finalizada; la consulta no cambia los horarios."
     :"Se registrará automáticamente el inicio al abrir esta carga.";
   visible($("startPreparation"),false);
@@ -688,10 +689,9 @@ async function openLoad(code,{source=loads,returnTo="loadsView",readOnly=loadsMo
   }
   renderAisles();
   if(!switchView("detailView"))return;
-  startPreparationClock();
   openTruckPanel(load);
   if(cargaHuecosPendientes(load))recoverTruckCapacityFromPdf(load).catch(()=>{});
-  // La carga publicada requiere evaluación de huecos antes de iniciar el reloj.
+  // La carga publicada requiere evaluación de huecos antes de iniciar el proceso.
   if(!currentReadOnly&&!currentPreparation.active&&!currentPreparation.finalized&&load.estado==="publicada"){
     $("prepStatus").textContent="Confirma los huecos y las cargas anteriores para iniciar la preparación.";
   }
@@ -704,10 +704,10 @@ $("finishPreparation").addEventListener("click",async()=>{
     const {error}=await client.rpc("kontrola_finalizar_preparacion",{p_codigo:current.codigo});
     if(error)throw error;
     currentPreparation={active:false,finalized:true};current.preparacion_fin=new Date().toISOString();current.estado="preparada";visible($("finishPreparation"),false);
-    stopPreparationClock();renderPreparationClock();refreshOperatorDashboard().catch(()=>{});
+    refreshOperatorDashboard().catch(()=>{});
     $("prepStatus").className="info-bar complete";
     $("prepStatus").textContent="Preparación finalizada. La carga ya puede ser verificada por otra persona.";
-    global("Preparación finalizada con hora del servidor.","success");
+    global("Preparación finalizada correctamente.","success");
   }catch(error){global("No se pudo finalizar la preparación: "+errorText(error),"error");}
   finally{busy=false;$("finishPreparation").disabled=false;}
 });
@@ -755,16 +755,32 @@ async function refreshReviewLoads(){
     (!load.verificador_id||load.verificador_id===userId)
   ));
   renderReviewLoads();
+  // Observaciones de la revisión vigente, mediante consulta sin escrituras.
+  const reviewCodes=[...new Set(reviewLoads.map(load=>load.codigo).filter(Boolean))];
+  const reviewNotes=new Map();
+  try{
+    for(let i=0;i<reviewCodes.length;i+=50){
+      const {data:rows,error:notesError}=await client.from("kontrola_carga_revisiones")
+        .select("codigo,observaciones:carga_datos->>observaciones")
+        .eq("vigente",true).eq("almacen",warehouse).in("codigo",reviewCodes.slice(i,i+50));
+      if(!validRequest(warehouse,userId))return;
+      if(notesError)throw notesError;
+      for(const row of rows||[])if(row.observaciones)reviewNotes.set(row.codigo,row.observaciones);
+    }
+    if(!validRequest(warehouse,userId))return;
+    reviewLoads=reviewLoads.map(load=>({...load,observaciones:reviewNotes.get(load.codigo)||load.observaciones}));
+    renderReviewLoads();
+  }catch(error){if(validRequest(warehouse,userId))global("No se pudieron consultar Observaciones: "+errorText(error),"error");}
 }
 function renderReviewLoads(){
   const target=$("reviewLoadsList");target.replaceChildren();
   const search=$("reviewSearch").value.trim().toLocaleLowerCase("es-ES");
-  const records=reviewLoads.filter(r=>[r.codigo,r.ruta,r.matricula,r.repartidor].some(v=>String(v||"").toLocaleLowerCase("es-ES").includes(search)));
+  const records=reviewLoads.filter(r=>[r.codigo,r.observaciones,r.ruta,r.matricula,r.repartidor].some(v=>String(v||"").toLocaleLowerCase("es-ES").includes(search)));
   if(!records.length){const p=document.createElement("p");p.className="muted";p.textContent=!reviewLoads.length?"No hay cargas verificables por este usuario en "+warehouseLabel()+". Selecciona otro almacén si corresponde.":"Ninguna carga verificable coincide con el filtro de búsqueda.";target.appendChild(p);return;}
   for(const load of records){
     const button=document.createElement("button");button.type="button";button.className="load-card";
     const left=document.createElement("span"),title=document.createElement("strong"),meta=document.createElement("span");
-    title.className="load-title";title.textContent=load.codigo;
+    title.className="load-title";title.textContent=load.codigo+(load.observaciones?" — "+String(load.observaciones).trim():"");
     const incidents=Number(load.incidencias_pendientes||0);
     const progress=load.estado==="cerrada"?"Finalizada · "+incidents+" incidencia(s)":load.estado==="verificacion_en_curso"?"Continuar verificación":"Pendiente de iniciar";
     meta.className="load-meta";meta.textContent=[load.ruta,load.matricula,progress].filter(Boolean).join(" · ");
@@ -779,7 +795,7 @@ async function openVerification(code){
   if(opening||!user)return;
   const load=reviewLoads.find(item=>item.codigo===code);if(!load)return;
   current=load;currentVerification=null;verificationLines=buildVerificationLines(load.productos||[]);
-  $("reviewDetailTitle").textContent=load.codigo;
+  $("reviewDetailTitle").textContent=load.codigo+(load.observaciones?" — "+String(load.observaciones).trim():"");
   $("reviewDetailSubtitle").textContent=[load.repartidor,load.ruta,load.matricula,load.almacen].filter(Boolean).join(" · ")||"Carga preparada";
   switchView("reviewDetailView",{force:true});
   if(!load.verificador_id){renderVerification();return;}
@@ -954,7 +970,6 @@ window.addEventListener("online",()=>{
 document.addEventListener("visibilitychange",()=>{
   if(!document.hidden&&user){
     if(document.querySelector("#homeView:not([hidden])"))refreshOperatorDashboard().catch(()=>{});
-    if(currentPreparation?.active)renderPreparationClock();
   }
 });
 window.addEventListener("offline",()=>{renderConnection();global("Sin conexión. KONTROLA no confirmará operaciones hasta recuperar la red.","error");});

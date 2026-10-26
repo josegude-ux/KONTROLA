@@ -20,7 +20,7 @@ const asPayload=parsed=>({
   bultos:parsed.bultos??null,
   observaciones:parsed.observations?.trim()||null,
   huecos_palets_grandes:parsed.palletsLarge??null,huecos_palets_pequenos:parsed.palletsSmall??null,
-  huecos_palets_total:parsed.palletsTotal??null,
+  huecos_palets_europeos:parsed.palletsEuropean??null,huecos_palets_total:parsed.palletsTotal??null,
   almacen:parsed.warehouse,declared_total:parsed.declaredTotal??null,actual_total:parsed.actualTotal??null,
   parser_metadata:{
     verified:parsed.verified===true,warnings:Array.isArray(parsed.warnings)?parsed.warnings:[],
@@ -176,7 +176,7 @@ export function createAdminController({client,getUser,bucket,global,errorText,on
         id:payload.codigo,date:payload.fecha,plate:payload.matricula,route:payload.ruta,driver:payload.repartidor,
         weight:payload.peso_kg,refs:payload.referencias,bultos:payload.bultos??payload.declared_total,warehouse:payload.almacen,products:payload.productos,
         observations:payload.observaciones||null,palletsLarge:payload.huecos_palets_grandes??null,
-        palletsSmall:payload.huecos_palets_pequenos??null,palletsTotal:payload.huecos_palets_total??null,
+        palletsSmall:payload.huecos_palets_pequenos??null,palletsEuropean:payload.huecos_palets_europeos??null,palletsTotal:payload.huecos_palets_total??null,
         declaredTotal:payload.declared_total,actualTotal:payload.actual_total,
         verified:payload.parser_metadata?.verified,warnings:payload.parser_metadata?.warnings||[],
         mixedWarehouse:payload.parser_metadata?.mixed_warehouse,
@@ -513,7 +513,7 @@ export function createAdminController({client,getUser,bucket,global,errorText,on
     ()=>{$("revisionCode").focus();},
     ()=>{},
     ()=>refreshSummary(),
-    ()=>refreshArchivedLoads()
+    ()=>Promise.all([refreshArchivedLoads(),refreshOldLoads()])
   ];
   for(const button of document.querySelectorAll("[data-admin-tab]"))button.addEventListener("click",async()=>{
     const index=Number(button.dataset.adminTab);
@@ -552,6 +552,36 @@ export function createAdminController({client,getUser,bucket,global,errorText,on
       const tbody=document.createElement("tbody");for(const row of rows){const tr=document.createElement("tr");for(const value of [row.codigo,row.fecha,row.almacen,row.archivado_en]){const td=document.createElement("td");td.textContent=value==null?"":String(value);tr.appendChild(td);}tbody.appendChild(tr);}table.appendChild(tbody);target.replaceChildren(table);
     }catch(error){if(generation===archiveGeneration)target.textContent="No se pudieron consultar las archivadas: "+errorText(error);}
   }
+  async function refreshOldLoads(){
+    const list=$("oldLoadsList"),warehouse=$("adminWarehouse").value,generation=archiveGeneration;
+    list.textContent="Buscando cargas anteriores de "+warehouse+"…";
+    try{
+      const {data,error}=await client.rpc("kontrola_panel_cargas_v2",{p_almacen:warehouse});
+      if(generation!==archiveGeneration||$("adminWarehouse").value!==warehouse)return;
+      if(error)throw error;
+      const previous=(data||[]).filter(row=>/^\d{4}-\d{2}-\d{2}$/.test(row.fecha||"")&&row.fecha<fechaAlmacen())
+        .sort((a,b)=>String(b.fecha).localeCompare(String(a.fecha))||String(a.codigo).localeCompare(String(b.codigo)));
+      list.replaceChildren();
+      if(!previous.length){list.textContent="No hay cargas anteriores visibles para este almacén.";return;}
+      const info=document.createElement("p");info.className="muted";
+      info.textContent=previous.length+" cargas anteriores. Elegir un código solo lo copia al formulario; nunca archiva ni restaura.";
+      list.appendChild(info);
+      for(const row of previous){
+        const button=document.createElement("button");button.type="button";button.className="old-load-choice secondary";
+        button.textContent=row.codigo+" · "+row.fecha+" · "+row.estado;
+        button.addEventListener("click",()=>{
+          $("archiveCode").value=row.codigo;
+          $("archiveStatus").textContent="Seleccionada "+row.codigo+". Para cambiar su estado debes pulsar Archivar o Restaurar y confirmar.";
+        });
+        list.appendChild(button);
+      }
+    }catch(error){if(generation===archiveGeneration)list.textContent="No se pudieron consultar cargas antiguas: "+errorText(error);}
+  }
+  $("browseOldLoads").addEventListener("click",refreshOldLoads);
+  async function openArchive(){
+    selectAdminTab(8);
+    await Promise.all([refreshArchivedLoads(),refreshOldLoads()]);
+  }
   $("refreshArchived").addEventListener("click",refreshArchivedLoads);
   async function open(){
     selectAdminTab(0);
@@ -562,7 +592,7 @@ export function createAdminController({client,getUser,bucket,global,errorText,on
     draft=null;busy=false;
     $("archiveCode").value="";
     $("archiveStatus").textContent="";
-    $("archivedLoadsList").replaceChildren();
+    $("archivedLoadsList").replaceChildren();$("oldLoadsList").replaceChildren();
     revisionControl.clear();operatorStats.clear();printBatch.clear();
     for(const id of ["documentReview","attentionList","adminSummary","adminActivity",
       "incidentList","reviewReadiness","reportPaper"]){
@@ -611,5 +641,5 @@ export function createAdminController({client,getUser,bucket,global,errorText,on
     const link=document.createElement("a");link.href=URL.createObjectURL(blob);link.download=(safeName||"kontrola")+".html";link.click();setTimeout(()=>URL.revokeObjectURL(link.href),1000);
   });
   $("closeReport").addEventListener("click",()=>{$("reportView").hidden=true;document.body.classList.remove("report-open");});
-  return {open,refreshSummary,refreshAttention,clearSensitive,isBusy:()=>busy};
+  return {open,openArchive,refreshSummary,refreshAttention,clearSensitive,isBusy:()=>busy};
 }

@@ -52,5 +52,16 @@ test("cálculo sin escrituras y protección del inicio, con cache PWA",()=>{
  assert.match(app,/if\(assessment\(\)\.estado!=="viable"\)/);
  assert.match(app,/recoverTruckCapacityFromPdf\(load\)/);
  assert.match(sw,/src\/palet-viabilidad\.mjs/);
- assert.match(sw,/kontrola-integral-visura-v070/);
+ assert.match(sw,/kontrola-integral-visura-v073/);
+});
+
+test("camión G/E separa europeos de pequeños y calcula huecos sobrantes",()=>{
+ const cap=capacidadDeCarga({huecos_palets_grandes:6,huecos_palets_europeos:1});
+ assert.equal(cap.segundoTipo,"E");assert.equal(cap.europeos,1);
+ const check=evaluarHuecosCamion({modo:"desglose",segundoTipo:"E",previas:"si",
+  capacidadG:6,capacidadP:1,anterioresG:2,anterioresP:0,actualG:3,actualP:1});
+ assert.equal(check.estado,"viable");
+ assert.equal(check.filas[0].restantes,1);
+ assert.equal(check.filas[1].nombre,"Europeos (E)");
+ assert.equal(check.filas[1].restantes,0);
 });

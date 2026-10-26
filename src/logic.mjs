@@ -4,13 +4,43 @@ export function ordenarCargas(rows) {
 }
 // Huecos para palés del camión, no palés reales a preparar.
 // Si el PDF solo indica grandes, no deducir que los pequeños son cero.
-export function formatearHuecosPalets(grandes,pequenos,total){
+export function formatearHuecosPalets(grandes,pequenos,total,europeos=null){
  const valido=v=>v!==null&&v!==undefined&&v!==""&&Number.isInteger(Number(v))&&Number(v)>=0;
  const g=valido(grandes)?Number(grandes):null;
  const p=valido(pequenos)?Number(pequenos):null;
- if(g!==null||p!==null)return [g===null?null:g+" G",p===null?null:p+" P"].filter(Boolean).join(" · ");
+ const e=valido(europeos)?Number(europeos):null;
+ if(g!==null||p!==null||e!==null)return [g===null?null:g+" G",e===null?null:e+" E",p===null?null:p+" P"].filter(Boolean).join(" · ");
  return valido(total)?Number(total)+" huecos":"—";
 }
+// El panel no es una fuente comprobada de huecos; solo la revisión vigente
+// o una lectura local del PDF original de la misma carga son fuentes válidas.
+// Sin dato no significa cero.
+const HUECOS_FIELDS=["huecos_palets_grandes","huecos_palets_europeos","huecos_palets_pequenos","huecos_palets_total"];
+const huecoValido=value=>value!==null&&value!==undefined&&/^(0|[1-9]\d{0,2})$/.test(String(value));
+
+export function combinarHuecosConOrigen(load={},revision=null,pdfLeido=null){
+ const result={...load};
+ let origin="sin_dato";
+ for(const key of HUECOS_FIELDS){
+  if(huecoValido(revision?.[key])){
+   result[key]=revision[key];origin="revision";
+  }else if(huecoValido(pdfLeido?.[key])){
+   result[key]=pdfLeido[key];if(origin!=="revision")origin="pdf_leido";
+  }else result[key]=null;
+ }
+ const observation=revision?.observaciones??pdfLeido?.observaciones;
+ if(observation!==undefined&&observation!==null)result.observaciones=observation;
+ result.huecos_origen=origin;
+ return result;
+}
+export function textoHuecosConOrigen(load={}){
+ if(!load.huecos_origen||load.huecos_origen==="sin_dato")return "Sin dato";
+ const present=HUECOS_FIELDS.map(key=>load[key]).filter(huecoValido).map(Number);
+ if(load.huecos_origen==="pdf_leido"&&present.length&&present.every(x=>x===0))
+  return "0 en PDF · confirmar";
+ return formatearHuecosPalets(load.huecos_palets_grandes,load.huecos_palets_pequenos,load.huecos_palets_total,load.huecos_palets_europeos);
+}
+
 // Dentro de cada pasillo: primero cajas, después botellas; en cada formato,
 // más bultos primero. Otros formatos se mantienen a continuación.
 export function ordenarLineasPasillo(lines=[]){
