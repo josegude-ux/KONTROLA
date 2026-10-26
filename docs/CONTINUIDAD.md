@@ -631,3 +631,10 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 - Creado `.github/workflows/visura-menu-ci.yml`, activado por push a la rama aislada y PR hacia la rama de branding, con permisos mínimos de lectura. Comprueba sintaxis de `src/app.mjs`, sintaxis de la prueba y ejecuta `node --test tests/visura-menu.test.mjs`. **No contiene pasos de publicación ni cambios de datos.**
 - Commit del workflow: `7c6e79bb81253783a56f89f94261b02260f3f5d1`. A la hora de comprobar, la API todavía devolvía cero ejecuciones asociadas al commit; no declarar pruebas aprobadas.
 - Pendiente: observar CI, corregir fallos, incorporar recursos oficiales binarios y validar en dispositivo. Reversión: no fusionar PR #29.
+
+
+### 2026-10-26 — CI menú verificada
+- GitHub Actions confirmó **success** en la ejecución `40254280063` (número 4), commit `aeea32a2ae545170b8b6d706fa99e4cd01be0ad3`, job `menu` completado satisfactoriamente, incluido paso «Verificar sintaxis y menu sin despliegue».
+- La prueba comprueba tarjetas y recursos de respaldo actuales; **no verifica las imágenes oficiales todavía ausentes**, ni navegación real en dispositivos, ni el conjunto completo de pruebas de integración.
+- Enlace de ejecución: https://github.com/josegude-ux/KONTROLA/actions/runs/40254280063
+- Pendientes: transferencia segura de binarios oficiales, cambio de rutas y caché PWA, actualización de pruebas para nombres definitivos, CI final, revisión visual en dispositivos y fusión únicamente tras autorización. Reversión: PR #29 sigue aislada.
