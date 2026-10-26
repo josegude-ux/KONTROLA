@@ -183,7 +183,7 @@ class ManualWorkflowPreflightTests(unittest.TestCase):
         workflow = path.read_text(encoding="utf-8")
         self.assertIn("workflow_dispatch:", workflow)
         self.assertNotIn("pull_request_target:", workflow)
-        self.assertNotIn("\\npush:", workflow)
+        self.assertNotIn("\npush:", workflow)
         self.assertIn("persist-credentials: false", workflow)
         self.assertIn("ref: ${{ github.event.repository.default_branch }}", workflow)
         preflight = workflow.index("scripts.visura_github_auth_preflight")
