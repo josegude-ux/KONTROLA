@@ -686,3 +686,9 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 - Paquete local VISURA_PREPARA_INTEGRACION_MENU_LISTA.zip verificado: cuatro WEBP oficiales, cuatro originales y script aplicar_menu_visura_prepara.py.
 - Script probado contra un checkout de prueba con cuatro tarjetas, sw.js y tests: termino correctamente y reemplazo referencias, cache v062 a v063 y copio recursos. No equivale a ejecutar la suite completa sobre el repositorio real.
 - PENDIENTE: transferir binarios a la rama de GitHub y ejecutar pruebas y revision visual sobre el resultado real. No se han subido los recursos ni fusionado PR.
+
+
+### 2026-10-26 - Integrador oficial versionado en rama de trabajo
+- Commit 898754396099fd3613e97a9824005318fa47aa91: nuevo scripts/integrar_menu_oficial.py. Lee el ZIP oficial local, valida cabeceras WEBP y cuatro tarjetas, conserva los controladores y sustituye solo imagenes, precarga y version de cache v063. Incluye originales sin tocar imagenes anteriores ni base de datos.
+- Commit a9fdbd40b8720c3fbd24ea113e91407066cf9c40: el CI verifica sintaxis del integrador Python ademas de npm run check.
+- La transferencia de binarios desde el ZIP local a GitHub aun no se ha realizado. El script requiere el ZIP en el equipo donde se ejecute y no hace commits ni despliegues. Pendiente CI de estos cambios.
