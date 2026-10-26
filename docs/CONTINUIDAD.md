@@ -883,3 +883,11 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 - La hoja `buildPreparationReport` mantiene idénticos tabla semántica, líneas, orden y subtotales; **solo `@media screen` y ancho máximo 700px** la presenta por fichas legibles (referencia + cantidad/unidad, descripción completa y ubicación). La impresión y PDF conservan el formato tabular existente.
 - Los huecos «—» en capturas corresponden a cargas antiguas sin metadatos guardados. La opción manual «Leer cabeceras antiguas (máx. 5)» debe verificarse por el usuario; la mejora de diseño no inventa valores ni hace lecturas automáticas.
 - Candidata **0.3.35**, caché `kontrola-integral-visura-v068`, misma URL/PWA/bucket Supabase, pruebas adicionales `tests/responsive-preparation.test.mjs`. Pendiente CI/PR y publicación controlada. Punto de recuperación versión 0.3.34: `57e23ce03521124e36a0a05c24cde7518cee9d96`.
+
+
+### 2026-10-26 — Imprimir/Guardar PDF en iOS 27, candidata 0.3.36 aislada
+- Incidencia de usuario en hoja procesada LP26-19519: botón sin respuesta en PWA iPhone; 0.3.35 llamaba a `window.print()` y existe una regresión reportada en iOS 27 standalone.
+- Rama `fix/visura-prepara-ios27-pdf-compartir-20261026` aislada desde `7bfbb5e0da26eba63b4763b4a88e15aa3393588a` (última publicación 0.3.35). NO modificar la rama desplegada, no publicar sin consentimiento explícito.
+- Se añade `src/print-pdf.mjs`: PDF A4 verdadero generado en memoria, con referencias, cantidades, pasillos, ubicación, cabecera y portada de lotes. La PWA de iOS comparte el archivo como PDF mediante la hoja nativa. Safari/otros navegadores mantienen `window.print()` y la maquetación anterior.
+- Diferencia conocida: el PDF generado localmente para iOS tiene formato legible por fichas, NO reproduce píxel a píxel el diseño tabular impreso por Safari. Requiere aceptación real en iPhone, 107 líneas y lote de 20, incluido guardado en Archivos/OneDrive.
+- Versión candidata 0.3.36, caché v069, módulo precargado, nuevas pruebas de PDF. El acceso actual a Supabase, los PDF antiguos y los datos no cambian. No borrar, migrar, fusionar ni publicar sin autorización. Verificar CI en la PR.

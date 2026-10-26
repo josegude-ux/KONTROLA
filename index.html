@@ -25,7 +25,7 @@
 .preparation-report thead,.archive-cover thead{display:table-header-group}
 .preparation-report tr,.archive-cover tr{break-inside:avoid;page-break-inside:avoid}
 .preparation-report h2{break-after:avoid;page-break-after:avoid}
-@page{size:A4 portrait;margin:10mm}@media print{.archive-cover{break-after:page;page-break-after:always;min-height:0}.report-batch-sheet{break-after:page;page-break-after:always}.report-batch-sheet:last-child{break-after:auto;page-break-after:auto}body>*:not(#reportView){display:none!important}#reportView{display:block!important;position:static!important}.report-controls{display:none!important}.preparation-report{font-size:10px}.preparation-report tr{break-inside:avoid}}
+@page{size:A4 portrait;margin:10mm}@media print{.archive-cover{break-after:page;page-break-after:always;min-height:0}.report-batch-sheet{break-after:page;page-break-after:always}.report-batch-sheet:last-child{break-after:auto;page-break-after:auto}body>*:not(#reportView){display:none!important}#reportView{display:block!important;position:static!important}.report-controls,#reportPrintStatus{display:none!important}.preparation-report{font-size:10px}.preparation-report tr{break-inside:avoid}}
 </style>
 </head>
 <body>
@@ -40,7 +40,7 @@
       <button class="primary full" type="submit" id="loginButton">Entrar</button>
     </form>
     <p id="authMessage" class="status" role="status" aria-live="polite"></p>
-    <p class="hint">Las cuentas son habilitadas por administración. No existen usuarios de demostración.<br>Versión <span id="loginVersion">0.3.35</span></p>
+    <p class="hint">Las cuentas son habilitadas por administración. No existen usuarios de demostración.<br>Versión <span id="loginVersion">0.3.36</span></p>
   </div>
 </section>
 <div id="shell" hidden>
@@ -212,6 +212,7 @@
 </div>
 <section id="reportView" class="report-view" hidden>
   <header class="report-controls"><button id="closeReport" class="back-button" type="button">← Volver</button><h1 id="reportTitle">Hoja procesada</h1><div class="actions"><button id="downloadReport" class="secondary" type="button" title="Descarga una copia HTML; para OneDrive utiliza Guardar PDF">Descargar HTML</button><button id="printReport" class="primary" type="button">Imprimir / Guardar PDF</button></div></header>
+  <p id="reportPrintStatus" role="status" aria-live="polite" class="status" aria-label="Estado de impresión"></p>
   <p class="hint archive-info" id="onedriveArchiveHelp">Para archivar: toca «Imprimir / Guardar PDF», guarda una copia PDF en Archivos y, cuando corresponda, muévela a la carpeta de OneDrive elegida. El traslado no es automático. No elimines archivos hasta comprobar que la copia está guardada.</p>
   <main id="reportPaper" class="report-paper"></main>
 </section>

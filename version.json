@@ -1,4 +1,4 @@
 {
-  "version": "0.3.35",
-  "notes": "Móvil: matrícula y huecos de palés uno al lado del otro; hoja procesada legible por fichas, impresión intacta"
+  "version": "0.3.36",
+  "notes": "PWA iPhone iOS 27: compartir un PDF local auténtico; impresión en Safari y otros navegadores conservada"
 }

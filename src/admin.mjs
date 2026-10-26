@@ -6,6 +6,7 @@ import {analyzeDocument,applyLineCorrection,publicationReadiness,warehouseZone,n
 import {fechaISO} from "./logic.mjs";
 import {parsePdfFile} from "./pdf.mjs";
 import {buildPreparationReport} from "./report.mjs";
+import {generarPdfHojas,extraerHojasDeInforme,nombrePdfInforme} from "./print-pdf.mjs";
 import {revisarSustitucion} from "./import-policy.mjs";
 import {configureRevisionHistory} from "./admin-revisions.mjs";
 
@@ -582,7 +583,28 @@ export function createAdminController({client,getUser,bucket,global,errorText,on
   $("adminWarehouse").addEventListener("change",()=>Promise.all([refreshAttention(),refreshPendingPublish(),refreshReviewSelector(),refreshSummary(),operatorStats.refresh(),printBatch.refresh()]));
   $("reloadAttention").addEventListener("click",()=>Promise.all([refreshAttention(),refreshPendingPublish(),refreshReviewSelector()]));
   $("reloadIncidents").addEventListener("click",refreshIncidents);
-  $("printReport").addEventListener("click",()=>window.print());
+  // iOS 27 can silently ignore window.print() from a standalone installed PWA.
+  $("printReport").addEventListener("click",async()=>{
+    const ios=/iPhone|iPad|iPod/i.test(navigator.userAgent||"")&&
+      (navigator.standalone===true||window.matchMedia?.("(display-mode: standalone)")?.matches===true);
+    if(!ios){window.print();return;}
+    const button=$("printReport"),notice=$("reportPrintStatus");
+    button.disabled=true;
+    try{
+      const bytes=generarPdfHojas(extraerHojasDeInforme($("reportPaper")));
+      const file=new File([bytes],nombrePdfInforme($("reportTitle").textContent),{type:"application/pdf"});
+      if(!navigator.share||typeof navigator.canShare==="function"&&!navigator.canShare({files:[file]})){
+        notice.textContent="Este dispositivo no permite compartir el PDF desde la app. Abre VISURA PREPARA en Safari para imprimir.";
+        return;
+      }
+      notice.textContent="PDF generado en el iPhone. Elige «Guardar en Archivos» y comprueba que la copia se ha guardado.";
+      await navigator.share({files:[file],title:$("reportTitle").textContent});
+    }catch(error){
+      if(error?.name!=="AbortError"){
+        notice.textContent="No se pudo compartir el PDF: "+errorText(error)+". Abre VISURA PREPARA en Safari para imprimir.";
+      }
+    }finally{button.disabled=false;}
+  });
   $("downloadReport").addEventListener("click",()=>{
     const blob=new Blob([buildReportDownloadHtml($("reportTitle").textContent,$("printStyles").textContent,$("reportPaper").outerHTML)],{type:"text/html;charset=utf-8"});
     const safeName=$("reportTitle").textContent.replace(/[^A-Za-z0-9_-]+/g,"_");
