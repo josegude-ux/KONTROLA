@@ -6,11 +6,15 @@ import {buildVerificationLines,parseCheckedQuantity,summarizeVerification} from 
 import {buildPreparationReport,filterProducts,desglosarBultos,totalBultosDelDesglose} from "./report.mjs";
 import {filtrarHistorial,resumenHistorial,formatoFechaCarga,csvHistorial,htmlResumenHistorial} from "./history.mjs";
 import {createAdminController} from "./admin.mjs";
+import {parsePdfFile} from "./pdf.mjs";
+import {cargasCabeceraPendiente,cabeceraLeida,cabeceraSinMetadatos} from "./legacy-header.mjs";
 const $=id=>document.getElementById(id);
 let client=null,user=null,profile=null,loads=[],current=null,currentPreparation=null,groups=[],selectedAisle="TODOS",busy=false,opening=false;
 let reviewLoads=[],currentVerification=null,verificationLines=[];
 let warehouses=[],selectedWarehouse=localStorage.getItem("kontrola-warehouse")||"COR_01_COR",adminController=null;
 let loadsParent="homeView",reviewLoadsParent="homeView",loadsMode="preparacion",currentReadOnly=false,detailBackView="loadsView",historyRows=[],historyReady=false,adminParent="homeView",prepTimerId=null;
+let loadsRequestSerial=0,legacyHeaderBusy=false;
+const legacyHeaderCache=new Map();
 $("appVersion").textContent=APP_VERSION;
 $("loginVersion").textContent=APP_VERSION;
 const visible=(element,show)=>{element.hidden=!show;};
@@ -36,13 +40,15 @@ function switchView(id,{force=false}={}){
 function loggedOut(message=""){
   user=null;profile=null;loads=[];historyRows=[];historyReady=false;current=null;currentPreparation=null;currentReadOnly=false;reviewLoads=[];currentVerification=null;verificationLines=[];
   stopPreparationClock();
+  loadsRequestSerial++;legacyHeaderCache.clear();legacyHeaderBusy=false;
+  $("readLegacyHeaders").disabled=false;
   $("globalBack").hidden=true;
   adminController?.clearSensitive?.();
   // El mismo móvil puede utilizarse por varios trabajadores: eliminar también
   // datos anteriores de vistas ocultas y deshabilitar descargas del historial.
   for(const id of ["userName","profileName","profileRole","globalMessage",
     "operatorSummary","operatorSummaryStatus","operatorActivity","loadsList","reviewLoadsList",
-    "historyList","historySummary","historyStatusMessage","productList",
+    "historyList","historySummary","historyStatusMessage","legacyHeaderStatus","productList",
     "verificationLines","detailFacts","detailTitle","detailSubtitle",
     "prepStatus","aisleTabs","reviewDetailTitle","reviewDetailSubtitle",
     "reviewStatus","reviewProgress","reportTitle","reportPaper","settingsStatus"]){
@@ -184,6 +190,7 @@ $("loginForm").addEventListener("submit",async e=>{
   }finally{button.disabled=false;}
 });
 async function refreshLoads(){
+  const requestSerial=++loadsRequestSerial;
   const warehouse=selectedWarehouse,userId=user?.id;
   loads=[];$("loadsList").textContent="Consultando cargas disponibles…";
   const [panel,archivo]=await Promise.all([client.rpc("kontrola_panel_cargas_v2",{p_almacen:warehouse}),client.rpc("kontrola_codigos_archivados",{p_almacen:warehouse})]);
@@ -215,9 +222,66 @@ async function refreshLoads(){
     global("Cargas disponibles, pero no se pudieron consultar las observaciones y huecos de los PDF: "+errorText(error),"error");
   }
   if(!validRequest(warehouse,userId))return;
-  loads=loads.map(load=>({...load,...(extras.get(load.codigo)||{})}));
+  if(requestSerial!==loadsRequestSerial)return;
+  loads=loads.map(load=>{
+    const enriched={...load,...(extras.get(load.codigo)||{})};
+    const cached=legacyHeaderCache.get(load.documento_ruta);
+    return cached&&cabeceraSinMetadatos(enriched)?{...enriched,...cached}:enriched;
+  });
   renderLoadList();
 }
+// La recuperación es optativa, de solo lectura y limitada a cinco PDF por clic.
+// No ejecuta ninguna RPC de escritura ni abre una preparación o reloj.
+async function leerCabecerasAntiguas(){
+  if(legacyHeaderBusy||!client||!user)return;
+  const warehouse=selectedWarehouse,userId=user.id,serial=loadsRequestSerial;
+  const statusElement=$("legacyHeaderStatus"),button=$("readLegacyHeaders");
+  const candidates=cargasCabeceraPendiente(
+    loads.filter(load=>!legacyHeaderCache.has(load.documento_ruta)),
+    $("loadSearch").value,5
+  );
+  if(!candidates.length){
+    statusElement.textContent="No hay cargas antiguas pendientes con PDF accesible en este filtro.";
+    return;
+  }
+  legacyHeaderBusy=true;button.disabled=true;
+  let recovered=0,withoutData=0,failed=0;
+  try{
+    for(let i=0;i<candidates.length;i++){
+      if(!validRequest(warehouse,userId)||serial!==loadsRequestSerial)return;
+      const load=candidates[i];
+      statusElement.textContent="Leyendo cabecera "+(i+1)+" de "+candidates.length+" · "+load.codigo+" (solo consulta)…";
+      try{
+        const {data,error}=await client.storage.from(PDF_BUCKET).download(load.documento_ruta);
+        if(error)throw error;
+        if(!validRequest(warehouse,userId)||serial!==loadsRequestSerial)return;
+        const original=new File([data],load.codigo+".pdf",{type:"application/pdf"});
+        const parsed=await parsePdfFile(original,{warehouse});
+        if(!validRequest(warehouse,userId)||serial!==loadsRequestSerial)return;
+        const extras=cabeceraLeida(load,parsed,warehouse);
+        if(!extras)throw Error("El documento no coincide con la carga o el almacén");
+        const index=loads.findIndex(item=>item.codigo===load.codigo&&item.documento_ruta===load.documento_ruta);
+        if(index<0)continue;
+        legacyHeaderCache.set(load.documento_ruta,extras);
+        loads[index]={...loads[index],...extras};
+        renderLoadList();
+        if(cabeceraSinMetadatos(extras))withoutData++;
+        else recovered++;
+      }catch(error){
+        if(!validRequest(warehouse,userId)||serial!==loadsRequestSerial)return;
+        failed++;
+      }
+    }
+    if(!validRequest(warehouse,userId)||serial!==loadsRequestSerial)return;
+    statusElement.textContent="Lectura terminada: "+recovered+" con datos, "+withoutData+
+      " sin datos y "+failed+" con error. Solo se muestran en este dispositivo; no se ha modificado Supabase.";
+  }finally{
+    legacyHeaderBusy=false;button.disabled=false;
+  }
+}
+$("readLegacyHeaders").addEventListener("click",()=>leerCabecerasAntiguas().catch(error=>{
+  if(user)$("legacyHeaderStatus").textContent="No se han podido leer las cabeceras: "+errorText(error);
+}));
 function renderLoadList(){
   const target=$("loadsList");target.replaceChildren();
   const search=$("loadSearch").value.trim().toLocaleLowerCase("es-ES");
@@ -361,6 +425,7 @@ function openLoadsMenu(parent="homeView",mode="preparacion"){
   if(!switchView("loadsView"))return;
   loadsParent=parent;loadsMode=mode;
   $("loadSearch").value="";
+  $("legacyHeaderStatus").textContent="";
   $("loadsHeading").textContent=mode==="consulta"?"Consulta de cargas":"Preparación de cargas";
   $("loadsDescription").textContent=mode==="consulta"
     ?"Modo de solo lectura: consulta la mercancía y los PDF sin modificar los tiempos de preparación."
