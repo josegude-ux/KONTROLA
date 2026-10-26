@@ -25,6 +25,13 @@ export function desglosarBultos(products=[]){
     .map(([unidad,cantidad])=>({unidad,cantidad}));
 }
 
+// El total visible procede del mismo desglose; null significa sin datos verificables.
+export function totalBultosDelDesglose(desglose=[]){
+  if(!Array.isArray(desglose)||!desglose.length)return null;
+  if(desglose.some(item=>!Number.isFinite(Number(item?.cantidad))||Number(item.cantidad)<0))return null;
+  return desglose.reduce((total,item)=>total+Number(item.cantidad),0);
+}
+
 export function buildPreparationReport(load){
   const products=load.productos||load.products||[];
   const warehouse=load.almacen||load.warehouse||"PENDIENTE DE CLASIFICAR";

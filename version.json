@@ -1,4 +1,4 @@
 {
-  "version": "0.3.32",
-  "notes": "Tarjetas de Preparación: matrícula destacada y bultos desglosados por unidad; sin cambios de base de datos ni RPC"
+  "version": "0.3.33",
+  "notes": "Preparación: total de bultos, huecos para palés del camión y observaciones de la cabecera del PDF; sin migraciones de base de datos"
 }

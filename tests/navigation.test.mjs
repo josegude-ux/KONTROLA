@@ -42,12 +42,12 @@ test("La navegación conserva los accesos previos y los regresos al submenú",()
 
 test("La versión y el caché están preparados para instalar nuevas pantallas",()=>{
   const version=JSON.parse(read("version.json")).version;
-  assert.equal(version,"0.3.32");
+  assert.equal(version,"0.3.33");
   assert.equal(JSON.parse(read("package.json")).version,version);
   assert.equal(JSON.parse(read("package-lock.json")).version,version);
   assert.ok(read("src/config.mjs").includes(`APP_VERSION="${version}"`));
   assert.ok(html.includes(`id="appVersion">${version}<`));
-  assert.match(read("sw.js"),/kontrola-integral-visura-v065/);
+  assert.match(read("sw.js"),/kontrola-integral-visura-v066/);
 });
 
 test("Las consultas descartan respuestas de sesiones o almacenes anteriores",()=>{
@@ -166,4 +166,50 @@ test("preparación muestra la matrícula destacada y el cálculo desglosado exis
   assert.match(app,/plateValue\.textContent=r\.matricula/);
   assert.match(css,/\.load-plate-label\{/);
   assert.match(css,/\.load-plate-value\{/);
+});
+
+test("la preparación sitúa bultos totales sobre el peso con la misma jerarquía visual",()=>{
+  const start=app.indexOf("function renderLoadList()");
+  const end=app.indexOf("// Historial de lectura",start);
+  const preparation=app.slice(start,end);
+  assert.match(preparation,/totalBultosDelDesglose\(breakdown\)/);
+  assert.match(preparation,/total\.textContent=totalBultos===null\?"— bultos"/);
+  assert.ok(preparation.indexOf("summary.append(total,weight)")>0);
+  assert.match(css,/#loadsList \.load-card-summary\{/);
+  assert.match(css,/#loadsList \.load-bundles-total\{font-weight:800;font-size:16px/);
+  assert.match(css,/\.load-weight\{font-weight:800;font-size:16px/);
+});
+
+test("los huecos del camión aparecen junto a matrícula con G y P",()=>{
+  const start=app.indexOf("function renderLoadList()");
+  const end=app.indexOf("// Historial de lectura",start);
+  const preparation=app.slice(start,end);
+  assert.match(preparation,/vehicle\.append\(plate,pallets\)/);
+  assert.match(preparation,/palletsValue\.textContent=formatearHuecosPalets\(r\.huecos_palets_grandes,r\.huecos_palets_pequenos,r\.huecos_palets_total\)/);
+  assert.match(preparation,/HUECOS PALÉS/);
+  assert.doesNotMatch(preparation,/palets_para_carga/);
+  assert.match(css,/#loadsList \.load-vehicle\{/);
+  assert.match(css,/#loadsList \.load-pallets\{/);
+});
+
+test("la lista usa la cabecera de la revisión vigente del mismo almacén",()=>{
+  const refresh=app.slice(app.indexOf("async function refreshLoads()"),app.indexOf("function renderLoadList()"));
+  assert.match(refresh,/\.from\("kontrola_carga_revisiones"\)/);
+  assert.match(refresh,/\.eq\("vigente",true\)\.eq\("almacen",warehouse\)/);
+  assert.match(refresh,/if\(!validRequest\(warehouse,userId\)\)return/);
+  assert.match(refresh,/observaciones:carga_datos->>observaciones/);
+  assert.match(refresh,/huecos_palets_grandes:carga_datos->>huecos_palets_grandes/);
+  const list=app.slice(app.indexOf("function renderLoadList()"),app.indexOf("// Historial de lectura"));
+  assert.match(list,/id\.textContent=r\.codigo\+\(observaciones\?" - "\+observaciones:""\)/);
+  assert.match(list,/r\.observaciones/);
+  assert.doesNotMatch(list,/innerHTML/);
+});
+
+test("la importación conserva las observaciones y los huecos del PDF sin migraciones",()=>{
+  const admin=read("src/admin.mjs");
+  assert.match(admin,/observaciones:parsed\.observations\?\.trim\(\)\|\|null/);
+  assert.match(admin,/huecos_palets_grandes:parsed\.palletsLarge/);
+  assert.match(admin,/huecos_palets_pequenos:parsed\.palletsSmall/);
+  assert.match(admin,/observations:payload\.observaciones/);
+  assert.match(read("src/core.mjs"),/leerObservacionesCabecera\(pages\)/);
 });

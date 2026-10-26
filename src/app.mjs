@@ -1,9 +1,9 @@
 import {fechaAlmacen} from "./business-date.mjs";
 import {filtrarArchivoLogico} from "./archive-view.mjs";
 import {SUPABASE_URL,SUPABASE_KEY,PDF_BUCKET,APP_VERSION} from "./config.mjs";
-import {agruparPasillos,ordenarCargas} from "./logic.mjs";
+import {agruparPasillos,ordenarCargas,formatearHuecosPalets} from "./logic.mjs";
 import {buildVerificationLines,parseCheckedQuantity,summarizeVerification} from "./verification.mjs";
-import {buildPreparationReport,filterProducts,desglosarBultos} from "./report.mjs";
+import {buildPreparationReport,filterProducts,desglosarBultos,totalBultosDelDesglose} from "./report.mjs";
 import {filtrarHistorial,resumenHistorial,formatoFechaCarga,csvHistorial,htmlResumenHistorial} from "./history.mjs";
 import {createAdminController} from "./admin.mjs";
 const $=id=>document.getElementById(id);
@@ -192,31 +192,71 @@ async function refreshLoads(){
   const archivados=new Set((archivo.data||[]).map(r=>r.codigo));
   loads=ordenarCargas(filtrarArchivoLogico((panel.data||[]).map(r=>({...r,archivado:archivados.has(r.codigo)})),{vista:"activas"}));
   renderLoadList();
+  // El panel actual no devuelve los campos opcionales de la cabecera del PDF.
+  // Consultar SOLO la revisión vigente autorizada de cada carga; no descargar PDFs.
+  const extras=new Map();
+  try{
+    const codes=[...new Set(loads.map(load=>load.codigo).filter(Boolean))];
+    for(let start=0;start<codes.length;start+=50){
+      const {data,error}=await client.from("kontrola_carga_revisiones")
+        .select("codigo,observaciones:carga_datos->>observaciones,huecos_palets_grandes:carga_datos->>huecos_palets_grandes,huecos_palets_pequenos:carga_datos->>huecos_palets_pequenos,huecos_palets_total:carga_datos->>huecos_palets_total")
+        .eq("vigente",true).eq("almacen",warehouse).in("codigo",codes.slice(start,start+50));
+      if(!validRequest(warehouse,userId))return;
+      if(error)throw error;
+      for(const row of data||[])extras.set(row.codigo,{
+        observaciones:row.observaciones,
+        huecos_palets_grandes:row.huecos_palets_grandes,
+        huecos_palets_pequenos:row.huecos_palets_pequenos,
+        huecos_palets_total:row.huecos_palets_total
+      });
+    }
+  }catch(error){
+    if(!validRequest(warehouse,userId))return;
+    global("Cargas disponibles, pero no se pudieron consultar las observaciones y huecos de los PDF: "+errorText(error),"error");
+  }
+  if(!validRequest(warehouse,userId))return;
+  loads=loads.map(load=>({...load,...(extras.get(load.codigo)||{})}));
+  renderLoadList();
 }
 function renderLoadList(){
   const target=$("loadsList");target.replaceChildren();
   const search=$("loadSearch").value.trim().toLocaleLowerCase("es-ES");
-  const records=loads.filter(r=>[r.codigo,r.ruta,r.matricula,r.repartidor].some(v=>String(v||"").toLocaleLowerCase("es-ES").includes(search)));
+  const records=loads.filter(r=>[r.codigo,r.observaciones,r.ruta,r.matricula,r.repartidor].some(v=>String(v||"").toLocaleLowerCase("es-ES").includes(search)));
   if(!records.length){const p=document.createElement("p");p.className="muted";p.textContent=!loads.length?"No hay cargas publicadas en "+warehouseLabel()+". Comprueba el almacén seleccionado arriba.":"No hay cargas de "+warehouseLabel()+" que coincidan con el filtro. Borra la búsqueda.";target.appendChild(p);return;}
   for(const r of records){
     const b=document.createElement("button");b.type="button";b.className="load-card";
     const a=document.createElement("span"),id=document.createElement("strong"),meta=document.createElement("span");
-    id.className="load-title";id.textContent=r.codigo;
+    id.className="load-title";
+    const observaciones=String(r.observaciones||"").replace(/\s+/g," ").trim();
+    id.textContent=r.codigo+(observaciones?" - "+observaciones:"");
     meta.className="load-meta";meta.textContent=[r.repartidor,r.ruta,r.estado].filter(Boolean).join(" · ")||"Sin datos de ruta";
     const plate=document.createElement("span");plate.className="load-plate";
     const plateLabel=document.createElement("span");plateLabel.className="load-plate-label";plateLabel.textContent="MATRÍCULA";
     const plateValue=document.createElement("strong");plateValue.className="load-plate-value";plateValue.textContent=r.matricula||"—";
     plate.append(plateLabel,plateValue);
+    const vehicle=document.createElement("span");vehicle.className="load-vehicle";
+    const pallets=document.createElement("span");pallets.className="load-pallets";
+    const palletsLabel=document.createElement("span");palletsLabel.className="load-pallets-label";palletsLabel.textContent="HUECOS PALÉS";
+    const palletsValue=document.createElement("strong");palletsValue.className="load-pallets-value";
+    palletsValue.textContent=formatearHuecosPalets(r.huecos_palets_grandes,r.huecos_palets_pequenos,r.huecos_palets_total);
+    pallets.title="Huecos disponibles del camión: G = grandes, P = pequeños. No son palés ya preparados.";
+    pallets.append(palletsLabel,palletsValue);vehicle.append(plate,pallets);
     const bundles=document.createElement("span");bundles.className="load-bundles";
-    // Reutiliza el desglose por unidades de la hoja de preparación; no suma formatos distintos.
+    // Reutiliza el desglose por unidades de la hoja de preparación.
     const breakdown=desglosarBultos(r.productos);
     bundles.textContent="Bultos desglosados: "+(breakdown.length
       ?breakdown.map(({cantidad,unidad})=>fmt(cantidad)+" "+unidad).join(" · ")
       :"Sin desglose disponible");
-
-    a.append(id,meta,plate,bundles);
+    // Total únicamente de líneas válidas, calculado sobre ese mismo desglose.
+    // Nunca mostrar cero cuando no existe desglose.
+    const totalBultos=totalBultosDelDesglose(breakdown);
+    a.append(id,meta,vehicle,bundles);
+    const summary=document.createElement("span");summary.className="load-card-summary";
+    const total=document.createElement("span");total.className="load-bundles-total";
+    total.textContent=totalBultos===null?"— bultos":fmt(totalBultos)+" bultos";
     const weight=document.createElement("span");weight.className="load-weight";weight.textContent=fmt(r.peso_kg)+" kg";
-    b.append(a,weight);
+    summary.append(total,weight);
+    b.append(a,summary);
     b.addEventListener("click",()=>openLoad(r.codigo));
     target.appendChild(b);
   }
