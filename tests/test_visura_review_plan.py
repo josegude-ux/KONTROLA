@@ -15,6 +15,10 @@ class ReviewPlanTests(unittest.TestCase):
         self.assertFalse(plan["execution_authorized"])
         self.assertFalse(plan["merge_authorized"])
         self.assertTrue(plan["human_approval_required"])
+        self.assertIn("open_draft_pull_request", plan["allowed_actions"])
+        self.assertIn("merge_pull_request", plan["forbidden_actions"])
+        self.assertIn("deploy_application", plan["forbidden_actions"])
+        self.assertIn("access_production_data", plan["forbidden_actions"])
         self.assertEqual(
             [step["id"] for step in plan["steps"]],
             ["inspect", "implement", "test", "review", "approval"],
