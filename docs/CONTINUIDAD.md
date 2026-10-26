@@ -64,3 +64,15 @@ Al terminar cada avance actualizar **fecha, rama y commit, qué está programado
 ## MOVENTA
 
 La idea de un portal común se documentó separadamente en `docs/MOVENTA_CONCEPTO.md`. No integrar ni modificar MOVENTA en esta fase.
+
+
+## VISURA AUTO-DEV — piloto documental aislado (26/10/2026)
+
+- Rama de trabajo: `chore/visura-auto-dev-pilot-31`, derivada de `chore/visura-auto-dev-guardrails`.
+- PR #32 (borrador) hacia la rama de guardrails, **no** hacia `main`: https://github.com/josegude-ux/KONTROLA/pull/32
+- Documento: `docs/VISURA_AUTO_DEV_PILOTO_31.md`; issue de seguimiento #31.
+- Realizado mediante integración GitHub de ChatGPT, **no por agente autónomo**.
+- Pruebas: confirmado por API que PR #32 cambia solo el documento del piloto antes de esta actualización; no hay estados de CI publicados en el commit inicial (no implica pruebas superadas).
+- Sin llamadas a OpenRouter, migraciones SQL, acceso a Supabase, fusiones o despliegues en este piloto.
+- Pendiente: verificar CI, revisar PR y configurar ejecutor de IA de mínimos privilegios con corte presupuestario verificable antes de automatizar.
+- Esta anotación no sustituye ni modifica el plan de desarrollo de la Fase 1 operativa anterior.
