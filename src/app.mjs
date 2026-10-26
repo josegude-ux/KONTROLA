@@ -3,7 +3,7 @@ import {filtrarArchivoLogico} from "./archive-view.mjs";
 import {SUPABASE_URL,SUPABASE_KEY,PDF_BUCKET,APP_VERSION} from "./config.mjs";
 import {agruparPasillos,ordenarCargas} from "./logic.mjs";
 import {buildVerificationLines,parseCheckedQuantity,summarizeVerification} from "./verification.mjs";
-import {buildPreparationReport,filterProducts,desglosarBultos} from "./report.mjs";
+import {buildPreparationReport,filterProducts,desglosarBultos,totalBultosDelDesglose} from "./report.mjs";
 import {filtrarHistorial,resumenHistorial,formatoFechaCarga,csvHistorial,htmlResumenHistorial} from "./history.mjs";
 import {createAdminController} from "./admin.mjs";
 const $=id=>document.getElementById(id);
@@ -226,7 +226,7 @@ function renderLoadList(){
       :"Sin desglose disponible");
     // Total únicamente de líneas válidas, calculado sobre ese mismo desglose.
     // Nunca mostrar cero cuando no existe desglose.
-    const totalBultos=breakdown.length?breakdown.reduce((sum,item)=>sum+item.cantidad,0):null;
+    const totalBultos=totalBultosDelDesglose(breakdown);
     a.append(id,meta,vehicle,bundles);
     const summary=document.createElement("span");summary.className="load-card-summary";
     const total=document.createElement("span");total.className="load-bundles-total";
