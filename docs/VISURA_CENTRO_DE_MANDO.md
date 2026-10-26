@@ -4,33 +4,49 @@
 
 > Este archivo es una **copia maestra de instrucciones**, no un informe del estado actual del software. Antes de cualquier cambio hay que contrastar ramas, commits, PR y documentación con GitHub. No fusionar, desplegar ni borrar datos sin autorización. No se puede garantizar un proceso en segundo plano ni superar límites de Work.
 
-## 1. REACTIVAR VISURA — SELECTOR DE CHAT (V2)
+## 1. REACTIVAR VISURA — CONTINUIDAD VERIFICADA (V3)
 
-**Cuándo:** se ha detenido el trabajo en un chat de desarrollo y quieres que continúe **en esa misma conversación**.
+**Error corregido:** la versión V2 exigía pegar la orden literalmente en el chat elegido. Eso produjo una parada incorrecta cuando un chat inicialmente denominado «CHAT NUEVO» ya había recuperado y continuado legítimamente VISURA AUTO-DEV procedente de VISURA WORK. Una diferencia de nombre no demuestra que sea otro desarrollo.
 
-**Causa de la corrección:** el botón 01 anterior copiaba siempre una orden genérica que decía «este chat», sin distinguir VISURA WORK, VISURA 0.1, VISURA 0.2 ni los demás. Podía reactivar una línea equivocada cuando se pegaba en otro chat.
+**Cuándo:** cuando quieras reanudar una línea ya iniciada, bien en su chat original o en una conversación que ya se haya convertido de forma verificable en su sucesora.
 
-**Interfaz actualizada:** antes de copiar debes elegir el **chat que quieres reactivar**. El panel incluye los nombres de chats VISURA conocidos y «Otro chat» para escribir el nombre exacto. Opcionalmente puedes facilitar un enlace directo para abrirlo, pero el panel **no puede recuperar automáticamente todos tus chats, pegar ni enviar el mensaje en una conversación existente**. No inventa enlaces. La elección sin enlace permite copiar la orden pero exige navegar manualmente a la conversación.
+**Selector:** elige el chat/línea a reanudar (incluye ahora «VISURA AUTO-DEV»), indica si estás en el chat original o en un chat continuador ya iniciado y, en el segundo caso, puedes identificar el chat de procedencia. El enlace directo sigue siendo opcional.
 
-**Regla de destino:** pega la orden 01 **solo en el chat seleccionado**. Para trasladar trabajo desde una conversación a otra utiliza el botón 03, que distingue origen y destino. Un enlace o nombre no prueba acceso al historial; se debe comprobar en GitHub el avance real antes de cualquier acción.
+**Distinción con la orden 03:** la orden 01 reanuda un desarrollo **ya presente o continuado en la conversación receptora**; la 03 sirve para un **traspaso nuevo** entre conversaciones que todavía no han establecido continuidad. No hay que pedir al usuario rehacer el traspaso cuando la sucesión ya está comprobada.
 
-**Variables de la plantilla:** `{{NOMBRE_CHAT}}` y `{{ENLACE_CHAT}}` se sustituyen por los campos del panel. No deben quedar sin resolver.
+**Seguridad:** si la conversación receptora está reservada a pruebas, no se hacen cambios. Si no se puede verificar que la conversación pertenece a la línea elegida, únicamente se audita sin escribir. No se usa la coincidencia de títulos como prueba de identidad ni se confunde disponer de un nombre con leer el historial.
+
+**Variables:** `{{NOMBRE_CHAT}}`, `{{MODO}}`, `{{PROCEDENCIA}}`, `{{ENLACE_CHAT}}`.
 
 ```text
-REACTIVAR DESARROLLO VISURA — CHAT SELECCIONADO.
+REANUDAR DESARROLLO VISURA — CONTINUIDAD VERIFICADA.
 
-CHAT QUE QUIERO REACTIVAR: {{NOMBRE_CHAT}}
-ENLACE DE REFERENCIA DEL CHAT ELEGIDO: {{ENLACE_CHAT}}
+CHAT O LÍNEA DE DESARROLLO QUE QUIERO REANUDAR: {{NOMBRE_CHAT}}
+SITUACIÓN DE ESTA CONVERSACIÓN: {{MODO}}
+CHAT DE PROCEDENCIA (SI LO HUBO): {{PROCEDENCIA}}
+ENLACE DE REFERENCIA (SI LO HAY): {{ENLACE_CHAT}}
 
-PRIORIDAD ABSOLUTA: Esta orden es EXCLUSIVAMENTE para reanudar el desarrollo del chat indicado arriba. Debe pegarse en ESA conversación de ChatGPT, no en cualquier otro chat. Si se ha pegado en una conversación distinta o reservada a pruebas, NO ejecutes cambios reales: indica la discrepancia y explica dónde pegarla. Si el usuario quiere continuar un desarrollo en un chat distinto del de origen, debe usar la orden 03 (RECUPERAR EN OTRO CHAT).
+MISIÓN
+Continúa el desarrollo indicado desde su último avance REALMENTE verificado, sin rehacer tareas ni detenerte por una discrepancia nominal de conversaciones. Esta orden sirve tanto en el chat original como en un CHAT CONTINUADOR YA INICIADO que haya recuperado y trabajado sobre esa misma línea. Identifica el desarrollo por su historial y evidencia técnica, NO solo por el título de la conversación.
 
-VERIFICACIÓN: No supongas que el nombre o enlace del chat permite leer automáticamente su historial. Comprueba qué contexto está realmente accesible. Si el historial está disponible, respeta el último avance y todas las decisiones comprobadas. Si no está disponible, dilo expresamente y contrasta el desarrollo concreto mediante documentos actualizados, ramas, commits, archivos, PR y pruebas de los repositorios GitHub correspondientes. No confundas el desarrollo seleccionado con otros proyectos VISURA relacionados ni consideres main automáticamente la versión más avanzada.
+REGLA CRÍTICA SOBRE «CHAT NUEVO» Y CHATS CONTINUADORES
+- Si esta conversación figura como «CHAT NUEVO» o tiene un nombre distinto, NO te detengas automáticamente ni respondas «pega el prompt en el chat original». Comprueba primero si aquí YA SE HABÍA RECUPERADO Y CONTINUADO el desarrollo elegido desde Work u otra conversación: historial realmente accesible, documentos de traspaso, ramas, commits, PR, archivos y pruebas vinculadas.
+- Un chat legítimo sucesor puede tener nombre diferente al de origen. Si la continuidad está verificada, acepta este chat como responsable actual, informa de ello brevemente y CONTINÚA con la siguiente tarea segura, sin exigir volver al chat agotado ni utilizar de nuevo la orden 03.
+- El nombre, un enlace o una afirmación previa por sí solos NO demuestran acceso al historial ni autorización para modificar un repositorio. Si hay conflicto o falta evidencia para vincular este chat con el desarrollo elegido, limita las acciones a auditoría de solo lectura e informa de la discrepancia concreta; usa la orden 03 solo para establecer un traspaso REALMENTE nuevo o no verificado.
 
-CONTINUACIÓN: Desde la última tarea verdaderamente comprobada de ESE desarrollo, continúa con la siguiente acción autorizada y segura. No reconstruyas tareas ya completadas, no sobrescribas trabajo ajeno y evita simultaneidades entre chats. Después de cada hito verifica, guarda en la rama correcta y actualiza la documentación de continuidad pertinente. Mantén separadas las imágenes aprobadas, integradas y verificadas.
+COMPROBACIONES OBLIGATORIAS ANTES DE CAMBIOS
+1. Verifica qué conversación y antecedentes puedes consultar de verdad. Para una línea procedente de otro chat, comprueba su procedencia indicada y la continuidad previamente asentada; no inventes lecturas de chats inaccesibles.
+2. Examina repositorios pertinentes, ramas activas, commits, PR abiertos/cerrados, archivos y documentación de continuidad con especial atención a los hitos MÁS RECIENTES. No asumas que main o docs/CONTINUIDAD.md antiguos reflejan el último estado.
+3. Distingue lo desarrollado, lo probado, lo pendiente, lo aprobado visualmente y lo integrado. Identifica la última tarea realmente comprobada y la siguiente tarea independiente y segura. Comprueba solapamientos con otros chats antes de escribir.
 
-LÍMITES: No fusiones, publiques, despliegues ni borres datos sin autorización explícita. Si el chat receptor está reservado a pruebas, limítate a analizar o simular sin escribir en GitHub o aplicaciones. No te detengas por obstáculos subsanables; busca alternativas compatibles con las herramientas disponibles y solo solicita intervención ante un bloqueo real o una autorización imprescindible. No inventes accesos, pruebas ni trabajo futuro en segundo plano.
+EJECUCIÓN Y PARADA
+- Si este chat está expresamente reservado a PRUEBAS, no modifiques GitHub, aplicaciones ni bases de datos, aunque haya continuidad: solo audita o simula.
+- Si es un chat de DESARROLLO con continuidad verificada, continúa autónomamente la siguiente tarea autorizada y segura. Tras cada hito, verifica, guarda en la rama correcta y documenta los resultados; no repitas tareas finalizadas ni sobreescribas cambios ajenos.
+- No fusiones, publiques, despliegues ni borres datos sin autorización expresa. No te detengas por obstáculos subsanables; busca alternativas reales compatibles con las herramientas disponibles. Detente únicamente ante bloqueo auténtico, conflicto no resoluble sin riesgo, recurso imprescindible ausente o autorización que aún falte.
+- No prometas trabajo fuera de esta sesión, no inventes accesos, fechas, porcentajes ni pruebas.
 
-RESULTADO: comunica la rama o evidencia verificada, la tarea que has retomado, los cambios efectivamente realizados y cualquier paso que siga pendiente.
+SALIDA
+Di en pocas líneas si esta conversación es el chat original, un continuador verificado o un destino aún no acreditado; cita rama/commit/PR que sustenten la decisión y reanuda la tarea sin una respuesta puramente administrativa. Si no puedes verificar el vínculo, explica exactamente qué evidencia falta y cuál sería el paso seguro siguiente.
 ```
 
 ## 2. PREPARAR TRASPASO WORK
