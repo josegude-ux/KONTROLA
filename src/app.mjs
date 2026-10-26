@@ -3,7 +3,7 @@ import {filtrarArchivoLogico} from "./archive-view.mjs";
 import {SUPABASE_URL,SUPABASE_KEY,PDF_BUCKET,APP_VERSION} from "./config.mjs";
 import {agruparPasillos,ordenarCargas} from "./logic.mjs";
 import {buildVerificationLines,parseCheckedQuantity,summarizeVerification} from "./verification.mjs";
-import {buildPreparationReport,filterProducts} from "./report.mjs";
+import {buildPreparationReport,filterProducts,desglosarBultos} from "./report.mjs";
 import {filtrarHistorial,resumenHistorial,formatoFechaCarga,csvHistorial,htmlResumenHistorial} from "./history.mjs";
 import {createAdminController} from "./admin.mjs";
 const $=id=>document.getElementById(id);
@@ -204,10 +204,15 @@ function renderLoadList(){
     id.className="load-title";id.textContent=r.codigo;
     meta.className="load-meta";meta.textContent=[r.repartidor,r.ruta,r.estado].filter(Boolean).join(" · ")||"Sin datos de ruta";
     const plate=document.createElement("span");plate.className="load-plate";
-    plate.textContent="Matrícula: "+(r.matricula||"—");
+    const plateLabel=document.createElement("span");plateLabel.className="load-plate-label";plateLabel.textContent="MATRÍCULA";
+    const plateValue=document.createElement("strong");plateValue.className="load-plate-value";plateValue.textContent=r.matricula||"—";
+    plate.append(plateLabel,plateValue);
     const bundles=document.createElement("span");bundles.className="load-bundles";
-    // Solo mostrar bultos si la carga trae un campo explícito y fiable.
-    bundles.textContent="Bultos: "+(Number.isFinite(Number(r.bultos))&&r.bultos!=null?Number(r.bultos).toLocaleString("es-ES"):"—");
+    // Reutiliza el desglose por unidades de la hoja de preparación; no suma formatos distintos.
+    const breakdown=desglosarBultos(r.productos);
+    bundles.textContent="Bultos desglosados: "+(breakdown.length
+      ?breakdown.map(({cantidad,unidad})=>fmt(cantidad)+" "+unidad).join(" · ")
+      :"Sin desglose disponible");
 
     a.append(id,meta,plate,bundles);
     const weight=document.createElement("span");weight.className="load-weight";weight.textContent=fmt(r.peso_kg)+" kg";
