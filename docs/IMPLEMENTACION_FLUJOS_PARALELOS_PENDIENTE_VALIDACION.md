@@ -17,7 +17,7 @@ No se inicia un cronómetro ni se registra automáticamente «preparación inici
 - `src/parallel-workflows.mjs`: selección de cargas verificables y estado de cada proceso, independientes de una única columna global.
 - `src/app.mjs`: permite consultar/verificar `publicada` sin `preparador_id`, mantiene segregación por usuario y refleja los estados de verificación y preparación por separado; refresca listas al finalizar.
 - `supabase/proposals/kontrola_prepara_verificacion_paralelas.sql`: **BORRADOR NO APLICADO** de cinco funciones RPC existentes; misma firma y retorno, con la restricción de sustitución por revisión, bloqueo de doble asignación, eliminación del requisito de preparación previa y cierre no invasivo.
-- `tests/parallel-workflows.test.mjs`: ocho pruebas Node sobre disponibilidad, segregación, concurrencia, cierre desacoplado y invariantes del SQL.
+- `tests/parallel-workflows.test.mjs`: diez pruebas Node previstas sobre disponibilidad, segregación, concurrencia, cierre desacoplado, no regresión del estado al cambiar de carga y permisos previstos del SQL.
 
 ## Modelo de cierre propuesto
 
@@ -35,7 +35,7 @@ No se inicia un cronómetro ni se registra automáticamente «preparación inici
 - El frontend aún contiene lógica heredada de tiempos de preparación de BC y del flujo de importación; la línea de desarrollo que retira el cronómetro debe reconciliarse con esta rama, sin reintroducir métricas de control.
 - El botón de preparación puede mostrar estado de una sesión de VISURA, pero nunca supone que refleja el progreso físico de picking BC.
 - Los escenarios de roles «Operario», «Supervisor» y «Administrador» deberán comprobarse contra las políticas realmente vigentes, sin conceder nuevos accesos indirectos.
-- **Pruebas evaluadas:** 8 casos de `tests/parallel-workflows.test.mjs` ejecutados en un intérprete JavaScript aislado con adaptadores para `node:test`, `assert` y lectura del SQL: 8/8 correctos. El código `src/app.mjs` y el módulo auxiliar superaron una comprobación de sintaxis JS. **Pendiente** ejecución nativa de `npm test` y CI, revisión estática avanzada del SQL, y ensayo real con dos operarios y carga de prueba. No existe evidencia de piloto real superado.
+- **Pruebas evaluadas:** 10 casos de `tests/parallel-workflows.test.mjs` ejecutados en un intérprete JavaScript aislado con adaptadores para `node:test`, `assert` y lectura del SQL: 10/10 correctos. El código `src/app.mjs` y el módulo auxiliar superaron una comprobación de sintaxis JS. **Pendiente** ejecución nativa de `npm test` y CI, revisión estática avanzada del SQL, y ensayo real con dos operarios y carga de prueba. No existe evidencia de piloto real superado.
 
 ## Criterios de aceptación
 
@@ -75,3 +75,20 @@ Se consultó el asesor de seguridad de `control-cargas-movil` el 26/10/2026 sin 
 Referencias oficiales: [SECURITY DEFINER ejecutable por anónimo](https://supabase.com/docs/guides/database/database-linter?lint=0028_anon_security_definer_function_executable) y [RLS habilitado sin políticas](https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy).
 
 **Pendiente antes de una migración:** revisar los grants efectivos, pruebas de acceso no autenticado y roles de Supervisor/Operario/Administrador, probar las cinco RPC con una base de ensayo separada e inspeccionar el resultado del asesor de seguridad después de la prueba. El usuario aún no ha autorizado modificar la base conectada.
+
+## Revisión adicional de esquema y regresiones (26/10/2026)
+
+Se consultaron exclusivamente metadatos de `pg_catalog` del proyecto conectado (sin leer las cargas ni los datos de los trabajadores y sin escribir SQL). Evidencia comprobada:
+
+- `kontrola_verificaciones` tiene `UNIQUE(codigo)`, por lo que solo permite una sesión de verificación por carga.
+- `kontrola_preparaciones` tiene `PRIMARY KEY(codigo)` y el índice único parcial `kontrola_una_preparacion_activa_por_usuario`, que evita dos preparaciones VISURA abiertas simultáneamente por operario.
+- `kontrola_cargas` conserva el CHECK de estados válidos y la obligación de que `cerrada_en` y `cerrada_por` estén ambos presentes o ambos vacíos.
+- Comprobación de grants **actuales**, no simulados: `anon` puede ejecutar `kontrola_finalizar_preparacion` y no las otras cuatro RPC del borrador. El script propone revocarlo, pero **sigue pendiente de aplicación**.
+- **Regresión detectada y corregida solo en el SQL de propuesta:** el inicio de una nueva preparación cierra la anterior del mismo usuario por el comportamiento heredado. Antes actualizaba el estado anterior a `preparada` si la verificación ya estaba finalizada. Ahora respeta `cerrada` y conserva los campos de cierre, sin escribir nada en la base.
+- Nueva cobertura: 2 pruebas de invariantes SQL añadidas; total **10/10 pruebas de lógica en intérprete**, sin afirmar ejecución nativa de `node --test` ni pruebas de PostgreSQL.
+
+**Cruce con otras ramas:** el PR #49 (piloto sin cronómetro) también modifica `src/app.mjs`, incluida la misma zona de la lista de verificación. Sigue abierto. Debe reconciliarse antes de unir ambas evoluciones; eliminar el reloj no debe restaurar la dependencia de preparación para verificar. No modificar el PR #49 desde esta rama ni sobrescribir su trabajo. PR #51 y PR #52 están encadenados a la línea del piloto/importación y también requieren revisión antes de despliegue.
+
+**Límite material restante:** no se dispone de un PostgreSQL de ensayo aislado y aprobado ni hay ejecuciones CI asociadas a esta rama. No se ha probado el comportamiento de RLS, concurrencia real o permisos entre dos dispositivos. El proyecto Supabase conectado podría estar siendo utilizado por la aplicación actual y queda expresamente fuera de las pruebas con escritura.
+
+**Plan de validación siguiente, sin producción:** establecer una base clonada y sanitizada o un Postgres local con roles y fixtures no reales; ejecutar migraciones existentes y el borrador mediante transacción controlada; probar dos usuarios autenticados, doble apertura, finalización en ambos órdenes, revisiones de carga bloqueadas tras iniciar verificación y grants; comprobar las advertencias de seguridad. Solo después plantear autorización independiente para migración o despliegue.
