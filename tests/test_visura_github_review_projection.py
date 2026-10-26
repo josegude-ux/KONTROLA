@@ -23,6 +23,18 @@ class GitHubReviewProjectionTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "Invalid head SHA"):
             summarize_pr_reviews([], "not-a-sha")
 
+    def test_rejects_malformed_review_sha(self):
+        with self.assertRaisesRegex(ValueError, "Invalid review head SHA"):
+            summarize_pr_reviews([
+                {"reviewer_id": "reviewer", "state": "APPROVED", "head_sha": ["bad"]}
+            ], SHA)
+
+    def test_accepts_hex_case_variation(self):
+        result = summarize_pr_reviews([
+            {"reviewer_id": "reviewer", "state": "APPROVED", "head_sha": "A" * 40}
+        ], SHA)
+        self.assertEqual(len(result["matching_reviews"]), 1)
+
     def test_rejects_extra_permission_fields(self):
         with self.assertRaisesRegex(ValueError, "Invalid review record"):
             summarize_pr_reviews([{
