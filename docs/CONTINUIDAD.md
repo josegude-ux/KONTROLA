@@ -771,3 +771,5 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 - La regresión y el smoke visual de Chromium pasan. Administración no se muestra sin rol en esta vista de prueba, conforme al estado inicial de la tarjeta.
 - La prueba usa viewports emulados; siguen pendientes las pruebas manuales en iPhone, Android y Windows físicos, así como la validación de navegación de cada acción en una sesión de prueba real.
 - Sin merge ni despliegue. Rama activa: `fix/visura-menu-playwright-auth-20261026`.
+
+- Añadida además una aserción geométrica a `tests/visual-menu.spec.mjs` para fallar si el área de texto se extiende sobre el área de la ilustración en cualquiera de los dos viewports (commit `b6526c323e7ce3181db1544576602592e9b120a7`). Pendiente resultado de CI para esta nueva aserción.
