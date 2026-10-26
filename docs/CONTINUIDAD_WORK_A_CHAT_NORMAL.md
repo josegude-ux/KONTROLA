@@ -1,0 +1,20 @@
+# Traspaso del agente VISURA AUTO-DEV
+
+Leer primero docs/VISURA_WORK_ESTADO.md en la rama
+feat/visura-work-reviewer-evidence-20261026 de josegude-ux/KONTROLA.
+Base: https://github.com/josegude-ux/KONTROLA/pull/37
+SHA inicial: 0756bad9e17652dc3b77c626700df05ec09bf9ea.
+Relación: esta rama -> feat/visura-auto-dev-task-spec (#37) ->
+chore/visura-auto-dev-guardrails (#30) -> main. Ningún merge autorizado.
+
+Otros repositorios: https://github.com/josegude-ux/INVENTA- (no modificado).
+Rama operativa PREPARA: cursor/verificacion-fisica-cargas-8ba0; no editar.
+No confundir el agente con PREPARA 0.3.35 ni con los documentos gráficos locales.
+
+Comprobar git ls-remote, PRs y CI antes de retomar; no asumir que main es lo más
+avanzado. Preservar commits posteriores. No forzar push ni tocar ramas compartidas.
+Este primer punto de control precede al desarrollo; la disponibilidad remota
+solo se confirma tras push y comparación del SHA remoto. Ver estado actualizado.
+Primera tarea: observador de permisos del revisor, pruebas locales y revisión.
+Si faltan herramientas en chat normal, entregar cambios revisables sin inventar
+commits ni verificaciones. No depender de Work, Cursor o memoria del chat.
