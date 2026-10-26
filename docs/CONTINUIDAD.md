@@ -811,3 +811,10 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 - La prueba nueva de seguridad de PWA ya verifica la clave publicable real, sin falsos positivos por comentarios.
 - Rama de despliegue actual configurada en `pages.yml`: `cursor/verificacion-fisica-cargas-8ba0`, SHA `980fd9df854ce6accc59f569657661601f8c096e` al consultar GitHub. El SHA de la rama no prueba por sí solo cuál es el despliegue activo; verificarlo antes de publicar.
 - La actualización de la misma PWA requiere una publicación deliberada y controlada sobre la URL actual. No se ha lanzado `pages.yml`, ni merge, ni cambios de Supabase. Próximo control: establecer SHA del despliegue publicado, estrategia de reversión y autorización explícita de despliegue.
+
+
+### 2026-10-26 — Referencia de reversión identificada
+- GitHub Actions `Publicar KONTROLA de pruebas (GitHub Pages)` run `40244107243` (25/10/2026) terminó SUCCESS en build y deploy, con commit `980fd9df854ce6accc59f569657661601f8c096e` de rama `cursor/verificacion-fisica-cargas-8ba0`.
+- Este commit es una referencia verificada de una publicación exitosa, no una prueba independiente de que el navegador de cada dispositivo siga sirviendo esa versión en este instante.
+- CI candidato #126, commit `c7bc7e82b89d9fd1ad0d39a9e9a5a7adc33e99cc`, SUCCESS. No se ha ejecutado publicación desde rama candidata.
+- Plan de reversión: conservar el SHA anterior, comprobar que el código puede volver a desplegarse mediante el workflow existente, y validar versión/actualización de caché en dispositivos tras una publicación autorizada. Revertir código no revierte automáticamente cambios de datos, por lo que no introducir migraciones en esta actualización visual.
