@@ -47,7 +47,7 @@ test("La versión y el caché están preparados para instalar nuevas pantallas",
   assert.equal(JSON.parse(read("package-lock.json")).version,version);
   assert.match(read("src/config.mjs"),/APP_VERSION="0\.3\.30"/);
   assert.match(html,/id="appVersion">0\.3\.30</);
-  assert.match(read("sw.js"),/kontrola-integral-visura-v062/);
+  assert.match(read("sw.js"),/kontrola-integral-visura-v063/);
 });
 
 test("Las consultas descartan respuestas de sesiones o almacenes anteriores",()=>{
