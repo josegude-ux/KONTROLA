@@ -618,3 +618,9 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 - Ampliada la prueba `tests/visura-menu.test.mjs` para detectar cambios involuntarios en esos cuatro manejadores. **Pendiente ejecución de la prueba y CI**; lectura del código no equivale a prueba funcional.
 - Se confirmó que el ZIP de imágenes oficial está disponible localmente y contiene los cuatro WEBP y originales. El bloqueo es transferir binarios del contenedor local al conector GitHub, que no comparte acceso a archivos; no hay acceso Git de red desde el contenedor. No sustituir rutas ni precarga hasta resolverlo.
 - Último commit de prueba antes de esta nota: `10187dcc4be816e3b874b285932ecfeffea16129`. Reversión: descartar PR #29 sin fusionar.
+
+
+### 2026-10-26 — Validación adicional y sincronización de ficha de menú
+- Se evaluaron directamente sobre el contenido de `src/app.mjs` los cuatro patrones de controladores de navegación que usa el test de menú; los cuatro coincidieron. Esta comprobación de patrones **no equivale a ejecutar** `npm test` ni a una prueba de navegación real.
+- Corregida la ficha `docs/VISURA_PREPARA_MENU_OFICIAL_PENDIENTE.md` para reflejar que los títulos visibles ya están implementados; no repetir trabajo.
+- Pendientes sin cambio: subida de ocho imágenes binarias, actualización de cuatro rutas y caché PWA, ejecución CI, capturas y validación real en dispositivos. Último commit anterior a esta entrada: `ba11aa144583f291614fa5683cef121d97d9cadc`. PR #29 en borrador, sin fusionar.
