@@ -74,3 +74,5 @@ La idea de un portal común se documentó separadamente en `docs/MOVENTA_CONCEPT
 - No llama a IA ni accede a Supabase/Business Central; puede requerir que GitHub permita a Actions crear PRs.
 - **No consta todavía una ejecución satisfactoria de este nuevo piloto**. El workflow de auditoría previo sí verificó 18 pruebas superadas en run 40257686523.
 - Siguiente acción: verificar el nuevo workflow en Actions y sus permisos antes de afirmar que el agente genera PRs autónomamente.
+
+- Actualización posterior: el piloto admite también disparo por **push limitado a su propio workflow** en la rama de guardrails; se intentó disparar mediante commit `275cd0a`. Aún **no se ha confirmado** la creación de la rama `chore/visura-auto-dev-generated-31` ni de un PR automático. No asumir éxito hasta verificarlo.
