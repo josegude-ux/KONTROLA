@@ -3,6 +3,7 @@ import {filtrarArchivoLogico} from "./archive-view.mjs";
 import {SUPABASE_URL,SUPABASE_KEY,PDF_BUCKET,APP_VERSION} from "./config.mjs";
 import {agruparPasillos,ordenarCargas,formatearHuecosPalets} from "./logic.mjs";
 import {buildVerificationLines,parseCheckedQuantity,summarizeVerification} from "./verification.mjs";
+import {cargaVisibleParaVerificacion,estadoVerificacionVisible,estadoTrasVerificar,estadoTrasPreparar} from "./parallel-workflows.mjs";
 import {buildPreparationReport,filterProducts,desglosarBultos,totalBultosDelDesglose} from "./report.mjs";
 import {filtrarHistorial,resumenHistorial,formatoFechaCarga,csvHistorial,htmlResumenHistorial} from "./history.mjs";
 import {createAdminController} from "./admin.mjs";
@@ -101,7 +102,7 @@ async function loadWarehouses(){
 function warehouseLabel(){return warehouses.find(w=>w.codigo===selectedWarehouse)?.nombre||selectedWarehouse;}
 function updateWarehouseLabels(){
   $("loadsWarehouseHint").textContent="Almacén seleccionado: "+warehouseLabel()+". Solo se muestran las cargas de este almacén.";
-  $("reviewWarehouseHint").textContent="Almacén seleccionado: "+warehouseLabel()+". Se muestran cargas preparadas por otro operario.";
+  $("reviewWarehouseHint").textContent="Almacén seleccionado: "+warehouseLabel()+". Verificación disponible desde la publicación de la carga; comienza solo cuando haya mercancía física para comprobar.";
 }
 function renderWarehouseTabs(id){
   const target=$(id);target.replaceChildren();
@@ -537,7 +538,9 @@ async function startCurrentPreparation(){
       return;
     }
     currentPreparation={active:true,finalized:false};
-    current.preparador_id=requestUser;current.preparacion_inicio=result.inicio;current.estado="preparacion_en_curso";
+    current.preparador_id=requestUser;current.preparacion_inicio=result.inicio;
+    // No sobrescribir una verificación que ya está en curso sobre esta misma carga.
+    current.estado=current.verificador_id?"verificacion_en_curso":"preparacion_en_curso";
     visible($("startPreparation"),false);visible($("finishPreparation"),true);
     $("prepStatus").className="info-bar";
     $("prepStatus").textContent="Preparación activa. Inicio registrado por el servidor; el tiempo continúa al salir de esta pantalla.";
@@ -663,7 +666,7 @@ async function openLoad(code,{source=loads,returnTo="loadsView",readOnly=loadsMo
   const load=source.find(x=>x.codigo===code);if(!load)return;
   // Consultar y revisar nunca inicia ni interrumpe relojes de preparación.
   const assignedToOther=Boolean(load.preparador_id&&load.preparador_id!==user.id);
-  currentReadOnly=readOnly||assignedToOther||["cerrada","verificacion_en_curso"].includes(load.estado);
+  currentReadOnly=readOnly||assignedToOther||load.estado==="cerrada";
   detailBackView=returnTo;
   current=load;selectedAisle="TODOS";$("productSearch").value="";
   currentPreparation={
@@ -707,10 +710,10 @@ $("finishPreparation").addEventListener("click",async()=>{
   try{
     const {error}=await client.rpc("kontrola_finalizar_preparacion",{p_codigo:current.codigo});
     if(error)throw error;
-    currentPreparation={active:false,finalized:true};current.preparacion_fin=new Date().toISOString();current.estado="preparada";visible($("finishPreparation"),false);
+    currentPreparation={active:false,finalized:true};current.preparacion_fin=new Date().toISOString();current.estado=estadoTrasPreparar(current);visible($("finishPreparation"),false);
     stopPreparationClock();renderPreparationClock();refreshOperatorDashboard().catch(()=>{});
     $("prepStatus").className="info-bar complete";
-    $("prepStatus").textContent="Preparación finalizada. La carga ya puede ser verificada por otra persona.";
+    $("prepStatus").textContent="Sesión de preparación finalizada en VISURA. La verificación ha estado disponible desde que se publicó la carga.";
     global("Preparación finalizada con hora del servidor.","success");
   }catch(error){global("No se pudo finalizar la preparación: "+errorText(error),"error");}
   finally{busy=false;$("finishPreparation").disabled=false;}
@@ -749,15 +752,11 @@ function renderAisles(){
 $("productSearch").addEventListener("input",()=>{selectedAisle="TODOS";renderAisles();});
 async function refreshReviewLoads(){
   const warehouse=selectedWarehouse,userId=user?.id;
-  reviewLoads=[];$("reviewLoadsList").textContent="Consultando cargas preparadas por otros operarios…";
+  reviewLoads=[];$("reviewLoadsList").textContent="Consultando cargas publicadas disponibles para verificación…";
   const {data,error}=await client.rpc("kontrola_panel_cargas",{p_almacen:warehouse});
   if(!validRequest(warehouse,userId))return;
   if(error){$("reviewLoadsList").textContent="No se pueden cargar las verificaciones: "+errorText(error);throw error;}
-  reviewLoads=ordenarCargas((data||[]).filter(load=>
-    load.preparador_id&&load.preparador_id!==userId&&
-    ["preparacion_en_curso","preparada","verificacion_en_curso","cerrada"].includes(load.estado)&&
-    (!load.verificador_id||load.verificador_id===userId)
-  ));
+  reviewLoads=ordenarCargas((data||[]).filter(load=>cargaVisibleParaVerificacion(load,userId)));
   renderReviewLoads();
 }
 function renderReviewLoads(){
@@ -770,7 +769,7 @@ function renderReviewLoads(){
     const left=document.createElement("span"),title=document.createElement("strong"),meta=document.createElement("span");
     title.className="load-title";title.textContent=load.codigo;
     const incidents=Number(load.incidencias_pendientes||0);
-    const progress=load.estado==="cerrada"?"Finalizada · "+incidents+" incidencia(s)":load.estado==="verificacion_en_curso"?"Continuar verificación":"Pendiente de iniciar";
+    const progress=estadoVerificacionVisible(load)+(load.verificacion_fin?" · "+incidents+" incidencia(s)":"");
     meta.className="load-meta";meta.textContent=[load.ruta,load.matricula,progress].filter(Boolean).join(" · ");
     left.append(title,meta);
     const weight=document.createElement("span");weight.className="load-weight";weight.textContent=fmt(load.peso_kg)+" kg";
@@ -784,7 +783,7 @@ async function openVerification(code){
   const load=reviewLoads.find(item=>item.codigo===code);if(!load)return;
   current=load;currentVerification=null;verificationLines=buildVerificationLines(load.productos||[]);
   $("reviewDetailTitle").textContent=load.codigo;
-  $("reviewDetailSubtitle").textContent=[load.repartidor,load.ruta,load.matricula,load.almacen].filter(Boolean).join(" · ")||"Carga preparada";
+  $("reviewDetailSubtitle").textContent=[load.repartidor,load.ruta,load.matricula,load.almacen].filter(Boolean).join(" · ")||"Carga publicada";
   switchView("reviewDetailView",{force:true});
   if(!load.verificador_id){renderVerification();return;}
   opening=true;global("Recuperando el trabajo guardado de "+code+"…");
@@ -801,7 +800,9 @@ async function startOrResumeVerification(load){
       .select("linea,sku,descripcion,ubicacion,prevista_cantidad,unidad,comprobada_cantidad,comprobada_en")
       .eq("verificacion_id",id).order("linea",{ascending:true});
     if(linesError)throw linesError;
-    load.estado=started.estado==="finalizada"?"cerrada":"verificacion_en_curso";load.verificador_id=user.id;
+    load.verificador_id=user.id;load.verificacion_inicio=started.inicio;
+    if(started.estado==="finalizada")load.verificacion_fin=load.verificacion_fin||started.inicio;
+    load.estado=started.estado==="finalizada"?estadoTrasVerificar(load):"verificacion_en_curso";
     currentVerification={id,load,finished:started.estado==="finalizada"};
     verificationLines=(lines||[]).map(line=>({
       lineNumber:Number(line.linea),sku:line.sku,description:line.descripcion,location:line.ubicacion,
@@ -823,7 +824,7 @@ function renderVerification(){
   const reviewStatus=$("reviewStatus");
   reviewStatus.className="info-bar"+(currentVerification?.finished?" complete":summary.differences?" warning":"");
   reviewStatus.textContent=!currentVerification?"Modo consulta: inicia explícitamente la verificación para registrar cantidades.":currentVerification.finished
-    ?"Verificación finalizada. La carga está cerrada en KONTROLA; las regularizaciones pendientes se realizan manualmente en Business Central."
+    ?"Verificación finalizada. La finalización no registra ni cierra el picking en Business Central; las regularizaciones pendientes se realizan manualmente en Business Central."
     :summary.pending
       ?"Verificación en curso. Faltan "+summary.pending+" línea(s)."
       :"Todas las líneas están comprobadas. Puedes cerrar la carga aunque existan diferencias.";
@@ -891,9 +892,10 @@ $("finishVerification").addEventListener("click",async()=>{
     if(error)throw error;
     const result=Array.isArray(data)?data[0]:data;
     currentVerification.finished=true;
-    currentVerification.load.estado="cerrada";
+    currentVerification.load.verificacion_fin=result?.finalizada_en||new Date().toISOString();
+    currentVerification.load.estado=estadoTrasVerificar(currentVerification.load);
     currentVerification.load.incidencias_pendientes=Number(result?.incidencias_pendientes||0);
-    global("Carga cerrada. Incidencias pendientes: "+Number(result?.incidencias_pendientes||0)+".","success");
+    global("Verificación finalizada. Incidencias pendientes: "+Number(result?.incidencias_pendientes||0)+".","success");
   }catch(error){global("No se pudo finalizar: "+errorText(error),"error");}
   finally{busy=false;renderVerification();}
 });
