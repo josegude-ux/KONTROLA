@@ -16,6 +16,45 @@ export const normalizeWarehouseCode=raw=>{
  return cleaned.replace(/^COR_1_/,'COR_01_').replace(/^COR_2_/,'COR_02_')||null;
 };
 const KNOWN_WAREHOUSES=new Set(['COR_01_COR','COR_02_NAR']);
+// Extraer solo las observaciones de la cabecera (nunca las del detalle de mercancía).
+export function leerObservacionesCabecera(pages=[]){
+ const nextField=/\b(?:Almac[eé]n|Fecha\s*carga|Cam[ií][oó]n|Matr[ií]cula|Ruta|Repartidor|Peso\s*carga|Huecos\s*(?:plts?\.?|palets?)|N[º°o.]?\s*(?:visitas|copias)|Total\s*referencias)\s*:/i;
+ for(const page of pages){
+  const items=(page.items||[]).filter(item=>String(item.text||"").trim()&&Number.isFinite(item.y)&&Number.isFinite(item.x))
+   .sort((a,b)=>a.y-b.y||a.x-b.x);
+  const goods=items.find(item=>/M\s*E\s*R\s*C\s*A\s*N\s*C\s*[IÍ]\s*A/i.test(item.text));
+  const total=items.find(item=>/Total\s*referencias\s*prod/i.test(item.text));
+  const limit=goods?.y??total?.y??Infinity;
+  const rows=[];
+  for(const item of items.filter(item=>item.y<limit-1)){
+   const last=rows[rows.length-1];
+   if(last&&Math.abs(last.y-item.y)<=3)last.items.push(item);
+   else rows.push({y:item.y,items:[item]});
+  }
+  for(let i=0;i<rows.length;i++){
+   const row=rows[i];
+   const line=row.items.map(item=>item.text.trim()).join(" ").replace(/\s+/g," ").trim();
+   const match=/\bObservaciones?\s*:?\s*/i.exec(line);
+   if(!match)continue;
+   const chunks=[];
+   const immediate=line.slice(match.index+match[0].length).split(nextField)[0].trim();
+   if(immediate)chunks.push(immediate);
+   // Las observaciones pueden estar en la línea siguiente en los PDF de BC.
+   for(let j=i+1;j<rows.length&&j<=i+2;j++){
+    if(rows[j].y-rows[j-1].y>22)break;
+    const value=rows[j].items.map(item=>item.text.trim()).join(" ").replace(/\s+/g," ").trim();
+    if(!value||nextField.test(value)||/\b(?:Observaciones?|M\s*E\s*R\s*C\s*A\s*N\s*C\s*[IÍ]\s*A)\b/i.test(value))break;
+    if(rows[j].items[0].x<row.items[0].x-15)break;
+    chunks.push(value.split(nextField)[0].trim());
+    if(nextField.test(value))break;
+   }
+   const observation=chunks.join(" ").replace(/\s+/g," ").trim();
+   return observation||null;
+  }
+ }
+ return null;
+}
+
 export function parseDocumentPages(pages, fileName='Documento.pdf', options={}) {
  // Business Central puede incluir varios almacenes dentro del MISMO LP.
  const warehouseOf=page=>{
@@ -70,9 +109,16 @@ export function parseDocumentPages(pages, fileName='Documento.pdf', options={}) 
  const plate=extract(/Matr[ií]cula\s*:?\s*([A-Z0-9-]{5,12})/i)||extract(/Cami[oó]n\s*:\s*CR(\d{4}[A-Z]{3})/i)||'';
  // Leer «6G 4» como grandes/pequeños y «8G» sin inventar pequeños.
  const truckLine=extract(/Cami[oó]n\s*:\s*(.{1,120}?)(?=\s*Matr[ií]cula\s*:|\s*Huecos\s*plts\.?\s*cami[oó]n\s*:|\s*Almac[eé]n\s*:|$)/i)||'';
- const palletMatch=truckLine.match(/(?:^|[\s-])(\d{1,2})\s*G(?:\s*[-\/]?\s*(\d{1,2})\s*P?)?(?=\s|$|[-\/])/i);
+ // Cuando consta el campo explícito "Huecos plts. camión", tiene prioridad
+ // sobre cualquier código de capacidad presente junto al nombre del camión.
+ const huecosLine=extract(/Huecos\s*(?:plts?\.?|palets?)\s*(?:del?\s*)?cami[oó]n\s*:\s*(.{1,90}?)(?=\s*(?:Matr[ií]cula|Almac[eé]n|Ruta|Repartidor|Fecha\s*carga|Observaciones?)\s*:|$)/i)||"";
+ const palletMatch=(huecosLine||truckLine).match(/(?:^|[\s-])(\d{1,2})\s*G(?:\s*[-\/]?\s*(\d{1,2})\s*P?)?(?=\s|$|[-\/])/i);
  const palletsLarge=palletMatch?Number(palletMatch[1]):null;
  const palletsSmall=palletMatch&&palletMatch[2]!=null?Number(palletMatch[2]):null;
+ // Un número sin G/P solo expresa el total de huecos: no adivinar formatos.
+ const plainSlots=!palletMatch&&huecosLine.match(/^\s*(\d{1,3})(?=\s|$)/);
+ const palletsTotal=plainSlots?Number(plainSlots[1]):null;
+ const observations=leerObservacionesCabecera(pages);
  const date=extract(/Fecha\s*carga\s*:\s*(\d{2}\/\d{2}\/\d{2,4})/i);
  const route=(extract(/Ruta\s*:\s*(.{1,60}?)(?=\s+(?:Repartidor|Matr[ií]cula|Cami[oó]n|Fecha|Peso|Almac[eé]n|N[º°o.]?\s*(?:copias|visitas))\s*:|$)/i)||'').trim();
  let merchandise=false,declaredTotal=null;
@@ -148,7 +194,7 @@ export function parseDocumentPages(pages, fileName='Documento.pdf', options={}) 
  if(amountOK===false)warnings.push('Suma detectada: '+sum.toFixed(3)+' / declarada: '+declaredTotal);
  if(declaredTotal===null)warnings.push('No se pudo contrastar el total del PDF');
  const verified=countOK&&amountOK===true&&warnings.length===0;
- return {id,weight,refs,bultos:declaredTotal,visits,driver,plate,palletsLarge,palletsSmall,date,route,source:fileName,products,declaredTotal,actualTotal:sum,verified,warnings,warehouse,warehouseKnown:KNOWN_WAREHOUSES.has(warehouse),mixedWarehouse,availableWarehouses:warehouses};
+ return {id,weight,refs,bultos:declaredTotal,visits,driver,plate,palletsLarge,palletsSmall,palletsTotal,observations,date,route,source:fileName,products,declaredTotal,actualTotal:sum,verified,warnings,warehouse,warehouseKnown:KNOWN_WAREHOUSES.has(warehouse),mixedWarehouse,availableWarehouses:warehouses};
 }
 export function summarize(products){
  const units={},aisles={},unlocated=[];
