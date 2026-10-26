@@ -102,7 +102,18 @@ begin
  end if;
  update public.kontrola_preparaciones p set fin=v_now,cierre_motivo='Cambio de carga a '||p_codigo,actualizado_en=v_now
  where p.operario_id=v_user and p.fin is null;
- update public.kontrola_cargas c set estado='preparada',actualizado_en=v_now
+ -- Al cambiar de carga no degradar a 'preparada' una verificación ya finalizada.
+ update public.kontrola_cargas c set
+  estado=case
+   when exists(select 1 from public.kontrola_verificaciones v where v.codigo=c.codigo and v.fin is not null) then 'cerrada'
+   else 'preparada' end,
+  cerrada_en=case
+   when exists(select 1 from public.kontrola_verificaciones v where v.codigo=c.codigo and v.fin is not null)
+    then coalesce(c.cerrada_en,v_now) else c.cerrada_en end,
+  cerrada_por=case
+   when exists(select 1 from public.kontrola_verificaciones v where v.codigo=c.codigo and v.fin is not null)
+    then coalesce(c.cerrada_por,v_user) else c.cerrada_por end,
+  actualizado_en=v_now
  where exists(select 1 from public.kontrola_preparaciones p where p.codigo=c.codigo and p.operario_id=v_user and p.fin=v_now)
   and not exists(select 1 from public.kontrola_verificaciones v where v.codigo=c.codigo and v.fin is null);
  insert into public.kontrola_preparaciones(codigo,operario_id,inicio,inicio_request_id,actualizado_en)
