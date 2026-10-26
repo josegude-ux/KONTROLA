@@ -4,4 +4,4 @@
 export const SUPABASE_URL="https://oevetnszmfxeukcncwji.supabase.co";
 export const SUPABASE_KEY="sb_publishable_HH9O16zA-hT7ElScoYOSUQ_u-tcD-ei";
 export const PDF_BUCKET="kontrola-pdfs";
-export const APP_VERSION="0.3.37";
+export const APP_VERSION="0.3.41";

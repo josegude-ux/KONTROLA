@@ -19,6 +19,19 @@ test("Control de Cargas aparece como submenú navegable sin duplicar operaciones
   assert.match(css,/\.submenu-grid\{/);
 });
 
+test("importación accesible desde cargas solo para administración y sin borrar pendientes",()=>{
+  const admin=read("src/admin.mjs");
+  for(const id of ["cargasImportar","importLoadsShortcut"]){
+    assert.match(html,new RegExp('id="'+id+'"[^>]*hidden'));
+    assert.ok(app.includes('visible($("'+id+'"),ownProfile.rol==="administrador");'));
+  }
+  assert.ok(app.includes('$("cargasImportar").addEventListener("click",()=>openAdminMenu("cargasMenuView"));'));
+  assert.ok(app.includes('$("importLoadsShortcut").addEventListener("click",()=>openAdminMenu("loadsView"));'));
+  assert.ok(app.includes('if(profile?.rol!=="administrador"||!switchView("adminView"))return;'));
+  assert.ok(admin.includes('await Promise.all([refreshReviewSelector(),refreshPendingPublish()]);'));
+  assert.doesNotMatch(admin,/\$\("reviewLoadSelect"\)\.replaceChildren\(\);\$\("reviewLoadMessage"\)\.textContent="";/);
+});
+
 test("Tanques permanece totalmente oculto y sin acciones activas",()=>{
   assert.doesNotMatch(html,/tanques/i);
   assert.doesNotMatch(app,/openTanques|cargasTanques/i);
@@ -42,12 +55,12 @@ test("La navegación conserva los accesos previos y los regresos al submenú",()
 
 test("La versión y el caché están preparados para instalar nuevas pantallas",()=>{
   const version=JSON.parse(read("version.json")).version;
-  assert.equal(version,"0.3.37");
+  assert.equal(version,"0.3.41");
   assert.equal(JSON.parse(read("package.json")).version,version);
   assert.equal(JSON.parse(read("package-lock.json")).version,version);
   assert.ok(read("src/config.mjs").includes(`APP_VERSION="${version}"`));
   assert.ok(html.includes(`id="appVersion">${version}<`));
-  assert.match(read("sw.js"),/kontrola-integral-visura-v070/);
+  assert.match(read("sw.js"),/kontrola-integral-visura-v074/);
 });
 
 test("Las consultas descartan respuestas de sesiones o almacenes anteriores",()=>{
