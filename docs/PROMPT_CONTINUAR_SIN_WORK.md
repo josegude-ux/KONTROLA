@@ -1,3 +1,7 @@
+> **VISURA WORK — recuperación verificada 26/10/2026 (CHAT NUEVO)**: véase [auditoría del traspaso](VISURA_WORK_AUDITORIA_RECUPERACION_20261026.md) en la rama `docs/visura-work-chat-nuevo-20261026`, basada en PR #44 HEAD `b934a2ccf5fbff11de8ced3b2d121a46b7750408`. PRs #37/#43/#44 siguen abiertas en borrador; CI #44: tres flujos correctos. Ruleset activo solo acreditado para main, protección clásica 403, CODEOWNERS no encontrado; transporte Python auténtico y elegibilidad sin verificar. Ninguna autorización de ejecución, fusión o despliegue. No usar la ficha de main para reiniciar el agente.
+
+---
+
 ACTUALIZACIÓN DE CONTINUIDAD DESDE CHAT NORMAL (26/10/2026): Hay una mejora aislada de seguridad de origen de snapshots en `fix/visura-work-review-snapshot-repository-20261026`, derivada del HEAD `d3aec336ab24a1c8f3cef485c19b8110cbc1d591` de PR #43. Ver `docs/CONTINUIDAD.md` en dicha rama antes de iniciar trabajo duplicado. El objetivo de la mejora es impedir consultar revisores de un snapshot que no declare el mismo repositorio exacto. No confundirla con prueba real de autenticación de HTTP; esa validación y las políticas efectivas siguen pendientes. No fusionar ni publicar sin autorización.
 
 ---
