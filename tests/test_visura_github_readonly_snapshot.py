@@ -1,6 +1,10 @@
+import io
 import json
+import os
 import unittest
-from scripts.visura_github_readonly_snapshot import fetch_readonly_review_snapshot
+from contextlib import redirect_stdout
+from unittest.mock import patch
+from scripts.visura_github_readonly_snapshot import fetch_readonly_review_snapshot, main
 
 SHA = "a" * 40
 REPOSITORY = "josegude-ux/KONTROLA"
@@ -99,6 +103,24 @@ class GitHubReadOnlySnapshotTests(unittest.TestCase):
         opener, _ = fake_api(pages=[[review_data(state="AUTHORIZE_EXECUTION")]])
         with self.assertRaisesRegex(ValueError, "Invalid GitHub review metadata"):
             fetch_readonly_review_snapshot(REPOSITORY, 37, "token", opener=opener)
+
+    def test_manual_cli_uses_environment_token_without_echo(self):
+        output = io.StringIO()
+        with patch.dict(os.environ, {"GITHUB_TOKEN": "secret-do-not-echo"}):
+            with patch(
+                "scripts.visura_github_readonly_snapshot.fetch_readonly_review_snapshot",
+                return_value={"execution_authorized": False},
+            ) as mocked:
+                with redirect_stdout(output):
+                    self.assertEqual(main([REPOSITORY, "37"]), 0)
+        mocked.assert_called_once_with(REPOSITORY, 37, "secret-do-not-echo")
+        self.assertNotIn("secret-do-not-echo", output.getvalue())
+        self.assertFalse(json.loads(output.getvalue())["execution_authorized"])
+
+    def test_cli_rejects_missing_token_before_network(self):
+        with patch.dict(os.environ, {}, clear=True):
+            with self.assertRaisesRegex(ValueError, "GitHub token"):
+                main([REPOSITORY, "37"])
 
     def test_pagination_truncation_is_rejected(self):
         opener, _ = fake_api(pages=[[review_data()] * 100] * 5)
