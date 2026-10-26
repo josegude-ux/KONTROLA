@@ -27,7 +27,7 @@ Se mantienen en `false` `repository_policy_verified`, `execution_authorized`, `m
 
 ## Comprobación y siguientes pasos
 
-- **Pendiente al registrar este documento:** confirmar CI de la rama por SHA exacto y evitar afirmar que el código está probado sin ejecutar los checks. Actualizar aquí cuando exista evidencia.
+- **CI real del commit `12175c09afdcdc539864c83fc72b0c85404ce451` verificada:** Code Review Gate [#40322668294](https://github.com/josegude-ux/KONTROLA/actions/runs/40322668294), CSV Pilot Tests [#40322668145](https://github.com/josegude-ux/KONTROLA/actions/runs/40322668145) y Queue Audit [#40322668326](https://github.com/josegude-ux/KONTROLA/actions/runs/40322668326): las tres ejecuciones terminaron con `success`. Comprobar de nuevo CI para cualquier nuevo SHA de cabecera antes de fusionar; las pruebas siguen siendo simuladas en lo relativo al transporte.
 - **Pendiente independiente:** probar el transporte GitHub GET del **módulo Python**, con origen autenticado y credenciales inyectadas de forma segura por el entorno autorizado; no extraer credenciales del conector ni incluirlas en archivos.
 - **Pendiente:** verificar protección clásica, reglas activas que realmente aplican a la rama base de #43, CODEOWNERS, revisores elegibles, políticas de bypass, vigencia de aprobaciones y controles del eventual ejecutor aislado.
 - No fusionar, desplegar, publicar ni habilitar escritura autónoma sin revisión y autorización expresa. Esta rama es exclusivamente de código piloto y documentos de continuidad.
