@@ -71,3 +71,20 @@ test("la precarga PWA conserva las cuatro ilustraciones para uso sin conexión",
     assert.ok(src && assets.includes(JSON.stringify(src)), `No está precargada la imagen de ${id}`);
   }
 });
+
+test("las tarjetas principales conservan los tipos de boton para evitar envios accidentales", () => {
+  for (const [id] of cards) {
+    const tag = html.match(new RegExp(`<button id="${id}"[^>]*>`))?.[0];
+    assert.ok(tag, `Falta el boton ${id}`);
+    assert.match(tag, /\\stype="button"/, `El boton ${id} no debe enviar formularios`);
+  }
+});
+
+test("las ilustraciones decorativas no se anuncian como contenido funcional", () => {
+  for (const [id] of cards) {
+    const card = html.match(new RegExp(`<button id="${id}"[\\s\\S]*?<\\/button>`))?.[0];
+    assert.ok(card, `Falta la tarjeta ${id}`);
+    assert.match(card, /class="feature-art" aria-hidden="true"/);
+    assert.match(card, /<img[^>]*alt=""/);
+  }
+});
