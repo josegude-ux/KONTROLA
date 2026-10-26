@@ -18,8 +18,7 @@ jobs:
           node-version: '22'
       - name: Instalar dependencias de pruebas
         run: npm ci
-      - name: Verificar sintaxis y menu sin despliegue
+      - name: Comprobar sintaxis y regresion completa sin despliegue
         run: |
-          node --check src/app.mjs
+          npm run check
           node --check tests/visura-menu.test.mjs
-          node --test tests/*.test.mjs
