@@ -4,6 +4,11 @@ import { readFile } from "node:fs/promises";
 import { extname, join, normalize } from "node:path";
 
 const root = process.cwd();
+const cards = [
+  ["openPreparation", "preparacion", "visura-prepara-preparacion-3d.webp"],
+  ["openReview", "verificacion", "visura-prepara-control-cargas-3d.webp"],
+  ["openCargas", "control-cargas", "visura-prepara-operaciones-3d.webp"],
+];
 const mime = { ".html":"text/html", ".js":"text/javascript", ".mjs":"text/javascript", ".css":"text/css", ".webp":"image/webp", ".png":"image/png", ".json":"application/json", ".webmanifest":"application/manifest+json", ".svg":"image/svg+xml" };
 let server;
 test.beforeAll(async () => {
@@ -28,12 +33,7 @@ for (const viewport of [
   test(`menu layout and official images: ${viewport.name}`, async ({ page }) => {
     await page.setViewportSize({ width: viewport.width, height: viewport.height });
     await page.goto("http://127.0.0.1:4173/", { waitUntil: "networkidle" });
-    const cards = [
-      ["openPreparation", "visura-prepara-preparacion-3d.webp"],
-      ["openReview", "visura-prepara-control-cargas-3d.webp"],
-      ["openCargas", "visura-prepara-operaciones-3d.webp"],
-    ];
-    for (const [id, filename] of cards) {
+    for (const [id, , filename] of cards) {
       const card = page.locator(`#${id}`);
       await expect(card).toBeVisible();
       await expect(card.locator("img")).toHaveAttribute("src", new RegExp(filename));
