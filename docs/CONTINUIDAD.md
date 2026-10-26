@@ -732,3 +732,10 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 - Commit 1f25ac2477f09e12c32c90ab0d88b38bbec4ba80: añadidas dos pruebas automatizadas para verificar cabeceras RIFF/WEBP y tamaño razonable de las cuatro imágenes referenciadas, además de exigir la versión de caché PWA v063.
 - La ejecución de GitHub Actions para este commit todavía no aparece; no se declara superada esta ampliación hasta disponer del resultado.
 - La validación visual manual en dispositivos reales sigue pendiente. Sin merge ni despliegue.
+
+
+### 2026-10-26 - Añadida prueba visual automatizada en Chromium
+- Se añadió `tests/visual-menu.spec.mjs` y un paso CI para probar el menú en Chromium con viewport de escritorio (1440x1000) y móvil (390x844), verificar visibilidad de las tarjetas operativas, carga real de las imágenes, ausencia de desbordamiento horizontal y guardar capturas como artefacto de Actions.
+- La prueba de navegador es complementaria a los 200 tests Node; no equivale a una prueba en iPhone/Android físicos.
+- Últimos cambios CI/tests: 4318f36, 6e1b1ea, 5395288. Pendiente resultado de Actions antes de afirmar que la prueba visual automatizada pasa.
+- No merge ni despliegue.
