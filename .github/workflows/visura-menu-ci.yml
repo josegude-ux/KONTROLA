@@ -42,5 +42,7 @@ jobs:
             git config user.name "github-actions[bot]"
             git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
             git commit -m "feat(menu): integrar imagenes oficiales tras pruebas"
+            git fetch origin feature/visura-prepara-menu-oficial-20261026
+            git rebase origin/feature/visura-prepara-menu-oficial-20261026
             git push origin HEAD:feature/visura-prepara-menu-oficial-20261026
           fi
