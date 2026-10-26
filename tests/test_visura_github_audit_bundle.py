@@ -497,6 +497,97 @@ class AuditBundleTests(unittest.TestCase):
                     REPO, 37, "main", "secret", opener=lambda *a: None
                 )
 
+    def test_review_dismissal_during_audit_is_detected_with_same_sha(self):
+        first = fixture_snapshot()
+        first["reviews"] = [{
+            "review_id": 41, "reviewer_numeric_id": 7,
+            "reviewer_login": "reviewer", "state": "APPROVED", "commit_sha": HEAD,
+        }]
+        second = dict(first, reviews=[dict(first["reviews"][0], state="DISMISSED")])
+        with patch(
+            "scripts.visura_github_audit_bundle.fetch_readonly_review_snapshot",
+            side_effect=[first, second],
+        ) as review_fetch, patch(
+            "scripts.visura_github_audit_bundle.inspect_branch_policy",
+            return_value={"branch": "any"},
+        ), patch(
+            "scripts.visura_github_audit_bundle._get_json",
+        ) as last_pr:
+            with self.assertRaisesRegex(
+                ValueError, "reviews changed during the audit"
+            ):
+                inspect_readonly_audit_bundle(
+                    REPO, 37, "main", "secret", opener=lambda *args: None
+                )
+            last_pr.assert_not_called()
+        self.assertEqual(review_fetch.call_count, 2)
+
+    def test_new_review_during_audit_is_rejected(self):
+        first = fixture_snapshot()
+        second = dict(first, reviews=[{
+            "review_id": 9, "reviewer_numeric_id": 88,
+            "reviewer_login": "changed", "state": "CHANGES_REQUESTED",
+            "commit_sha": HEAD,
+        }])
+        with patch(
+            "scripts.visura_github_audit_bundle.fetch_readonly_review_snapshot",
+            side_effect=[first, second],
+        ), patch(
+            "scripts.visura_github_audit_bundle.inspect_branch_policy",
+            return_value={"branch": "any"},
+        ):
+            with self.assertRaisesRegex(ValueError, "reviews changed during the audit"):
+                inspect_readonly_audit_bundle(
+                    REPO, 37, "main", "secret", opener=lambda *args: None
+                )
+
+    def test_reordered_pages_without_change_do_not_fail(self):
+        first = fixture_snapshot()
+        first["reviews"] = [
+            {"review_id": 40, "reviewer_numeric_id": 8, "reviewer_login": "alpha",
+             "state": "COMMENTED", "commit_sha": HEAD},
+            {"review_id": 50, "reviewer_numeric_id": 9, "reviewer_login": "beta",
+             "state": "APPROVED", "commit_sha": HEAD},
+        ]
+        second = dict(first, reviews=list(reversed(first["reviews"])))
+        with patch(
+            "scripts.visura_github_audit_bundle.fetch_readonly_review_snapshot",
+            side_effect=[first, second],
+        ) as review_fetch, patch(
+            "scripts.visura_github_audit_bundle.inspect_branch_policy",
+            return_value={"branch": "any"},
+        ), patch(
+            "scripts.visura_github_audit_bundle._get_json",
+            return_value=fixture_pr(),
+        ):
+            result = inspect_readonly_audit_bundle(
+                REPO, 37, "main", "secret", opener=lambda *args: None
+            )
+        self.assertTrue(result["same_review_records_after_audit"])
+        self.assertFalse(result["execution_authorized"])
+        self.assertEqual(review_fetch.call_count, 2)
+
+    def test_second_review_fetch_is_bound_to_same_repo_pr_and_token(self):
+        with patch(
+            "scripts.visura_github_audit_bundle.fetch_readonly_review_snapshot",
+            return_value=fixture_snapshot(),
+        ) as reviews, patch(
+            "scripts.visura_github_audit_bundle.inspect_branch_policy",
+            return_value={"branch": "any"},
+        ), patch(
+            "scripts.visura_github_audit_bundle._get_json",
+            return_value=fixture_pr(),
+        ):
+            result = inspect_readonly_audit_bundle(
+                REPO, 37, "main", "secret", opener=lambda *args: None
+            )
+        self.assertEqual(
+            [call.args[:3] for call in reviews.call_args_list],
+            [(REPO, 37, "secret"), (REPO, 37, "secret")],
+        )
+        self.assertTrue(result["same_review_records_after_audit"])
+        self.assertFalse(result["merge_authorized"])
+
     def test_pr_retargeting_during_policy_fetch_rejected(self):
         with patch(
             "scripts.visura_github_audit_bundle.fetch_readonly_review_snapshot",
