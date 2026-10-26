@@ -63,13 +63,13 @@ class CsvPreflightTests(unittest.TestCase):
             inspect_csv(self.path, [" "])
 
     def test_multiline_quoted_header(self):
-        self.write('"Pedido\\ninterno";Cantidad\\nA01;2\\n')
-        result = inspect_csv(self.path, ["Pedido\\ninterno", "Cantidad"])
+        self.write('"Pedido\ninterno";Cantidad\nA01;2\n')
+        result = inspect_csv(self.path, ["Pedido\ninterno", "Cantidad"])
         self.assertEqual(result["delimiter"], ";")
         self.assertEqual(result["rows"], 1)
 
     def test_malformed_quoted_data_is_validation_error(self):
-        self.write('Pedido;Nota\\nA01;"texto sin cerrar\\n')
+        self.write('Pedido;Nota\nA01;"texto sin cerrar\n')
         with self.assertRaisesRegex(ValueError, "Malformed CSV data"):
             inspect_csv(self.path, ["Pedido", "Nota"])
 
