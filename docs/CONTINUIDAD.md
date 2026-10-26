@@ -129,3 +129,6 @@ La idea de un portal común se documentó separadamente en `docs/MOVENTA_CONCEPT
 
 - Code Review Gate #36 (`40261714890`) `success`, **39/39 pruebas OK**, compilación y bloqueo de pagos correctos: https://github.com/josegude-ux/KONTROLA/actions/runs/40261714890.
 - Fase de autorización no ejecutora: `scripts/visura_execution_authorization.py` evalúa un registro de revisión externo, exige coincidencia de ID y marca de identidad verificada, pero devuelve siempre `execution_authorized=False` porque no puede autenticar por sí mismo al revisor ni ejecutar nada. Pruebas en `tests/test_visura_execution_authorization.py` (commits `4e5bf18`, `b1d7c61`); CI aún pendiente. La marca de identidad es dato de entrada no confiable: **no constituye prueba de identidad** sin un servicio externo confiable.
+
+- Code Review Gate #39 (`40261808566`) **success: 44/44 pruebas OK** y bloqueo de pagos: https://github.com/josegude-ux/KONTROLA/actions/runs/40261808566.
+- Endurecimiento de autorización: rechazo explícito de decisiones no textuales (`19e59d4`) y tres pruebas de datos malformados y permisos falsificados (`7c1815e`). La revisión externa real aún no está integrada; el módulo **nunca autoriza ejecutar**. CI de estos cambios pendiente.
