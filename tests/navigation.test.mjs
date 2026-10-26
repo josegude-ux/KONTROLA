@@ -19,6 +19,21 @@ test("Control de Cargas aparece como submenú navegable sin duplicar operaciones
   assert.match(css,/\.submenu-grid\{/);
 });
 
+test("importar cargas dispone de accesos directos visibles solo al administrador",()=>{
+  const admin=read("src/admin.mjs");
+  for(const id of ["cargasImportar","importLoadsShortcut"]){
+    assert.match(html,new RegExp('id="'+id+'"[^>]*hidden'));
+    assert.match(app,new RegExp('visible\\(\\$\\("'+id+'"\\),ownProfile\\.rol==="administrador"\\)'));
+  }
+  assert.match(html,/id="cargasImportar"[^>]*hidden[^>]*>[\\s\\S]*?<b>Importar cargas<\\/b>/);
+  assert.match(app,/\\$\\("cargasImportar"\\)\\.addEventListener\\("click",\\(\\)=>openAdminMenu\\("cargasMenuView"\\)\\)/);
+  assert.match(app,/\\$\\("importLoadsShortcut"\\)\\.addEventListener\\("click",\\(\\)=>openAdminMenu\\("loadsView"\\)\\)/);
+  assert.match(app,/if\\(profile\\?\\.rol!=="administrador"\\|\\|!switchView\\("adminView"\\)\\)return/);
+  assert.match(admin,/async function open\\(\\)\\{\\s*selectAdminTab\\(0\\)/);
+  assert.match(admin,/\\$\\("processPdf"\\)\\.addEventListener\\("click",processPdf\\)/);
+  assert.match(html,/id="publishReviewedLoad"[^>]*disabled/);
+});
+
 test("Tanques permanece totalmente oculto y sin acciones activas",()=>{
   assert.doesNotMatch(html,/tanques/i);
   assert.doesNotMatch(app,/openTanques|cargasTanques/i);
