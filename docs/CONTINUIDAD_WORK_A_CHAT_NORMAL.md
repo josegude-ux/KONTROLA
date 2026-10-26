@@ -15,6 +15,10 @@ Comprobar git ls-remote, PRs y CI antes de retomar; no asumir que main es lo má
 avanzado. Preservar commits posteriores. No forzar push ni tocar ramas compartidas.
 Este primer punto de control precede al desarrollo; la disponibilidad remota
 solo se confirma tras push y comparación del SHA remoto. Ver estado actualizado.
-Primera tarea: observador de permisos del revisor, pruebas locales y revisión.
+Observador implementado y conectado; código remoto 203c930527467bc6db1b4f552aef8a63ab93383a.
+285 pruebas locales correctas. Primera tarea: prueba autenticada de solo lectura
+del observador y verificación de políticas efectivas; después resolver elegibilidad.
 Si faltan herramientas en chat normal, entregar cambios revisables sin inventar
 commits ni verificaciones. No depender de Work, Cursor o memoria del chat.
+
+PR de referencia: https://github.com/josegude-ux/KONTROLA/pull/43 (borrador, destino #37).
