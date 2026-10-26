@@ -8,7 +8,9 @@ test("la actualizacion conserva el backend Supabase actual de PREPARA",()=>{
   const config=read("src/config.mjs");
   assert.match(config,/SUPABASE_URL\s*=\s*"https:\/\/oevetnszmfxeukcncwji\.supabase\.co"/);
   assert.match(config,/PDF_BUCKET\s*=\s*"kontrola-pdfs"/);
-  assert.doesNotMatch(config,/service_role|sb_secret_/i);
+  const key=config.match(/export const SUPABASE_KEY\s*=\s*"([^"]+)"/)?.[1];
+  assert.ok(key?.startsWith("sb_publishable_"),"Solo se admite una clave publicable en el navegador");
+  assert.doesNotMatch(key,/service_role|sb_secret_/i);
 });
 
 test("el manifiesto sigue apuntando a la misma PWA instalada",()=>{
