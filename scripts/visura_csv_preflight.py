@@ -3,13 +3,7 @@
 Never uploads or mutates source data. Does not assume Business Central column names.
 """
 import csv
-import io
 from pathlib import Path
-
-
-def stream_for_sample(sample):
-    """Yield a sample as a stream while preserving embedded newlines."""
-    return io.StringIO(sample, newline="")
 
 
 def inspect_csv(path, required_columns, *, max_bytes=20_000_000):
@@ -23,20 +17,19 @@ def inspect_csv(path, required_columns, *, max_bytes=20_000_000):
     if len(set(required)) != len(required):
         raise ValueError("Duplicate required columns")
     with source.open("r", encoding="utf-8-sig", newline="") as stream:
-        sample = stream.read(4096)
-        stream.seek(0)
-        if not sample.strip():
+        # Parse complete logical header records; do not truncate long or multiline headers.
+        if not stream.read(1):
             raise ValueError("Empty CSV")
-        # Parse candidate headers with csv.reader so quoted delimiters do not count.
-        # Prefer a unique header containing all required columns; otherwise choose
-        # the uniquely widest parsed header for useful missing-column diagnostics.
+        stream.seek(0)
         candidates = {}
         for delimiter in (",", ";", "\t"):
             try:
-                parsed = next(csv.reader(stream_for_sample(sample), delimiter=delimiter, strict=True))
+                with source.open("r", encoding="utf-8-sig", newline="") as candidate_stream:
+                    parsed = next(csv.reader(candidate_stream, delimiter=delimiter, strict=True))
             except (csv.Error, StopIteration):
                 continue
             candidates[delimiter] = parsed
+        stream.seek(0)
         matches = [d for d, columns in candidates.items()
                    if len(columns) > 1 and all(name in columns for name in required)]
         if len(matches) == 1:
