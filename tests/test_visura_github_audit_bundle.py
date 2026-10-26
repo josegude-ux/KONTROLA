@@ -505,6 +505,15 @@ class AuditBundleTests(unittest.TestCase):
         }]
         second = dict(first, reviews=[dict(first["reviews"][0], state="DISMISSED")])
         with patch(
+            "scripts.visura_github_audit_bundle.observe_snapshot_reviewer_permissions",
+            return_value={
+                "lookup": "incomplete", "observations": [],
+                "reviewer_eligibility_verified": False,
+                "execution_authorized": False,
+                "merge_authorized": False,
+                "deployment_authorized": False,
+            },
+        ), patch(
             "scripts.visura_github_audit_bundle.fetch_readonly_review_snapshot",
             side_effect=[first, second],
         ) as review_fetch, patch(
@@ -551,6 +560,15 @@ class AuditBundleTests(unittest.TestCase):
         ]
         second = dict(first, reviews=list(reversed(first["reviews"])))
         with patch(
+            "scripts.visura_github_audit_bundle.observe_snapshot_reviewer_permissions",
+            return_value={
+                "lookup": "incomplete", "observations": [],
+                "reviewer_eligibility_verified": False,
+                "execution_authorized": False,
+                "merge_authorized": False,
+                "deployment_authorized": False,
+            },
+        ), patch(
             "scripts.visura_github_audit_bundle.fetch_readonly_review_snapshot",
             side_effect=[first, second],
         ) as review_fetch, patch(
