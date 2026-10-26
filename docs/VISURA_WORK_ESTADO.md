@@ -79,3 +79,5 @@ se deduplican. Un registro inválido al final ya no provoca consultas parciales.
 La prueba autenticada real y las políticas efectivas continúan pendientes.
 Siguiente paso: comprobar CI del último SHA y validar con un transporte de
 solo lectura autorizado; no habilitar escritura ni ampliar permisos por defecto.
+
+CI verificada para 27941f4d: Code Review Gate #171, Queue Audit #206 y CSV Pilot Tests #178 correctos. https://github.com/josegude-ux/KONTROLA/actions/runs/40293152708
