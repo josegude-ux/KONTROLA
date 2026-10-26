@@ -7,13 +7,13 @@ const validDocumentPath=(code,path)=>
 const present=value=>value!==null&&value!==undefined&&String(value).trim()!=="";
 
 export function cargaHuecosPendientes(load){
-  return !present(load?.huecos_palets_grandes)&&!present(load?.huecos_palets_pequenos)&&
+  return !present(load?.huecos_palets_grandes)&&!present(load?.huecos_palets_pequenos)&&!present(load?.huecos_palets_europeos)&&
     !present(load?.huecos_palets_total)&&validDocumentPath(load?.codigo,load?.documento_ruta);
 }
 export function cabeceraSinMetadatos(load){
   return !present(load?.observaciones)&&
     !present(load?.huecos_palets_grandes)&&
-    !present(load?.huecos_palets_pequenos)&&
+    !present(load?.huecos_palets_pequenos)&&!present(load?.huecos_palets_europeos)&&
     !present(load?.huecos_palets_total);
 }
 
@@ -40,6 +40,7 @@ export function cabeceraLeida(load,parsed,warehouse){
     observaciones:observations||null,
     huecos_palets_grandes:numeric(parsed.palletsLarge),
     huecos_palets_pequenos:numeric(parsed.palletsSmall),
+    huecos_palets_europeos:numeric(parsed.palletsEuropean),
     huecos_palets_total:numeric(parsed.palletsTotal)
   };
 }

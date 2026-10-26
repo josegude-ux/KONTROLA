@@ -1,7 +1,7 @@
 import {fechaAlmacen} from "./business-date.mjs";
 import {filtrarArchivoLogico} from "./archive-view.mjs";
 import {SUPABASE_URL,SUPABASE_KEY,PDF_BUCKET,APP_VERSION} from "./config.mjs";
-import {agruparPasillos,ordenarCargas,formatearHuecosPalets} from "./logic.mjs";
+import {agruparPasillos,ordenarCargas,formatearHuecosPalets,combinarHuecosConOrigen,textoHuecosConOrigen} from "./logic.mjs";
 import {buildVerificationLines,parseCheckedQuantity,summarizeVerification} from "./verification.mjs";
 import {buildPreparationReport,filterProducts,desglosarBultos,totalBultosDelDesglose} from "./report.mjs";
 import {filtrarHistorial,resumenHistorial,formatoFechaCarga,csvHistorial,htmlResumenHistorial} from "./history.mjs";
@@ -202,7 +202,7 @@ async function refreshLoads(){
   if(!validRequest(warehouse,userId))return;
   if(panel.error||archivo.error){const err=panel.error||archivo.error;$("loadsList").textContent="No se pueden cargar los documentos: "+errorText(err);throw err;}
   const archivados=new Set((archivo.data||[]).map(r=>r.codigo));
-  loads=ordenarCargas(filtrarArchivoLogico((panel.data||[]).map(r=>({...r,archivado:archivados.has(r.codigo)})),{vista:"activas"}));
+  loads=ordenarCargas(filtrarArchivoLogico((panel.data||[]).map(r=>combinarHuecosConOrigen({...r,archivado:archivados.has(r.codigo)})),{vista:"activas"}));
   renderLoadList();
   // El panel actual no devuelve los campos opcionales de la cabecera del PDF.
   // Consultar SOLO la revisión vigente autorizada de cada carga; no descargar PDFs.
@@ -211,13 +211,14 @@ async function refreshLoads(){
     const codes=[...new Set(loads.map(load=>load.codigo).filter(Boolean))];
     for(let start=0;start<codes.length;start+=50){
       const {data,error}=await client.from("kontrola_carga_revisiones")
-        .select("codigo,observaciones:carga_datos->>observaciones,huecos_palets_grandes:carga_datos->>huecos_palets_grandes,huecos_palets_pequenos:carga_datos->>huecos_palets_pequenos,huecos_palets_total:carga_datos->>huecos_palets_total")
+        .select("codigo,observaciones:carga_datos->>observaciones,huecos_palets_grandes:carga_datos->>huecos_palets_grandes,huecos_palets_europeos:carga_datos->>huecos_palets_europeos,huecos_palets_pequenos:carga_datos->>huecos_palets_pequenos,huecos_palets_total:carga_datos->>huecos_palets_total")
         .eq("vigente",true).eq("almacen",warehouse).in("codigo",codes.slice(start,start+50));
       if(!validRequest(warehouse,userId))return;
       if(error)throw error;
       for(const row of data||[])extras.set(row.codigo,{
         observaciones:row.observaciones,
         huecos_palets_grandes:row.huecos_palets_grandes,
+        huecos_palets_europeos:row.huecos_palets_europeos,
         huecos_palets_pequenos:row.huecos_palets_pequenos,
         huecos_palets_total:row.huecos_palets_total
       });
@@ -228,11 +229,9 @@ async function refreshLoads(){
   }
   if(!validRequest(warehouse,userId))return;
   if(requestSerial!==loadsRequestSerial)return;
-  loads=loads.map(load=>{
-    const enriched={...load,...(extras.get(load.codigo)||{})};
-    const cached=legacyHeaderCache.get(load.documento_ruta);
-    return cached&&cabeceraSinMetadatos(enriched)?{...enriched,...cached}:enriched;
-  });
+  loads=loads.map(load=>combinarHuecosConOrigen(
+    load,extras.get(load.codigo)||null,legacyHeaderCache.get(load.documento_ruta)||null
+  ));
   renderLoadList();
 }
 // La recuperación es optativa, de solo lectura y limitada a cinco PDF por clic.
@@ -268,7 +267,7 @@ async function leerCabecerasAntiguas(){
         const index=loads.findIndex(item=>item.codigo===load.codigo&&item.documento_ruta===load.documento_ruta);
         if(index<0)continue;
         legacyHeaderCache.set(load.documento_ruta,extras);
-        loads[index]={...loads[index],...extras};
+        loads[index]=combinarHuecosConOrigen(loads[index],null,extras);
         renderLoadList();
         if(cabeceraSinMetadatos(extras))withoutData++;
         else recovered++;
@@ -308,7 +307,10 @@ function renderLoadList(){
     const palletsLabel=document.createElement("span");palletsLabel.className="load-pallets-label";palletsLabel.textContent="HUECOS PALÉS";
     const palletsValue=document.createElement("strong");palletsValue.className="load-pallets-value";
     palletsValue.textContent=formatearHuecosPalets(r.huecos_palets_grandes,r.huecos_palets_pequenos,r.huecos_palets_total);
-    pallets.title="Huecos disponibles del camión: G = grandes, P = pequeños. No son palés ya preparados.";
+    palletsValue.textContent=textoHuecosConOrigen(r);
+    pallets.title=r.huecos_origen==="pdf_leido"?"Lectura local del PDF sin modificar Supabase: confirma el dato al abrir la carga.":
+      r.huecos_origen==="revision"?"Huecos guardados en la revisión vigente del PDF.":
+      "No se conoce la capacidad. Abre la carga para consultar el PDF y poner los huecos del camión.";
     pallets.append(palletsLabel,palletsValue);vehicle.append(plate,pallets);
     const bundles=document.createElement("span");bundles.className="load-bundles";
     // Reutiliza el desglose por unidades de la hoja de preparación.
@@ -555,7 +557,7 @@ const truckInputs=["truckCapacityTotal","truckCapacityG","truckCapacityP","truck
 const truckKey=()=>user&&current?user.id+"|"+current.almacen+"|"+current.codigo:"";
 function assessment(){
   return evaluarHuecosCamion({
-    modo:$("truckCapacityMode").value,previas:$("truckPreviousChoice").value,
+    modo:$("truckCapacityMode").value,segundoTipo:$("truckSecondKind").value,previas:$("truckPreviousChoice").value,
     capacidadTotal:$("truckCapacityTotal").value,capacidadG:$("truckCapacityG").value,
     capacidadP:$("truckCapacityP").value,
     anterioresTotal:$("truckPreviousTotal").value,anterioresG:$("truckPreviousG").value,
@@ -571,6 +573,10 @@ function renderTruckAssessment(){
   $("truckFieldsBySize").hidden=!bySize;
   $("truckPreviousTotalRow").hidden=bySize||!previous;
   $("truckPreviousSizeRow").hidden=!bySize||!previous;
+  const european=$("truckSecondKind").value==="E";
+  $("truckCapacityPLabel").textContent=european?"Huecos europeos (E) del camión":"Huecos pequeños (P) del camión";
+  $("truckPreviousPLabel").textContent=european?"Europeos ocupados antes":"Pequeños ocupados antes";
+  $("truckCurrentPLabel").textContent=european?"Europeos necesarios ahora":"Pequeños necesarios ahora";
   const result=assessment();
   $("truckCapacityResult").className="truck-result "+result.estado;
   $("truckCapacityResult").textContent=result.detalle+(result.filas.length?"\n"+
@@ -578,7 +584,7 @@ function renderTruckAssessment(){
     ", ocupados antes "+(row.anteriores??"—")+", esta carga "+(row.actual??"—")+
     ", libres después "+(row.restantes??"—")).join("\n"):"");
   if(truckKey())truckCapacitySession.set(truckKey(),{
-    modo:$("truckCapacityMode").value,previas:$("truckPreviousChoice").value,
+    modo:$("truckCapacityMode").value,segundoTipo:$("truckSecondKind").value,previas:$("truckPreviousChoice").value,
     inputs:Object.fromEntries(truckInputs.map(id=>[id,$(id).value]))
   });
   return result;
@@ -589,11 +595,12 @@ function openTruckPanel(load){
   const cached=truckCapacitySession.get(user.id+"|"+load.almacen+"|"+load.codigo);
   $("truckCapacityPanel").hidden=false;
   $("truckCapacityMode").value=cached?.modo||(supplied.modo==="desglose"?"desglose":"total");
+  $("truckSecondKind").value=cached?.segundoTipo||supplied.segundoTipo||"E";
   $("truckPreviousChoice").value=cached?.previas||"";
   for(const id of truckInputs)$(id).value=cached?.inputs?.[id]??"";
   if(!cached){
     $("truckCapacityG").value=supplied.grandes??"";
-    $("truckCapacityP").value=supplied.pequenos??"";
+    $("truckCapacityP").value=$("truckSecondKind").value==="E"?(supplied.europeos??""):(supplied.pequenos??"");
     $("truckCapacityTotal").value=supplied.total??"";
   }
   $("truckCapacitySource").textContent=supplied.modo==="sin_datos"?
@@ -616,16 +623,15 @@ async function recoverTruckCapacityFromPdf(load){
     const extras=cabeceraLeida(load,parsed,warehouse);
     if(!extras)throw Error("El PDF no coincide con carga/almacén");
     legacyHeaderCache.set(route,extras);
-    for(const field of ["huecos_palets_grandes","huecos_palets_pequenos","huecos_palets_total"]){
-      if(extras[field]!==null)load[field]=extras[field];
-    }
-    if(!load.observaciones&&extras.observaciones)load.observaciones=extras.observaciones;
+    Object.assign(load,combinarHuecosConOrigen(load,null,extras));
+    $("detailTitle").textContent=load.codigo+(load.observaciones?" — "+String(load.observaciones).trim():"");
     renderLoadList();
     if(!truckCapacityTouched){
       const supplied=capacidadDeCarga(load);
       if(supplied.modo==="desglose")$("truckCapacityMode").value="desglose";
+      $("truckSecondKind").value=supplied.segundoTipo||"E";
       $("truckCapacityG").value=supplied.grandes??"";
-      $("truckCapacityP").value=supplied.pequenos??"";
+      $("truckCapacityP").value=$("truckSecondKind").value==="E"?(supplied.europeos??""):(supplied.pequenos??"");
       $("truckCapacityTotal").value=supplied.total??"";
       $("truckCapacitySource").textContent=supplied.modo==="sin_datos"?
         "El PDF no trae huecos reconocibles. Introduce manualmente la capacidad real del camión.":
@@ -638,6 +644,10 @@ async function recoverTruckCapacityFromPdf(load){
     }
   }
 }
+$("truckSecondKind").addEventListener("change",()=>{
+  for(const id of ["truckCapacityP","truckPreviousP","truckCurrentP"])$(id).value="";
+  truckCapacityTouched=true;renderTruckAssessment();
+});
 for(const id of [...truckInputs,"truckCapacityMode","truckPreviousChoice"]){
   $(id).addEventListener("input",()=>{truckCapacityTouched=true;renderTruckAssessment();});
   $(id).addEventListener("change",()=>{truckCapacityTouched=true;renderTruckAssessment();});
@@ -667,7 +677,7 @@ async function openLoad(code,{source=loads,returnTo="loadsView",readOnly=loadsMo
     finalized:Boolean(load.preparacion_fin)
   };
   $("detailModeLabel").textContent=currentReadOnly?"CONSULTA DE CARGA":"PREPARACIÓN POR PASILLOS";
-  $("detailTitle").textContent=load.codigo;
+  $("detailTitle").textContent=load.codigo+(load.observaciones?" — "+String(load.observaciones).trim():"");
   $("detailSubtitle").textContent=[load.repartidor,load.ruta,load.almacen].filter(Boolean).join(" · ")||"Preparación por pasillos";
   const notice=$("prepStatus");
   notice.className="info-bar"+(currentPreparation.finalized?" complete":"");
@@ -755,16 +765,32 @@ async function refreshReviewLoads(){
     (!load.verificador_id||load.verificador_id===userId)
   ));
   renderReviewLoads();
+  // Observaciones de la revisión vigente, mediante consulta sin escrituras.
+  const reviewCodes=[...new Set(reviewLoads.map(load=>load.codigo).filter(Boolean))];
+  const reviewNotes=new Map();
+  try{
+    for(let i=0;i<reviewCodes.length;i+=50){
+      const {data:rows,error:notesError}=await client.from("kontrola_carga_revisiones")
+        .select("codigo,observaciones:carga_datos->>observaciones")
+        .eq("vigente",true).eq("almacen",warehouse).in("codigo",reviewCodes.slice(i,i+50));
+      if(!validRequest(warehouse,userId))return;
+      if(notesError)throw notesError;
+      for(const row of rows||[])if(row.observaciones)reviewNotes.set(row.codigo,row.observaciones);
+    }
+    if(!validRequest(warehouse,userId))return;
+    reviewLoads=reviewLoads.map(load=>({...load,observaciones:reviewNotes.get(load.codigo)||load.observaciones}));
+    renderReviewLoads();
+  }catch(error){if(validRequest(warehouse,userId))global("No se pudieron consultar Observaciones: "+errorText(error),"error");}
 }
 function renderReviewLoads(){
   const target=$("reviewLoadsList");target.replaceChildren();
   const search=$("reviewSearch").value.trim().toLocaleLowerCase("es-ES");
-  const records=reviewLoads.filter(r=>[r.codigo,r.ruta,r.matricula,r.repartidor].some(v=>String(v||"").toLocaleLowerCase("es-ES").includes(search)));
+  const records=reviewLoads.filter(r=>[r.codigo,r.observaciones,r.ruta,r.matricula,r.repartidor].some(v=>String(v||"").toLocaleLowerCase("es-ES").includes(search)));
   if(!records.length){const p=document.createElement("p");p.className="muted";p.textContent=!reviewLoads.length?"No hay cargas verificables por este usuario en "+warehouseLabel()+". Selecciona otro almacén si corresponde.":"Ninguna carga verificable coincide con el filtro de búsqueda.";target.appendChild(p);return;}
   for(const load of records){
     const button=document.createElement("button");button.type="button";button.className="load-card";
     const left=document.createElement("span"),title=document.createElement("strong"),meta=document.createElement("span");
-    title.className="load-title";title.textContent=load.codigo;
+    title.className="load-title";title.textContent=load.codigo+(load.observaciones?" — "+String(load.observaciones).trim():"");
     const incidents=Number(load.incidencias_pendientes||0);
     const progress=load.estado==="cerrada"?"Finalizada · "+incidents+" incidencia(s)":load.estado==="verificacion_en_curso"?"Continuar verificación":"Pendiente de iniciar";
     meta.className="load-meta";meta.textContent=[load.ruta,load.matricula,progress].filter(Boolean).join(" · ");
@@ -779,7 +805,7 @@ async function openVerification(code){
   if(opening||!user)return;
   const load=reviewLoads.find(item=>item.codigo===code);if(!load)return;
   current=load;currentVerification=null;verificationLines=buildVerificationLines(load.productos||[]);
-  $("reviewDetailTitle").textContent=load.codigo;
+  $("reviewDetailTitle").textContent=load.codigo+(load.observaciones?" — "+String(load.observaciones).trim():"");
   $("reviewDetailSubtitle").textContent=[load.repartidor,load.ruta,load.matricula,load.almacen].filter(Boolean).join(" · ")||"Carga preparada";
   switchView("reviewDetailView",{force:true});
   if(!load.verificador_id){renderVerification();return;}

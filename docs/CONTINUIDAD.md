@@ -906,3 +906,22 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 - Primera CI del commit d46c352b detectó una expectativa obsoleta en tests/print-pdf.test.mjs, v069 frente a v070. Corregida en el siguiente commit. No se cambia el módulo PDF.
 
 - Segunda CI run `40321901143` para HEAD `bd3f68799dc3a6b1e66cb9433cb4740f284c900e` terminó SUCCESS (240 pruebas, 0 fallos). Se añade defensa adicional directamente en `startCurrentPreparation` para impedir iniciar por botón de reintento si el formulario ha pasado a estado no viable. Revalidar CI del nuevo commit.
+
+
+### 2026-10-26 — Corrección de huecos de camión sin datos: candidata 0.3.38
+- El usuario mostró 0 huecos en LP26-19519, LP26-19531 y LP26-19525. Consulta directa de Supabase: las tres revisiones vigentes no tienen `huecos_palets_grandes`, `huecos_palets_pequenos` ni `huecos_palets_total`. Conteo de todas las 14 cargas: 0 revisiones con esos campos. No asumir que cero es capacidad real del camión.
+- La lectura local de cabeceras antiguas puede dar 0 desde el PDF. La nueva tarjeta distingue `Sin dato` (ninguna fuente acreditada) y `0 en PDF · confirmar` (cero recibido de la lectura local), sin inventar capacidad. La revisión vigente tiene prioridad. El RPC inicial no se considera prueba de huecos (sus valores por defecto no equivalen a una revisión).
+- Los datos manuales siguen entrando al abrir la carga y se mantienen en sesión sin persistencia. No altera PDF, Supabase, reloj de preparación ni cálculos de bultos.
+- Versión candidata 0.3.38; caché v071; rama independiente desde HEAD operativo e453c6e9cd04b7e92daea54bb95bcc53c2fb5c16. Validar CI antes de publicar y documentar autorización; no borrar cargas.
+
+
+### 2026-10-26 — Verificación con PDF auténtico de LP26-19519: formato 6G 1E y Observaciones (candidata 0.3.39)
+- El usuario proporcionó 19519.pdf, de 5 páginas, en conversación; NO se ha incorporado el archivo privado a GitHub. En su primera página consta Camión CR2554JRM IVECO 100E-VOLDIS-6G 1E, Huecos plts. camión 0 y Observaciones CENTRO 1*. E significa europeo, confirmado expresamente por el usuario. El 0 es un campo distinto del código de capacidad y no debe reemplazar 6 G / 1 E.
+- El parser extrae códigos G/E o G/P expresos del camión, sin convertir E a P. Añade el nuevo atributo JSONB de revisiones huecos_palets_europeos (para importaciones futuras) y el mismo dato en recuperación local PDF. No hay SQL ni migración de base de datos.
+- El formulario de capacidad distingue segundo formato E/P, precarga E cuando procede, y vacía las cifras del segundo formato al cambiar su tipo. Nunca suma G y E ni equipara E y P; sigue exigiendo cantidad actual y ocupación previa al calcular.
+- Observaciones se mostraban en la tarjeta principal, pero faltaban en títulos de detalles/verificación. Se añaden y se consulta la revisión vigente de forma segura para los listados de verificaciones. El lector ya no arrastra encabezados Devoluciones unidad de la tabla de productos. Para la carga aportada el texto correcto es CENTRO 1*.
+- Pruebas sintéticas de cabecera G/E con campo huecos 0, G/P heredado, y recorte de Observaciones contra tablas; no publicar ni integrar en rama operativa sin prueba CI y comprobación en iPhone. Rama: fix/visura-prepara-cabecera-6g-1e-observaciones-20261026; deriva de 0af3acd73deefd2e0b1b1fcad32989ace0ddcf2b. La versión operativa sigue 0.3.37 e453c6e9cd04b7e92daea54bb95bcc53c2fb5c16.
+
+- CI PR #48 run 40331298852 (HEAD 950f1511): 248/250 pruebas; 2 fallos de regresión. Se corrige tolerancia horizontal de continuación de Observaciones (x135 frente a origen x12, manteniendo filtro de encabezados ajenos como Devoluciones) y se actualiza una aserción heredada para el método de enriquecimiento vigente sin modificar datos ni lógica de negocio. Revalidar HEAD posterior.
+
+- CI del segundo commit cd9cdd02eeac54c494abd81717b90bd2695f8575 verificada en GitHub Actions run 40331602194: 250/250 pruebas, 0 fallos, migraciones de base de datos en simulación y concurrencia correctas. PR #48 abierta DRAFT, no fusionada; rama operativa sigue 0.3.37. Falta autorización inequívoca para desplegar esta nueva versión, y prueba en iPhone con PDF auténtico. El PDF de origen sigue únicamente en el chat y no se subió a GitHub.

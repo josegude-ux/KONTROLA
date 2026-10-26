@@ -45,7 +45,7 @@ test("la PWA precarga PDF offline y la exportación en iOS usa Web Share Files",
   const sw=read("sw.js"),admin=read("src/admin.mjs");
   const html=read("index.html");
   assert.match(sw,/src\/print-pdf\.mjs/);
-  assert.match(sw,/kontrola-integral-visura-v070/);
+  assert.match(sw,/kontrola-integral-visura-v072/);
   assert.match(admin,/navigator\.share\(\{files:\[file\]/);
   assert.match(admin,/navigator\.standalone===true/);
   assert.match(admin,/if\(!ios\)\{window\.print\(\);return;\}/);

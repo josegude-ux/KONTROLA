@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import {agruparPasillos, ordenarCargas, validacionPublicacion, fechaISO, rutaArchivo, formatearHuecosPalets} from "../src/logic.mjs";
+import {agruparPasillos, ordenarCargas, validacionPublicacion, fechaISO, rutaArchivo, formatearHuecosPalets, combinarHuecosConOrigen, textoHuecosConOrigen} from "../src/logic.mjs";
 import {summarize} from "../src/core.mjs";
 test("Aisles: no create phantom location, no checks for picker",()=>{
  const g=agruparPasillos([
@@ -52,4 +52,35 @@ test("huecos de palés distingue grandes y pequeños sin completarlos artificial
  assert.equal(formatearHuecosPalets("",null,null),"—");
  assert.equal(formatearHuecosPalets("9.5",null,null),"—");
  assert.equal(formatearHuecosPalets(0,0,null),"0 G · 0 P");
+});
+
+test("la ausencia real de huecos no se anuncia como capacidad cero",()=>{
+ const carga={codigo:"LP26-19519",huecos_palets_total:0,matricula:"2554JRM"};
+ const sinDatos=combinarHuecosConOrigen(carga);
+ assert.equal(sinDatos.huecos_palets_total,null);
+ assert.equal(textoHuecosConOrigen(sinDatos),"Sin dato");
+ const desdePdf=combinarHuecosConOrigen(carga,null,{huecos_palets_total:0});
+ assert.equal(desdePdf.huecos_origen,"pdf_leido");
+ assert.equal(textoHuecosConOrigen(desdePdf),"0 en PDF · confirmar");
+ const desdeRevision=combinarHuecosConOrigen(carga,{huecos_palets_grandes:6,huecos_palets_pequenos:4});
+ assert.equal(textoHuecosConOrigen(desdeRevision),"6 G · 4 P");
+});
+test("la revisión prevalece sobre PDF local antiguo y permite completar G/P faltantes",()=>{
+ const carga={codigo:"LP26-19531",huecos_palets_total:0,observaciones:"Anterior"};
+ const merged=combinarHuecosConOrigen(carga,{huecos_palets_grandes:6,observaciones:"Vigente"},
+   {huecos_palets_grandes:1,huecos_palets_pequenos:2,huecos_palets_total:10,observaciones:"PDF"});
+ assert.equal(merged.huecos_palets_grandes,6);
+ assert.equal(merged.huecos_palets_pequenos,2);
+ assert.equal(merged.huecos_palets_total,10);
+ assert.equal(merged.observaciones,"Vigente");
+ assert.equal(merged.huecos_origen,"revision");
+});
+
+test("camión 6 G y 1 europeo E, con Observaciones separadas",()=>{
+ assert.equal(formatearHuecosPalets(6,null,null,1),"6 G · 1 E");
+ const row=combinarHuecosConOrigen({codigo:"LP26-20000",observaciones:null},
+   {huecos_palets_grandes:"6",huecos_palets_europeos:"1",observaciones:"CENTRO 1*"});
+ assert.equal(textoHuecosConOrigen(row),"6 G · 1 E");
+ assert.equal(row.observaciones,"CENTRO 1*");
+ assert.equal(row.huecos_palets_pequenos,null);
 });

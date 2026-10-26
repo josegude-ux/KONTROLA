@@ -39,7 +39,7 @@ test("solo acepta cabeceras del código y almacén de la carga",()=>{
   };
   assert.deepEqual(cabeceraLeida(reference,parsed,"COR_01_COR"),{
     observaciones:"Entregar puerta 3",
-    huecos_palets_grandes:6,huecos_palets_pequenos:null,huecos_palets_total:null
+    huecos_palets_grandes:6,huecos_palets_pequenos:null,huecos_palets_europeos:null,huecos_palets_total:null
   });
   assert.equal(cabeceraLeida(reference,{...parsed,id:"LP26-10009"},"COR_01_COR"),null);
   assert.equal(cabeceraLeida(reference,{...parsed,warehouse:"COR_02_NAR"},"COR_01_COR"),null);
@@ -53,6 +53,16 @@ test("ausencia de huecos no se transforma en cero y elimina cantidades inválida
     palletsLarge:"6",palletsSmall:2.2,palletsTotal:-3
   },"COR_01_COR");
   assert.deepEqual(result,{
-    observaciones:null,huecos_palets_grandes:null,huecos_palets_pequenos:null,huecos_palets_total:null
+    observaciones:null,huecos_palets_grandes:null,huecos_palets_pequenos:null,huecos_palets_europeos:null,huecos_palets_total:null
   });
+});
+
+test("cabecera 6G 1E conserva Observaciones y no declara palés P",()=>{
+ const r=cabeceraLeida(load("LP26-10001"),{
+  id:"LP26-10001",warehouse:"COR_01_COR",observations:"CENTRO 1*",
+  palletsLarge:6,palletsEuropean:1,palletsSmall:null,palletsTotal:null},"COR_01_COR");
+ assert.equal(r.observaciones,"CENTRO 1*");
+ assert.equal(r.huecos_palets_grandes,6);
+ assert.equal(r.huecos_palets_europeos,1);
+ assert.equal(r.huecos_palets_pequenos,null);
 });
