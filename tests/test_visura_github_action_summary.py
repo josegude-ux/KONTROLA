@@ -56,6 +56,20 @@ def bundle(target="chore/visura-auto-dev-guardrails", default="main"):
             "execution_authorized": False, "merge_authorized": False,
             "deployment_authorized": False,
         },
+        "required_check_observations": {
+            "lookup": "candidate_match_only",
+            "required_context_count": 2,
+            "candidate_name_match_count": 1,
+            "candidate_success_count": 1,
+            "without_named_check_run_count": 1,
+            "ambiguous_app_provenance_count": 0,
+            "legacy_commit_statuses_compared": False,
+            "app_origin_authenticated": False,
+            "required_checks_verified": False,
+            "execution_authorized": False,
+            "merge_authorized": False,
+            "deployment_authorized": False,
+        },
         "target_branch_policy": policy(target),
         "default_branch": default,
         "default_branch_policy": policy(default),
@@ -176,6 +190,45 @@ class GitHubActionSummaryTests(unittest.TestCase):
         data = bundle()
         data["head_check_runs"]["status_counts"] = {"all-authorized": 2}
         with self.assertRaisesRegex(ValueError, "Invalid check outcome"):
+            render_readonly_audit_summary(data)
+
+    def test_required_check_candidate_counts_are_visible_without_authority(self):
+        result = render_readonly_audit_summary(bundle())
+        self.assertIn("Cruce orientativo con checks exigidos", result)
+        self.assertIn("Contextos exigidos observados | 2", result)
+        self.assertIn("Coincidencias candidatas de nombre y aplicación | 1", result)
+        self.assertIn("NO confirma", result)
+
+    def test_unknown_required_checks_are_reported_unknown(self):
+        data = bundle()
+        data["required_check_observations"].update({
+            "lookup": "unknown_policy_requirements",
+            "required_context_count": None,
+            "candidate_name_match_count": None,
+            "candidate_success_count": None,
+            "without_named_check_run_count": None,
+            "ambiguous_app_provenance_count": None,
+        })
+        result = render_readonly_audit_summary(data)
+        self.assertIn("Contextos exigidos observados | desconocido", result)
+        self.assertNotIn("Contextos exigidos observados | 0", result)
+
+    def test_required_check_comparison_cannot_supply_merge_authority(self):
+        data = bundle()
+        data["required_check_observations"]["merge_authorized"] = True
+        with self.assertRaisesRegex(ValueError, "cannot grant authority"):
+            render_readonly_audit_summary(data)
+
+    def test_inconsistent_candidate_totals_are_rejected(self):
+        data = bundle()
+        data["required_check_observations"]["candidate_name_match_count"] = 3
+        with self.assertRaisesRegex(ValueError, "Inconsistent required-check"):
+            render_readonly_audit_summary(data)
+
+    def test_unknown_comparison_with_forged_count_is_rejected(self):
+        data = bundle()
+        data["required_check_observations"]["lookup"] = "unknown_check_run_names"
+        with self.assertRaisesRegex(ValueError, "Unknown required checks"):
             render_readonly_audit_summary(data)
 
     def test_inaccessible_branch_rule_count_cannot_be_forged(self):
