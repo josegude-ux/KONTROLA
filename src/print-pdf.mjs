@@ -121,7 +121,7 @@ export function generarPdfHojas(hojas){
     label("LISTADO DE PREPARACIÓN POR PASILLOS",left,PAGE_H-79,17,{bold:true,color:"1 1 1"});
     label("Carga: "+hoja.codigo+"     Fecha: "+hoja.fecha+"     Almacén: COR1 (A Coruña)",left,PAGE_H-107,9,{color:"1 1 1"});
     label("Repartidor: "+hoja.repartidor,left,696,9,{bold:true});
-    label("Solo MERCANCÍA · sin envases ni palés · casillas HECHO",right,696,7.5,{color:"0.11 0.45 0.33",center:false});
+    label("Solo MERCANCÍA · sin envases ni palés · casillas HECHO",left+229,696,7.5,{color:"0.11 0.45 0.33"});
     rect(left,top-headerH,CONTENT_W,headerH,0.09,0.16,0.24);
     const columnCenters=unidades.map((_,i)=>left+aisleW+unitW*(i+.5));
     label("PASILLO",left+aisleW/2,top-19,8.6,{bold:true,center:true,color:"1 1 1"});
@@ -164,7 +164,7 @@ export function generarPdfHojas(hojas){
         if(i%2===0)rect(left,y-h+3,CONTENT_W,h);
         label(row.sku,left+5,y-10,7.2,{bold:true});
         descripcion.forEach((line,k)=>label(line,left+113,y-10-k*11,7.1));
-        label(String(row.qty)+" "+String(row.unit),right-2,y-10,7.4,{bold:true,center:false});
+        {const cantidad=String(row.qty)+" "+String(row.unit);label(cantidad,right-2-estimatedWidth(cantidad,7.4,true),y-10,7.4,{bold:true});}
         y-=h;
       }
       if(y<82)throw Error("Detalle SIN UBICACIÓN demasiado largo para A4: no se han omitido productos.");
