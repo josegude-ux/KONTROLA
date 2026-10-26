@@ -102,3 +102,5 @@ La idea de un portal común se documentó separadamente en `docs/MOVENTA_CONCEPT
 - **CI verificada**: workflow Queue Audit runs #34 (`40259234346`) y #35 (`40259243634`) concluyeron `success`. El registro del run #35 confirma **24 pruebas OK**, smoke test de bloqueo de llamadas de pago y auditoría de issue #31. Evidencia: https://github.com/josegude-ux/KONTROLA/actions/runs/40259243634. El PR #35 sigue en borrador, sin fusionar ni desplegar.
 
 - **CSV Pilot Tests superadas**: run #6, ID `40259958857`, conclusión `success`; compilación correcta y **11/11 pruebas CSV OK** (incluye separadores entrecomillados, tabuladores, cabeceras obligatorias, filas irregulares y límite de tamaño). Evidencia: https://github.com/josegude-ux/KONTROLA/actions/runs/40259958857. PR #35 sigue en borrador y sin fusionar.
+
+- Revisión de integración (26/10/2026): las 11 pruebas CSV específicas pasan en Actions. Se solicita una ejecución final del Code Review Gate sobre el estado actual del PR antes de decidir integración. No se fusiona automáticamente.
