@@ -112,6 +112,61 @@ def render_readonly_audit_summary(bundle):
         )
         if counts[label] is None:
             raise ValueError("Invalid review audit list")
+    check_snapshot = bundle.get("head_check_runs")
+    if not isinstance(check_snapshot, dict):
+        raise ValueError("Missing commit checks snapshot")
+    if (
+        check_snapshot.get("repository") != repository
+        or check_snapshot.get("head_sha", "").lower() != head_sha.lower()
+    ):
+        raise ValueError("Commit check SHA or repository mismatch")
+    if any(check_snapshot.get(key) is not False for key in (
+        "required_checks_verified", "branch_policy_verified",
+        "execution_authorized", "merge_authorized", "deployment_authorized",
+    )):
+        raise ValueError("Commit checks must not grant authority")
+    check_lookup = check_snapshot.get("lookup")
+    if check_lookup not in {"retrieved", "inaccessible_or_not_found"}:
+        raise ValueError("Invalid commit checks lookup")
+    total_checks = check_snapshot.get("observed_total")
+    statuses = check_snapshot.get("status_counts")
+    conclusions = check_snapshot.get("conclusion_counts")
+    if check_lookup == "retrieved":
+        _require_count(total_checks, "total checks")
+        if not isinstance(statuses, dict) or not isinstance(conclusions, dict):
+            raise ValueError("Invalid check counts")
+        allowed_statuses = {
+            "queued", "in_progress", "completed", "waiting", "pending", "requested"
+        }
+        allowed_conclusions = {
+            "success", "failure", "neutral", "cancelled", "timed_out",
+            "action_required", "skipped", "stale", "startup_failure"
+        }
+        for observed, allowed in (
+            (statuses, allowed_statuses), (conclusions, allowed_conclusions)
+        ):
+            for key, value in observed.items():
+                if key not in allowed:
+                    raise ValueError("Invalid check outcome")
+                _require_count(value, "check outcome count")
+        if sum(statuses.values()) != total_checks:
+            raise ValueError("Inconsistent total check count")
+        if sum(conclusions.values()) > statuses.get("completed", 0):
+            raise ValueError("Inconsistent concluded check count")
+        total_text = str(total_checks)
+        success_text = str(conclusions.get("success", 0))
+        failed_text = str(
+            sum(conclusions.get(key, 0) for key in (
+                "failure", "cancelled", "timed_out", "action_required",
+                "startup_failure", "stale"
+            ))
+        )
+        unfinished_text = str(total_checks - statuses.get("completed", 0))
+    else:
+        if any(v is not None for v in (total_checks, statuses, conclusions)):
+            raise ValueError("Unavailable checks cannot report counts")
+        total_text = success_text = failed_text = unfinished_text = "desconocido"
+
     target_policy = bundle.get("target_branch_policy")
     default_policy = bundle.get("default_branch_policy")
     if not isinstance(target_policy, dict) or not isinstance(default_policy, dict):
@@ -144,6 +199,19 @@ def render_readonly_audit_summary(bundle):
     lines += [
         "",
         "Las aprobaciones observadas no acreditan permisos efectivos del revisor.",
+        "",
+        "## Comprobaciones de CI observadas para el commit",
+        "",
+        "| Comprobación | Observación |",
+        "|---|---|",
+        "| Consulta de checks | " + check_lookup + " |",
+        "| Checks encontrados | " + total_text + " |",
+        "| Conclusión success | " + success_text + " |",
+        "| Conclusiones negativas | " + failed_text + " |",
+        "| Aún no completados | " + unfinished_text + " |",
+        "",
+        "**Estos recuentos NO prueban que se hayan superado los checks "
+        "obligatorios de la rama.**",
         "",
         "## Reglas de GitHub observadas",
         "",
