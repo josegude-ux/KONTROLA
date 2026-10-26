@@ -32,6 +32,8 @@ def observe_commit_checks(repository, head_sha, token, opener=None):
     counts = {}
     conclusions = {}
     seen_ids = set()
+    named_checks = []
+    named_checks_complete = True
     expected_total = None
     lookup = "retrieved"
     for page in range(1, MAX_CHECK_PAGES + 1):
@@ -47,6 +49,8 @@ def observe_commit_checks(repository, head_sha, token, opener=None):
                 counts = {}
                 conclusions = {}
                 seen_ids = set()
+                named_checks = []
+                named_checks_complete = False
                 break
             raise
         if not isinstance(payload, dict):
@@ -77,6 +81,28 @@ def observe_commit_checks(repository, head_sha, token, opener=None):
             if check_id in seen_ids:
                 raise ValueError("Duplicate GitHub check run ID")
             seen_ids.add(check_id)
+            check_name = check.get("name")
+            app = check.get("app")
+            if check_name is None:
+                named_checks_complete = False
+            else:
+                if (
+                    not isinstance(check_name, str)
+                    or not check_name or len(check_name) > 255
+                    or any(ord(ch) < 32 for ch in check_name)
+                ):
+                    raise ValueError("Invalid check run name")
+                if app is not None and (
+                    not isinstance(app, dict)
+                    or type(app.get("id")) is not int or app["id"] <= 0
+                ):
+                    raise ValueError("Invalid check run app identity")
+                named_checks.append({
+                    "name": check_name,
+                    "app_id": app["id"] if app is not None else None,
+                    "status": status,
+                    "conclusion": conclusion,
+                })
             counts[status] = counts.get(status, 0) + 1
             if conclusion is not None:
                 conclusions[conclusion] = conclusions.get(conclusion, 0) + 1
@@ -95,6 +121,8 @@ def observe_commit_checks(repository, head_sha, token, opener=None):
         "observed_total": len(seen_ids) if lookup == "retrieved" else None,
         "status_counts": counts if lookup == "retrieved" else None,
         "conclusion_counts": conclusions if lookup == "retrieved" else None,
+        "named_check_runs": named_checks if lookup == "retrieved" else None,
+        "named_checks_complete": lookup == "retrieved" and named_checks_complete,
         "required_checks_verified": False,
         "branch_policy_verified": False,
         "execution_authorized": False,
