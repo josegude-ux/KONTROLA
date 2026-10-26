@@ -30,6 +30,7 @@ jobs:
       - name: Test input validation without network or AI
         shell: bash
         run: |
+          python3 -m compileall -q scripts/visura_budget_gate.py scripts/visura_budget_ledger.py scripts/visura_queue_audit.py tests/test_visura_budget_gate.py tests/test_visura_budget_ledger.py tests/test_visura_queue_audit.py
           python3 -m unittest discover -s tests -p 'test_visura_*.py' -v
           python3 scripts/visura_budget_gate.py
       - name: Audit approved pilot issue (read only)
