@@ -739,3 +739,8 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 - La prueba de navegador es complementaria a los 200 tests Node; no equivale a una prueba en iPhone/Android físicos.
 - Últimos cambios CI/tests: 4318f36, 6e1b1ea, 5395288. Pendiente resultado de Actions antes de afirmar que la prueba visual automatizada pasa.
 - No merge ni despliegue.
+
+
+### Correccion del smoke visual Chromium
+- Ejecuciones #100/#101 detectaron que la vista del menú permanece oculta sin una sesión autenticada, como corresponde al control de acceso. La prueba visual no debe iniciar sesión ni llamar a Supabase; se ajustó para mostrar la vista solo en el DOM del navegador de prueba, sin modificar backend ni saltarse autenticación en la aplicación real.
+- Commit de la corrección: 52d79bc7d13e13c6adf81875d69b8ea88e9261dc. Pendiente CI.
