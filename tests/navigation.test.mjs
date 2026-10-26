@@ -96,7 +96,8 @@ test("KONTROLA usa cuatro imágenes 3D exclusivas, distintas y precargadas sin c
  const names=["preparacion","verificacion","control-cargas","administracion"];
  const images=names.map(name=>{
    const asset="assets/home/kontrola-"+name+"-3d.webp";
-   assert.match(html,new RegExp('src="\\./'+asset+'"'));
+   const official={preparacion:"preparacion",verificacion:"control-cargas","control-cargas":"operaciones",administracion:"administracion"}[name];
+   assert.match(html,new RegExp('src="\\./assets/home/visura-prepara-'+official+'-3d\\.webp"'));
    assert.match(read("sw.js"),new RegExp('\\./'+asset.replaceAll(".","\\.")));
    const bytes=readFileSync(new URL("../"+asset,import.meta.url));
    assert.ok(bytes.length>10000,asset+" debe tener contenido gráfico");
