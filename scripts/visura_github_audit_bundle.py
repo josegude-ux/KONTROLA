@@ -16,6 +16,7 @@ from scripts.visura_github_readonly_snapshot import (
 from scripts.visura_github_policy_probe import (
     _validate_branch, inspect_branch_policy,
 )
+from scripts.visura_github_action_summary import render_readonly_audit_summary
 
 
 def inspect_readonly_audit_bundle(
@@ -97,6 +98,13 @@ def main(argv=None):
         args.repository, args.pr_number, args.default_branch,
         os.environ.get("GITHUB_TOKEN", ""),
     )
+    summary_path = os.environ.get("GITHUB_STEP_SUMMARY")
+    if summary_path:
+        summary = render_readonly_audit_summary(result)
+        # GitHub Actions supplies a step-local summary file. This is the only
+        # local write; no repository, app or production data is modified.
+        with open(summary_path, "a", encoding="utf-8") as summary_file:
+            summary_file.write(summary + "\n")
     print(json.dumps(result, sort_keys=True, indent=2))
     return 0
 
