@@ -160,18 +160,46 @@ incompletos, la comparación presenta `unknown_policy_requirements` o
 completa sin contextos conocidos se indica como
 `no_requirements_observed`, **no** como "rama sin protecciones".
 
-**Restricción fundamental:** un contexto requerido puede satisfacerse mediante
-un *commit status* heredado en lugar de un *check-run*; las políticas también
-pueden exigir un origen específico, checks de un SHA de cola de fusión, o
-aplicar excepciones. La comparación no consulta esos estados heredados ni
-autentica el origen de un check. Por eso `required_checks_verified`,
+**Restricción fundamental:** la comparación de *check-runs* no es una verificación
+de la política. El informe unificado ahora consulta también, **por separado**,
+los *commit statuses* heredados. Ninguna de estas fuentes acredita por sí sola
+la aplicación emisora, los posibles *bypasses*, la cola de fusión ni la
+vigencia de la protección real. Por eso `required_checks_verified`,
 `repository_policy_verified`, `execution_authorized`,
 `merge_authorized` y `deployment_authorized` permanecen siempre en
-`false`. Ni una coincidencia ni el éxito de las 232 pruebas de desarrollo
+`false`. Ni una coincidencia ni el éxito de las pruebas de desarrollo
 constituyen permiso para fusionar.
 
 Referencias técnicas: https://docs.github.com/en/rest/branches/branch-protection
 y https://docs.github.com/en/rest/repos/rules.
+
+## Estados heredados de commit: lectura diferenciada
+
+El nuevo módulo `scripts/visura_github_legacy_statuses.py` lee el endpoint
+`GET /repos/{owner}/{repo}/commits/{sha}/statuses` mediante solicitudes
+HTTPS GET y un token de lectura de GitHub. Los registros se vinculan
+obligatoriamente al **SHA del PR**. Se consulta la paginación completa con
+límite preventivo; los registros duplicados, los estados desconocidos o un
+SHA distinto provocan rechazo. Un HTTP 403/404 devuelve
+`inaccessible_or_not_found` y datos **desconocidos**, nunca cero o aprobado.
+
+GitHub devuelve los estados heredados en orden del más reciente al más
+antiguo. Para cada contexto se conserva la primera observación; por ejemplo,
+si el último estado es `failure` y existe un `success` anterior, se
+contabiliza `failure`, no éxito.
+
+La auditoría unificada añade `legacy_commit_statuses` y
+`legacy_status_observations`. En el Summary aparecen recuentos de contextos
+actuales, éxitos y fallos/errores/pendientes, además de una **comparación
+orientativa** contra contextos exigidos por la rama de destino. Los requisitos
+vinculados a un ID de aplicación no se pueden certificar mediante un estado
+heredado, por lo que figuran como `app_pinned_unverifiable_count`. Los
+nombres/contextos de estados no se reproducen libremente en la vista Markdown.
+
+Las dos API —*check-runs* y *commit statuses*— se analizan por separado. No
+se suman los éxitos para decidir fusionabilidad ni se declara
+`required_checks_verified=true`. Sigue sin verificarse el origen efectivo
+de cada estado, las reglas clásicas inaccesibles, *merge queue* y excepciones.
 
 ## Qué NO demuestra
 
@@ -181,4 +209,4 @@ Antes de habilitar cualquier automatización con escritura será imprescindible 
 
 ## Validación
 
-Code Review Gate #149: **232 de 232 pruebas correctas**, incluidas pruebas de extracción de contextos, aplicación de origen y comparación conservadora con check-runs. Todas las lecturas HTTP de estas pruebas están simuladas. El workflow manual sigue sin activarse. La consulta de producción y las reglas de protección de rama siguen pendientes de validación independiente.
+Code Review Gate #161: **269 de 269 pruebas correctas**, incluidas pruebas de estados heredados, paginación, protección ante datos obsoletos, comparación con requisitos y resumen unificado. Todas las lecturas HTTP de estas pruebas están simuladas. El workflow manual sigue sin activarse. La consulta de producción y las reglas de protección de rama siguen pendientes de validación independiente.
