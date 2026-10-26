@@ -661,3 +661,9 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 ### 2026-10-26 — Comando de verificación estándar en CI
 - El workflow de la rama aislada ahora usa `npm run check` (sintaxis de todos los `src/*.mjs` y suite completa `tests/*.test.mjs`), además de verificar la sintaxis del test específico. Sustituye comprobaciones parciales por el comando oficial del proyecto.
 - Commit del cambio `3eab3dbcc3ac339dd0aa99965efea5261dc009f0`. La suite previa de 193 pruebas está aprobada; **la nueva ejecución de `npm run check` aún requiere confirmación**.
+
+
+### 2026-10-26 — Endurecimiento de pruebas de menú
+- GitHub Actions `40257146159` confirmó `npm run check` **success**: 193 pruebas aprobadas, cero fallidas, sintaxis de módulos superada. https://github.com/josegude-ux/KONTROLA/actions/runs/40257146159
+- Se añadieron tres regresiones en `tests/visura-menu.test.mjs`: administración oculta por defecto, cuatro imágenes WEBP distintas y precarga offline explícita de las cuatro imágenes en `sw.js`.
+- Commit funcional `3274d135754aef43b611e5bcc2b2a9cfc30339c8`. **Pendiente verificar CI tras añadir las tres pruebas.** No se han sustituido imágenes ni cambiado roles o datos.
