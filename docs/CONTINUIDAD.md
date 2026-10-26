@@ -165,3 +165,6 @@ La idea de un portal común se documentó separadamente en `docs/MOVENTA_CONCEPT
 
 - Code Review Gate #71 (`40263164862`) **success, 82/82 pruebas OK**: https://github.com/josegude-ux/KONTROLA/actions/runs/40263164862.
 - Comprobación inerte de identidad GitHub por ID numérico estable en `scripts/visura_github_identity_binding.py` (commit `5a0cf1e`), con cuatro pruebas (`00f239e`). Detecta el mismo usuario aunque cambie su login, pero no autentica los IDs suministrados ni concede permisos. Pendiente CI.
+
+- Code Review Gate #74 (`40263271010`) **success, 86/86 pruebas OK**: https://github.com/josegude-ux/KONTROLA/actions/runs/40263271010.
+- Se añadió un cliente de lectura real de GitHub REST, aislado y sin permisos de escritura, `scripts/visura_github_readonly_snapshot.py` (commit `61dea03`): consulta PR y revisiones con GET HTTPS fijo a `api.github.com`, valida identidad numérica/commit/estado y falla si hay más de cinco páginas de revisiones (no entrega información truncada). Nueve pruebas de respuestas simuladas y ataques de formato en `tests/test_visura_github_readonly_snapshot.py` (commit `ec095ee`). **No se ha configurado token de producción, no se ha puesto en marcha workflow para ejecutar este cliente, no se han verificado reglas de rama y jamás autoriza acciones.** CI pendiente.
