@@ -144,3 +144,6 @@ La idea de un portal común se documentó separadamente en `docs/MOVENTA_CONCEPT
 
 - Code Review Gate #51 (`40262163192`) `success`, **56/56 pruebas OK** y pagos bloqueados: https://github.com/josegude-ux/KONTROLA/actions/runs/40262163192.
 - Nuevo resumen **solo orientativo** de revisiones (`scripts/visura_review_status.py`), que ignora aprobaciones de otros commits y sustituye la decisión anterior de un revisor cuando recibe una revisión posterior. Cuatro pruebas en `tests/test_visura_review_status.py` (commits `8d268e2`, `c322c48`). El orden depende del llamante y no valida autenticidad ni reglas reales de protección de rama; nunca concede ejecución/merge. Pendiente CI.
+
+- Code Review Gate #54 (`40262299261`) `success`, **60/60 pruebas OK** y llamadas de pago bloqueadas: https://github.com/josegude-ux/KONTROLA/actions/runs/40262299261.
+- Se documentaron los controles externos necesarios antes de permitir un ejecutor real en `docs/VISURA_AUTO_DEV_EXECUTION_GATE.md` (commit `d32c812`). **La protección de ramas no está verificada** con las herramientas disponibles; no se ha activado ejecución automática ni gasto de IA.
