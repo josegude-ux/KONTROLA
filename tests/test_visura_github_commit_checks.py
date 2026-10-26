@@ -2,7 +2,9 @@ import json
 import unittest
 from urllib.error import HTTPError
 
-from scripts.visura_github_commit_checks import observe_commit_checks
+from scripts.visura_github_commit_checks import (
+    observe_commit_checks, compare_required_check_observations,
+)
 
 REPO = "josegude-ux/KONTROLA"
 SHA = "a" * 40
@@ -186,6 +188,150 @@ class CommitCheckTests(unittest.TestCase):
         opener, _ = fake_api([[check(sha=SHA.upper())]])
         result = observe_commit_checks(REPO, SHA, "token", opener=opener)
         self.assertEqual(result["observed_total"], 1)
+
+
+def required_policy(classic=None, active=None, lookup="retrieved"):
+    return {
+        "classic_protection": {
+            "lookup": lookup,
+            "required_check_contexts": [] if classic is None else classic,
+        },
+        "effective_ruleset_rules": {
+            "lookup": "retrieved",
+            "required_contexts_available": True,
+            "required_check_contexts": [] if active is None else active,
+        },
+        "repository_policy_verified": False,
+        "execution_authorized": False,
+        "merge_authorized": False,
+        "deployment_authorized": False,
+    }
+
+
+def named_observation(names=None, lookup="retrieved", complete=True):
+    return {
+        "lookup": lookup,
+        "named_checks_complete": complete,
+        "named_check_runs": [] if names is None else names,
+        "required_checks_verified": False,
+        "branch_policy_verified": False,
+        "execution_authorized": False,
+        "merge_authorized": False,
+        "deployment_authorized": False,
+    }
+
+
+def name_entry(name="CI", app_id=7, conclusion="success", status="completed"):
+    return {
+        "name": name, "app_id": app_id,
+        "status": status, "conclusion": conclusion,
+    }
+
+
+class RequiredCheckComparisonTests(unittest.TestCase):
+    def test_exact_app_and_context_success_is_candidate_only(self):
+        result = compare_required_check_observations(
+            required_policy(classic=[{"context": "CI", "app_id": 7}]),
+            named_observation([name_entry()]),
+        )
+        self.assertEqual(result["lookup"], "candidate_match_only")
+        self.assertEqual(result["required_context_count"], 1)
+        self.assertEqual(result["candidate_name_match_count"], 1)
+        self.assertEqual(result["candidate_success_count"], 1)
+        self.assertFalse(result["required_checks_verified"])
+        self.assertFalse(result["merge_authorized"])
+        self.assertFalse(result["legacy_commit_statuses_compared"])
+
+    def test_required_check_with_no_check_run_not_called_failed_required(self):
+        result = compare_required_check_observations(
+            required_policy(classic=[{"context": "CI", "app_id": 7}]),
+            named_observation([]),
+        )
+        self.assertEqual(result["without_named_check_run_count"], 1)
+        self.assertEqual(result["candidate_success_count"], 0)
+        self.assertFalse(result["required_checks_verified"])
+
+    def test_context_match_from_wrong_app_is_not_candidate(self):
+        result = compare_required_check_observations(
+            required_policy(classic=[{"context": "CI", "app_id": 7}]),
+            named_observation([name_entry(app_id=8)]),
+        )
+        self.assertEqual(result["candidate_name_match_count"], 0)
+        self.assertEqual(result["without_named_check_run_count"], 1)
+
+    def test_missing_check_app_is_explicitly_ambiguous(self):
+        result = compare_required_check_observations(
+            required_policy(classic=[{"context": "CI", "app_id": 7}]),
+            named_observation([name_entry(app_id=None)]),
+        )
+        self.assertEqual(result["ambiguous_app_provenance_count"], 1)
+        self.assertEqual(result["candidate_success_count"], 0)
+
+    def test_ruleset_and_classic_identical_requirement_count_once(self):
+        entry = {"context": "CI", "app_id": None}
+        result = compare_required_check_observations(
+            required_policy(classic=[entry], active=[entry]),
+            named_observation([name_entry()]),
+        )
+        self.assertEqual(result["required_context_count"], 1)
+        self.assertEqual(result["candidate_success_count"], 1)
+
+    def test_ruleset_requirements_with_integration_id_are_observed(self):
+        result = compare_required_check_observations(
+            required_policy(active=[{"context": "CI", "app_id": 7}]),
+            named_observation([name_entry()]),
+        )
+        self.assertEqual(result["candidate_success_count"], 1)
+        self.assertFalse(result["execution_authorized"])
+
+    def test_unknown_classic_policy_returns_unknown_not_empty(self):
+        policy = required_policy(lookup="inaccessible")
+        result = compare_required_check_observations(
+            policy, named_observation([name_entry()]),
+        )
+        self.assertEqual(result["lookup"], "unknown_policy_requirements")
+        self.assertIsNone(result["required_context_count"])
+
+    def test_unknown_ruleset_parameters_returns_unknown(self):
+        policy = required_policy()
+        policy["effective_ruleset_rules"]["required_contexts_available"] = False
+        policy["effective_ruleset_rules"]["required_check_contexts"] = None
+        result = compare_required_check_observations(policy, named_observation())
+        self.assertEqual(result["lookup"], "unknown_policy_requirements")
+
+    def test_partial_named_check_data_returns_unknown(self):
+        result = compare_required_check_observations(
+            required_policy(classic=[{"context": "CI", "app_id": None}]),
+            named_observation([], complete=False),
+        )
+        self.assertEqual(result["lookup"], "unknown_check_run_names")
+        self.assertIsNone(result["candidate_success_count"])
+
+    def test_empty_requirements_is_not_policy_verified(self):
+        result = compare_required_check_observations(
+            required_policy(), named_observation(),
+        )
+        self.assertEqual(result["lookup"], "no_requirements_observed")
+        self.assertEqual(result["required_context_count"], 0)
+        self.assertFalse(result["required_checks_verified"])
+
+    def test_forged_check_authority_is_rejected(self):
+        checks = named_observation([name_entry()])
+        checks["merge_authorized"] = True
+        with self.assertRaisesRegex(ValueError, "must not grant permissions"):
+            compare_required_check_observations(required_policy(), checks)
+
+    def test_forged_policy_authority_is_rejected(self):
+        policy = required_policy()
+        policy["repository_policy_verified"] = True
+        with self.assertRaisesRegex(ValueError, "must not grant permissions"):
+            compare_required_check_observations(policy, named_observation())
+
+    def test_incorrect_check_state_is_rejected(self):
+        with self.assertRaisesRegex(ValueError, "Invalid named check run"):
+            compare_required_check_observations(
+                required_policy(), named_observation([name_entry(status="authorized")])
+            )
 
 
 if __name__ == "__main__":
