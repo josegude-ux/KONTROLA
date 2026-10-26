@@ -78,6 +78,64 @@ class GitHubReviewAuditTests(unittest.TestCase):
         self.assertEqual(result["observed_pending_review_ids"], [2])
         self.assertEqual(result["observed_current_commit_approvals"], [])
 
+    def test_later_changes_requested_supersedes_observed_approval(self):
+        result = summarize_readonly_review_snapshot(
+            snapshot([review(1), review(2, state="CHANGES_REQUESTED")])
+        )
+        # Retain the raw observed approval, but never count it as latest.
+        self.assertEqual(len(result["observed_current_commit_approvals"]), 1)
+        self.assertEqual(result["observed_latest_approval_records"], [])
+        self.assertEqual(result["observed_superseded_decisive_review_ids"], [1])
+        self.assertEqual(
+            result["observed_latest_decisive_reviews_by_account"][0]["state"],
+            "CHANGES_REQUESTED",
+        )
+        self.assertFalse(result["execution_authorized"])
+
+    def test_later_approval_replaces_changes_requested_independent_of_input_order(self):
+        result = summarize_readonly_review_snapshot(
+            snapshot([review(5, state="APPROVED"), review(2, state="CHANGES_REQUESTED")])
+        )
+        self.assertEqual(
+            [v["review_id"] for v in result["observed_latest_approval_records"]], [5]
+        )
+        self.assertEqual(result["observed_superseded_decisive_review_ids"], [2])
+        self.assertFalse(result["merge_authorized"])
+
+    def test_dismissal_supersedes_prior_approval(self):
+        result = summarize_readonly_review_snapshot(
+            snapshot([review(1), review(3, state="DISMISSED")])
+        )
+        self.assertEqual(result["observed_latest_approval_records"], [])
+        self.assertEqual(result["observed_superseded_decisive_review_ids"], [1])
+        self.assertEqual(result["observed_dismissed_review_ids"], [3])
+
+    def test_comment_and_pending_do_not_replace_submitted_decision(self):
+        result = summarize_readonly_review_snapshot(
+            snapshot([
+                review(1), review(2, state="COMMENTED"),
+                review(3, state="PENDING"),
+            ])
+        )
+        self.assertEqual(
+            [v["review_id"] for v in result["observed_latest_approval_records"]], [1]
+        )
+        self.assertEqual(result["observed_superseded_decisive_review_ids"], [])
+
+    def test_distinct_accounts_are_not_merged_even_with_same_login(self):
+        result = summarize_readonly_review_snapshot(
+            snapshot([
+                review(1, reviewer_id=456),
+                review(2, reviewer_id=789, state="CHANGES_REQUESTED"),
+            ])
+        )
+        self.assertEqual(
+            [v["reviewer_numeric_id"] for v in result["observed_latest_approval_records"]],
+            [456],
+        )
+        self.assertEqual(result["observed_superseded_decisive_review_ids"], [])
+        self.assertFalse(result["effective_approval_verification"])
+
     def test_duplicate_review_id_fails_closed(self):
         with self.assertRaisesRegex(ValueError, "Duplicate GitHub review ID"):
             summarize_readonly_review_snapshot(
