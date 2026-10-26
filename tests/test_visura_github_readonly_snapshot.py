@@ -71,6 +71,12 @@ class GitHubReadOnlySnapshotTests(unittest.TestCase):
         result = fetch_readonly_review_snapshot(REPOSITORY, 37, "token", opener=opener)
         self.assertEqual(result["author_numeric_id"], 123)
         self.assertEqual(result["reviews"][0]["reviewer_numeric_id"], 456)
+        self.assertEqual(
+            result["review_audit"]["observed_current_commit_approvals"][0]["reviewer_numeric_id"],
+            456,
+        )
+        self.assertFalse(result["review_audit"]["effective_approval_verification"])
+        self.assertFalse(result["review_audit"]["merge_authorized"])
         self.assertEqual(result["head_sha"], SHA)
         self.assertEqual(sum(url.endswith("/pulls/37") for url, _, _ in calls), 2)
         self.assertFalse(result["execution_authorized"])
@@ -83,6 +89,8 @@ class GitHubReadOnlySnapshotTests(unittest.TestCase):
         result = fetch_readonly_review_snapshot(REPOSITORY, 37, "token", opener=opener)
         self.assertEqual(result["reviews"], [])
         self.assertFalse(result["merge_authorized"])
+        self.assertEqual(result["review_audit"]["observed_review_count"], 0)
+        self.assertFalse(result["review_audit"]["execution_authorized"])
 
     def test_rejects_untrusted_repository_path(self):
         with self.assertRaisesRegex(ValueError, "Invalid repository"):
@@ -126,6 +134,25 @@ class GitHubReadOnlySnapshotTests(unittest.TestCase):
     def test_rejects_incomplete_final_pr_metadata(self):
         opener, _ = fake_api(pages=[[]], pr_after={"head": {"sha": SHA}})
         with self.assertRaisesRegex(ValueError, "Incomplete final pull request"):
+            fetch_readonly_review_snapshot(REPOSITORY, 37, "token", opener=opener)
+
+    def test_api_self_review_is_reported_not_approved(self):
+        opener, _ = fake_api(
+            pages=[[review_data(user={"id": 123, "login": "renamed-author"})]]
+        )
+        result = fetch_readonly_review_snapshot(REPOSITORY, 37, "token", opener=opener)
+        audit = result["review_audit"]
+        self.assertEqual(audit["observed_self_review_ids"], [11])
+        self.assertEqual(audit["observed_current_commit_approvals"], [])
+
+    def test_api_stale_review_is_reported(self):
+        opener, _ = fake_api(pages=[[review_data(commit_id="b" * 40)]])
+        result = fetch_readonly_review_snapshot(REPOSITORY, 37, "token", opener=opener)
+        self.assertEqual(result["review_audit"]["observed_stale_review_ids"], [11])
+
+    def test_duplicate_ids_fail_before_audit_is_returned(self):
+        opener, _ = fake_api(pages=[[review_data(), review_data(state="COMMENTED")]])
+        with self.assertRaisesRegex(ValueError, "Duplicate GitHub review ID"):
             fetch_readonly_review_snapshot(REPOSITORY, 37, "token", opener=opener)
 
     def test_redirect_handler_never_follows_redirects(self):
