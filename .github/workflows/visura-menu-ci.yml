@@ -7,7 +7,7 @@ on:
     branches:
       - branding/visura-prepara-20261026
 permissions:
-  contents: read
+  contents: write
 jobs:
   menu:
     runs-on: ubuntu-latest
@@ -16,6 +16,12 @@ jobs:
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: '22'
+      - name: Integrar ZIP oficial en rama de trabajo
+        if: github.event_name == 'push'
+        run: |
+          if test -f VISURA_PREPARA_SOLO_IMAGENES_GITHUB.zip && ! test -f assets/home/visura-prepara-preparacion-3d.webp; then
+            python3 scripts/integrar_menu_oficial.py VISURA_PREPARA_SOLO_IMAGENES_GITHUB.zip
+          fi
       - name: Instalar dependencias de pruebas
         run: npm ci
       - name: Comprobar sintaxis y regresion completa sin despliegue
@@ -24,3 +30,17 @@ jobs:
           python3 -m unittest discover -s tests -p 'test_integrar_menu_oficial.py' -v
           npm run check
           node --check tests/visura-menu.test.mjs
+
+      - name: Guardar recursos integrados despues de pasar pruebas
+        if: github.event_name == 'push'
+        run: |
+          git add index.html sw.js tests/visura-menu.test.mjs
+          if test -f assets/home/visura-prepara-preparacion-3d.webp; then
+            git add assets/home/visura-prepara-*.webp assets/home/originales/
+          fi
+          if ! git diff --cached --quiet; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git commit -m "feat(menu): integrar imagenes oficiales tras pruebas"
+            git push origin HEAD:feature/visura-prepara-menu-oficial-20261026
+          fi
