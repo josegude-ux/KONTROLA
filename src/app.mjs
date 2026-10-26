@@ -314,13 +314,16 @@ function renderLoadList(){
     // Total únicamente de líneas válidas, calculado sobre ese mismo desglose.
     // Nunca mostrar cero cuando no existe desglose.
     const totalBultos=totalBultosDelDesglose(breakdown);
-    a.append(id,meta,vehicle,bundles);
+    // El vehículo ocupa toda la fila: matrícula y huecos caben uno al lado
+    // del otro también en móvil, sin competir con el total y el peso.
+    a.className="load-card-info";
+    a.append(id,meta);
     const summary=document.createElement("span");summary.className="load-card-summary";
     const total=document.createElement("span");total.className="load-bundles-total";
     total.textContent=totalBultos===null?"— bultos":fmt(totalBultos)+" bultos";
     const weight=document.createElement("span");weight.className="load-weight";weight.textContent=fmt(r.peso_kg)+" kg";
     summary.append(total,weight);
-    b.append(a,summary);
+    b.append(a,summary,vehicle,bundles);
     b.addEventListener("click",()=>openLoad(r.codigo));
     target.appendChild(b);
   }
