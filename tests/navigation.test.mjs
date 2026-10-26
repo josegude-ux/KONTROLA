@@ -19,6 +19,19 @@ test("Control de Cargas aparece como submenú navegable sin duplicar operaciones
   assert.match(css,/\.submenu-grid\{/);
 });
 
+test("importación accesible desde cargas solo para administración y sin borrar pendientes",()=>{
+  const admin=read("src/admin.mjs");
+  for(const id of ["cargasImportar","importLoadsShortcut"]){
+    assert.match(html,new RegExp('id="'+id+'"[^>]*hidden'));
+    assert.ok(app.includes('visible($("'+id+'"),ownProfile.rol==="administrador");'));
+  }
+  assert.ok(app.includes('$("cargasImportar").addEventListener("click",()=>openAdminMenu("cargasMenuView"));'));
+  assert.ok(app.includes('$("importLoadsShortcut").addEventListener("click",()=>openAdminMenu("loadsView"));'));
+  assert.ok(app.includes('if(profile?.rol!=="administrador"||!switchView("adminView"))return;'));
+  assert.ok(admin.includes('await Promise.all([refreshReviewSelector(),refreshPendingPublish()]);'));
+  assert.doesNotMatch(admin,/\$\("reviewLoadSelect"\)\.replaceChildren\(\);\$\("reviewLoadMessage"\)\.textContent="";/);
+});
+
 test("Tanques permanece totalmente oculto y sin acciones activas",()=>{
   assert.doesNotMatch(html,/tanques/i);
   assert.doesNotMatch(app,/openTanques|cargasTanques/i);
