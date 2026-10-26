@@ -157,10 +157,49 @@ header .intro{font-size:.85rem;line-height:1.38}
 .request-example{margin-top:12px;width:100%;min-height:43px;text-align:center;font-size:.88rem}
 #open-request-chat:disabled{opacity:.45;cursor:not-allowed}
 
+
+.header-tools{display:flex;align-items:center;justify-content:flex-end;flex-wrap:wrap;gap:5px}
+.manage-button{min-height:39px;padding:7px 9px;background:var(--secondary);color:var(--text);border:1px solid var(--border);border-radius:10px;font-size:.81rem;font-weight:750;white-space:nowrap}
+.chat-manager[hidden]{display:none!important}
+.chat-manager{margin:12px 0 16px;padding:16px;background:var(--panel);border:1px solid var(--border);border-radius:17px}
+.manager-head{display:flex;align-items:center;justify-content:space-between;gap:10px}.manager-head h2{font-size:1.12rem}.manager-head button{min-height:42px;padding:8px}
+.chat-manager p{font-size:.81rem;line-height:1.45;margin:8px 0}
+.manager-list{border:1px solid var(--border);border-radius:12px;overflow:auto;max-height:285px;margin:12px 0}
+.manager-row{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px;border-bottom:1px solid var(--border)}.manager-row:last-child{border-bottom:0}
+.manager-row-info{display:flex;flex-direction:column;min-width:0;gap:3px}.manager-row-info strong{font-size:.88rem;overflow-wrap:anywhere}.manager-row-info span{font-size:.75rem;color:var(--muted)}
+.manager-row-buttons{display:flex;gap:4px;flex-shrink:0}.manager-row-buttons button{padding:7px;font-size:.75rem;min-height:39px}
+.manager-editor,.manager-backup{border-top:1px solid var(--border);padding-top:12px;margin-top:13px}.chat-manager h3{font-size:.96rem;margin:0 0 9px}
+.chat-manager :is(input:not([type=file]),select){display:block;width:100%;padding:10px 11px;font-size:16px;background:var(--bg);color:var(--text);border:1px solid var(--border);border-radius:10px}
+.manager-actions{display:flex;gap:8px;margin:12px 0;flex-wrap:wrap}.manager-actions button,.manager-import{display:inline-flex;align-items:center;justify-content:center;min-height:44px;min-width:115px;flex:1;font-size:.87rem;font-weight:730;padding:9px;border-radius:10px}
+.manager-import{background:var(--secondary);color:var(--text);border:1px solid var(--border);cursor:pointer}
+.manager-small{font-size:.74rem!important}.manager-feedback{min-height:22px;overflow-wrap:anywhere}
+@media(max-width:500px){.refresh-panel,.manage-button{font-size:.74rem;padding:7px}.brand-mark{width:42px!important;height:42px!important}.brand-lockup{gap:6px!important}.brand-text strong{font-size:1.02rem!important}.brand-text span{font-size:.52rem!important}.chat-manager{padding:12px}}
+@media(max-width:360px){.header-top{flex-wrap:wrap}.header-tools{margin-left:auto}}
+
 </style>
 </head>
 <body>
-<main><header><div class="header-top"><div class="brand-lockup"><img class="brand-mark" src="./assets/icons/visura-centro-mando-logo-64.png" width="54" height="54" alt="Logo aprobado VISURA Centro de mando"><div class="brand-text"><strong>VISURA</strong><span>CENTRO DE MANDO <b class="panel-version">V5.1</b></span></div></div><button type="button" class="refresh-panel" id="refresh-panel" title="Cargar de nuevo el Centro de mando" aria-label="Actualizar Centro de mando"><span aria-hidden="true">↻</span> Actualizar</button></div><h1>¿Qué quieres hacer?</h1><p class="intro">Ocho funciones claras, sin órdenes duplicadas.</p></header>
+<main><header><div class="header-top"><div class="brand-lockup"><img class="brand-mark" src="./assets/icons/visura-centro-mando-logo-64.png" width="54" height="54" alt="Logo aprobado VISURA Centro de mando"><div class="brand-text"><strong>VISURA</strong><span>CENTRO DE MANDO <b class="panel-version">V5.2</b></span></div></div><div class="header-tools"><button type="button" class="manage-button" id="open-chat-manager" aria-expanded="false" aria-controls="chat-manager">⚙ Mis chats</button><button type="button" class="refresh-panel" id="refresh-panel" title="Cargar de nuevo el Centro de mando" aria-label="Actualizar Centro de mando"><span aria-hidden="true">↻</span> Actualizar</button></div></div><h1>¿Qué quieres hacer?</h1><p class="intro">Ocho funciones claras, sin órdenes duplicadas.</p></header>
+<section id="chat-manager" class="chat-manager" hidden aria-labelledby="manager-title">
+<div class="manager-head"><h2 id="manager-title">Mis chats VISURA</h2><button class="secondary" type="button" id="manager-close">✕ Cerrar</button></div>
+<p>Registro único para los botones. Lo mantienes tú: esta web no puede consultar automáticamente tus conversaciones de ChatGPT.</p>
+<div id="manager-list" class="manager-list"></div>
+<div class="manager-editor">
+<h3 id="manager-editor-title">Añadir chat</h3>
+<label class="field-label" for="manager-name">Nombre del chat</label><input id="manager-name" maxlength="140" placeholder="Ej. VISURA AUTO-DEV">
+<label class="field-label" for="manager-state">Estado</label>
+<select id="manager-state"><option value="sin_verificar">Por verificar</option><option value="activo">Activo</option><option value="continuador">Continuador</option><option value="historico">Histórico</option><option value="finalizado">Finalizado</option></select>
+<label class="field-label" for="manager-link">Enlace directo (opcional)</label><input id="manager-link" type="url" inputmode="url" placeholder="https://chatgpt.com/c/...">
+<div class="manager-actions"><button class="primary" type="button" id="manager-save">Guardar chat</button><button class="secondary" type="button" id="manager-clear">Limpiar</button></div>
+</div>
+<div class="manager-backup">
+<h3>Copia en OneDrive</h3>
+<p>La copia es manual, sin permisos de Microsoft: pulsa Exportar y usa <strong>Compartir → Guardar en Archivos → OneDrive</strong>. Para recuperar, elige el JSON desde Archivos/OneDrive.</p>
+<div class="manager-actions"><button class="secondary" type="button" id="manager-export">Exportar JSON</button><label class="manager-import" for="manager-import-file">Importar JSON</label><input id="manager-import-file" class="visually-hidden" type="file" accept=".json,application/json"></div>
+<p class="manager-small">La importación combina los registros y pide confirmación antes de actualizar coincidencias. Exporta una copia si cambias de navegador, de dominio o borras datos de Safari. Los enlaces de los chats estarán dentro del JSON: guárdalo en una carpeta privada.</p>
+</div>
+<p id="manager-feedback" class="manager-feedback" role="status" aria-live="polite"></p>
+</section>
 <nav id="command-menu" class="dashboard-nav" aria-label="Accesos VISURA">
 <div class="dashboard-caption"><strong>ACCESOS DIRECTOS</strong><span>8 funciones</span></div>
 <div class="dashboard-grid"><button type="button" class="dashboard-action" data-open-order="funcion-1" aria-controls="funcion-1"><span class="action-mark" aria-hidden="true">↻</span><span class="action-copy"><strong>Continuar desarrollo</strong><small>Mismo chat, sucesor o traspaso</small></span></button>
@@ -824,6 +863,150 @@ openRequestChat.addEventListener("click",()=>{
  const opened=window.open(url,"_blank");if(opened){try{opened.opener=null;}catch(_){}}else showStatus("Abre el chat desde ChatGPT si el navegador bloquea la ventana.");
 });
 refreshRequestPreview();
+
+
+/* V5.2: lista compartida de chats, almacenamiento local y respaldo manual JSON. */
+const REGISTRY_KEY="visura-centro-chats-v1",REGISTRY_FORMAT="visura-chat-registry-v1";
+const registryStates={sin_verificar:"Por verificar",activo:"Activo",continuador:"Continuador",historico:"Histórico",finalizado:"Finalizado"};
+const registryDefaults=["VISURA WORK","VISURA AUTO-DEV","VISURA 0.1","VISURA 0.2","PROMPT E IMÁGENES","VISURA INVENTA","VISURA PREPARA","MOVENTA 0.3","VISURA CENTRO DE MANDO","VISURA — PRUEBAS CENTRO DE MANDO","VISURA — IMPLEMENTACIÓN"].map(name=>({name,state:name==="VISURA WORK"?"historico":name==="VISURA AUTO-DEV"?"continuador":"sin_verificar",link:""}));
+const manager=document.getElementById("chat-manager"),managerList=document.getElementById("manager-list"),managerFeedback=document.getElementById("manager-feedback");
+const managerName=document.getElementById("manager-name"),managerState=document.getElementById("manager-state"),managerLink=document.getElementById("manager-link"),managerTitle=document.getElementById("manager-editor-title");
+const registrySelects=["continuity-source","continuity-destination","status-chat","request-chat"];
+let registry=[],editingName="",registryStorageOK=true;
+const normalizedName=n=>String(n||"").trim().normalize("NFC").toLocaleLowerCase("es");
+function safeChatUrl(text){
+ if(!text)return "";
+ try{const url=new URL(text);return url.protocol==="https:"&&["chatgpt.com","chat.openai.com"].includes(url.hostname)&&url.pathname.startsWith("/c/")?url.href:"";}catch(_){return "";}
+}
+function validateChat(item){
+ if(!item||typeof item!=="object"||Array.isArray(item))return null;
+ const name=typeof item.name==="string"?item.name.trim().normalize("NFC"):"";
+ if(!name||name.length>140||["OTRO","CHAT NUEVO"].includes(name)||/[\r\n<>]/.test(name))return null;
+ const link=typeof item.link==="string"?item.link.trim():"";
+ if(link.length>2048||(link&&!safeChatUrl(link)))return null;
+ return{name,state:Object.prototype.hasOwnProperty.call(registryStates,item.state)?item.state:"sin_verificar",link:safeChatUrl(link)};
+}
+function managerNotice(msg){managerFeedback.textContent=msg;}
+function saveRegistry(items){
+ try{localStorage.setItem(REGISTRY_KEY,JSON.stringify({format:REGISTRY_FORMAT,chats:items}));registry=items;registryStorageOK=true;return true;}
+ catch(_){registryStorageOK=false;managerNotice("No se pudo guardar en Safari. No se ha cambiado la lista; exporta una copia de seguridad.");return false;}
+}
+function loadRegistry(){
+ let data=null;
+ try{data=localStorage.getItem(REGISTRY_KEY);}catch(_){registryStorageOK=false;}
+ if(data===null){registry=registryDefaults.map(item=>({...item}));if(registryStorageOK)saveRegistry(registry);return;}
+ try{
+  const parsed=JSON.parse(data);
+  if(parsed.format!==REGISTRY_FORMAT||!Array.isArray(parsed.chats))throw Error("invalid");
+  const used=new Set(),items=[];
+  for(const raw of parsed.chats){const item=validateChat(raw);if(!item||used.has(normalizedName(item.name)))continue;used.add(normalizedName(item.name));items.push(item);}
+  registry=items;
+ }catch(_){registry=registryDefaults.map(item=>({...item}));managerNotice("Los datos locales son ilegibles. No se han sobrescrito: importa tu copia JSON.");}
+}
+function refreshRegistrySelect(select){
+ const old=select.value,isStatus=select.id==="status-chat",isDest=select.id==="continuity-destination";
+ const fragment=document.createDocumentFragment();
+ const add=(val,label,disabled=false)=>{
+  const item=document.createElement("option");item.value=val;item.textContent=label;item.disabled=disabled;fragment.appendChild(item);
+ };
+ if(isStatus)add("","Selecciona un chat…",true);
+ if(isDest)add("CHAT NUEVO","Crear nuevo chat");
+ const ranks={continuador:0,activo:1,sin_verificar:2,historico:3,finalizado:4};
+ const sorted=registry.slice().sort((a,b)=>ranks[a.state]-ranks[b.state]||a.name.localeCompare(b.name,"es"));
+ for(const item of sorted)add(item.name,item.name+" · "+registryStates[item.state]);
+ add("OTRO","Otro chat…");
+ select.replaceChildren(fragment);
+ if([...select.options].some(x=>x.value===old))select.value=old;
+ else select.value=isStatus?"":sorted[0]?.name||"OTRO";
+}
+function refreshAllChatSelectors(){
+ for(const id of registrySelects)refreshRegistrySelect(document.getElementById(id));
+ syncContinuityForm();
+ statusOther.hidden=statusChat.value!=="OTRO";statusOtherLabel.hidden=statusOther.hidden;
+ requestOther.hidden=requestChat.value!=="OTRO";requestOtherLabel.hidden=requestOther.hidden;
+ refreshStatusPreview();refreshRequestPreview();
+}
+function cleanManagerEditor(){
+ editingName="";managerName.value="";managerState.value="sin_verificar";managerLink.value="";managerTitle.textContent="Añadir chat";
+}
+function renderChatManager(){
+ managerList.replaceChildren();
+ if(!registry.length){const p=document.createElement("p");p.textContent="Sin chats. Añade uno a continuación.";p.style.padding="12px";managerList.appendChild(p);}
+ for(const c of registry.slice().sort((a,b)=>a.name.localeCompare(b.name,"es"))){
+  const row=document.createElement("div");row.className="manager-row";
+  const info=document.createElement("div");info.className="manager-row-info";
+  const title=document.createElement("strong");title.textContent=c.name;
+  const desc=document.createElement("span");desc.textContent=registryStates[c.state]+(c.link?" · Enlace guardado":"");info.append(title,desc);
+  const actions=document.createElement("div");actions.className="manager-row-buttons";
+  const edit=document.createElement("button");edit.type="button";edit.className="secondary";edit.textContent="Editar";
+  edit.addEventListener("click",()=>{editingName=normalizedName(c.name);managerName.value=c.name;managerState.value=c.state;managerLink.value=c.link;managerTitle.textContent="Editar chat";managerName.focus();});
+  const remove=document.createElement("button");remove.type="button";remove.className="secondary";remove.textContent="Quitar";
+  remove.setAttribute("aria-label","Quitar "+c.name+" del gestor");
+  remove.addEventListener("click",()=>{
+   if(!window.confirm("¿Quitar «"+c.name+"» SOLO de la lista local? No se borra la conversación de ChatGPT."))return;
+   if(!saveRegistry(registry.filter(v=>normalizedName(v.name)!==normalizedName(c.name))))return;
+   if(editingName===normalizedName(c.name))cleanManagerEditor();
+   renderChatManager();refreshAllChatSelectors();managerNotice("Chat quitado solo del registro local.");
+  });
+  actions.append(edit,remove);row.append(info,actions);managerList.appendChild(row);
+ }
+}
+document.getElementById("open-chat-manager").addEventListener("click",()=>{
+ manager.hidden=!manager.hidden;document.getElementById("open-chat-manager").setAttribute("aria-expanded",String(!manager.hidden));
+ if(!manager.hidden){renderChatManager();manager.scrollIntoView({block:"start",behavior:"smooth"});}
+});
+document.getElementById("manager-close").addEventListener("click",()=>{manager.hidden=true;document.getElementById("open-chat-manager").setAttribute("aria-expanded","false");});
+document.getElementById("manager-clear").addEventListener("click",cleanManagerEditor);
+document.getElementById("manager-save").addEventListener("click",()=>{
+ const item=validateChat({name:managerName.value,state:managerState.value,link:managerLink.value});
+ if(!item){managerNotice("Nombre no válido o enlace incorrecto. Usa una URL directa https://chatgpt.com/c/…");return;}
+ if(registry.some(c=>normalizedName(c.name)===normalizedName(item.name)&&normalizedName(c.name)!==editingName)){
+  managerNotice("Ya existe ese nombre. Pulsa Editar en su ficha.");return;
+ }
+ const next=registry.filter(c=>normalizedName(c.name)!==editingName).concat(item);
+ if(!saveRegistry(next))return;
+ cleanManagerEditor();renderChatManager();refreshAllChatSelectors();managerNotice("Chat guardado y desplegables actualizados.");
+});
+document.getElementById("manager-export").addEventListener("click",async()=>{
+ const name="VISURA_chats_copia.json";
+ const blob=new Blob([JSON.stringify({format:REGISTRY_FORMAT,version:1,exportedAt:new Date().toISOString(),chats:registry},null,2)],{type:"application/json"});
+ try{
+  const file=new File([blob],name,{type:"application/json"});
+  if(navigator.share&&navigator.canShare&&navigator.canShare({files:[file]})){
+   await navigator.share({title:"Copia de chats VISURA",files:[file]});
+   managerNotice("Exportación compartida. Guarda el archivo en Archivos → OneDrive.");return;
+  }
+ }catch(error){if(error&&error.name==="AbortError"){managerNotice("Exportación cancelada.");return;}}
+ const url=URL.createObjectURL(blob);
+ const a=document.createElement("a");a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();
+ setTimeout(()=>URL.revokeObjectURL(url),2000);
+ managerNotice("JSON descargado. Guarda después el archivo en OneDrive.");
+});
+document.getElementById("manager-import-file").addEventListener("change",async event=>{
+ const picker=event.currentTarget,file=picker.files&&picker.files[0];picker.value="";
+ if(!file)return;
+ if(file.size>1024*1024){managerNotice("Archivo demasiado grande. Máximo 1 MB.");return;}
+ try{
+  const data=JSON.parse(await file.text());
+  if(!data||data.format!==REGISTRY_FORMAT||!Array.isArray(data.chats)||data.chats.length>300)throw Error("format");
+  const imported=[],keys=new Set();
+  for(const raw of data.chats){
+   const item=validateChat(raw);
+   if(!item||keys.has(normalizedName(item.name)))throw Error("entry");
+   keys.add(normalizedName(item.name));imported.push(item);
+  }
+  const shared=imported.filter(v=>registry.some(c=>normalizedName(c.name)===normalizedName(v.name))).length;
+  if(shared&&!window.confirm("¿Actualizar "+shared+" chats coincidentes con los datos de la copia? Los demás seguirán en la lista.")){
+   managerNotice("Importación cancelada sin cambios.");return;
+  }
+  const merged=registry.filter(c=>!keys.has(normalizedName(c.name))).concat(imported);
+  if(!saveRegistry(merged))return;
+  cleanManagerEditor();renderChatManager();refreshAllChatSelectors();
+  managerNotice("Importados "+imported.length+" chats. No se han eliminado otros registros.");
+ }catch(_){managerNotice("No es un JSON válido de VISURA. Los datos no se han modificado.");}
+});
+loadRegistry();renderChatManager();refreshAllChatSelectors();
+if(!registryStorageOK)managerNotice("Almacenamiento local bloqueado. La lista puede perderse al cerrar esta página.");
 
 </script>
 </body></html>
