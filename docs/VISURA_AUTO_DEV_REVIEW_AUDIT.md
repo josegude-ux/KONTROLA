@@ -135,6 +135,44 @@ fijado por pruebas de contrato del workflow y no concede privilegios de
 escritura. Esta integración se ha probado con respuestas REST simuladas;
 **no** se ha ejecutado todavía el workflow manual en la rama predeterminada.
 
+## Comparación de contextos exigidos con checks observados
+
+La auditoría de la **rama de destino real del PR** extrae, siempre que GitHub
+permita consultarlos, los contextos de CI exigidos por la protección clásica
+(`required_status_checks.checks` o `contexts`) y los contextos de reglas
+activas de *rulesets* (`required_status_checks.parameters`). También conserva
+los IDs de aplicación/integración asociados cuando GitHub los proporciona.
+
+El módulo `scripts/visura_github_commit_checks.py` observa los nombres de
+*check-runs* del SHA exacto del PR y su aplicación emisora. Compara únicamente
+**candidatos con el mismo nombre e ID de aplicación compatible**, y muestra
+en el Summary:
+
+- Contextos exigidos observados (sin duplicar requisitos iguales).
+- Coincidencias candidatas y cuántas tienen conclusión `success`.
+- Contextos sin un check-run del mismo nombre.
+- Coincidencias ambiguas por faltar el ID de aplicación.
+
+Si la política de protección clásica o las reglas aplicables no son accesibles,
+si falta parte de la configuración, o si los nombres de checks están
+incompletos, la comparación presenta `unknown_policy_requirements` o
+`unknown_check_run_names`, con recuentos **desconocidos**. Una consulta
+completa sin contextos conocidos se indica como
+`no_requirements_observed`, **no** como "rama sin protecciones".
+
+**Restricción fundamental:** un contexto requerido puede satisfacerse mediante
+un *commit status* heredado en lugar de un *check-run*; las políticas también
+pueden exigir un origen específico, checks de un SHA de cola de fusión, o
+aplicar excepciones. La comparación no consulta esos estados heredados ni
+autentica el origen de un check. Por eso `required_checks_verified`,
+`repository_policy_verified`, `execution_authorized`,
+`merge_authorized` y `deployment_authorized` permanecen siempre en
+`false`. Ni una coincidencia ni el éxito de las 232 pruebas de desarrollo
+constituyen permiso para fusionar.
+
+Referencias técnicas: https://docs.github.com/en/rest/branches/branch-protection
+y https://docs.github.com/en/rest/repos/rules.
+
 ## Qué NO demuestra
 
 La vista de últimas decisiones presupone que los IDs numéricos de las revisiones reflejan su orden de creación; **no comprueba marcas de tiempo, reglas de dismiss ni la última decisión efectiva en GitHub**. La API puede devolver una aprobación aunque esta no sea válida para las reglas vigentes de la rama. Puede existir una revisión posterior, un cambio de política, una eliminación de permisos o un cambio del PR después de la consulta. El informe clasifica **registros observados**, no toma decisiones de seguridad.
@@ -143,4 +181,4 @@ Antes de habilitar cualquier automatización con escritura será imprescindible 
 
 ## Validación
 
-Code Review Gate #135: **200 de 200 pruebas correctas** para el primer flujo unificado. Se añadió después una prueba integrada adicional con respuestas REST simuladas; su CI queda pendiente. El workflow manual sigue sin activarse. La consulta de producción y las reglas de protección de rama siguen pendientes de validación independiente.
+Code Review Gate #149: **232 de 232 pruebas correctas** para el primer flujo unificado. Se añadió después una prueba integrada adicional con respuestas REST simuladas; su CI queda pendiente. El workflow manual sigue sin activarse. La consulta de producción y las reglas de protección de rama siguen pendientes de validación independiente.
