@@ -16,6 +16,13 @@ export const normalizeWarehouseCode=raw=>{
  return cleaned.replace(/^COR_1_/,'COR_01_').replace(/^COR_2_/,'COR_02_')||null;
 };
 const KNOWN_WAREHOUSES=new Set(['COR_01_COR','COR_02_NAR']);
+// Convención administrativa: C19711.pdf (A Coruña), F19711.pdf (Ferrol).
+// La letra identifica el almacén, no forma parte del LP.
+export function identificarPdfPorAlmacen(fileName=""){
+ const match=/^([CF])(\d{4,6})\.pdf$/i.exec(String(fileName).trim());
+ if(!match)return null;
+ return {number:match[2],warehouse:match[1].toUpperCase()==="F"?"COR_02_NAR":"COR_01_COR"};
+}
 // Capacity code (6G 1E) is not "Huecos plts. camión: 0".
 export function extraerFormatoCamion(truckLine="",huecosLine=""){
  const expr=/(?:^|[^A-Z0-9])(\d{1,2})\s*G(?:\s*[-\/ ]?\s*(\d{1,2})\s*([EP]))?(?=\b|$)/i;
@@ -82,11 +89,18 @@ export function parseDocumentPages(pages, fileName='Documento.pdf', options={}) 
  const warehouses=[...new Set(identified.filter(Boolean))];
  const mixedWarehouse=warehouses.length>1;
  const requestedWarehouse=normalizeWarehouseCode(options.warehouse);
- const warehouse=requestedWarehouse||(warehouses.length===1?warehouses[0]:null);
+ const fileIdentity=identificarPdfPorAlmacen(fileName);
+ if(fileIdentity&&requestedWarehouse&&requestedWarehouse!==fileIdentity.warehouse)
+  throw Error("El nombre "+fileName+" indica "+fileIdentity.warehouse+"; no se puede clasificar en "+requestedWarehouse+".");
+ if(fileIdentity&&warehouses.length&&!warehouses.includes(fileIdentity.warehouse))
+  throw Error("El nombre "+fileName+" indica "+fileIdentity.warehouse+", pero la cabecera del PDF indica "+warehouses.join(", ")+". Comprueba el archivo antes de importarlo.");
+ const warehouse=requestedWarehouse||fileIdentity?.warehouse||(warehouses.length===1?warehouses[0]:null);
  const warehouseWarnings=[];
  if(requestedWarehouse&&!warehouses.includes(requestedWarehouse))warehouseWarnings.push('El almacén seleccionado no aparece en el documento');
  if(mixedWarehouse&&!warehouse)warehouseWarnings.push('El documento contiene varios almacenes; debe seleccionarse uno antes de revisar');
- if(!warehouses.length)warehouseWarnings.push('El documento no indica un almacén reconocible; queda pendiente de clasificar');
+ if(!warehouses.length)warehouseWarnings.push(fileIdentity
+  ?'El PDF no indica almacén en su cabecera; se propone '+fileIdentity.warehouse+' por su nombre y requiere revisión administrativa'
+  :'El documento no indica un almacén reconocible; queda pendiente de clasificar');
  if(warehouse&&!KNOWN_WAREHOUSES.has(warehouse))warehouseWarnings.push('Almacén '+warehouse+' pendiente de clasificar');
  if(warehouses.length&&warehouse){
   let active=null;
@@ -104,13 +118,22 @@ export function parseDocumentPages(pages, fileName='Documento.pdf', options={}) 
  let id=extract(/\b(LP\s*\d{2}\s*[-–_ ]\s*\d{4,6})\b/i);
  if(!id)id=(fileName.match(/LP\d{2}[-_ ]\d{4,6}/i)||[])[0];
  if(id)id=id.toUpperCase().replace(/\s+/g,'').replace(/[-–_]/g,'-');
+ const dateMatch=textAll.match(/Fecha\s*carga\s*:?\s*(\d{2}\/\d{2}\/(\d{4}|\d{2}))/i);
+ const year=dateMatch?.[2]?.slice(-2)||null;
+ if(fileIdentity&&id&&id.split("-")[1]!==fileIdentity.number)
+  throw Error("El nombre "+fileName+" indica la carga "+fileIdentity.number+", pero dentro del PDF aparece "+id+".");
+ if(fileIdentity&&id&&year&&id.slice(2,4)!==year)
+  throw Error("El código "+id+" no coincide con el año de Fecha carga del documento.");
+ // Usar F/C solo cuando el año está acreditado por la fecha documental;
+ // no inventar el año desde la hora del dispositivo.
+ if(!id&&fileIdentity&&!year)
+  throw Error("El archivo "+fileName+" utiliza la nomenclatura F/C, pero no se pudo verificar el año en «Fecha carga» dentro del PDF. No se ha importado: comprueba la fecha del documento.");
+ if(!id&&fileIdentity&&year)id="LP"+year+"-"+fileIdentity.number;
  // Los PDF de BC se descargan a veces como 19663.pdf. Reconstruir LP
  // únicamente si la fecha de carga explícita determina el año y el
  // documento contiene la misma numeración de carga.
  if(!id&&/^\d{4,6}\.pdf$/i.test(fileName)){
    const number=fileName.replace(/\.pdf$/i,'');
-   const dateMatch=textAll.match(/Fecha\s*carga\s*:?\s*(\d{2}\/\d{2}\/(\d{4}|\d{2}))/i);
-   const year=dateMatch?.[2]?.slice(-2);
    const numberInDocument=new RegExp('(?:N[º°o.]?\\s*(?:carga|documento)|N[uú]mero\\s*(?:carga|documento)|Carga)\\s*:?\\s*'+number+'\\b','i').test(textAll);
    if(year&&numberInDocument)id='LP'+year+'-'+number;
  }
