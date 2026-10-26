@@ -60,10 +60,13 @@ def inspect_csv(path, required_columns, *, max_bytes=20_000_000):
         if missing:
             raise ValueError("Missing columns: " + ", ".join(missing))
         count = 0
-        for row in reader:
-            if not row or not any(value.strip() for value in row):
-                continue
-            if len(row) != len(header):
-                raise ValueError(f"Invalid field count on data row {count + 1}")
-            count += 1
+        try:
+            for row in reader:
+                if not row or not any(value.strip() for value in row):
+                    continue
+                if len(row) != len(header):
+                    raise ValueError(f"Invalid field count on data row {count + 1}")
+                count += 1
+        except csv.Error as exc:
+            raise ValueError(f"Malformed CSV data: {exc}") from exc
         return {"delimiter": best, "columns": header, "rows": count}
