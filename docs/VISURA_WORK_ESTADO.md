@@ -9,7 +9,7 @@ PR #35 abierto/borrador, edead73f4fba2652fa9ed8d4b8ccb01896299456; GitHub indica
 Existe validador de tareas, plan simulado, auditoría REST de revisiones,
 protección de ramas, check-runs y estados heredados, y resumen Actions.
 No hay autorización de escritura automática ni agente autónomo operativo.
-285 pruebas locales correctas (269 existentes + 16 nuevas), compilación y bloqueo de IA de pago correctos. CI de esta rama pendiente al preparar este registro.
+285 pruebas locales correctas (269 existentes + 16 nuevas), compilación y bloqueo de IA de pago correctos. CI confirmada en b390b89e239967da5c861ecb8d89f7105e09918e: Code Review Gate #166, CSV Pilot Tests #173 y Queue Audit #201 correctos.
 
 Trabajo aislado: feat/visura-work-reviewer-evidence-20261026, basado en #37.
 Objetivo inmediato: observar permisos de repositorio vinculados a la identidad
@@ -50,4 +50,6 @@ un token al proceso Python; no extraer credenciales de la integración.
 Después: CODEOWNERS, excepciones y revalidación antes de cualquier ejecución.
 El ciclo vertical de escritura sigue sin implementarse ni activarse.
 
-PR de referencia: https://github.com/josegude-ux/KONTROLA/pull/43 (borrador, destino #37).
+PR: https://github.com/josegude-ux/KONTROLA/pull/43 (borrador).
+CI: https://github.com/josegude-ux/KONTROLA/actions/runs/40292164475
+Última comprobación: código remoto idéntico a los tres archivos probados localmente.
