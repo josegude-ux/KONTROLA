@@ -825,3 +825,9 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 - Se ha incrementado la caché de `sw.js` de `v063` a `v064` para evitar mezclar imágenes/recursos de la versión anterior; se ha ajustado la prueba correspondiente en `tests/visura-menu.test.mjs`.
 - La URL y clave publicable de Supabase, el bucket y las RPC permanecen sin cambios; no hay migraciones ni operaciones sobre datos.
 - Estos cambios son solo de rama candidata: no desplegar hasta aprobar expresamente la actualización de la misma PWA. Confirmar CI verde del HEAD final antes de publicar.
+
+
+### 2026-10-26 — Prueba visual sin espera de red externa
+- La ejecución CI #131 superó las regresiones pero permaneció largo tiempo en la etapa visual. Se ha sustituido `waitUntil: networkidle` por `domcontentloaded` en `tests/visual-menu.spec.mjs`; la prueba ya verifica expresamente que cada imagen esté cargada y tenga ancho natural positivo, por lo que no necesita esperar a que queden inactivas todas las conexiones de la aplicación.
+- Añadido `timeout-minutes: 20` al job visual para evitar ejecuciones indefinidas.
+- Cambio limitado a pruebas/CI, sin alterar comportamiento de producción ni Supabase. Confirmar CI de la rama tras estos commits.
