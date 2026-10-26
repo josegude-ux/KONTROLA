@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import {buildPreparationReport,filterProducts,desglosarBultos} from "../src/report.mjs";
+import {buildPreparationReport,filterProducts,desglosarBultos,totalBultosDelDesglose} from "../src/report.mjs";
 
 const load={
   codigo:"LP26-12345",fecha:"2026-10-25",matricula:"1234ABC",ruta:"Norte",
@@ -103,4 +103,19 @@ test("la hoja de preparación comparte el cálculo con la vista de cargas",()=>{
   for(const {cantidad,unidad} of desglosarBultos(productos)){
     assert.ok(html.includes(String(cantidad)+" "+unidad));
   }
+});
+
+test("el total de bultos corresponde a la suma del desglose mostrado",()=>{
+  const desglose=desglosarBultos([
+    {qty:8,unit:"CAJA"},{qty:2,unit:"CAJA"},
+    {qty:3,unit:"BOTELLA"},{qty:0,unit:"PALET"}
+  ]);
+  assert.deepEqual(desglose,[{unidad:"BOTELLA",cantidad:3},{unidad:"CAJA",cantidad:10}]);
+  assert.equal(totalBultosDelDesglose(desglose),13);
+});
+
+test("el total de bultos no inventa cero cuando falta el desglose",()=>{
+  assert.equal(totalBultosDelDesglose(desglosarBultos(null)),null);
+  assert.equal(totalBultosDelDesglose([]),null);
+  assert.equal(totalBultosDelDesglose([{unidad:"CAJA",cantidad:NaN}]),null);
 });
