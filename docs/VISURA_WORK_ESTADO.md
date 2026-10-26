@@ -62,7 +62,7 @@ Código remoto 15f416576371256395705974bb97bd7a1a3e263b, mismo PR #43.
 correctos. El resumen Actions muestra recuentos de permisos, desconocidos y
 mismatches, sin nombres ni tokens; rechaza indicadores de autorización y datos
 incoherentes. Prueba integrada del transporte GET hasta el informe unificado y
-la reconsulta final del PR. CI del nuevo commit pendiente de consulta.
+la reconsulta final del PR. CI del código 15f41657 confirmada: Code Review Gate #168, CSV Pilot Tests #175 y Queue Audit #203 correctos. https://github.com/josegude-ux/KONTROLA/actions/runs/40292662615
 La autenticación real del módulo sigue pendiente: este avance usa pruebas
 simuladas y no resuelve elegibilidad, CODEOWNERS ni políticas efectivas.
 Primera tarea de continuación: verificar CI del último SHA de #43 y realizar
