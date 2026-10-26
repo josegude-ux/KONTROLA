@@ -1,5 +1,5 @@
 # VISURA — CENTRO DE MANDO
-**Versión:** V5.0 — 2026-10-26  
+**Versión:** V5.1 — 2026-10-26  
 **Objetivo:** conservar órdenes copiables de desarrollo y recuperación de contexto para VISURA.
 
 > Este archivo es una **copia maestra de instrucciones**, no un informe del estado actual del software. Antes de cualquier cambio hay que contrastar ramas, commits, PR y documentación con GitHub. No fusionar, desplegar ni borrar datos sin autorización. No se puede garantizar un proceso en segundo plano ni superar límites de Work.
@@ -12,7 +12,7 @@
 
 **Límites:** el botón copia instrucciones y, si aportas URL directa, abre el chat de destino. No lee la lista de tus conversaciones, no crea ni renombra chats y no pega automáticamente el mensaje. Un nombre o enlace no prueba acceso al historial. Se mantiene la protección de los chats reservados a pruebas y las autorizaciones para GitHub/producción.
 
-**Migración de enlaces:** los enlaces anteriores `#orden-1` y `#orden-3` abren la función unificada. Los antiguos `#orden-4` a `#orden-8` se redirigen a la tarea equivalente. Los nuevos enlaces permanentes son `#funcion-1` a `#funcion-7`.
+**Migración de enlaces:** los enlaces anteriores `#orden-1` y `#orden-3` abren la función unificada. Los antiguos `#orden-4` a `#orden-8` se redirigen a la tarea equivalente. Los nuevos enlaces permanentes son `#funcion-1` a `#funcion-8`.
 
 **Variables:** `{{MODO}}`, `{{ORIGEN}}`, `{{DESTINO}}`, `{{ENLACE_ORIGEN}}`, `{{ENLACE_DESTINO}}`, `{{FOCO}}`, `{{REGLA_MODO}}`.
 
@@ -185,9 +185,9 @@ En INTEGRACIÓN EN RAMA: la imagen aprobada y sus derivados necesarios están re
 En PRUEBA / SIMULACIÓN: se audita la viabilidad, se identifican rutas y alternativas, se detectan bloqueos y se entrega un plan ejecutable SIN modificar sistemas.
 ```
 
-## Menú actual — Accesos directos V5.0 (2026-10-26)
+## Menú actual — Accesos directos V5.1 (2026-10-26)
 
-**Siete funciones**, sin duplicidad 01/03. La nueva orden 01 reúne las tres formas de continuidad; se conserva 02 Preparar Work y las demás tareas de diseño, auditoría, integración y consulta. La interfaz muestra las funciones en una cuadrícula móvil, abre solo la elegida y ofrece «Volver al menú».
+**Ocho funciones**, sin duplicidad 01/03: se añade una única función 08 para órdenes, incidencias y consultas específicas a un chat. La nueva orden 01 reúne las tres formas de continuidad; se conserva 02 Preparar Work y las demás tareas de diseño, auditoría, integración y consulta. La interfaz muestra las funciones en una cuadrícula móvil, abre solo la elegida y ofrece «Volver al menú».
 
 - Enlaces nuevos `#funcion-1` a `#funcion-7`. Enlaces históricos `#orden-1` a `#orden-8` compatibles con un mapeo explícito para no enviar a la función equivocada.
 - Se mantiene botón «↻ Actualizar», cabecera y logo aprobado, selector de archivos de la integración, todos los prompts independientes y la protección de PRUEBA / SIMULACIÓN.
@@ -265,6 +265,61 @@ FORMATO DE RESPUESTA OBLIGATORIO, BREVE Y COMPRENSIBLE:
 Si solo puedes dar un estado parcial, preséntalo como parcial en lugar de inventar una conclusión. No ejecutes ninguna de las tareas enumeradas.
 ```
 
+## 8. NUEVA ORDEN / CONSULTA A CHAT — incidencias, cambios y preguntas (V5.1)
+
+**Auditoría de duplicidad:** se revisaron las siete funciones existentes. La 01 reanuda o transfiere desarrollos; la 04 audita colisiones; la 07 consulta el **estado general de un chat**. Ninguna permite enviar una **petición concreta, incidencia localizada o pregunta operativa** a un chat responsable. Por tanto, se justifica una única nueva función 08 con tres tipos de solicitud. No crear botones separados para incidencia, consulta y orden.
+
+**Formulario:** escoger un chat del proyecto (incluye «VISURA 0.2»), tipo `INCIDENCIA` / `ORDEN` / `CONSULTA`, asunto, descripción, lo que aparece, lo esperado y evidencias. Permite abrir el chat mediante una URL directa conocida. Botón «Ejemplo: palés» para preparar el caso facilitado por el usuario; se puede cambiar a cualquier asunto.
+
+**Ejemplo real:** en la pantalla de VISURA PREPARA del chat VISURA 0.2 aparecen tarjetas de LP26-19519, LP26-19531 y LP26-19525 con el indicador «HUECOS PALÉS: 0 huecos». La foto **no permite saber por sí sola** si el cero es real, si faltan datos o si falla el cálculo/renderizado; el prompt exige averiguarlo y recuperar las reglas sobre palés de cargas anteriores y el ajuste manual del operario. El panel no puede adjuntar la captura por sí mismo; el usuario la adjunta manualmente en el chat receptor.
+
+**Política:** CONSULTA = solo lectura; INCIDENCIA/ORDEN = corrección o desarrollo autorizado en rama segura, sin fusionar, desplegar ni borrar. Si el chat receptor está reservado a pruebas, no se permiten escrituras. La nueva orden debe revisar problemas ya planteados antes de crear tareas duplicadas.
+
+**Variables:** `{{CHAT}}`, `{{TIPO}}`, `{{ASUNTO}}`, `{{DESCRIPCION}}`, `{{ACTUAL}}`, `{{ESPERADO}}`, `{{EVIDENCIAS}}`, `{{CONTEXTO}}`, `{{REGLA_TIPO}}`.
+
+```text
+VISURA / EXCELL — ORDEN, INCIDENCIA O CONSULTA DIRIGIDA A UN CHAT DE DESARROLLO.
+
+CHAT RESPONSABLE: {{CHAT}}
+TIPO: {{TIPO}}
+ASUNTO: {{ASUNTO}}
+DESCRIPCIÓN DEL PROBLEMA O PETICIÓN: {{DESCRIPCION}}
+RESULTADO ACTUAL / SITUACIÓN OBSERVADA: {{ACTUAL}}
+RESULTADO ESPERADO / PREGUNTA CONCRETA: {{ESPERADO}}
+EVIDENCIAS Y CAPTURAS: {{EVIDENCIAS}}
+CONTEXTO ADICIONAL: {{CONTEXTO}}
+
+MODO DE TRABAJO
+{{REGLA_TIPO}}
+
+INSTRUCCIONES COMUNES
+1. Esta orden se pega en el CHAT RESPONSABLE seleccionado; no abras otro chat ni transfieras la responsabilidad solo por diferencias de título. Comprueba qué historial, capturas y archivos están REALMENTE accesibles y no inventes accesos. Si esta conversación está reservada a pruebas, limita la actividad a diagnóstico y simulación, sin escribir en GitHub ni aplicaciones.
+2. ANTES DE CREAR TAREAS, analiza si esta misma incidencia, consulta o solicitud ya se planteó, está implementada, tiene PR/commit, o se está desarrollando en otro chat. Revisa el historial accesible, docs/CONTINUIDAD.md y ramas/PR/commits del repositorio aplicable. Si existe, CONTINÚA el trabajo existente y enlázalo; no lo dupliques.
+3. Identifica los datos de entrada, las reglas de negocio, cálculos, servicios, importaciones y pantallas que intervienen. No asumas que la captura demuestra la causa. Si un campo indica cero, diferencia cero real, dato no informado, fallo de cálculo y fallo de presentación.
+4. Para VISURA PREPARA/INVENTA, recuerda la arquitectura acordada: origen Business Central solo mediante archivos Excel cargados manualmente, validación y persistencia Supabase; sin integración API directa. Conserva cuentas de operarios, reglas de permisos, retención y datos existentes. Si se mencionan palés/huecos, distingue palés de la carga, huecos ocupados, capacidad disponible y cargas anteriores añadidas al camión; comprueba cómo afecta la introducción manual al resultado viable.
+5. Si es una CONSULTA, explica la respuesta fundamentada y qué se ha comprobado, sin modificar repositorios ni datos. Si es una INCIDENCIA o una ORDEN de desarrollo y el chat está autorizado para cambios, investiga y ejecuta las modificaciones mínimas, seguras y reversibles en la rama correcta, sin detenerte ante el primer obstáculo subsanable. Verifica las pruebas y documenta el avance. Si no hay acceso/herramientas suficientes, presenta diagnóstico parcial y bloqueo exacto; no afirmes que has corregido algo que no se ha comprobado.
+6. No fusiones, despliegues a producción, borres datos ni sobrescribas trabajo ajeno sin autorización expresa. No confundas cerrar un PR con comprobar que el usuario ve la corrección en el aplicativo: diferencia código, pruebas y versión realmente publicada. No prometas trabajo en segundo plano.
+
+AL FINAL: informa de modo claro del problema/solicitud entendida; posible causa o causa comprobada; estado previo; acción realizada o pendiente; rama/PR/commit y pruebas si existen; y siguiente paso para que el usuario pueda verificar la pantalla afectada. No inventes porcentajes ni tiempos.
+
+IMPORTANTE: si se menciona una captura seleccionada en el Centro de mando, los bytes NO se transfieren al copiar el prompt. Debe adjuntarse la imagen al mensaje en el chat seleccionado o ya estar accesible allí.
+```
+
+**Regla específica INCIDENCIA:**
+```text
+INCIDENCIA EXISTENTE: diagnostica la anomalía, confirma el resultado correcto esperado a partir de reglas y datos, comprueba duplicados y realiza la corrección mínima segura en la rama adecuada si el chat está autorizado. No declares resuelto hasta verificar con casos reales o pruebas equivalentes. Si se trata de una incidencia ya comunicada, reanuda su reparación; evita cerrar el trabajo con explicaciones genéricas.
+```
+
+**Regla específica ORDEN:**
+```text
+ORDEN DE TRABAJO: ejecuta la funcionalidad o cambio solicitado si está dentro de los permisos del chat y es técnicamente seguro. Antes de modificar, detecta solapamientos, reutiliza lo ya implementado, delimita criterios de aceptación y verifica los resultados. Si no hay autorización para una acción sensible, prepara y valida todo lo no destructivo y solicita únicamente el permiso imprescindible.
+```
+
+**Regla específica CONSULTA:**
+```text
+CONSULTA DE SOLO LECTURA: explica el funcionamiento actual, responde la pregunta concreta y señala las comprobaciones disponibles; no escribas en GitHub, bases de datos o aplicaciones. Si descubres una incidencia, descríbela y ofrece el paso para tramitarla como INCIDENCIA, pero no la ejecutes desde esta consulta.
+```
+
 ## Regla permanente 0 — Comprobar duplicados ANTES de crear un prompt
 
 Antes de redactar, guardar, proponer o añadir un prompt/botón al Centro de mando:
@@ -274,7 +329,7 @@ Antes de redactar, guardar, proponer o añadir un prompt/botón al Centro de man
 4. Probar el generador con al menos dos opciones diferentes y con opciones vacías; verificar que cambia correctamente origen/destino y que no mezcla chats ni ejecuta acciones desde el panel.
 5. Mantener las dos copias HTML, el documento maestro y la numeración sincronizados. No tocar `main`, no fusionar ni desplegar aplicaciones sin autorización.
 
-**Separación de funciones actual:** 01 Continuar desarrollo con tres modos (mismo chat / continuador ya activo / traspaso nuevo); 02 Preparar traspaso Work antes del límite; 03 Continuar imágenes; 04 Auditar solapamientos; 05 Crear imágenes; 06 Integrar imagen; 07 Consultar estado en solo lectura. Son funciones relacionadas pero no duplicadas.
+**Separación de funciones actual:** 01 Continuar desarrollo (tres modos); 02 Preparar Work; 03 Continuar imágenes; 04 Auditar solapamientos; 05 Crear imágenes; 06 Integrar imagen; 07 Consultar estado del chat en solo lectura; 08 Comunicar una orden, incidencia o consulta concreta a un chat. Antes de crear otro botón, verificar solapamientos. Son funciones relacionadas pero no duplicadas.
 
 ## Reglas comunes
 1. Consultar primero el estado verificado en GitHub, **sin tratar la documentación antigua de main como último estado**.
