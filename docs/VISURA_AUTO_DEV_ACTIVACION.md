@@ -36,3 +36,12 @@ Estado: **NO ACTIVADO**. Este documento describe los requisitos para una ejecuci
 - Primera ejecución del agente generando un PR por sí mismo.
 
 El script `scripts/visura_budget_gate.py` es **solo una comprobación pura**: no reserva, no persiste, no intercepta peticiones y por tanto **no impone un límite de facturación**.
+
+## Evidencia verificada — 26/10/2026
+
+- GitHub Actions **VISURA AUTO-DEV - Queue Audit**, run **40257686523**, job **121362974937**, resultado **success**.
+- Registro del job: **18 tests, 18 OK**, incluida concurrencia, idempotencia y validación de entradas.
+- Smoke test: `VISURA paid API gate: BLOCK`; `PASS: paid calls blocked; 10 EUR local reservation ceiling respected`.
+- Auditoría de issue **#31 abierta**, solo lectura.
+- Evidencia: https://github.com/josegude-ux/KONTROLA/actions/runs/40257686523
+- **No equivale a activar el agente ni a garantizar un límite externo de facturación.**
