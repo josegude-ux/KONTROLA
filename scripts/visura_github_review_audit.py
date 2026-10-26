@@ -54,6 +54,9 @@ def summarize_readonly_review_snapshot(snapshot):
     dismissed_review_ids = []
     pending_review_ids = []
     seen_review_ids = set()
+    # Records are sorted by numeric GitHub review ID for a deterministic,
+    # advisory latest-decision view. This is NOT GitHub branch policy.
+    decisive_current_reviews = []
 
     for review in snapshot["reviews"]:
         if not isinstance(review, dict) or set(review) != _REVIEW_KEYS:
@@ -83,6 +86,13 @@ def summarize_readonly_review_snapshot(snapshot):
         if commit.lower() != snapshot["head_sha"].lower():
             stale_review_ids.append(review_id)
             continue
+        if state in {"APPROVED", "CHANGES_REQUESTED", "DISMISSED"}:
+            decisive_current_reviews.append({
+                "review_id": review_id,
+                "reviewer_numeric_id": reviewer_id,
+                "reviewer_login": login,
+                "state": state,
+            })
         if state == "DISMISSED":
             dismissed_review_ids.append(review_id)
         elif state == "PENDING":
@@ -94,6 +104,16 @@ def summarize_readonly_review_snapshot(snapshot):
                 at_head_approvals.append(observed)
             else:
                 at_head_changes.append(observed)
+
+    latest_decisions = {}
+    for decisive in sorted(decisive_current_reviews, key=lambda item: item["review_id"]):
+        latest_decisions[decisive["reviewer_numeric_id"]] = decisive
+    latest_ids = {entry["review_id"] for entry in latest_decisions.values()}
+    superseded_ids = sorted(
+        entry["review_id"] for entry in decisive_current_reviews
+        if entry["review_id"] not in latest_ids
+    )
+    latest_decisions_sorted = sorted(latest_decisions.values(), key=lambda item: item["review_id"])
 
     return {
         "repository": snapshot["repository"],
@@ -111,6 +131,11 @@ def summarize_readonly_review_snapshot(snapshot):
         "observed_self_review_ids": sorted(self_review_ids),
         "observed_dismissed_review_ids": sorted(dismissed_review_ids),
         "observed_pending_review_ids": sorted(pending_review_ids),
+        "observed_latest_decisive_reviews_by_account": latest_decisions_sorted,
+        "observed_latest_approval_records": [
+            entry for entry in latest_decisions_sorted if entry["state"] == "APPROVED"
+        ],
+        "observed_superseded_decisive_review_ids": superseded_ids,
         "reviewer_permissions_verified": False,
         "repository_policy_verified": False,
         "effective_approval_verification": False,
@@ -118,7 +143,8 @@ def summarize_readonly_review_snapshot(snapshot):
         "merge_authorized": False,
         "deployment_authorized": False,
         "warning": (
-            "Observational audit only. Reviews may be superseded or dismissed, "
-            "and GitHub repository policy is not verified."
+            "Observational audit only. Latest records assume numerical review ID "
+            "ordering; review permissions, dismissals, subsequent changes, "
+            "and repository policy are not verified."
         ),
     }
