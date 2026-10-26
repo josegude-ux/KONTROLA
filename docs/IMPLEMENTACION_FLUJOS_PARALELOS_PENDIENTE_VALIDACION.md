@@ -63,3 +63,15 @@ No se inicia un cronómetro ni se registra automáticamente «preparación inici
 - El PR #57 sigue siendo un registro documental; el PR #58 incluye la especificación y el código en un solo diff contra la base actualizada.
 - La cola de Verificación se habilita desde `publicada`; su inicio se registra cuando un verificador realiza la acción. No se inventa inicio de picking de BC ni se garantiza conocimiento de palés terminados.
 - Advertencia: la aplicación contiene un cronómetro legado y otros módulos cuyo reemplazo pertenece a trabajos distintos. No se ha reintroducido ni aumentado su uso como parte de esta implementación.
+
+## Auditoría de seguridad de Supabase (solo lectura)
+
+Se consultó el asesor de seguridad de `control-cargas-movil` el 26/10/2026 sin modificar configuración ni registros.
+
+- Aviso **WARN** preexistente: `public.kontrola_finalizar_preparacion(p_codigo text)` figura ejecutable por `anon` siendo `SECURITY DEFINER`. El SQL propuesto incluye explícitamente `REVOKE ALL ... FROM PUBLIC, anon` y `GRANT EXECUTE ... TO authenticated`, pero **NO se ha aplicado** y por tanto el riesgo actual requiere revisión prioritaria.
+- El asesor también devuelve avisos de otras funciones `SECURITY DEFINER` accesibles por `anon` y de funciones con privilegios de `authenticated`; no atribuirlos a estos cambios ni corregirlos a ciegas.
+- Dos tablas `kontrola_archivo_eventos` y `kontrola_impresiones` aparecen con RLS habilitado sin políticas, nivel informativo; revisar su exposición y uso real antes de cambiar políticas.
+
+Referencias oficiales: [SECURITY DEFINER ejecutable por anónimo](https://supabase.com/docs/guides/database/database-linter?lint=0028_anon_security_definer_function_executable) y [RLS habilitado sin políticas](https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy).
+
+**Pendiente antes de una migración:** revisar los grants efectivos, pruebas de acceso no autenticado y roles de Supervisor/Operario/Administrador, probar las cinco RPC con una base de ensayo separada e inspeccionar el resultado del asesor de seguridad después de la prueba. El usuario aún no ha autorizado modificar la base conectada.
