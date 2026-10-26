@@ -4,7 +4,8 @@ on:
     branches:
       - feature/visura-prepara-menu-oficial-20261026
     paths:
-      - VISURA_PREPARA_IMAGENES.zip
+      - VISURA_PREPARA_SOLO_IMAGENES_GITHUB.zip
+      - .github/workflows/integrar-menu-zip.yml
   workflow_dispatch:
 permissions:
   contents: write
@@ -20,10 +21,10 @@ jobs:
         with:
           node-version: '22'
       - name: Comprobar que el ZIP oficial esta presente
-        run: test -f VISURA_PREPARA_IMAGENES.zip
+        run: test -f VISURA_PREPARA_SOLO_IMAGENES_GITHUB.zip
       - name: Integrar imagenes y ejecutar todas las pruebas
         run: |
-          python3 scripts/integrar_menu_oficial.py VISURA_PREPARA_IMAGENES.zip
+          python3 scripts/integrar_menu_oficial.py VISURA_PREPARA_SOLO_IMAGENES_GITHUB.zip
           python3 -m unittest discover -s tests -p 'test_integrar_menu_oficial.py' -v
           npm ci
           npm run check
