@@ -34,6 +34,22 @@ python3 -m scripts.visura_github_readonly_snapshot josegude-ux/KONTROLA 37
 
 Nunca pegar el token en el comando, los logs o el chat. No se requiere ni se permite ninguna clave de proveedor de IA.
 
+## Observación adicional de protección de ramas
+
+El workflow manual preparado incluye un **segundo paso de lectura** del repositorio:
+`python3 -m scripts.visura_github_policy_probe josegude-ux/KONTROLA main`.
+
+Este paso consulta la protección clásica de `main` y la lista de *rulesets* del repositorio y sus posibles reglas heredadas. Su informe distingue explícitamente:
+
+- `classic_protection.lookup: retrieved`: obtuvo una respuesta de configuración clásica, incluyendo número de aprobaciones exigidas y estado de ciertas comprobaciones, sin interpretar que sean suficientes.
+- `classic_protection.lookup: not_found_or_inaccessible`: respuesta HTTP 404; **no significa** que la rama esté desprotegida.
+- `classic_protection.lookup: inaccessible`: respuesta HTTP 403, sin permisos de lectura suficientes.
+- `rulesets.listed_count` y `listed_active_count`: reglas listadas, sin comprobar si se aplican a `main`. Si la lista no se puede consultar, los valores son `null`.
+
+**Limitación de permisos:** GitHub exige normalmente `Administration: read` para consultar la protección clásica (https://docs.github.com/en/rest/branches/branch-protection). El `GITHUB_TOKEN` del workflow está restringido a `contents: read` y `pull-requests: read`, por lo que no se espera que pueda verificar esa protección clásica. El flujo **no eleva privilegios ni solicita tokens de administrador**: informa de la falta de acceso y mantiene `repository_policy_verified: false`.
+
+La existencia de un ruleset no significa necesariamente que proteja la rama inspeccionada; pueden intervenir condiciones, excepciones y *bypass*. Ninguno de los dos pasos de lectura es una puerta de autorización para ejecutar o fusionar código.
+
 ## Qué NO demuestra
 
 La vista de últimas decisiones presupone que los IDs numéricos de las revisiones reflejan su orden de creación; **no comprueba marcas de tiempo, reglas de dismiss ni la última decisión efectiva en GitHub**. La API puede devolver una aprobación aunque esta no sea válida para las reglas vigentes de la rama. Puede existir una revisión posterior, un cambio de política, una eliminación de permisos o un cambio del PR después de la consulta. El informe clasifica **registros observados**, no toma decisiones de seguridad.
@@ -42,4 +58,4 @@ Antes de habilitar cualquier automatización con escritura será imprescindible 
 
 ## Validación
 
-Code Review Gate #93: **121 de 121 pruebas correctas** (incluidas cinco pruebas de decisiones sustituidas); se probaron respuestas simuladas, sin activar el workflow de auditoría. La consulta de producción y las reglas de protección de rama siguen pendientes de validación independiente.
+Code Review Gate #97: **133 de 133 pruebas correctas** (incluidas cinco pruebas de decisiones sustituidas); se probaron respuestas simuladas, sin activar el workflow de auditoría. La consulta de producción y las reglas de protección de rama siguen pendientes de validación independiente.
