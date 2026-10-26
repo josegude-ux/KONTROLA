@@ -150,3 +150,6 @@ La idea de un portal común se documentó separadamente en `docs/MOVENTA_CONCEPT
 
 - Code Review Gate #56 (`40262422865`) **success, 60/60 pruebas OK**: https://github.com/josegude-ux/KONTROLA/actions/runs/40262422865.
 - Se incorporó `scripts/visura_activation_gate.py` como **evaluador inerte fail-closed**, más cinco pruebas en `tests/test_visura_activation_gate.py` (commits `ba7d75c`, `069fda5`). Incluso si un payload declara todas las comprobaciones externas como verdaderas, **no se autentica la evidencia ni se concede ejecución, merge o despliegue**. No es un sistema de autorización real; CI de estas pruebas pendiente.
+
+- Code Review Gate #59 (`40262517292`) **success, 65/65 pruebas OK**: https://github.com/josegude-ux/KONTROLA/actions/runs/40262517292.
+- Nuevo comprobador inerte de vinculación entre tarea, commit, autor y revisor (`scripts/visura_review_binding.py`, commit `8b03a95`) con cinco pruebas (`tests/test_visura_review_binding.py`, commit `434fb60`). Detecta SHA distinto, auto-revisión y campos de autorización inyectados. La elegibilidad es una **declaración no autenticada** y jamás autoriza ejecución o merge. Pendiente CI.
