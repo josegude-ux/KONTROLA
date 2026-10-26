@@ -311,6 +311,13 @@ def render_readonly_audit_summary(bundle):
         raise ValueError("Incorrect branch distinction")
     if bundle.get("same_pr_metadata_after_policy_lookup") is not True:
         raise ValueError("PR metadata not rechecked")
+    rechecked_target_policy = bundle.get("same_target_policy_after_audit")
+    if rechecked_target_policy is not None and rechecked_target_policy is not True:
+        raise ValueError("Invalid target policy recheck claim")
+    rechecked_target_text = (
+        "coincidente al releer (no autorización)"
+        if rechecked_target_policy is True else "desconocido"
+    )
     if any(target.get(key) is not False for key in (
         "repository_policy_verified", "execution_authorized",
         "merge_authorized", "deployment_authorized",
@@ -549,6 +556,7 @@ def render_readonly_audit_summary(bundle):
         "| Rama de destino | `" + branch + "` |",
         "| Rama predeterminada | `" + default + "` |",
         "| Snapshot atómico | No |",
+        "| Política de destino releída | " + rechecked_target_text + " |",
         "",
         "## Revisiones registradas (no autorizaciones)",
         "",
