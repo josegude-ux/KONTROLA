@@ -679,3 +679,10 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 ### 2026-10-26 - Nuevas regresiones de accesibilidad
 - Se añadieron dos tests: las cuatro tarjetas son botones de tipo button (sin submit accidental), y las ilustraciones decorativas permanecen ocultas a lectores de pantalla con alt vacio.
 - Commit 7f7db9f59ea9c746c1fa7e1adfab4b262f73e9f0. Requiere nuevo resultado CI; la ejecucion #26 valida los 196 tests anteriores, no estos dos adicionales.
+
+
+### 2026-10-26 - Integracion visual empaquetada y verificada localmente
+- CI run 40257410504, commit f0e11dfeef4fc5759428a63a31512a34c15ecff6: 198/198 pruebas aprobadas, 0 fallidas.
+- Paquete local VISURA_PREPARA_INTEGRACION_MENU_LISTA.zip verificado: cuatro WEBP oficiales, cuatro originales y script aplicar_menu_visura_prepara.py.
+- Script probado contra un checkout de prueba con cuatro tarjetas, sw.js y tests: termino correctamente y reemplazo referencias, cache v062 a v063 y copio recursos. No equivale a ejecutar la suite completa sobre el repositorio real.
+- PENDIENTE: transferir binarios a la rama de GitHub y ejecutar pruebas y revision visual sobre el resultado real. No se han subido los recursos ni fusionado PR.
