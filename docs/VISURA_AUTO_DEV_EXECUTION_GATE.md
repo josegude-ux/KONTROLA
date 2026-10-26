@@ -18,7 +18,7 @@ Estado: diseño; NO activado. El código actual valida, planifica y simula tarea
 
 ## Verificación pendiente
 
-La integración disponible permite consultar revisiones, pero no se ha podido verificar la configuración de protección de ramas. No afirmar que main está protegida ni activar ejecución basándose en ello.
+La integración disponible permite consultar revisiones, políticas de ramas y resultados observados de check-runs del commit exacto del PR; **esto no verifica que se cumplan los checks obligatorios definidos en la protección de la rama**. Tampoco se ha podido verificar la configuración efectiva de protección de ramas. No afirmar que main está protegida ni activar ejecución basándose en ello.
 
 ## Criterio de salida
 
