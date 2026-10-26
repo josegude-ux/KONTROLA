@@ -64,3 +64,53 @@ test("no inventa LP con un nombre numérico sin referencia verificable",()=>{
  const parsed=parseDocumentPages([pageFor("COR_01_COR")],"19663.pdf");
  assert.equal(parsed.id,"19663");
 });
+
+
+test("lee Observaciones solo de la cabecera, incluso repartidas en varias líneas",()=>{
+ const page=pageFor("COR_01_COR");
+ page.items.push(
+  {text:"Observaciones:",x:12,y:35},
+  {text:"Descargar en puerta 4",x:135,y:35},
+  {text:"avisar antes de llegar",x:135,y:48},
+  {text:"Ruta: Centro",x:12,y:61},
+  {text:"Observaciones: IGNORAR producto",x:320,y:110}
+ );
+ const parsed=parseDocumentPages([page],"LP26-12349.pdf");
+ assert.equal(parsed.observations,"Descargar en puerta 4 avisar antes de llegar");
+});
+
+test("si Observaciones está vacío o solo en el detalle, no inventa contenido",()=>{
+ const page=pageFor("COR_01_COR");
+ page.items.push({text:"Observaciones:",x:12,y:35},{text:"Ruta: Norte",x:12,y:47});
+ page.items.push({text:"Observaciones: descripción de producto",x:350,y:110});
+ assert.equal(parseDocumentPages([page],"LP26-12350.pdf").observations,null);
+});
+
+test("el campo de huecos del camión prevalece sobre el código de camión",()=>{
+ const page=pageFor("COR_01_COR");
+ page.items.push(
+  {text:"Camion: CR 9G 6P",x:10,y:22},
+  {text:"Huecos plts. camion: 6G 4P",x:10,y:34}
+ );
+ const parsed=parseDocumentPages([page],"LP26-12351.pdf");
+ assert.equal(parsed.palletsLarge,6);
+ assert.equal(parsed.palletsSmall,4);
+ assert.equal(parsed.palletsTotal,null);
+});
+
+test("si solo aparecen grandes, no inventa huecos pequeños",()=>{
+ const page=pageFor("COR_01_COR");
+ page.items.push({text:"Huecos plts. camion: 8G",x:10,y:22});
+ const parsed=parseDocumentPages([page],"LP26-12352.pdf");
+ assert.equal(parsed.palletsLarge,8);
+ assert.equal(parsed.palletsSmall,null);
+});
+
+test("si el campo de huecos trae un total simple, no inventa clases G/P",()=>{
+ const page=pageFor("COR_01_COR");
+ page.items.push({text:"Huecos plts. camion: 12",x:10,y:22});
+ const parsed=parseDocumentPages([page],"LP26-12353.pdf");
+ assert.equal(parsed.palletsLarge,null);
+ assert.equal(parsed.palletsSmall,null);
+ assert.equal(parsed.palletsTotal,12);
+});
