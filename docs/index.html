@@ -922,6 +922,7 @@ function refreshRegistrySelect(select){
 function refreshAllChatSelectors(){
  for(const id of registrySelects)refreshRegistrySelect(document.getElementById(id));
  syncContinuityForm();
+ refreshChatLinkFields();
  statusOther.hidden=statusChat.value!=="OTRO";statusOtherLabel.hidden=statusOther.hidden;
  requestOther.hidden=requestChat.value!=="OTRO";requestOtherLabel.hidden=requestOther.hidden;
  refreshStatusPreview();refreshRequestPreview();
@@ -929,6 +930,22 @@ function refreshAllChatSelectors(){
 function cleanManagerEditor(){
  editingName="";managerName.value="";managerState.value="sin_verificar";managerLink.value="";managerTitle.textContent="Añadir chat";
 }
+/* Reutiliza los enlaces guardados al elegir un chat; nunca crea permisos de acceso. */
+function linkForSelectedChat(name){
+ const entry=registry.find(c=>normalizedName(c.name)===normalizedName(name));
+ return entry?.link||"";
+}
+function refreshChatLinkFields(){
+ continuitySourceLink.value=linkForSelectedChat(continuitySourceName());
+ continuityDestinationLink.value=continuityMode.value==="mismo"?"":linkForSelectedChat(continuityDestinationName());
+ statusLink.value=linkForSelectedChat(selectedStatusChat());
+ requestChatLink.value=linkForSelectedChat(requestChatName());
+ syncContinuityForm();refreshStatusPreview();refreshRequestPreview();
+}
+continuitySource.addEventListener("change",refreshChatLinkFields);
+continuityDestination.addEventListener("change",refreshChatLinkFields);
+statusChat.addEventListener("change",refreshChatLinkFields);
+requestChat.addEventListener("change",refreshChatLinkFields);
 function renderChatManager(){
  managerList.replaceChildren();
  if(!registry.length){const p=document.createElement("p");p.textContent="Sin chats. Añade uno a continuación.";p.style.padding="12px";managerList.appendChild(p);}
