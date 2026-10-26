@@ -1,0 +1,1 @@
+# VISURA AUTO-DEV: tarea 31\n\nDocumento generado automáticamente por un workflow determinista, sin IA de pago.\n\n- Origen: issue #31 (solo metadatos).\n- Sin acceso a Business Central ni Supabase.\n- No autoriza fusiones ni despliegues.\n
