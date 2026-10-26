@@ -698,3 +698,9 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 - GitHub Actions run 40257649349: SUCCESS, 198 pruebas aprobadas, cero fallidas, integrador Python sin errores de sintaxis.
 - El integrador ahora exige exactamente cuatro imagenes originales y formatos JPEG/PNG antes de modificar archivos (commit 9a2b7dd0a753815a1d682840c0ba833110216346).
 - Las imagenes oficiales siguen pendientes de transferencia a la rama. Ningun despliegue ni merge realizado.
+
+
+### 2026-10-26 - Pruebas aisladas del ZIP superadas
+- Ejecucion GitHub Actions #52 (run 40258056434): paso de pruebas completado correctamente. 3 pruebas Python de integracion ZIP (correcta, idempotencia, rechazo de originales incompletos o WEBP corruptos) y 198 pruebas Node: 201 comprobaciones, 0 fallidas.
+- El integrador y los tests estan versionados en la rama de PR #29. Los archivos binarios oficiales todavia NO estan incorporados a GitHub; la comprobacion de la interfaz real queda pendiente.
+- No se ha fusionado ni desplegado.
