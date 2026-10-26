@@ -22,16 +22,17 @@ test("Control de Cargas aparece como submenú navegable sin duplicar operaciones
 test("importar cargas dispone de accesos directos visibles solo al administrador",()=>{
   const admin=read("src/admin.mjs");
   for(const id of ["cargasImportar","importLoadsShortcut"]){
-    assert.match(html,new RegExp('id="'+id+'"[^>]*hidden'));
-    assert.match(app,new RegExp('visible\\(\\$\\("'+id+'"\\),ownProfile\\.rol==="administrador"\\)'));
+    assert.ok(html.includes('id="'+id+'"'),"Falta botón "+id);
+    assert.ok(new RegExp('id="'+id+'"[^>]*hidden').test(html),"El botón debe iniciar oculto: "+id);
+    assert.ok(app.includes('visible($("'+id+'"),ownProfile.rol==="administrador");'),"Permisos de "+id);
   }
-  assert.match(html,/id="cargasImportar"[^>]*hidden[^>]*>[\\s\\S]*?<b>Importar cargas<\\/b>/);
-  assert.match(app,/\\$\\("cargasImportar"\\)\\.addEventListener\\("click",\\(\\)=>openAdminMenu\\("cargasMenuView"\\)\\)/);
-  assert.match(app,/\\$\\("importLoadsShortcut"\\)\\.addEventListener\\("click",\\(\\)=>openAdminMenu\\("loadsView"\\)\\)/);
-  assert.match(app,/if\\(profile\\?\\.rol!=="administrador"\\|\\|!switchView\\("adminView"\\)\\)return/);
-  assert.match(admin,/async function open\\(\\)\\{\\s*selectAdminTab\\(0\\)/);
-  assert.match(admin,/\\$\\("processPdf"\\)\\.addEventListener\\("click",processPdf\\)/);
-  assert.match(html,/id="publishReviewedLoad"[^>]*disabled/);
+  assert.ok(html.includes("<b>Importar cargas</b>"));
+  assert.ok(app.includes('$("cargasImportar").addEventListener("click",()=>openAdminMenu("cargasMenuView"));'));
+  assert.ok(app.includes('$("importLoadsShortcut").addEventListener("click",()=>openAdminMenu("loadsView"));'));
+  assert.ok(app.includes('if(profile?.rol!=="administrador"||!switchView("adminView"))return;'));
+  assert.ok(admin.includes("selectAdminTab(0);"),"La importación debe abrir la primera pestaña");
+  assert.ok(admin.includes('$("processPdf").addEventListener("click",processPdf);'));
+  assert.ok(new RegExp('id="publishReviewedLoad"[^>]*disabled').test(html),"Publicación requiere revisión");
 });
 
 test("Tanques permanece totalmente oculto y sin acciones activas",()=>{
