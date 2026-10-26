@@ -32,6 +32,18 @@ test("importación accesible desde cargas solo para administración y sin borrar
   assert.doesNotMatch(admin,/\$\("reviewLoadSelect"\)\.replaceChildren\(\);\$\("reviewLoadMessage"\)\.textContent="";/);
 });
 
+test("PDF mixto: administración reprocesa solo el almacén elegido sin copiar líneas previas",()=>{
+  const source=read("src/admin.mjs");
+  assert.match(source,/async function reprocessReviewWarehouse\(target\)/);
+  assert.match(source,/parsePdfFile\(original,\{warehouse:target\}\)/);
+  assert.match(source,/next\.id!==previous\.id\|\|next\.warehouse!==target\|\|next\.mixedWarehouse/);
+  assert.doesNotMatch(source,/products:draft\.parsed\.products/);
+  assert.doesNotMatch(source,/actualTotal:draft\.parsed\.actualTotal/);
+  assert.match(source,/Reprocesar solo /);
+  assert.match(source,/El PDF original sigue intacto/);
+  assert.match(source,/Guardar revisión para actualizar la carga pendiente/);
+});
+
 test("Tanques permanece totalmente oculto y sin acciones activas",()=>{
   assert.doesNotMatch(html,/tanques/i);
   assert.doesNotMatch(app,/openTanques|cargasTanques/i);
