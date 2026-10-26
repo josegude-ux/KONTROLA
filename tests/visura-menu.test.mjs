@@ -44,3 +44,30 @@ test("acciones de las cuatro tarjetas siguen conectadas a controladores original
     assert.match(app, re, `No se encuentra el manejador original para ${id}`);
   }
 });
+
+test("administración permanece oculta por defecto hasta autorizar su visibilidad", () => {
+  const card = html.match(/<button id="openAdmin"[^>]*>/)?.[0];
+  assert.ok(card, "Falta la tarjeta de administración");
+  assert.match(card, /\\shidden(?:\\s|>)/, "Administración no debe mostrarse antes de validar permisos");
+});
+
+test("las ilustraciones de las cuatro funciones son distintas y están optimizadas", () => {
+  const sources = cards.map(([id]) => {
+    const card = html.match(new RegExp(`<button id="${id}"[\\s\\S]*?</button>`))?.[0];
+    assert.ok(card, `Falta la tarjeta ${id}`);
+    const src = card.match(/<img[^>]*src="([^"]+)"/)?.[1];
+    assert.ok(src?.endsWith(".webp"), `Se requiere WEBP en ${id}`);
+    return src;
+  });
+  assert.equal(new Set(sources).size, 4, "No se deben reutilizar imágenes entre tarjetas");
+});
+
+test("la precarga PWA conserva las cuatro ilustraciones para uso sin conexión", () => {
+  const assets = sw.match(/const ASSETS=(\\[[^;]+\\]);/)?.[1];
+  assert.ok(assets, "No se encuentra la lista de precarga");
+  for (const [id] of cards) {
+    const card = html.match(new RegExp(`<button id="${id}"[\\s\\S]*?</button>`))?.[0];
+    const src = card?.match(/<img[^>]*src="([^"]+)"/)?.[1];
+    assert.ok(src && assets.includes(JSON.stringify(src)), `No está precargada la imagen de ${id}`);
+  }
+});
