@@ -50,6 +50,21 @@ Este paso consulta la protección clásica de `main` y la lista de *rulesets* de
 
 La existencia de un ruleset no significa necesariamente que proteja la rama inspeccionada; pueden intervenir condiciones, excepciones y *bypass*. Ninguno de los dos pasos de lectura es una puerta de autorización para ejecutar o fusionar código.
 
+### Reglas activas aplicables específicamente a la rama
+
+Se incorporó la consulta oficial `GET /repos/{owner}/{repo}/rules/branches/{branch}`, que devuelve las reglas **activas de rulesets aplicables a esa rama**, incluidas las heredadas de la organización. GitHub ofrece este endpoint con permiso `Metadata: read`, también para repositorios públicos sin autenticación. Esta consulta no sustituye la protección clásica ni demuestra que no existan usuarios con excepciones.
+
+El resultado `effective_ruleset_rules` distingue:
+
+- `lookup: retrieved`: respuesta completa; `observed_rule_count` y `observed_rule_types` describen solo las reglas devueltas, sin certificar seguridad suficiente.
+- `lookup: inaccessible` o `not_found_or_inaccessible`: respuesta 403/404; conteos `null`, no se infiere ausencia de protección.
+- `applied_ruleset_api_responded`: indica una consulta completada, **no** que la política sea suficiente ni una aprobación vigente.
+- `includes_classic_branch_protection: false`: recuerda que las reglas clásicas se consultan por separado.
+
+La respuesta completa de la auditoría sigue fijando `repository_policy_verified: false`, `execution_authorized: false`, `merge_authorized: false` y `deployment_authorized: false`. El workflow manual ya preparado utiliza este lector, aunque **sigue sin estar activado**.
+
+Documentación oficial: https://docs.github.com/en/rest/repos/rules#get-rules-for-a-branch.
+
 ## Qué NO demuestra
 
 La vista de últimas decisiones presupone que los IDs numéricos de las revisiones reflejan su orden de creación; **no comprueba marcas de tiempo, reglas de dismiss ni la última decisión efectiva en GitHub**. La API puede devolver una aprobación aunque esta no sea válida para las reglas vigentes de la rama. Puede existir una revisión posterior, un cambio de política, una eliminación de permisos o un cambio del PR después de la consulta. El informe clasifica **registros observados**, no toma decisiones de seguridad.
@@ -58,4 +73,4 @@ Antes de habilitar cualquier automatización con escritura será imprescindible 
 
 ## Validación
 
-Code Review Gate #97: **133 de 133 pruebas correctas** (incluidas cinco pruebas de decisiones sustituidas); se probaron respuestas simuladas, sin activar el workflow de auditoría. La consulta de producción y las reglas de protección de rama siguen pendientes de validación independiente.
+Code Review Gate #102: **141 de 141 pruebas correctas** (incluidas cinco pruebas de decisiones sustituidas); se probaron respuestas simuladas, sin activar el workflow de auditoría. La consulta de producción y las reglas de protección de rama siguen pendientes de validación independiente.
