@@ -45,7 +45,10 @@ class AuditBundleTests(unittest.TestCase):
                 "repository": REPO,
                 "branch": "chore/visura-auto-dev-guardrails",
                 "lookup": "no_file_observed",
-                "observations": [],
+                "observations": [
+                    {"path": path, "lookup": "not_found_or_inaccessible"}
+                    for path in (".github/CODEOWNERS", "CODEOWNERS", "docs/CODEOWNERS")
+                ],
                 "first_observed_path": None,
                 "unshadowed_candidate_observed": False,
                 "file_absence_verified": False,
