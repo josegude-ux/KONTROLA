@@ -95,7 +95,7 @@ Se consultaron exclusivamente metadatos de `pg_catalog` del proyecto conectado (
 
 ## CI integrada de flujos paralelos — VALIDADA (26/10/2026)
 
-**Ejecución verificada:** [GitHub Actions «Verificar KONTROLA» #521](https://github.com/josegude-ux/KONTROLA/actions/runs/40384602491), commit de código/test `2e145bee9876a206ce23d7b57c556f4ac96882f8`. Resultado **success** en el job `test`. No se ha ejecutado esta prueba en el Supabase conectado.
+**Ejecución verificada:** [GitHub Actions «Verificar KONTROLA» #527](https://github.com/josegude-ux/KONTROLA/actions/runs/40384602491), commit de código/test `2e145bee9876a206ce23d7b57c556f4ac96882f8`. Resultado **success** en el job `test`. No se ha ejecutado esta prueba en el Supabase conectado.
 
 - **Node nativo:** 285 pruebas, 285 aprobadas, 0 fallidas.
 - **PostgreSQL 16 temporal:** migraciones históricas y pruebas existentes de RLS, revisión documental, archivo seguro y concurrencia: correctas.
