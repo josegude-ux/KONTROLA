@@ -763,3 +763,11 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 - La ejecución #108 también terminó SUCCESS, pero no había artefactos de capturas porque el paso de subida se había retirado al corregir el YAML. Se ha añadido de nuevo la publicación de `artifacts/*.png` con retención de 7 días (commit `ea300efb06360a7a4b3e5982543af287790b1f2c`); falta confirmar las capturas en la siguiente ejecución.
 - Esta comprobación se ejecuta en Chromium emulado con viewports de 1440x1000 y 390x844; no sustituye validación física en iPhone/Android.
 - PR #36 permanece abierta y en borrador. No merge ni despliegue.
+
+
+### 2026-10-26 — Revisión de capturas de la ejecución #112
+- La ejecución #112 terminó en SUCCESS y produjo el artefacto `visura-prepara-menu-visual` (ID 12624117728).
+- Capturas revisadas: escritorio 1440×1184 y móvil 390×1134. La corrección CSS elimina el solapamiento visual observado en la ejecución #110: el texto queda en una columna izquierda y las ilustraciones en una zona separada a la derecha.
+- La regresión y el smoke visual de Chromium pasan. Administración no se muestra sin rol en esta vista de prueba, conforme al estado inicial de la tarjeta.
+- La prueba usa viewports emulados; siguen pendientes las pruebas manuales en iPhone, Android y Windows físicos, así como la validación de navegación de cada acción en una sesión de prueba real.
+- Sin merge ni despliegue. Rama activa: `fix/visura-menu-playwright-auth-20261026`.
