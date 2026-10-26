@@ -15,15 +15,23 @@ from scripts.visura_github_readonly_snapshot import (
 from scripts.visura_github_policy_probe import _read_status
 
 
-def observe_reviewer_permissions(repository, login, numeric_id, token, opener=None):
-    _validate_repo(repository)
+def _validate_identity(login, numeric_id):
     # Allow bot handles, but never path/query/control-character injection.
     if not isinstance(login, str) or not re.fullmatch(r"[A-Za-z0-9-]{1,39}(?:\[bot\])?", login):
         raise ValueError("Invalid reviewer login")
     if not _positive_int(numeric_id):
         raise ValueError("Invalid reviewer numeric ID")
+
+
+def _validate_token(token):
     if not isinstance(token, str) or not token.strip() or '\r' in token or '\n' in token:
         raise ValueError("Missing or invalid GitHub token")
+
+
+def observe_reviewer_permissions(repository, login, numeric_id, token, opener=None):
+    _validate_repo(repository)
+    _validate_identity(login, numeric_id)
+    _validate_token(token)
     opener = build_opener(_NoRedirectHandler()).open if opener is None else opener
     status, data = _read_status(
         '/repos/' + repository + '/collaborators/' + login + '/permission', token, opener
@@ -64,9 +72,11 @@ def observe_snapshot_reviewer_permissions(repository, snapshot, token, opener=No
     """Bounded, deduplicated reads from a previously fetched review snapshot.
 
     Missing review data is unknown, never an empty verified review set.
-    At most 50 identities are queried, with no partial verdict above that cap.
+    Validate the entire batch before any request. At most 50 identities are
+    queried, with no partial verdict above that cap.
     """
     _validate_repo(repository)
+    _validate_token(token)
     reviews = snapshot.get('reviews') if isinstance(snapshot, dict) else None
     result = {
         'lookup': 'missing_review_data', 'observations': [],
@@ -78,12 +88,16 @@ def observe_snapshot_reviewer_permissions(repository, snapshot, token, opener=No
     if not isinstance(reviews, list) or len(reviews) > 500:
         raise ValueError('Invalid review collection')
     identities = {}
+    logins = {}
     for review in reviews:
         if not isinstance(review, dict):
             raise ValueError('Invalid review record')
         numeric_id, login = review.get('reviewer_numeric_id'), review.get('reviewer_login')
-        if not _positive_int(numeric_id) or not isinstance(login, str):
-            raise ValueError('Invalid review identity')
+        _validate_identity(login, numeric_id)
+        canonical_login = login.casefold()
+        if canonical_login in logins and logins[canonical_login] != numeric_id:
+            raise ValueError('One reviewer login maps to multiple identities')
+        logins[canonical_login] = numeric_id
         if numeric_id in identities and identities[numeric_id].casefold() != login.casefold():
             raise ValueError('Inconsistent reviewer identity')
         identities[numeric_id] = login
