@@ -1,3 +1,14 @@
+## ACTUALIZACIÓN POSTERIOR DEL TRASPASO — AVANCE REAL VISURA WORK (26/10/2026, 10:25Z)
+
+El chat normal continuó una primera tarea segura del origen VISURA WORK; NO quedó detenido después de preparar el traspaso. **PR #44** en GitHub: https://github.com/josegude-ux/KONTROLA/pull/44, abierta/draft, cabeza `fix/visura-work-review-snapshot-repository-20261026`, base **PR #43** (`feat/visura-work-reviewer-evidence-20261026`). Commit de código **`b934a2ccf5fbff11de8ced3b2d121a46b7750408`**. La PR #43 original permanece intacta en `d3aec336ab24a1c8f3cef485c19b8110cbc1d591`.
+
+Corrección real: `observe_snapshot_reviewer_permissions` exige vínculo explícito al **repositorio correcto** para cualquier colección de revisiones conocida, antes de consultar permisos por API; se rechazan snapshots sin repositorio o cruzados de otro repositorio y se añadieron dos tests negativos. El nombre del repositorio en un objeto NO autentica por sí mismo el origen ni autoriza operaciones.
+
+**CI comprobada para el commit de código:** Code Review Gate #179 (run `40307255056`) **success**, log del job `test` **315 pruebas OK**; CSV Pilot Tests #186 (run `40307255057`) **success**; Queue Audit #214 (run `40307255142`) **success**. Estas son pruebas automatizadas (transportes simulados), NO prueba del módulo con token real. Los controles de autorización siguen negativos.
+
+**Siguiente tarea exacta:** comprobar permiso y políticas efectivas mediante una prueba auténtica de transporte GET de solo lectura en un entorno autorizado, vinculando ID numérico de revisor y repositorio, protección de la rama base real, CODEOWNERS y excepciones. El conector de este chat no entrega un token a Python; NO extraer tokens ni fingir validación. Revisar #44 y #43 antes de modificar algo y mantener ambas PR draft sin merge. No tocar PREPARA, INVENTA, Supabase, workflows ni despliegues.
+
+---
 # VISURA WORK → chat normal / VISURA 0.2
 
 **Documento de recuperación autónomo y verificado (26/10/2026).** La copia más reciente está en `docs/` de la rama `docs/visura-work-traspaso-verificado-20261026` de KONTROLA. El origen es «VISURA WORK», no el desarrollo general del chat «VISURA 0.2».
