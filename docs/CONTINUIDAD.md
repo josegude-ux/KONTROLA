@@ -64,3 +64,41 @@ Al terminar cada avance actualizar **fecha, rama y commit, qué está programado
 ## MOVENTA
 
 La idea de un portal común se documentó separadamente en `docs/MOVENTA_CONCEPTO.md`. No integrar ni modificar MOVENTA en esta fase.
+
+
+## VISURA AUTO-DEV — piloto determinista de PR (26/10/2026)
+
+- Se añadió `.github/workflows/visura-auto-dev-zero-cost-pr.yml` en la rama `chore/visura-auto-dev-guardrails` (PR #30, sin fusionar).
+- Activación **manual** (`workflow_dispatch`), nunca programada ni basada en el contenido de issues.
+- Tras verificar las pruebas y los metadatos de la issue #31 abierta, el workflow intenta crear `chore/visura-auto-dev-generated-31` y un PR **draft** hacia la rama de guardrails; no modifica `main`.
+- No llama a IA ni accede a Supabase/Business Central; puede requerir que GitHub permita a Actions crear PRs.
+- **No consta todavía una ejecución satisfactoria de este nuevo piloto**. El workflow de auditoría previo sí verificó 18 pruebas superadas en run 40257686523.
+- Siguiente acción: verificar el nuevo workflow en Actions y sus permisos antes de afirmar que el agente genera PRs autónomamente.
+
+- Actualización posterior: el piloto admite también disparo por **push limitado a su propio workflow** en la rama de guardrails; se intentó disparar mediante commit `275cd0a`. Aún **no se ha confirmado** la creación de la rama `chore/visura-auto-dev-generated-31` ni de un PR automático. No asumir éxito hasta verificarlo.
+
+- Verificación posterior: GitHub Actions **sí creó** `chore/visura-auto-dev-generated-31` y `docs/VISURA_AUTO_DEV_GENERADO_31.md` (contenido determinista, 7 líneas). La creación automática del PR **no quedó confirmada**; el PR **#33** fue creado mediante la integración de ChatGPT como recuperación, en borrador, base guardrails, sin fusionar. Investigar permisos de Actions para creación de PR y registrar fallo exacto antes de declarar el flujo completamente autónomo.
+
+- Corrección del workflow de piloto en commit `9f95311`: una rama ya existente no provoca salida prematura; se comprueba por API si hay un PR (abierto o cerrado) antes de intentar crearlo, sin sobrescribir archivos. El PR #33 sigue siendo **creación manual vía integración**, no prueba de PR creado por Actions. Se debe verificar ejecución del workflow corregido y permisos de creación de PR en un nuevo piloto aislado.
+
+
+## VISURA AUTO-DEV — primer PR autónomo verificado (26/10/2026)
+
+- Tras habilitar en GitHub Actions el permiso para crear PR, el workflow determinista sin IA de pago generó automáticamente el **PR #34**: https://github.com/josegude-ux/KONTROLA/pull/34
+- Rama de salida: `chore/visura-auto-dev-generated-34`; documento `docs/VISURA_AUTO_DEV_GENERADO_34.md`. PR hacia `chore/visura-auto-dev-guardrails`, no hacia `main`.
+- Verificado mediante consulta de los PR existentes en GitHub. No fue creado manualmente desde ChatGPT, a diferencia del PR #33.
+- Esto valida **un piloto documental autónomo sin IA**, no un agente de programación con LLM ni un límite de facturación real de 10 €/mes. Sin fusiones, despliegues ni cambios de datos.
+- Próximo objetivo: automatizar tareas reales y acotadas con pruebas y revisión humana; no activar API de pago hasta verificar límite externo y ledger compartido.
+
+
+## VISURA AUTO-DEV — revisión automática de código (26/10/2026)
+
+- Nuevo workflow `.github/workflows/visura-auto-dev-code-review.yml` en rama de guardrails (commit `84012b4`). Ejecuta compilación, tests Python `test_visura_*.py` y smoke test de bloqueo de IA de pago en PR con cambios relevantes.
+- Permisos GitHub mínimos `contents: read`; checkout sin credenciales persistidas; sin llamadas a OpenRouter ni acceso a datos.
+- **Pendiente de confirmar su primera ejecución**. Es una puerta de validación, no un ejecutor autónomo de programación. No fusionar ni publicar sin revisión humana.
+
+- Verificación Code Review Gate: run #4, ID `40259530585`, conclusión `success`; compilación correcta, 18 pruebas `OK` y smoke test confirma llamadas de pago bloqueadas y límite local de 10 €. Evidencia: https://github.com/josegude-ux/KONTROLA/actions/runs/40259530585. Este run corresponde al workflow de guardrails; **no confirma por sí mismo las pruebas CSV adicionales del PR #35**, cuyo workflow dedicado aún no aparece en las consultas.
+
+- Seguimiento autónomo 26/10: se añadió la prueba `test_multiline_quoted_data_row` (commit `94500a5`), que verifica que un registro con salto de línea entre comillas cuenta como una sola fila. El total esperado ahora es **14 pruebas CSV**. Como la consulta de Actions no devolvió runs para `33ad648`, `6b29d2b` ni `94500a5`, se amplió el filtro del workflow CSV para que cambios en esta documentación disparen una nueva comprobación (commit `341092c3`). Pendiente confirmar run verde antes de integrar.
+
+- Iteración autónoma 26/10: se ha endurecido el detector CSV para cabeceras largas (más de 4096 bytes) y registros lógicos multilínea; commits `4968461`, `f412028` y `edead73` en la rama del piloto. Total esperado: **16 pruebas CSV**. CI de estos cambios pendiente; PR #35 permanece en borrador.
