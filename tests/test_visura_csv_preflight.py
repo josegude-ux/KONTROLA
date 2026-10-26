@@ -52,6 +52,16 @@ class CsvPreflightTests(unittest.TestCase):
         self.write('Pedido;Nota\nA01;"Frágil; urgente"\n')
         self.assertEqual(inspect_csv(self.path, ["Pedido", "Nota"])["rows"], 1)
 
+    def test_rejects_duplicate_required_columns(self):
+        self.write("Pedido;Cantidad\nA01;2\n")
+        with self.assertRaisesRegex(ValueError, "Duplicate required columns"):
+            inspect_csv(self.path, ["Pedido", "Pedido"])
+
+    def test_rejects_blank_required_columns(self):
+        self.write("Pedido;Cantidad\nA01;2\n")
+        with self.assertRaisesRegex(ValueError, "nonempty strings"):
+            inspect_csv(self.path, [" "])
+
     def test_size_limit(self):
         self.write("Pedido;Cantidad\nA01;2\n")
         with self.assertRaisesRegex(ValueError, "safety limit"):
