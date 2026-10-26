@@ -165,6 +165,13 @@ En PRUEBA / SIMULACIÓN: se audita la viabilidad, se identifican rutas y alterna
 - **Limitación explícita:** por seguridad del navegador, seleccionar un archivo en una web independiente NO lo adjunta automáticamente a ChatGPT ni concede al asistente acceso a su ruta local. El prompt copiado incluye el nombre del archivo seleccionado e indica que el usuario debe adjuntarlo al chat receptor. Nunca inventar una URL local accesible al agente.
 - La herramienta de elección es totalmente local: no transmite bytes a servidores ni a GitHub desde el panel. La orden 07 V2 sigue respetando PRUEBA / SIMULACIÓN predeterminado y los permisos de integración en rama.
 
+## Botón de actualizar panel (2026-10-26)
+
+- **Ubicación:** cabecera superior del Centro de mando, visible incluso al navegar entre las siete órdenes.
+- **Acción:** «↻ Actualizar» vuelve a cargar el HTML de la URL actual incorporando un parámetro `visura_actualizar` con valor único, conservando el ancla `#orden-N` de la orden seleccionada. Esto intenta evitar la caché local y las respuestas anteriores de los proveedores intermediarios.
+- **Alcance:** actualiza la página en el dispositivo; no ejecuta órdenes, no descarga cambios en GitHub, no fusiona y no despliega versiones. Los cambios del repositorio solo se reflejarán cuando el alojamiento que sirve el HTML los ofrezca realmente.
+- **Advertencias:** si el alojamiento de terceros usa una caché propia que ignora el parámetro o retiene copias, pulsar Actualizar **no garantiza** ver inmediatamente el último commit. Recargar puede perder datos aún no copiados de formularios y archivos locales seleccionados; conviene copiar primero la orden en curso.
+
 ## Reglas comunes
 1. Consultar primero el estado verificado en GitHub, **sin tratar la documentación antigua de main como último estado**.
 2. Evitar repetir tareas y sobrescribir trabajo paralelo.
