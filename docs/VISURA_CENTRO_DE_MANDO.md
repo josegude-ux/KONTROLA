@@ -220,6 +220,45 @@ El usuario descartó el diseño anterior basado en un desplegable único con fle
 - El original aprobado se conserva aparte y la integración de los PNG para el acceso directo iPhone sigue registrada como pendiente en `feat/visura-centro-mando-icono-b-20261026`; evitar declararla completada por esta modificación de cabecera.
 - Cambios únicamente en `visura-panel`; no fusionar `main` ni alterar INVENTA/PREPARA.
 
+## 8. ESTADO DE DESARROLLO DE UN CHAT — Proyecto EXCELL
+
+**Cuándo:** cuando quieras seleccionar un chat concreto del proyecto Excel/EXCELL y obtener una evaluación de qué construye, último hito confirmado, cuánto queda para terminar y siguientes pasos, sin reactivar el desarrollo.
+
+**Selector:** «Chat del proyecto que quiero analizar», con nombres conocidos de chats del ecosistema VISURA y opción «Otro chat» para cualquier conversación del proyecto Excel/EXCELL. No se pretende enumerar automáticamente todas las conversaciones: la lista del panel es manual y puede ampliarse. Se permiten un enlace de referencia y una aclaración opcionales.
+
+**Funcionamiento:** el botón 08 prepara y copia un prompt específico al chat seleccionado, que debe pegarse en una conversación donde el historial o las fuentes verificables sean accesibles. **El panel no tiene permisos para consultar todos los chats, ni un nombre o enlace por sí solo aporta acceso**. La orden exige no inventar avances ni porcentajes. En especial, las estimaciones de tiempo o % solo se entregan si el alcance y las evidencias lo justifican; en otro caso señala «no estimable».
+
+**Prohibición:** evaluación en **solo lectura**; no cambiar GitHub, PR, códigos, imágenes, bases de datos ni la aplicación. La orden 08 no reactiva trabajo y no sustituye las órdenes 01 y 03.
+
+**Variables:** `{{CHAT}}`, `{{ENLACE}}` y `{{CONTEXTO}}`.
+
+```text
+AUDITAR ESTADO DE DESARROLLO DE UN CHAT DEL PROYECTO EXCELL.
+
+CHAT OBJETIVO: {{CHAT}}
+ENLACE DE REFERENCIA (SI EXISTE): {{ENLACE}}
+CONTEXTO O REPOSITORIO ADICIONAL (SI EXISTE): {{CONTEXTO}}
+
+OBJETIVO: Entrega un diagnóstico breve, concreto, verificable y actualizado sobre QUÉ se está desarrollando en ese chat, EN QUÉ PUNTO EXACTO se encuentra y CUÁNTO FALTA PARA TERMINAR. Esto es una AUDITORÍA DE SOLO LECTURA: no cambies código, ramas, PR, documentos, datos, imágenes ni aplicaciones; no inicies ni reanudes el desarrollo.
+
+1. IDENTIFICAR EL CHAT. El nombre identifica la conversación a examinar, pero no garantiza acceso a su historial. Intenta consultar el historial disponible de ese chat del proyecto EXCELL y, cuando sea necesario, las fuentes del proyecto y de GitHub realmente accesibles. No asegures haber leído una conversación únicamente porque conoces su título o enlace. Si no puedes recuperar el historial, indícalo y utiliza solo evidencias verificadas (commits, ramas, PR, archivos y continuidad) sin atribuir falsamente estados de un repositorio entero a ese chat.
+2. RECONSTRUIR EL TRABAJO ACTUAL. Identifica su aplicación o funcionalidad concreta, propósito y resultado esperado, últimos cambios realmente comprobados, última tarea terminada, tarea actualmente en curso y estado de pruebas. Contrasta fecha, rama, commit, PR y documentación cuando existan; si varias evidencias discrepan, prioriza la más reciente comprobable y describe la discrepancia.
+3. CALCULAR LO QUE FALTA. Enumera las principales tareas restantes, sus dependencias, bloqueos y permisos externos necesarios. Distingue terminado, en curso, pendiente y no verificable. No confundas «código escrito» con «función validada» o «lista para publicar».
+4. ESTIMACIÓN HONESTA. Da un porcentaje de avance y una previsión de esfuerzo SOLO si existen entregables definidos y evidencias suficientes para sustentarlos. Explica en una línea la base del cálculo, indica un rango orientativo en lugar de precisión falsa y la incertidumbre asociada. Si faltan alcance o evidencias, indica «avance no estimable de forma fiable» y «plazo no estimable», especificando qué información permitiría calcularlos. No inventes fechas, horas, porcentajes, pruebas ni trabajo que nadie haya realizado.
+5. PROTEGE EL ALCANCE. No mezcles VISURA WORK, VISURA 0.1, VISURA 0.2, PROMPT E IMÁGENES u otras líneas por el mero hecho de relacionarse con VISURA. Solo atribuye hitos al chat indicado cuando haya evidencia de esa relación. No uses main como sinónimo del último avance; no repitas contenidos históricos superados.
+
+FORMATO DE RESPUESTA OBLIGATORIO, BREVE Y COMPRENSIBLE:
+- CHAT ANALIZADO: [nombre] · FUENTES: [chat, GitHub, documentos realmente consultados] · CONFIANZA: [alta/media/baja].
+- QUÉ SE DESARROLLA: 1–3 frases sobre producto, finalidad y alcance.
+- PUNTO ACTUAL: última tarea completada y comprobada, tarea en curso, rama/commit/PR relevantes y estado de pruebas.
+- AVANCE ESTIMADO: [% o «no estimable»], con base del cálculo y margen de incertidumbre.
+- QUÉ FALTA: entre 3 y 6 tareas esenciales, marcando dependencias/bloqueos.
+- PARA TERMINAR: [esfuerzo restante en rango y supuestos, o «no estimable»]; explica qué significa «terminado» para este desarrollo (implementado/probado/listo para publicar).
+- SIGUIENTE PASO RECOMENDADO: una sola tarea concreta y segura.
+
+Si solo puedes dar un estado parcial, preséntalo como parcial en lugar de inventar una conclusión. No ejecutes ninguna de las tareas enumeradas.
+```
+
 ## Reglas comunes
 1. Consultar primero el estado verificado en GitHub, **sin tratar la documentación antigua de main como último estado**.
 2. Evitar repetir tareas y sobrescribir trabajo paralelo.
