@@ -40,6 +40,18 @@ class BudgetLedgerTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 reserve(self.db, month="2026-10", amount_cents=amount)
 
+    def test_rejects_blank_reservation_id(self):
+        for reservation_id in ("", "   ", 123):
+            with self.assertRaises(ValueError):
+                reserve(self.db, month="2026-10", amount_cents=100,
+                        reservation_id=reservation_id)
+
+    def test_reservation_survives_new_connection(self):
+        self.assertTrue(reserve(self.db, month="2026-10", amount_cents=700,
+                                reservation_id="persisted")[0])
+        self.assertFalse(reserve(self.db, month="2026-10", amount_cents=301,
+                                 reservation_id="second")[0])
+
     def test_concurrent_requests(self):
         outcomes = []
         lock = threading.Lock()
