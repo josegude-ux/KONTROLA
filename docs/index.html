@@ -31,11 +31,63 @@ button:focus-visible,a:focus-visible{outline:3px solid #a7d6ff;outline-offset:3p
 .integrator [hidden]{display:none!important}
 .recovery-separator{border-top:1px solid var(--border);margin:22px 0 18px}
 #open-destination-chat:disabled{opacity:.45;cursor:not-allowed}
+
+/* v3 — navegación compacta centrada en una sola tarea */
+main{max-width:760px;padding-top:12px;padding-bottom:36px}
+header{padding:9px 3px 8px}header h1{font-size:clamp(1.4rem,5.5vw,2rem);margin:3px 0 5px;letter-spacing:-.035em;line-height:1.16}
+header .intro{font-size:.9rem;line-height:1.43;max-width:650px}
+.kicker{font-size:.7rem}
+.command-menu{position:sticky;top:0;z-index:12;margin:8px -4px 15px;padding:9px 5px 11px;background:var(--bg);border-bottom:1px solid var(--border);box-shadow:0 7px 13px -14px #000a}
+.menu-label{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:6px;color:var(--muted);font-weight:800;font-size:.7rem;letter-spacing:.07em}
+.menu-controls{display:flex;gap:7px;align-items:stretch}
+.menu-controls select{min-width:0;flex:1;width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:12px;background:var(--panel);color:var(--text);font:inherit;font-size:16px;font-weight:730}
+.menu-arrow{flex:none;width:43px;min-height:45px;padding:4px;border:1px solid var(--border);background:var(--secondary);color:var(--text);font-size:1.45rem}
+.menu-arrow:disabled{opacity:.38;cursor:default}
+.command{margin-bottom:9px;padding:16px}
+.command[hidden],.file-box [hidden],.file-preview[hidden]{display:none!important}
+.when{margin:10px 0 14px;font-size:.88rem;line-height:1.4}
+.top{gap:10px}.symbol{flex-basis:40px;height:40px;font-size:1.3rem}h2{font-size:1.08rem}
+.actions{gap:8px} .actions button{min-width:120px;padding:10px 12px;font-size:.91rem}
+.field-label{margin-top:11px}
+.foot{border-top:0;margin-top:10px;padding:0}
+.foot-details{border:1px solid var(--border);border-radius:14px;background:var(--panel);padding:12px 14px}
+.foot-details>summary{cursor:pointer;font-weight:760;font-size:.9rem}
+.foot-details .foot-content{padding-top:14px}.foot-content h2{font-size:1rem}
+.file-box{margin-top:12px;padding:11px 12px;background:var(--bg);border:1px solid var(--border);border-radius:13px}
+.visually-hidden{position:absolute!important;width:1px;height:1px;opacity:0;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;clip-path:inset(50%);border:0;padding:0;margin:-1px}
+.file-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.file-trigger{display:inline-flex;align-items:center;justify-content:center;cursor:pointer;background:var(--secondary);border:1px solid var(--border);color:var(--text);padding:11px 13px;min-height:46px;border-radius:11px;font-weight:750;font-size:.91rem;flex:1}
+.file-reset{min-height:46px;flex:none!important}
+.file-selected{font-size:.84rem;margin-top:10px;overflow-wrap:anywhere}
+.file-preview{margin-top:10px;display:flex;justify-content:center}
+.file-preview img{display:block;width:116px;max-height:116px;object-fit:contain;border-radius:12px;border:1px solid var(--border);background:var(--panel)}
+.file-box .field-hint{margin-bottom:6px;line-height:1.47}
+.optional-link{border-top:1px solid var(--border);margin-top:12px;padding-top:10px}
+.optional-link>summary{cursor:pointer;color:var(--muted);font-weight:730;font-size:.88rem}
+.optional-link input{margin-top:5px}
+.visually-hidden:focus-visible+.file-actions .file-trigger{outline:3px solid #86afdb;outline-offset:2px}
+@media(max-width:460px){main{padding:10px 13px 30px}.command{padding:14px}.actions button{min-width:105px}.file-trigger{flex-basis:100%}}
+
 </style>
 </head>
 <body>
-<main><header><div class="kicker">VISURA · CENTRO DE MANDO</div><h1>Todas tus órdenes.<br>Siempre a mano.</h1><p class="intro">Elige la situación, pulsa «Copiar orden» y pégala en el chat correspondiente. Este panel funciona independientemente de la longitud de tus conversaciones.</p></header>
-<nav class="quick" aria-label="Ir a una orden"><a href="#orden-1">Reactivar</a><a href="#orden-2">Traspaso Work</a><a href="#orden-3">Nuevo chat</a><a href="#orden-4">Imágenes</a><a href="#orden-5">Solapamientos</a><a href="#orden-6">Crear icono / imagen</a><a href="#orden-7">Integrar imagen</a></nav>
+<main><header><div class="kicker">VISURA · CENTRO DE MANDO</div><h1>Órdenes VISURA</h1><p class="intro">Selecciona una función y copia su orden. Sin desplazarte por todos los formularios.</p></header>
+<div class="command-menu" id="command-menu" aria-label="Navegar entre órdenes">
+  <div class="menu-label"><label for="command-select">ELEGIR ORDEN</label><span id="command-counter" aria-live="polite">01 / 07</span></div>
+  <div class="menu-controls">
+    <button type="button" class="menu-arrow" id="previous-command" aria-label="Orden anterior">‹</button>
+    <select id="command-select" aria-label="Seleccionar orden">
+      <option value="orden-1">01 · Reactivar desarrollo</option>
+      <option value="orden-2">02 · Traspaso de Work</option>
+      <option value="orden-3">03 · Continuar en otro chat</option>
+      <option value="orden-4">04 · Continuar imágenes</option>
+      <option value="orden-5">05 · Auditar solapamientos</option>
+      <option value="orden-6">06 · Generar imagen o icono</option>
+      <option value="orden-7">07 · Integrar imagen aprobada</option>
+    </select>
+    <button type="button" class="menu-arrow" id="next-command" aria-label="Orden siguiente">›</button>
+  </div>
+</div>
 <article class="command" id="orden-1"><div class="top"><div class="symbol">↻</div><div><div class="eyebrow">ORDEN 01 · Reanudar desarrollo</div><h2>REACTIVAR VISURA</h2></div></div><p class="when">se para el desarrollo pero sigues en el mismo chat.</p><div class="actions"><button type="button" class="primary" data-copy="0">Copiar orden</button><button type="button" class="secondary" aria-controls="prompt-0" aria-expanded="false" data-toggle="0">Ver texto</button></div><pre id="prompt-0" hidden>REACTIVAR VISURA. Retoma el desarrollo desde la última tarea realmente comprobada, respetando las decisiones y el prompt maestro de este chat. Antes de modificar código, verifica la rama, los commits, los PR y docs/CONTINUIDAD.md de los repositorios implicados. No repitas tareas finalizadas, no sobrescribas cambios ajenos y evita solapamientos entre chats. Continúa con la siguiente tarea autorizada y segura. Después de cada hito, comprueba, guarda y documenta los cambios. No te detengas salvo bloqueo real o necesidad de autorización.</pre></article>
 <article class="command" id="orden-2"><div class="top"><div class="symbol">↗</div><div><div class="eyebrow">ORDEN 02 · Preparar fin de créditos</div><h2>PREPARAR TRASPASO WORK</h2></div></div><p class="when">Work está cerca de su límite o quieres protegerte antes de perder acceso.</p><div class="actions"><button type="button" class="primary" data-copy="1">Copiar orden</button><button type="button" class="secondary" aria-controls="prompt-1" aria-expanded="false" data-toggle="1">Ver texto</button></div><pre id="prompt-1" hidden>PREPARAR TRASPASO WORK. Antes de cualquier aviso de fin de créditos, verifica y guarda los avances reales; actualiza docs/CONTINUIDAD.md, CONTINUIDAD_WORK_A_CHAT_NORMAL.md y PROMPT_CONTINUAR_SIN_WORK.md donde corresponda. Incluye repositorios, ramas, commits, PR, imágenes aprobadas, decisiones, pruebas, bloqueos y la primera tarea pendiente. Comprueba que los documentos sean accesibles y entrega aquí el prompt completo, autocontenido y copiable para continuar desde un chat normal. Si no puedes guardar en GitHub, entrega la recuperación en esta conversación y declara qué no quedó persistido. Solo emite «DESARROLLO FIN DE CRÉDITOS WORK» si realmente no puedes continuar y después de entregar la recuperación disponible.</pre></article>
 <article class="command" id="orden-3"><div class="top"><div class="symbol">⇄</div><div><div class="eyebrow">ORDEN 03 · Continuar en otro chat</div><h2>RECUPERAR VISURA EN NUEVO CHAT</h2></div></div><p class="when">Selecciona la conversación de origen. Si se han agotado los créditos, elige VISURA WORK.</p><div class="recovery-generator">
@@ -126,20 +178,31 @@ button:focus-visible,a:focus-visible{outline:3px solid #a7d6ff;outline-offset:3p
 <option value="Propuesta B aprobada">Propuesta B</option>
 <option value="Propuesta C aprobada">Propuesta C</option>
 </select>
-<label class="field-label" for="integration-resource">Enlace directo o ruta al archivo original (opcional)</label>
-<input id="integration-resource" type="text" placeholder="URL pública o ruta verificable, si existe">
+<div class="file-box">
+<label class="field-label" for="integration-file">Archivo original de la imagen aprobada</label>
+<input id="integration-file" class="visually-hidden" type="file" accept="image/png,image/jpeg,image/webp,image/gif,image/svg+xml,image/avif,.png,.jpg,.jpeg,.webp,.gif,.svg,.avif">
+<div class="file-actions"><label class="file-trigger" for="integration-file"> <span aria-hidden="true">▤</span> Elegir archivo en iPhone / PC</label><button type="button" class="secondary file-reset" id="reset-integration-file" hidden>Quitar</button></div>
+<p class="file-selected" id="integration-file-info" role="status" aria-live="polite">Ningún archivo seleccionado.</p>
+<div class="file-preview" id="integration-file-preview" hidden><img id="integration-file-image" alt="Vista previa local de la imagen elegida"></div>
+<p class="field-hint">Se abrirá el selector de archivos o fotos del dispositivo. El archivo solo se previsualiza aquí: <strong>tendrás que adjuntarlo también al chat donde pegues el prompt.</strong> No se envía desde este panel.</p>
+<details class="optional-link" id="integration-link-details">
+<summary>O utilizar un enlace público al archivo</summary>
+<label class="field-label" for="integration-resource">URL directa verificable (opcional)</label>
+<input id="integration-resource" type="url" inputmode="url" placeholder="https://.../imagen.png">
+</details>
+</div>
 <label class="field-label" for="integration-notes">Ubicación exacta o indicaciones adicionales (opcional)</label>
 <textarea id="integration-notes" rows="2" placeholder="Ejemplo: será el icono al añadir el Centro de mando a la pantalla de inicio del iPhone."></textarea>
-<p class="field-hint"><strong>Esencial:</strong> al enviar esta orden en ChatGPT, adjunta el archivo original de la imagen elegida si no está ya accesible en esa conversación. El panel no transfiere imágenes por sí mismo.</p>
+<p class="field-hint">Al copiar, se añadirá el nombre del archivo seleccionado. El navegador no permite transmitirlo automáticamente a ChatGPT: adjúntalo manualmente en el chat de implementación.</p>
 <div class="actions"><button type="button" class="primary" id="copy-integration-command">Copiar orden de integración V2</button><button type="button" class="secondary" id="show-integration-command" aria-controls="integration-prompt-preview" aria-expanded="false">Ver prompt</button></div>
 <pre id="integration-prompt-preview" hidden></pre>
 </div>
 </article>
-<div class="foot"><h2>Copia maestra en GitHub</h2>
+<div class="foot"><details class="foot-details"><summary>Acerca del panel y copia en GitHub</summary><div class="foot-content"><h2>Copia maestra en GitHub</h2>
 <p>Las instrucciones se guardan en una rama independiente. No se ha fusionado ni modificado la rama principal.</p>
 <p><a href="https://github.com/josegude-ux/KONTROLA/blob/visura-panel/docs/VISURA_CENTRO_DE_MANDO.md" target="_blank" rel="noopener noreferrer">Abrir archivo de órdenes en GitHub</a></p>
 <div class="notice"><strong>Importante:</strong> estos botones no pueden mantenerse anclados al final del chat de ChatGPT. Guarda este archivo en Archivos o abre su enlace estable; así tendrás siempre el panel localizado. Las órdenes no ejecutan tareas hasta que las envíes.</div>
-<p>Última edición: 26 de octubre de 2026.</p></div>
+<p>Última edición: 26 de octubre de 2026.</p></div></details></div>
 </main>
 <div id="status" role="status" aria-live="polite"></div>
 <script>
@@ -259,6 +322,49 @@ openDestinationButton.addEventListener("click",()=>{
 syncDestinationUI();
 
 
+
+/* File API: vista previa local, sin transferencia ni acceso remoto */
+const integrationFile=document.getElementById("integration-file");
+const integrationFileInfo=document.getElementById("integration-file-info");
+const integrationPreviewBox=document.getElementById("integration-file-preview");
+const integrationPreviewImage=document.getElementById("integration-file-image");
+const integrationFileReset=document.getElementById("reset-integration-file");
+let integrationPreviewUrl=null;
+function selectedImageFile(){return integrationFile.files&&integrationFile.files.length?integrationFile.files[0]:null;}
+function fileDescription(){
+ const file=selectedImageFile();
+ if(!file)return "";
+ const kb=Math.max(1,Math.ceil(file.size/1024));
+ return 'Archivo elegido en el dispositivo: "'+file.name+'" ('+kb+' KB, '+(file.type||"tipo no indicado")+'). IMPORTANTE: el archivo NO se ha transferido desde el panel; el usuario debe adjuntar este archivo original al chat receptor antes de realizar la integración.';
+}
+function clearIntegrationPreview(){
+ if(integrationPreviewUrl){URL.revokeObjectURL(integrationPreviewUrl);integrationPreviewUrl=null;}
+ integrationPreviewBox.hidden=true;
+ integrationPreviewImage.removeAttribute("src");
+}
+function updateIntegrationFile(){
+ clearIntegrationPreview();
+ const file=selectedImageFile();
+ integrationFileReset.hidden=!file;
+ if(file){
+   const kb=Math.max(1,Math.ceil(file.size/1024));
+   integrationFileInfo.textContent="Seleccionado: "+file.name+" · "+kb+" KB";
+   if(file.type.startsWith("image/")&&typeof URL.createObjectURL==="function"){
+     integrationPreviewUrl=URL.createObjectURL(file);
+     integrationPreviewImage.src=integrationPreviewUrl;
+     integrationPreviewBox.hidden=false;
+   }
+ }else{
+   integrationFileInfo.textContent="Ningún archivo seleccionado.";
+ }
+ refreshIntegrationPreview();
+}
+integrationFile.addEventListener("change",updateIntegrationFile);
+integrationFileReset.addEventListener("click",()=>{
+ integrationFile.value="";
+ updateIntegrationFile();
+});
+
 const integrationTemplate="VISURA — ORDEN 07 V2: INTEGRAR IMAGEN APROBADA SIN INTERRUPCIONES EVITABLES\n\nMODO DE EJECUCIÓN: {{MODO}}\nDESTINO ELEGIDO: {{DESTINO}}\nUBICACIÓN O USO: {{UBICACION}}\nIMAGEN APROBADA: {{SELECCION}}\nARCHIVO ORIGINAL O FUENTE: {{RECURSO}}\nINDICACIONES ADICIONALES: {{OBSERVACIONES}}\n\nMISIÓN\nIncorpora la imagen ya aprobada en el destino seleccionado, conservando su diseño original y todas las funciones existentes. NO generes propuestas nuevas ni rediseñes la imagen. Continúa de forma autónoma, con herramientas realmente disponibles y dentro de esta sesión, hasta completar todas las tareas técnicas seguras permitidas o hasta demostrar un bloqueo real. No prometas trabajo en segundo plano.\n\n0. CORTAFUEGOS DE PRUEBAS Y AUTORIZACIONES\n- Si el MODO es «PRUEBA / SIMULACIÓN», o si la conversación receptora está reservada a pruebas, SOLO audita, simula y explica qué se ejecutaría. Prohibido escribir en GitHub, bases de datos, alojamientos o aplicaciones, aunque el resto de la orden pida integrar.\n- Si el MODO es «INTEGRACIÓN EN RAMA» y la conversación receptora permite desarrollos reales, está autorizado preparar, verificar y confirmar cambios reversibles únicamente en una rama de trabajo aislada y en el destino indicado. No se autoriza fusionar ramas, modificar producción, cambiar configuración de despliegue, publicar ni borrar datos o imágenes ajenas.\n- Ante cualquier duda entre prueba y ejecución real, prevalece PRUEBA / SIMULACIÓN. No conviertas una prueba en una intervención real. Una petición explícita e independiente de mantener el propio Centro de mando no significa autorización para ejecutar esta orden sobre una aplicación.\n\n1. IDENTIFICAR EL ARCHIVO APROBADO\n- Busca el archivo original entre los adjuntos accesibles, los archivos de Biblioteca/Proyecto disponibles, las rutas locales verificadas y los enlaces directos realmente descargables. Valida formato, dimensiones y contenido; conserva la fuente y registra SHA-256 cuando sea posible.\n- No asumas que una letra A/B/C, una captura o un enlace al chat dan acceso al fichero binario. Verifica que la imagen corresponde a la elección aprobada; si no puedes confirmarlo, solicita solo el recurso o la aclaración imprescindible.\n- Si el archivo está disponible, NO te detengas solicitando que el usuario lo adjunte otra vez.\n\n2. RECUPERAR EL DESARROLLO REAL SIN DUPLICAR\n- Confirma repositorio, ramas, commits, PR y documentos de continuidad vigentes. Antes de crear una rama nueva, busca si existe una rama de integración previa y reutilízala si conserva el trabajo correcto. No uses documentación antigua de main como estado actual por defecto.\n- Para VISURA CENTRO DE MANDO, comienza comprobando josegude-ux/KONTROLA, rama visura-panel, docs/index.html y la posible rama feat/visura-centro-mando-icono-b-20261026. Para otros módulos, identifica su repositorio real.\n- Detecta cambios ajenos o trabajo paralelo; no los sobrescribas. Mantén la implementación estrictamente acotada al recurso solicitado.\n\n3. PREPARAR LOS RECURSOS\n- Comprueba cómo se insertan iconos/imágenes en la aplicación: HTML, componentes, favicon, apple-touch-icon, manifest, etc. Conserva el original como fuente y genera únicamente los tamaños, formatos y optimizaciones técnicos necesarios, sin rediseñarla.\n- Revisa tamaños, relación de aspecto, bordes, fondo y legibilidad. Usa rutas nuevas y reversibles para no destruir recursos anteriores.\n\n4. SUBIR LOS ARCHIVOS A GITHUB: ESCALERA OBLIGATORIA\n- Nunca declares que «GitHub no admite archivos binarios» solo porque una función de creación de archivos acepta únicamente UTF-8.\n- Primero comprueba una función nativa de subida binaria, si existe.\n- Si no existe y está disponible la API Git de GitHub, evalúa y prueba la ruta correcta: codificar los bytes reales en Base64, crear el blob con create_blob y encoding=base64, añadirlo al árbol existente con create_tree, crear el commit con create_commit y el padre verificado, y actualizar la rama mediante update_ref con SHA esperado, sin forzar y sin tocar otras ramas. Verifica que los blobs corresponden a los bytes originales o derivados. NO uses una función exclusiva para texto UTF-8 para grabar una cadena Base64 como si fuera un archivo .png.\n- Si esa ruta falla, registra el error exacto y evalúa otra herramienta conectada y autorizada compatible con binarios. Si hay límite de tamaño, prueba optimización técnica razonable sin alterar la estética ni perder la fuente.\n- Si todas las rutas disponibles fallan, prepara un paquete local completo con rutas exactas, instrucciones de carga y cambios preservados. Marca «PENDIENTE DE SUBIDA BINARIA» y especifica UNA acción humana concreta necesaria. Es un bloqueo real, NO una integración terminada. Completa las otras tareas seguras que aún sean posibles.\n\n5. CERRAR EL CIRCUITO DE INTEGRACIÓN\n- En la rama aislada, enlaza la imagen real desde las pantallas o metadatos pertinentes. Verifica que los binarios existen en GitHub, las rutas coinciden, los archivos son legibles y los derivados tienen dimensiones correctas. Comprueba el HTML o aplicación y el manifest cuando corresponda.\n- Verifica visualmente cuando las herramientas lo permitan. Si no puedes probar físicamente en Safari/iPhone, indica esa limitación con precisión y aporta comprobaciones reproducibles. No inventes pruebas en un dispositivo.\n- Confirma que no se han alterado funciones existentes, que el diff es mínimo y que el repositorio base/productivo sigue intacto.\n\n6. AVANZAR SIN DETENCIONES ARTIFICIALES\n- Tras cada hito, continúa automáticamente con el siguiente paso seguro. No finalices la ejecución solo por haber creado un ZIP, manifest, documento o rama, ni por el primer error subsanable.\n- No preguntes por datos ya disponibles. Solo solicita intervención ante falta efectiva del original, ambigüedad material de la selección, permisos negados después de probar alternativas compatibles, conflicto de rama imposible de resolver sin sobrescribir trabajo, o autorización necesaria para fusionar/publicar/operar datos.\n- No repitas intentos idénticos que hayan fallado sin cambiar el método. No declares acciones ejecutadas sin evidencia; no prometas trabajo fuera de la sesión ni que superarás límites de herramientas.\n\n7. EVIDENCIA, CONTINUIDAD Y ENTREGA\n- Documenta en la rama segura rutas, hashes si procede, archivos modificados, commit, pruebas ejecutadas y pendientes. Mantén diferenciados: APROBADA, ORIGINAL RECUPERADO, DERIVADOS CREADOS, BINARIOS EN GITHUB, REFERENCIAS VALIDADAS, INTEGRADA EN RAMA, PUBLICADA, VERIFICADA EN DISPOSITIVO.\n- Al concluir informa brevemente del estado real, rama, commits, evidencias, URL de revisión si existe y siguiente acción concreta. Si falta una etapa, indica cuál y por qué.\n- Espera autorización explícita antes de fusionar, publicar/desplegar, sustituir recursos compartidos irreversiblemente o borrar datos.\n\nCRITERIO DE ÉXITO\nEn INTEGRACIÓN EN RAMA: la imagen aprobada y sus derivados necesarios están realmente en la rama correcta, la aplicación los referencia, se han realizado las comprobaciones técnicas disponibles y la continuidad está documentada, sin publicación no autorizada.\nEn PRUEBA / SIMULACIÓN: se audita la viabilidad, se identifican rutas y alternativas, se detectan bloqueos y se entrega un plan ejecutable SIN modificar sistemas.";
 const integrationMode=document.getElementById("integration-mode");
 const integrationModeHelp=document.getElementById("integration-mode-help");
@@ -279,7 +385,7 @@ function preparedIntegrationPrompt(){
   .replaceAll("{{DESTINO}}",chosenIntegrationTarget()||"[INDICAR APLICACIÓN O PANEL]")
   .replaceAll("{{UBICACION}}",integrationPlacement.value)
   .replaceAll("{{SELECCION}}",integrationChoice.value)
-  .replaceAll("{{RECURSO}}",integrationResource.value.trim()||"Archivo original que adjuntaré a la conversación de implementación; si no está disponible, solicítalo antes de integrar.")
+  .replaceAll("{{RECURSO}}",[fileDescription(),integrationResource.value.trim()].filter(Boolean).join("\n")||"Archivo original no seleccionado en este panel: comprueba la Biblioteca/adjuntos accesibles y solicita el archivo solo si realmente falta.")
   .replaceAll("{{OBSERVACIONES}}",integrationNotes.value.trim()||"Sin indicaciones adicionales. Conserva proporción, diseño y función existentes.");
 }
 function refreshIntegrationPreview(){
@@ -312,5 +418,36 @@ document.getElementById("show-integration-command").addEventListener("click",()=
  btn.textContent=integrationPreview.hidden?"Ver prompt":"Ocultar prompt";
  btn.setAttribute("aria-expanded",String(!integrationPreview.hidden));
 });
+
+/* Muestra solo una orden para evitar recorrer siete tarjetas en móvil */
+const commandIds=Array.from({length:7},(_,i)=>"orden-"+(i+1));
+const commandSelect=document.getElementById("command-select");
+const commandCounter=document.getElementById("command-counter");
+const previousCommand=document.getElementById("previous-command");
+const nextCommand=document.getElementById("next-command");
+function indexOfCommand(id){return commandIds.indexOf(id);}
+function showCommand(id,scrollToTop=false){
+ const n=indexOfCommand(id);
+ if(n<0)return;
+ commandIds.forEach((key,i)=>{document.getElementById(key).hidden=i!==n;});
+ commandSelect.value=id;
+ commandCounter.textContent=String(n+1).padStart(2,"0")+" / 07";
+ previousCommand.disabled=n===0;
+ nextCommand.disabled=n===commandIds.length-1;
+ if(location.hash!=="#"+id){try{history.replaceState(null,"","#"+id);}catch(_){}}
+ try{sessionStorage.setItem("visura-command",id);}catch(_){}
+ if(scrollToTop){document.getElementById("command-menu").scrollIntoView({block:"start",behavior:"smooth"});}
+}
+commandSelect.addEventListener("change",()=>showCommand(commandSelect.value,true));
+previousCommand.addEventListener("click",()=>showCommand(commandIds[indexOfCommand(commandSelect.value)-1],true));
+nextCommand.addEventListener("click",()=>showCommand(commandIds[indexOfCommand(commandSelect.value)+1],true));
+window.addEventListener("hashchange",()=>{
+ const id=location.hash.slice(1);
+ if(indexOfCommand(id)>=0)showCommand(id);
+});
+let firstCommand=location.hash.slice(1);
+if(indexOfCommand(firstCommand)<0){try{firstCommand=sessionStorage.getItem("visura-command");}catch(_){}}
+showCommand(indexOfCommand(firstCommand)>=0?firstCommand:"orden-3");
+
 </script>
 </body></html>
