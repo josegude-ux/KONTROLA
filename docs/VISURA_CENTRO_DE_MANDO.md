@@ -1,5 +1,5 @@
 # VISURA — CENTRO DE MANDO
-**Versión:** V5.2 — 2026-10-26  
+**Versión:** V5.3 — 2026-10-26  
 **Objetivo:** conservar órdenes copiables de desarrollo y recuperación de contexto para VISURA.
 
 > Este archivo es una **copia maestra de instrucciones**, no un informe del estado actual del software. Antes de cualquier cambio hay que contrastar ramas, commits, PR y documentación con GitHub. No fusionar, desplegar ni borrar datos sin autorización. No se puede garantizar un proceso en segundo plano ni superar límites de Work.
@@ -185,11 +185,11 @@ En INTEGRACIÓN EN RAMA: la imagen aprobada y sus derivados necesarios están re
 En PRUEBA / SIMULACIÓN: se audita la viabilidad, se identifican rutas y alternativas, se detectan bloqueos y se entrega un plan ejecutable SIN modificar sistemas.
 ```
 
-## Menú actual — Accesos directos V5.2 (2026-10-26)
+## Menú actual — Accesos directos V5.3 (2026-10-26)
 
-**Ocho funciones**, sin duplicidad 01/03, y un gestor de chats compartido en la cabecera (no es una nueva orden). La función 08 permanece para órdenes, incidencias y consultas específicas. La nueva orden 01 reúne las tres formas de continuidad; se conserva 02 Preparar Work y las demás tareas de diseño, auditoría, integración y consulta. La interfaz muestra las funciones en una cuadrícula móvil, abre solo la elegida y ofrece «Volver al menú».
+**Nueve funciones**, sin duplicidad 01/03, y un gestor de chats compartido en la cabecera (no es una nueva orden). La función 08 permanece para órdenes, incidencias y consultas específicas; la nueva 09 recupera interrupciones de streaming. La nueva orden 01 reúne las tres formas de continuidad; se conserva 02 Preparar Work y las demás tareas de diseño, auditoría, integración y consulta. La interfaz muestra las funciones en una cuadrícula móvil, abre solo la elegida y ofrece «Volver al menú».
 
-- Enlaces nuevos `#funcion-1` a `#funcion-7`. Enlaces históricos `#orden-1` a `#orden-8` compatibles con un mapeo explícito para no enviar a la función equivocada.
+- Enlaces nuevos `#funcion-1` a `#funcion-9`. Enlaces históricos `#orden-1` a `#orden-8` compatibles con un mapeo explícito para no enviar a la función equivocada.
 - Se mantiene botón «↻ Actualizar», cabecera y logo aprobado, selector de archivos de la integración, todos los prompts independientes y la protección de PRUEBA / SIMULACIÓN.
 - Las instrucciones antiguas 01 y 03 siguen consultables en el historial Git de esta rama, pero no se duplican en el menú.
 - Solo se editan `docs/index.html`, `docs/VISURA_ORDENES.html` y este documento maestro en `visura-panel`; no se autoriza modificar `main` o aplicaciones.
@@ -338,6 +338,50 @@ CONSULTA DE SOLO LECTURA: explica el funcionamiento actual, responde la pregunta
 
 **Pruebas mínimas:** añadir/editar/quitar, persistencia tras recarga, seleccionabilidad en los cuatro formularios, exportación/importación incluyendo coincidencias y registro vacío, validación de URLs, ausencia de cambios en `main`, siete/ ocho funciones según la versión (V5.2: ocho), captura e integración conservadas. La prueba de interfaz real y de ubicación OneDrive en el iPhone solo puede confirmarla el usuario.
 
+## 9. RECUPERAR TRAS STREAMING INTERRUMPIDO — V5.3
+
+**Auditoría antduplicados (26/10/2026):** revisadas órdenes 01–08 de `visura-panel`. La orden 01 reanuda o transfiere un desarrollo entre chats, mientras que la 08 comunica órdenes/incidencias/consultas. Ninguna verifica específicamente el resultado de acciones que podrían haber quedado ejecutadas durante un corte de respuesta ni recupera un checkpoint de streaming. **Se crea la orden 09 como función diferenciada**, para pegarla en el MISMO chat donde ocurrió la interrupción. No hace traspaso ni abre chats.
+
+**Diseño:** acceso móvil con icono vectorial local, original y compacto de aviso naranja + indicador de espera, inspirado en la captura del usuario «Streaming interrumpido. Esperando el mensaje completo…». La captura original se encuentra adjunta a la conversación de implementación; el SVG de la interfaz no copia el aviso como texto ilegible. No se aloja ni transmite la captura original.
+
+**Formulario:** campo «Tarea que estaba en curso» editable y precargado con «Comprobar las pruebas automáticas de la corrección conjunta de 6 G, 1 E y Observaciones, guardada presuntamente en una rama aislada.». Dos botones: **Copiar recuperación** y **Ver prompt** (con Ocultar al desplegar). Se sustituye únicamente `{{TAREA_EDITABLE}}` por el texto en el momento de copiar. Si el campo está vacío, pedir al usuario que lo complete y no copiar un prompt con marcador sin resolver. Copiar no ejecuta tareas ni escribe en GitHub.
+
+**Verificación de ejemplo:** se confirmó la existencia del PR #48 «VISURA PREPARA: corregir lectura 6G 1E y Observaciones», rama `fix/visura-prepara-cabecera-6g-1e-observaciones-20261026`. Su presencia no prueba que las pruebas automáticas hayan terminado ni que la corrección esté desplegada. El prompt obliga a verificar antes de continuar.
+
+**Límites:** no fusionar, desplegar, eliminar datos ni sobrescribir ramas ajenas sin permiso. Respetar chats reservados a pruebas y confirmar toda evidencia. Mantener intactos el gestor de chats/OneDrive, accesos anteriores, enlace directo `#funcion-9` y enlaces históricos.
+
+**Prompt maestro literal:**
+```text
+RECUPERACIÓN SEGURA TRAS INTERRUPCIÓN DE STREAMING — VISURA / EXCELL
+
+Se ha interrumpido la transmisión de la respuesta durante el desarrollo.
+
+Recupera la continuidad del trabajo desde el último estado realmente verificable.
+
+INSTRUCCIONES OBLIGATORIAS:
+
+1. Comprueba en GitHub la rama activa, los últimos commits, los PR abiertos y los resultados de las pruebas.
+2. Identifica qué operaciones se completaron, cuáles están pendientes y cuáles no pueden verificarse.
+3. No repitas cambios que ya estén guardados.
+4. No sobrescribas modificaciones de otros chats o desarrollos.
+5. Conserva intactas las aplicaciones instaladas y sus datos.
+6. Consulta docs/CONTINUIDAD.md, pero no consideres su contenido más antiguo que los commits recientes como estado definitivo.
+7. Actualiza la documentación de continuidad con los resultados verificados.
+8. Reanuda únicamente las operaciones pendientes y autorizadas.
+9. No fusiones ramas, publiques versiones ni modifiques bases de datos reales sin autorización.
+10. Tras cada hito, guarda y documenta un punto de recuperación verificable.
+
+TAREA QUE ESTABA EN CURSO:
+
+{{TAREA_EDITABLE}}
+
+OBJETIVO:
+
+Continuar el desarrollo sin pérdida de trabajo, sin duplicaciones y sin reiniciar tareas ya finalizadas.
+
+No te detengas salvo bloqueo real o necesidad imprescindible de autorización. Si una comprobación no es posible, documenta la limitación y continúa con la siguiente tarea independiente y segura.
+```
+
 ## Regla permanente 0 — Comprobar duplicados ANTES de crear un prompt
 
 Antes de redactar, guardar, proponer o añadir un prompt/botón al Centro de mando:
@@ -347,7 +391,7 @@ Antes de redactar, guardar, proponer o añadir un prompt/botón al Centro de man
 4. Probar el generador con al menos dos opciones diferentes y con opciones vacías; verificar que cambia correctamente origen/destino y que no mezcla chats ni ejecuta acciones desde el panel.
 5. Mantener las dos copias HTML, el documento maestro y la numeración sincronizados. No tocar `main`, no fusionar ni desplegar aplicaciones sin autorización.
 
-**Separación de funciones actual:** 01 Continuar desarrollo (tres modos); 02 Preparar Work; 03 Continuar imágenes; 04 Auditar solapamientos; 05 Crear imágenes; 06 Integrar imagen; 07 Consultar estado del chat en solo lectura; 08 Comunicar una orden, incidencia o consulta concreta a un chat. Antes de crear otro botón, verificar solapamientos. Son funciones relacionadas pero no duplicadas.
+**Separación de funciones actual:** 01 Continuar desarrollo (tres modos); 02 Preparar Work; 03 Continuar imágenes; 04 Auditar solapamientos; 05 Crear imágenes; 06 Integrar imagen; 07 Consultar estado del chat en solo lectura; 08 Comunicar una orden, incidencia o consulta concreta a un chat; 09 Recuperar una respuesta de desarrollo interrumpida por streaming en el mismo chat. Antes de crear otro botón, verificar solapamientos. Son funciones relacionadas pero no duplicadas.
 
 ## Reglas comunes
 1. Consultar primero el estado verificado en GitHub, **sin tratar la documentación antigua de main como último estado**.
