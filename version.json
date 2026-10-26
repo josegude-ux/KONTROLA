@@ -1,4 +1,4 @@
 {
-  "version": "0.3.37",
-  "notes": "Cargas anteriores: cálculo de huecos y viabilidad de palés; PDF auténtico desde la PWA iPhone"
+  "version": "0.3.41",
+  "notes": "Hotfix de importación: PDF F/C por almacén, accesos administrativos y revisión de lotes sin borrar pendientes"
 }
