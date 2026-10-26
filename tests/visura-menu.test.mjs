@@ -29,3 +29,18 @@ test("el menú conserva las cuatro acciones distintas", () => {
   assert.equal(new Set(cards.map(([id]) => id)).size, 4);
   for (const [id] of cards) assert.equal(html.split(`id="${id}"`).length - 1, 1);
 });
+
+test("acciones de las cuatro tarjetas siguen conectadas a controladores originales", () => {
+  const app = readFileSync(resolve(root, "src/app.mjs"), "utf8");
+  const bindings = [
+    ["openPreparation", "openLoadsMenu()"],
+    ["openReview", "openReviewMenu()"],
+    ["openCargas", 'switchView("cargasMenuView")'],
+    ["openAdmin", "openAdminMenu()"]
+  ];
+  for (const [id, handler] of bindings) {
+    const escaped = handler.replace(/[.*+?^\x24{}()|[\]\\]/g, "\\$&");
+    const re = new RegExp('\\$\\("'+id+'"\\)\\.addEventListener\\("click",[\\s\\S]{0,140}?'+escaped);
+    assert.match(app, re, `No se encuentra el manejador original para ${id}`);
+  }
+});
