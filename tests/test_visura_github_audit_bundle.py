@@ -73,6 +73,38 @@ class AuditBundleTests(unittest.TestCase):
         )
         self.comparison_mock = self.comparison_mock_patch.start()
         self.addCleanup(self.comparison_mock_patch.stop)
+        self.legacy_mock_patch = patch(
+            "scripts.visura_github_audit_bundle.observe_legacy_commit_statuses",
+            return_value={
+                "repository": REPO, "head_sha": HEAD,
+                "lookup": "retrieved", "observed_status_records": 0,
+                "observed_latest_contexts": 0, "latest_context_states": [],
+                "latest_state_counts": {"success": 0, "failure": 0,
+                                        "error": 0, "pending": 0},
+                "required_checks_verified": False, "branch_policy_verified": False,
+                "execution_authorized": False, "merge_authorized": False,
+                "deployment_authorized": False,
+            },
+        )
+        self.legacy_mock = self.legacy_mock_patch.start()
+        self.addCleanup(self.legacy_mock_patch.stop)
+        self.legacy_comparison_patch = patch(
+            "scripts.visura_github_audit_bundle.compare_legacy_status_candidates",
+            return_value={
+                "lookup": "unknown_policy_requirements",
+                "required_context_count": None,
+                "candidate_context_match_count": None,
+                "candidate_latest_success_count": None,
+                "contexts_not_observed_count": None,
+                "app_pinned_unverifiable_count": None,
+                "legacy_context_origin_authenticated": False,
+                "required_checks_verified": False,
+                "execution_authorized": False, "merge_authorized": False,
+                "deployment_authorized": False,
+            },
+        )
+        self.legacy_comparison = self.legacy_comparison_patch.start()
+        self.addCleanup(self.legacy_comparison_patch.stop)
 
     def test_inspects_actual_target_and_default_separately(self):
         policy_calls = []
@@ -179,6 +211,34 @@ class AuditBundleTests(unittest.TestCase):
             "unknown_policy_requirements",
         )
         self.assertFalse(result["merge_authorized"])
+
+    def test_legacy_api_uses_exact_pr_head_and_target_branch_policy(self):
+        with patch(
+            "scripts.visura_github_audit_bundle.fetch_readonly_review_snapshot",
+            return_value=fixture_snapshot(),
+        ), patch(
+            "scripts.visura_github_audit_bundle.inspect_branch_policy",
+            side_effect=lambda repo, branch, token, opener: {
+                "branch": branch, "repository_policy_verified": False,
+                "execution_authorized": False, "merge_authorized": False,
+                "deployment_authorized": False,
+            },
+        ), patch(
+            "scripts.visura_github_audit_bundle._get_json",
+            return_value=fixture_pr(),
+        ):
+            result = inspect_readonly_audit_bundle(
+                REPO, 37, "main", "secret", opener=lambda *args: None
+            )
+        self.legacy_mock.assert_called_once()
+        self.assertEqual(self.legacy_mock.call_args.args[:3], (REPO, HEAD, "secret"))
+        self.legacy_comparison.assert_called_once()
+        self.assertEqual(
+            self.legacy_comparison.call_args.args[0]["branch"],
+            "chore/visura-auto-dev-guardrails",
+        )
+        self.assertFalse(result["legacy_status_observations"]["merge_authorized"])
+        self.assertFalse(result["execution_authorized"])
 
     def test_same_target_as_default_is_queried_once(self):
         with patch(
@@ -290,6 +350,8 @@ class AuditBundleTests(unittest.TestCase):
         # together, while never contacting GitHub or granting merge rights.
         self.check_mock_patch.stop()
         self.comparison_mock_patch.stop()
+        self.legacy_mock_patch.stop()
+        self.legacy_comparison_patch.stop()
 
         class FakeResponse:
             def __init__(self, payload):
@@ -313,7 +375,10 @@ class AuditBundleTests(unittest.TestCase):
                 if "chore%2Fvisura-auto-dev-guardrails" in url:
                     return FakeResponse({
                         "required_status_checks": {
-                            "checks": [{"context": "CI / review", "app_id": 42}],
+                            "checks": [
+                                {"context": "CI / review", "app_id": 42},
+                                {"context": "legacy / status"},
+                            ],
                         },
                     })
                 return FakeResponse({})
@@ -325,6 +390,17 @@ class AuditBundleTests(unittest.TestCase):
                     "app": {"id": 42}, "status": "completed",
                     "conclusion": "success",
                 }]})
+            if "/statuses?" in url:
+                return FakeResponse([{
+                    "id": 50, "sha": HEAD, "context": "legacy / status",
+                    "state": "success",
+                }, {
+                    "id": 49, "sha": HEAD, "context": "legacy / status",
+                    "state": "failure",
+                }, {
+                    "id": 48, "sha": HEAD, "context": "CI / review",
+                    "state": "success",
+                }])
             raise AssertionError("Unexpected REST URL: " + url)
 
         result = inspect_readonly_audit_bundle(
@@ -332,8 +408,16 @@ class AuditBundleTests(unittest.TestCase):
         )
         observation = result["required_check_observations"]
         self.assertEqual(observation["lookup"], "candidate_match_only")
-        self.assertEqual(observation["required_context_count"], 1)
+        self.assertEqual(observation["required_context_count"], 2)
         self.assertEqual(observation["candidate_success_count"], 1)
+        legacy = result["legacy_status_observations"]
+        self.assertEqual(legacy["required_context_count"], 2)
+        self.assertEqual(legacy["candidate_latest_success_count"], 1)
+        self.assertEqual(legacy["app_pinned_unverifiable_count"], 1)
+        self.assertFalse(legacy["required_checks_verified"])
+        self.assertEqual(
+            result["legacy_commit_statuses"]["latest_state_counts"]["success"], 2
+        )
         self.assertFalse(observation["required_checks_verified"])
         self.assertFalse(result["merge_authorized"])
         markdown = render_readonly_audit_summary(result)
