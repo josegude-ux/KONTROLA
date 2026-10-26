@@ -124,21 +124,32 @@ header .intro{font-size:.85rem;line-height:1.38}
 .reactivation-generator :is(select,input):focus-visible{outline:3px solid #86afdb;outline-offset:2px}
 #open-reactivate-chat:disabled{opacity:.42;cursor:not-allowed}
 
+
+/* Orden 08 — informe de progreso de chat del proyecto EXCELL */
+.status-generator{margin-top:12px}
+.status-generator select,.status-generator input,.status-generator textarea{display:block;width:100%;border:1px solid var(--border);border-radius:12px;background:var(--bg);color:var(--text);font:inherit;font-size:16px;padding:11px 12px}
+.status-generator textarea{resize:vertical;line-height:1.4}
+.status-generator [hidden]{display:none!important}
+.status-generator :is(select,input,textarea):focus-visible{outline:3px solid #86afdb;outline-offset:2px}
+.status-more{margin:14px 0 10px;border:1px solid var(--border);border-radius:12px;padding:10px 12px}
+.status-more summary{font-size:.89rem;font-weight:730;cursor:pointer;color:var(--muted)}
+
 </style>
 </head>
 <body>
-<main><header><div class="header-top"><div class="brand-lockup"><img class="brand-mark" src="./assets/icons/visura-centro-mando-logo-64.png" width="54" height="54" alt="Logo aprobado VISURA Centro de mando"><div class="brand-text"><strong>VISURA</strong><span>CENTRO DE MANDO <b class="panel-version">V4.1</b></span></div></div><button type="button" class="refresh-panel" id="refresh-panel" title="Cargar de nuevo el Centro de mando" aria-label="Actualizar Centro de mando"><span aria-hidden="true">↻</span> Actualizar</button></div><h1>¿Qué quieres hacer?</h1><p class="intro">Siete funciones a un toque, sin recorrer formularios.</p></header>
+<main><header><div class="header-top"><div class="brand-lockup"><img class="brand-mark" src="./assets/icons/visura-centro-mando-logo-64.png" width="54" height="54" alt="Logo aprobado VISURA Centro de mando"><div class="brand-text"><strong>VISURA</strong><span>CENTRO DE MANDO <b class="panel-version">V4.2</b></span></div></div><button type="button" class="refresh-panel" id="refresh-panel" title="Cargar de nuevo el Centro de mando" aria-label="Actualizar Centro de mando"><span aria-hidden="true">↻</span> Actualizar</button></div><h1>¿Qué quieres hacer?</h1><p class="intro">Ocho funciones a un toque, sin recorrer formularios.</p></header>
 <nav id="command-menu" class="dashboard-nav" aria-label="Accesos VISURA">
-<div class="dashboard-caption"><strong>ACCESOS DIRECTOS</strong><span>7 funciones</span></div>
+<div class="dashboard-caption"><strong>ACCESOS DIRECTOS</strong><span>8 funciones</span></div>
 <div class="dashboard-grid"><button type="button" class="dashboard-action" data-open-order="orden-1" aria-controls="orden-1"><span class="action-mark" aria-hidden="true">↻</span><span class="action-copy"><strong>Reactivar</strong><small>Continuar desarrollo</small></span></button>
 <button type="button" class="dashboard-action" data-open-order="orden-2" aria-controls="orden-2"><span class="action-mark" aria-hidden="true">↗</span><span class="action-copy"><strong>Traspaso Work</strong><small>Guardar continuidad</small></span></button>
 <button type="button" class="dashboard-action" data-open-order="orden-3" aria-controls="orden-3"><span class="action-mark" aria-hidden="true">⇄</span><span class="action-copy"><strong>Cambiar de chat</strong><small>Recuperar trabajo</small></span></button>
 <button type="button" class="dashboard-action" data-open-order="orden-4" aria-controls="orden-4"><span class="action-mark" aria-hidden="true">▧</span><span class="action-copy"><strong>Imágenes</strong><small>Continuar diseños</small></span></button>
 <button type="button" class="dashboard-action" data-open-order="orden-5" aria-controls="orden-5"><span class="action-mark" aria-hidden="true">⇆</span><span class="action-copy"><strong>Solapamientos</strong><small>Revisar tareas</small></span></button>
 <button type="button" class="dashboard-action" data-open-order="orden-6" aria-controls="orden-6"><span class="action-mark" aria-hidden="true">✦</span><span class="action-copy"><strong>Crear imagen</strong><small>3 diseños alternativos</small></span></button>
-<button type="button" class="dashboard-action" data-open-order="orden-7" aria-controls="orden-7"><span class="action-mark" aria-hidden="true">↳</span><span class="action-copy"><strong>Integrar imagen</strong><small>Aplicar la aprobada</small></span></button></div>
+<button type="button" class="dashboard-action" data-open-order="orden-7" aria-controls="orden-7"><span class="action-mark" aria-hidden="true">↳</span><span class="action-copy"><strong>Integrar imagen</strong><small>Aplicar la aprobada</small></span></button>
+<button type="button" class="dashboard-action" data-open-order="orden-8" aria-controls="orden-8"><span class="action-mark" aria-hidden="true">▤</span><span class="action-copy"><strong>Estado del chat</strong><small>Avance y trabajo pendiente</small></span></button></div>
 </nav>
-<div class="command-toolbar" id="command-toolbar" hidden><button class="back-to-dashboard" type="button" id="back-to-dashboard">‹ Volver al menú</button><span class="toolbar-order" id="current-order-label">ORDEN 01 / 07</span></div>
+<div class="command-toolbar" id="command-toolbar" hidden><button class="back-to-dashboard" type="button" id="back-to-dashboard">‹ Volver al menú</button><span class="toolbar-order" id="current-order-label">ORDEN 01 / 08</span></div>
 <article class="command" id="orden-1"><div class="top"><div class="symbol">↻</div><div><div class="eyebrow">ORDEN 01 · Reanudar desarrollo</div><h2>REACTIVAR VISURA</h2></div></div><p class="when">Elige exactamente qué desarrollo quieres reanudar. Para trasladarlo a otro chat, utiliza la orden 03.</p><div class="reactivation-generator">
 <label class="field-label" for="reactivate-chat">¿Qué chat quieres reactivar?</label>
 <select id="reactivate-chat" required>
@@ -267,6 +278,41 @@ header .intro{font-size:.85rem;line-height:1.38}
 <p class="field-hint">Al copiar, se añadirá el nombre del archivo seleccionado. El navegador no permite transmitirlo automáticamente a ChatGPT: adjúntalo manualmente en el chat de implementación.</p>
 <div class="actions"><button type="button" class="primary" id="copy-integration-command">Copiar orden de integración V2</button><button type="button" class="secondary" id="show-integration-command" aria-controls="integration-prompt-preview" aria-expanded="false">Ver prompt</button></div>
 <pre id="integration-prompt-preview" hidden></pre>
+</div>
+</article>
+<article class="command" id="orden-8">
+<div class="top"><div class="symbol" aria-hidden="true">▤</div><div><div class="eyebrow">ORDEN 08 · AUDITORÍA DE AVANCE</div><h2>ESTADO DE DESARROLLO DE UN CHAT</h2></div></div>
+<p class="when">Selecciona una conversación del proyecto Excel/EXCELL y prepara un informe de qué se está desarrollando, qué falta y cuánto queda, sin modificar nada.</p>
+<div class="status-generator">
+<label class="field-label" for="status-chat">¿Qué chat quieres analizar?</label>
+<select id="status-chat">
+<option value="" selected disabled>Selecciona un chat…</option>
+<option value="VISURA WORK">VISURA WORK</option>
+<option value="VISURA 0.1">VISURA 0.1</option>
+<option value="VISURA 0.2">VISURA 0.2</option>
+<option value="VISURA CENTRO DE MANDO">VISURA CENTRO DE MANDO</option>
+<option value="VISURA — PRUEBAS CENTRO DE MANDO">VISURA — PRUEBAS CENTRO DE MANDO</option>
+<option value="PROMPT E IMÁGENES">PROMPT E IMÁGENES</option>
+<option value="VISURA INVENTA">VISURA INVENTA</option>
+<option value="VISURA PREPARA">VISURA PREPARA</option>
+<option value="MOVENTA 0.3">MOVENTA 0.3</option>
+<option value="OTRO">Otro chat del proyecto</option>
+</select>
+<label for="status-other" class="field-label" id="status-other-label" hidden>Nombre exacto del chat</label>
+<input id="status-other" type="text" placeholder="Escribe el nombre del chat" hidden>
+<details class="status-more">
+<summary>Enlace o información adicional (opcional)</summary>
+<label class="field-label" for="status-link">Enlace a la conversación</label>
+<input id="status-link" type="text" placeholder="https://chatgpt.com/c/...">
+<label class="field-label" for="status-context">Repositorio o contexto adicional</label>
+<textarea id="status-context" rows="2" placeholder="Repositorio de GitHub, rama o función concreta, si lo conoces"></textarea>
+</details>
+<p class="field-hint">El selector no accede por sí solo al historial: el chat donde pegues el prompt tendrá que comprobar sus fuentes. Si no puede, debe indicar qué datos faltan.</p>
+<div class="actions">
+<button type="button" class="primary" id="copy-status-command">Copiar orden de informe</button>
+<button type="button" class="secondary" id="show-status-command" aria-controls="status-prompt" aria-expanded="false">Ver prompt</button>
+</div>
+<pre id="status-prompt" hidden>Selecciona un chat para preparar su informe.</pre>
 </div>
 </article>
 <div class="foot"><details class="foot-details"><summary>Acerca del panel y copia en GitHub</summary><div class="foot-content"><h2>Copia maestra en GitHub</h2>
@@ -543,7 +589,7 @@ document.getElementById("show-integration-command").addEventListener("click",()=
 
 
 /* v4: portada con accesos directos; al elegir solo se abre una tarea. */
-const orderIds=Array.from({length:7},(_,i)=>"orden-"+(i+1));
+const orderIds=Array.from({length:8},(_,i)=>"orden-"+(i+1));
 const dashboard=document.getElementById("command-menu"), toolbar=document.getElementById("command-toolbar");
 const foot=document.querySelector(".foot");
 function showOrder(id,scroll=true){
@@ -552,7 +598,7 @@ function showOrder(id,scroll=true){
  dashboard.hidden=selected;
  toolbar.hidden=!selected;
  foot.hidden=selected;
- if(selected)document.getElementById("current-order-label").textContent="ORDEN "+String(n+1).padStart(2,"0")+" / 07";
+ if(selected)document.getElementById("current-order-label").textContent="ORDEN "+String(n+1).padStart(2,"0")+" / 08";
  const hash=selected?"#"+id:"#inicio";
  if(location.hash!==hash){try{history.replaceState(null,"",hash)}catch(_){}}
  if(scroll)window.scrollTo({top:0,behavior:"smooth"});
@@ -574,6 +620,50 @@ document.getElementById("refresh-panel").addEventListener("click",()=>{
  const url=new URL(window.location.href);
  url.searchParams.set("visura_actualizar",String(Date.now()));
  window.location.replace(url.toString());
+});
+
+
+/* Orden 08 — diagnóstico de un chat elegido del proyecto EXCELL (solo lectura). */
+const statusTemplate="AUDITAR ESTADO DE DESARROLLO DE UN CHAT DEL PROYECTO EXCELL.\n\nCHAT OBJETIVO: {{CHAT}}\nENLACE DE REFERENCIA (SI EXISTE): {{ENLACE}}\nCONTEXTO O REPOSITORIO ADICIONAL (SI EXISTE): {{CONTEXTO}}\n\nOBJETIVO: Entrega un diagnóstico breve, concreto, verificable y actualizado sobre QUÉ se está desarrollando en ese chat, EN QUÉ PUNTO EXACTO se encuentra y CUÁNTO FALTA PARA TERMINAR. Esto es una AUDITORÍA DE SOLO LECTURA: no cambies código, ramas, PR, documentos, datos, imágenes ni aplicaciones; no inicies ni reanudes el desarrollo.\n\n1. IDENTIFICAR EL CHAT. El nombre identifica la conversación a examinar, pero no garantiza acceso a su historial. Intenta consultar el historial disponible de ese chat del proyecto EXCELL y, cuando sea necesario, las fuentes del proyecto y de GitHub realmente accesibles. No asegures haber leído una conversación únicamente porque conoces su título o enlace. Si no puedes recuperar el historial, indícalo y utiliza solo evidencias verificadas (commits, ramas, PR, archivos y continuidad) sin atribuir falsamente estados de un repositorio entero a ese chat.\n2. RECONSTRUIR EL TRABAJO ACTUAL. Identifica su aplicación o funcionalidad concreta, propósito y resultado esperado, últimos cambios realmente comprobados, última tarea terminada, tarea actualmente en curso y estado de pruebas. Contrasta fecha, rama, commit, PR y documentación cuando existan; si varias evidencias discrepan, prioriza la más reciente comprobable y describe la discrepancia.\n3. CALCULAR LO QUE FALTA. Enumera las principales tareas restantes, sus dependencias, bloqueos y permisos externos necesarios. Distingue terminado, en curso, pendiente y no verificable. No confundas «código escrito» con «función validada» o «lista para publicar».\n4. ESTIMACIÓN HONESTA. Da un porcentaje de avance y una previsión de esfuerzo SOLO si existen entregables definidos y evidencias suficientes para sustentarlos. Explica en una línea la base del cálculo, indica un rango orientativo en lugar de precisión falsa y la incertidumbre asociada. Si faltan alcance o evidencias, indica «avance no estimable de forma fiable» y «plazo no estimable», especificando qué información permitiría calcularlos. No inventes fechas, horas, porcentajes, pruebas ni trabajo que nadie haya realizado.\n5. PROTEGE EL ALCANCE. No mezcles VISURA WORK, VISURA 0.1, VISURA 0.2, PROMPT E IMÁGENES u otras líneas por el mero hecho de relacionarse con VISURA. Solo atribuye hitos al chat indicado cuando haya evidencia de esa relación. No uses main como sinónimo del último avance; no repitas contenidos históricos superados.\n\nFORMATO DE RESPUESTA OBLIGATORIO, BREVE Y COMPRENSIBLE:\n- CHAT ANALIZADO: [nombre] · FUENTES: [chat, GitHub, documentos realmente consultados] · CONFIANZA: [alta/media/baja].\n- QUÉ SE DESARROLLA: 1–3 frases sobre producto, finalidad y alcance.\n- PUNTO ACTUAL: última tarea completada y comprobada, tarea en curso, rama/commit/PR relevantes y estado de pruebas.\n- AVANCE ESTIMADO: [% o «no estimable»], con base del cálculo y margen de incertidumbre.\n- QUÉ FALTA: entre 3 y 6 tareas esenciales, marcando dependencias/bloqueos.\n- PARA TERMINAR: [esfuerzo restante en rango y supuestos, o «no estimable»]; explica qué significa «terminado» para este desarrollo (implementado/probado/listo para publicar).\n- SIGUIENTE PASO RECOMENDADO: una sola tarea concreta y segura.\n\nSi solo puedes dar un estado parcial, preséntalo como parcial en lugar de inventar una conclusión. No ejecutes ninguna de las tareas enumeradas.";
+const statusChat=document.getElementById("status-chat");
+const statusOther=document.getElementById("status-other");
+const statusOtherLabel=document.getElementById("status-other-label");
+const statusLink=document.getElementById("status-link");
+const statusContext=document.getElementById("status-context");
+const statusPromptPreview=document.getElementById("status-prompt");
+function selectedStatusChat(){
+ return statusChat.value==="OTRO"?statusOther.value.trim():statusChat.value;
+}
+function preparedStatusPrompt(){
+ const name=selectedStatusChat();
+ if(!name)return "";
+ return statusTemplate
+  .replaceAll("{{CHAT}}",name)
+  .replaceAll("{{ENLACE}}",statusLink.value.trim()||"No proporcionado; no implica acceso al historial.")
+  .replaceAll("{{CONTEXTO}}",statusContext.value.trim()||"Ninguno especificado. Identificar fuentes verificables del chat seleccionado.");
+}
+function refreshStatusPreview(){
+ if(!statusPromptPreview.hidden)statusPromptPreview.textContent=preparedStatusPrompt()||"Selecciona un chat para preparar su informe.";
+}
+statusChat.addEventListener("change",()=>{
+ const other=statusChat.value==="OTRO";
+ statusOther.hidden=!other;
+ statusOtherLabel.hidden=!other;
+ refreshStatusPreview();
+ if(other)statusOther.focus();
+});
+[statusOther,statusLink,statusContext].forEach(el=>el.addEventListener("input",refreshStatusPreview));
+document.getElementById("copy-status-command").addEventListener("click",()=>{
+ const prompt=preparedStatusPrompt();
+ if(!prompt){(statusChat.value==="OTRO"?statusOther:statusChat).focus();showStatus("Selecciona primero un chat para analizar.");return;}
+ copyCommand(prompt);
+});
+document.getElementById("show-status-command").addEventListener("click",()=>{
+ statusPromptPreview.hidden=!statusPromptPreview.hidden;
+ if(!statusPromptPreview.hidden)refreshStatusPreview();
+ const btn=document.getElementById("show-status-command");
+ btn.setAttribute("aria-expanded",String(!statusPromptPreview.hidden));
+ btn.textContent=statusPromptPreview.hidden?"Ver prompt":"Ocultar prompt";
 });
 
 </script>
