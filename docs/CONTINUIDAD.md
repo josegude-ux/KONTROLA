@@ -833,3 +833,15 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 - Cambio limitado a pruebas/CI, sin alterar comportamiento de producción ni Supabase. Confirmar CI de la rama tras estos commits.
 
 - CI #134: las regresiones pasaron y la prueba móvil pasó; la prueba visual de escritorio falló porque `#openPreparation` quedó oculto tras mostrar el menú, compatible con una redirección asíncrona de autenticación. Se ha aislado `src/app.mjs` solo en el test visual (Playwright `page.route`), manteniendo DOM, CSS e imágenes reales, para que la verificación de maquetación no dependa del estado de sesión. Pendiente validar en CI. No afecta al código desplegable.
+
+
+### 2026-10-26 — Tarjetas de Preparación: desglose de bultos y matrícula (rama de trabajo)
+- Solicitud recibida a partir de una captura de la pantalla «Preparación de cargas»: el valor mostrado como «Bultos» debe ser el **desglose calculado**, no el total simple del documento; destacar visualmente la matrícula del camión.
+- Rama `feature/visura-prepara-desglose-bultos-matricula-20261026`, creada desde la versión publicada `abd86aaf9db700494a4be8bcb54a8cf21fc0738d`. **No desplegar ni integrar a producción sin revisión y validación.**
+- `src/report.mjs` exporta `desglosarBultos(productos)`, reutilizada por el informe de totales por pasillo y la tarjeta; suma solo cantidades positivas y finitas **por unidad**, sin añadir cajas a botellas. La tarjeta lee `r.productos` del panel de cargas ya consultado; no añade llamadas ni cambios en Supabase.
+- Si no existen líneas válidas, se muestra «Sin desglose disponible», sin reutilizar `r.bultos` o inventar totales. La matrícula destaca como placa tipográfica en `#loadsList`; la modificación de estilos queda acotada a la vista de preparación.
+- Incluidas pruebas unitarias y comprobaciones de integración de UI. Pendiente confirmar CI sobre PR y aceptación visual en dispositivo, antes de considerar actualización de versión/caché y publicación.
+
+- Validación: en CI de PR #38, sintaxis, regresión JS y dependencias pasan; el test SQL `tests/integration/workflow.sql` fallaba también en la rama publicada, porque esperaba cierres en la fecha fija `2026-10-25` pero `kontrola_resumen_zona` cuenta cierres por `cerrada_en::date` (fecha efectiva de ejecución). Se sustituyeron **solo** las dos fechas del test por `current_date`, conservando intactas las migraciones SQL y la lógica de cierre. Pendiente verificar CI completo tras la corrección.
+
+- CI PR #38: ejecuciones #438 y #439 completas **SUCCESS** después de corregir la fecha fija de las pruebas SQL; el producto no ha cambiado su lógica de cierre. Se prepara candidata **0.3.32** actualizando conjuntamente `src/config.mjs`, `package.json`, `package-lock.json`, `index.html`, `version.json`, `sw.js` (caché `kontrola-integral-visura-v065`) y expectativas de pruebas. Solo rama de desarrollo: no modificar rama publicada, no desplegar Pages ni alterar Supabase. Pendiente confirmar nueva CI de candidata y revisión en móvil.

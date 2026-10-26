@@ -1,4 +1,4 @@
 {
-  "version": "0.3.31",
-  "notes": "Actualización visual VISURA PREPARA; misma base de datos, sin migraciones ni cambios de RPC"
+  "version": "0.3.32",
+  "notes": "Tarjetas de Preparación: matrícula destacada y bultos desglosados por unidad; sin cambios de base de datos ni RPC"
 }

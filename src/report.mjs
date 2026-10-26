@@ -11,6 +11,20 @@ export function filterProducts(products=[],query=""){
   return products.filter(product=>[product.sku,product.location,product.description,product.unit].some(value=>fold(value).includes(needle)));
 }
 
+// Mismo criterio de totalización que la hoja por pasillos: separar formatos.
+export function desglosarBultos(products=[]){
+  if(!Array.isArray(products))return [];
+  const units=new Map();
+  for(const product of products){
+    const qty=Number(product?.qty);
+    if(!Number.isFinite(qty)||qty<=0)continue;
+    const unit=String(product.unit||"SIN UNIDAD").trim().toUpperCase()||"SIN UNIDAD";
+    units.set(unit,(units.get(unit)||0)+qty);
+  }
+  return [...units.entries()].sort((a,b)=>a[0].localeCompare(b[0],"es"))
+    .map(([unidad,cantidad])=>({unidad,cantidad}));
+}
+
 export function buildPreparationReport(load){
   const products=load.productos||load.products||[];
   const warehouse=load.almacen||load.warehouse||"PENDIENTE DE CLASIFICAR";
@@ -26,14 +40,9 @@ export function buildPreparationReport(load){
   const sortAisle=s=>s==="SIN UBICACIÓN"?"ZZZ":s==="FRÍO"?"ZZY":s;
   const sections=[...grouped.entries()].sort((a,b)=>sortAisle(a[0]).localeCompare(sortAisle(b[0]),"es")).map(([aisle,rawLines])=>{
     const lines=ordenarLineasPasillo(rawLines);
-    // Totalizar cantidades solo cuando comparten unidad; nunca sumar cajas y botellas.
-    const units=new Map();
-    for(const product of lines){
-      const unit=String(product.unit||"SIN UNIDAD").trim().toUpperCase();
-      units.set(unit,(units.get(unit)||0)+Number(product.qty));
-    }
-    const totals=[...units.entries()].sort((a,b)=>a[0].localeCompare(b[0],"es"))
-      .map(([unit,qty])=>number(qty)+" "+escapeHtml(unit)).join(" · ");
+    // El resumen por pasillo y las tarjetas comparten el desglose por formato.
+    const totals=desglosarBultos(lines)
+      .map(({unidad,cantidad})=>number(cantidad)+" "+escapeHtml(unidad)).join(" · ");
     return `
     <section class="report-aisle">
       <h2>Pasillo ${escapeHtml(aisle)}</h2>
