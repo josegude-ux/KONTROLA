@@ -32,7 +32,7 @@ export function totalBultosDelDesglose(desglose=[]){
   return desglose.reduce((total,item)=>total+Number(item.cantidad),0);
 }
 
-export function buildPreparationReport(load){
+export function buildPreparationReport(load,{informativoCor2=false}={}){
   const products=load.productos||load.products||[];
   const warehouse=load.almacen||load.warehouse||"PENDIENTE DE CLASIFICAR";
   const weight=load.peso_kg??load.weight??null;
@@ -58,7 +58,7 @@ export function buildPreparationReport(load){
     </section>`;
   }).join("");
   return `<article class="preparation-report">
-    <header><h1>HOJA DE PREPARACIÓN POR PASILLOS</h1><p>KONTROLA · Exclusivamente mercancía procesada</p></header>
+    <header><h1>${informativoCor2?"HOJA DETALLE COR2 · SOLO INFORMATIVA":"HOJA DE PREPARACIÓN POR PASILLOS"}</h1><p>${informativoCor2?"COR2 no se prepara ni se procesa en VISURA PREPARA":"KONTROLA · Exclusivamente mercancía procesada"}</p></header>
     <dl>
       <div><dt>Carga</dt><dd>${escapeHtml(load.codigo||load.id)}</dd></div>
       <div><dt>Almacén</dt><dd>${escapeHtml(warehouse)}</dd></div>
@@ -70,6 +70,6 @@ export function buildPreparationReport(load){
       <div><dt>Referencias</dt><dd>${escapeHtml(load.referencias??load.refs??products.length)}</dd></div>
     </dl>
     ${sections||"<p>Sin líneas de mercancía.</p>"}
-    <footer>Generado por KONTROLA. El picking se registra en Business Central.</footer>
+    <footer>${informativoCor2?"Detalle independiente de COR2: no enviar a preparación ni registrar picking.":"Generado por KONTROLA. El picking se registra en Business Central."}</footer>
   </article>`;
 }
