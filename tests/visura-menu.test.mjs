@@ -36,7 +36,7 @@ test("acciones de las cuatro tarjetas siguen conectadas a controladores original
     ["openPreparation", "openLoadsMenu()"],
     ["openReview", "openReviewMenu()"],
     ["openCargas", 'switchView("cargasMenuView")'],
-    ["openAdmin", "openAdminMenu()"]
+    ["openAdmin", 'openAdminMenu("homeView")']
   ];
   for (const [id, handler] of bindings) {
     const escaped = handler.replace(/[.*+?^\x24{}()|[\]\\]/g, "\\$&");
