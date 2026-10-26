@@ -1,6 +1,11 @@
 name: VISURA AUTO-DEV - Dry Run
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - chore/visura-auto-dev-guardrails
+    paths:
+      - .github/workflows/visura-auto-dev-dry-run.yml
 permissions:
   contents: read
 concurrency:
