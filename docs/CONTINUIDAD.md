@@ -720,3 +720,9 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 - PR #29 sigue abierta en borrador; titulo y descripcion actualizados para reflejar el estado real y los pendientes.
 - Revision de controladores: `openPreparation` -> `openLoadsMenu()`, `openReview` -> `openReviewMenu()`, `openCargas` -> `switchView("cargasMenuView")`, `openAdmin` -> `openAdminMenu("homeView")`; la tarjeta de Administracion sigue oculta por defecto hasta validar rol, como exige la prueba existente.
 - Pendiente externo: capturas visuales reales y prueba manual de interaccion en iPhone, Android y Windows. No se han hecho merge ni despliegue.
+
+
+### 2026-10-26 - Checklist de aceptación visual multidispositivo
+- Añadido `docs/REVISION_VISUAL_MENU.md` (commit d1def38a4c57916a757235591d1a49ac8eb5df5b) con comprobaciones manuales para imágenes, acciones, visibilidad por rol, PWA sin conexión y dispositivos iPhone/Android/Windows.
+- No se ha afirmado que la validación visual esté realizada: requiere probar la app en dispositivos reales y registrar capturas/evidencias.
+- No merge ni despliegue.
