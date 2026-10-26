@@ -89,3 +89,14 @@ La idea de un portal común se documentó separadamente en `docs/MOVENTA_CONCEPT
 - Verificado mediante consulta de los PR existentes en GitHub. No fue creado manualmente desde ChatGPT, a diferencia del PR #33.
 - Esto valida **un piloto documental autónomo sin IA**, no un agente de programación con LLM ni un límite de facturación real de 10 €/mes. Sin fusiones, despliegues ni cambios de datos.
 - Próximo objetivo: automatizar tareas reales y acotadas con pruebas y revisión humana; no activar API de pago hasta verificar límite externo y ledger compartido.
+
+
+## Piloto de código funcional: prevalidación CSV (26/10/2026)
+
+- Rama aislada `feat/visura-auto-dev-csv-preflight` desde guardrails; utilidad `scripts/visura_csv_preflight.py` de **solo lectura** para ficheros CSV manuales, con límite de tamaño, detección de delimitador, cabeceras requeridas, columnas duplicadas y filas mal formadas.
+- Se añaden seis pruebas unitarias en `tests/test_visura_csv_preflight.py`. **Pendiente de ejecución CI y revisión**, no integrado en ninguna aplicación ni usado en producción.
+- Esta implementación la realizó ChatGPT mediante GitHub, **no** el workflow autónomo de IA; sirve como primer candidato de código para el futuro ejecutor seguro.
+
+- CI inicial PR #35: 23/24 pruebas correctas; falló detección de delimitador ante una fila con columnas extra. Corregido en commit `20f7db4` tomando el delimitador de la cabecera. **Pendiente de confirmar CI tras el cambio.**
+
+- **CI verificada**: workflow Queue Audit runs #34 (`40259234346`) y #35 (`40259243634`) concluyeron `success`. El registro del run #35 confirma **24 pruebas OK**, smoke test de bloqueo de llamadas de pago y auditoría de issue #31. Evidencia: https://github.com/josegude-ux/KONTROLA/actions/runs/40259243634. El PR #35 sigue en borrador, sin fusionar ni desplegar.
