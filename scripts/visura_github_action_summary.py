@@ -167,6 +167,46 @@ def render_readonly_audit_summary(bundle):
             raise ValueError("Unavailable checks cannot report counts")
         total_text = success_text = failed_text = unfinished_text = "desconocido"
 
+    comparison = bundle.get("required_check_observations")
+    if not isinstance(comparison, dict):
+        raise ValueError("Missing required-check comparison")
+    for key in (
+        "legacy_commit_statuses_compared", "app_origin_authenticated",
+        "required_checks_verified", "execution_authorized",
+        "merge_authorized", "deployment_authorized",
+    ):
+        if comparison.get(key) is not False:
+            raise ValueError("Required-check comparison cannot grant authority")
+    comparison_status = comparison.get("lookup")
+    supported = {
+        "unknown_policy_requirements", "unknown_check_run_names",
+        "no_requirements_observed", "candidate_match_only",
+    }
+    if comparison_status not in supported:
+        raise ValueError("Invalid required-check comparison status")
+    count_keys = (
+        "required_context_count", "candidate_name_match_count",
+        "candidate_success_count", "without_named_check_run_count",
+        "ambiguous_app_provenance_count",
+    )
+    observed_counts = [comparison.get(key) for key in count_keys]
+    if comparison_status.startswith("unknown_"):
+        if any(value is not None for value in observed_counts):
+            raise ValueError("Unknown required checks cannot have counts")
+        compare_counts = ["desconocido"] * len(count_keys)
+    else:
+        for key, value in zip(count_keys, observed_counts):
+            _require_count(value, key)
+        required, matches, success, absent, ambiguous = observed_counts
+        if (
+            matches + absent != required or success > matches
+            or ambiguous > required
+            or (comparison_status == "no_requirements_observed" and required != 0)
+            or (comparison_status == "candidate_match_only" and required == 0)
+        ):
+            raise ValueError("Inconsistent required-check comparison counts")
+        compare_counts = [str(value) for value in observed_counts]
+
     target_policy = bundle.get("target_branch_policy")
     default_policy = bundle.get("default_branch_policy")
     if not isinstance(target_policy, dict) or not isinstance(default_policy, dict):
@@ -212,6 +252,24 @@ def render_readonly_audit_summary(bundle):
         "",
         "**Estos recuentos NO prueban que se hayan superado los checks "
         "obligatorios de la rama.**",
+        "",
+        "## Cruce orientativo con checks exigidos",
+        "",
+        "| Campo | Observación |",
+        "|---|---|",
+        "| Estado | " + comparison_status + " |",
+        "| Contextos exigidos observados | " + compare_counts[0] + " |",
+        "| Coincidencias candidatas de nombre y aplicación | "
+        + compare_counts[1] + " |",
+        "| Coincidencias candidatas con resultado success | "
+        + compare_counts[2] + " |",
+        "| Contextos sin check-run del mismo nombre | "
+        + compare_counts[3] + " |",
+        "| Aplicación de origen ambigua | " + compare_counts[4] + " |",
+        "",
+        "**Una coincidencia NO confirma que se haya cumplido un requisito.** "
+        "Este cruce no verifica los estados antiguos de commit, las reglas "
+        "de merge queue ni los permisos de aplicación.",
         "",
         "## Reglas de GitHub observadas",
         "",
