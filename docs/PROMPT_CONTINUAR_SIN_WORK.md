@@ -1,3 +1,7 @@
+ACTUALIZACIÓN DE CONTINUIDAD DESDE CHAT NORMAL (26/10/2026): Hay una mejora aislada de seguridad de origen de snapshots en `fix/visura-work-review-snapshot-repository-20261026`, derivada del HEAD `d3aec336ab24a1c8f3cef485c19b8110cbc1d591` de PR #43. Ver `docs/CONTINUIDAD.md` en dicha rama antes de iniciar trabajo duplicado. El objetivo de la mejora es impedir consultar revisores de un snapshot que no declare el mismo repositorio exacto. No confundirla con prueba real de autenticación de HTTP; esa validación y las políticas efectivas siguen pendientes. No fusionar ni publicar sin autorización.
+
+---
+
 Continúa VISURA AUTO-DEV desde https://github.com/josegude-ux/KONTROLA,
 rama feat/visura-work-reviewer-evidence-20261026. Lee docs/VISURA_WORK_ESTADO.md,
 docs/CONTINUIDAD_WORK_A_CHAT_NORMAL.md y docs/CONTINUIDAD.md en esa rama.

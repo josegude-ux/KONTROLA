@@ -1,3 +1,15 @@
+## VISURA WORK — endurecimiento aislado del origen de revisiones (26/10/2026)
+
+**Origen comprobado:** PR #43 sigue abierta/draft en `feat/visura-work-reviewer-evidence-20261026`, HEAD `d3aec336ab24a1c8f3cef485c19b8110cbc1d591`; CI original Code Review Gate #178 (`40295588903`) **313 pruebas OK**; CSV #185 y Queue Audit #213 correctos. No se han observado commits posteriores en la comprobación de este turno.
+
+**Tarea segura:** en rama independiente `fix/visura-work-review-snapshot-repository-20261026` basada en el mismo HEAD, `observe_snapshot_reviewer_permissions` rechaza un lote de identidades de revisión si falta `snapshot.repository` o no coincide **exactamente** con el repositorio consultado; la validación es previa a cualquier GET. Se agregan pruebas negativas con identidades de otro repositorio, ausencia, tipos inválidos y lotes vacíos; y se ajustan los fixtures de pruebas. El origen del snapshot debe seguir siendo una respuesta REST recuperada de forma confiable: el nombre del repositorio dentro de un objeto **no autentica** la procedencia por sí mismo. El informe nunca autoriza ejecución, merge o publicación.
+
+**Separación:** esta rama no modifica la PR #43, la rama operativa de PREPARA, INVENTA, el Centro de Mando, Supabase, los workflows ni los presupuestos. No se ha activado un agente autónomo, fusionado ni desplegado. La primera tarea pendiente continúa siendo validar el transporte GET autenticado real, las políticas efectivas de la rama base de #43, excepciones y CODEOWNERS; no introducir ni extraer tokens. Las pruebas de este cambio requieren CI del SHA nuevo.
+
+**Traspaso anterior intacto:** `docs/visura-work-traspaso-verificado-20261026`, commit `4d83772170f2152cacda3c9114bdaba749fd48aa`. Antes de integrar esta rama aislada, confirmar los nuevos HEAD y revisar si otro chat ha modificado la PR #43.
+
+---
+
 ## Punto actual — tarea e informe local unidos (2026-10-26)
 
 Código: 9d88d39fb2af0cc06f874bbec0a00c9ac4562640. Mismo PR #43 y rama

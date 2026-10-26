@@ -90,8 +90,27 @@ class SnapshotReviewerPermissionsTests(unittest.TestCase):
         from unittest.mock import patch
         with patch('scripts.visura_github_reviewer_permissions.observe_reviewer_permissions',
                    return_value={'lookup': 'retrieved', 'merge_authorized': False}) as observer:
-            result = observe_snapshot_reviewer_permissions('owner/repo', {'reviews': reviews}, 'token')
+            result = observe_snapshot_reviewer_permissions('owner/repo', {'repository': 'owner/repo', 'reviews': reviews}, 'token')
             return result, observer
+
+    def test_unbound_or_other_repo_snapshot_is_rejected_before_network(self):
+        from scripts.visura_github_reviewer_permissions import observe_snapshot_reviewer_permissions
+        from unittest.mock import patch
+        reviewer = {'reviewer_numeric_id': 12, 'reviewer_login': 'reviewer'}
+        for claimed_repo in (None, 'elsewhere/repo', 'owner/repo ', 42):
+            with self.subTest(claimed_repo=claimed_repo):
+                snapshot = {'reviews': [reviewer]}
+                if claimed_repo is not None:
+                    snapshot['repository'] = claimed_repo
+                with patch('scripts.visura_github_reviewer_permissions.observe_reviewer_permissions') as observer:
+                    with self.assertRaisesRegex(ValueError, 'repository missing or mismatched'):
+                        observe_snapshot_reviewer_permissions('owner/repo', snapshot, 'token')
+                    observer.assert_not_called()
+
+    def test_unbound_empty_snapshot_does_not_claim_observation(self):
+        from scripts.visura_github_reviewer_permissions import observe_snapshot_reviewer_permissions
+        with self.assertRaisesRegex(ValueError, 'repository missing or mismatched'):
+            observe_snapshot_reviewer_permissions('owner/repo', {'reviews': []}, 'token')
 
     def test_duplicate_reviews_query_identity_once(self):
         review = {'reviewer_numeric_id': 12, 'reviewer_login': 'reviewer'}
@@ -127,7 +146,7 @@ class SnapshotReviewerPermissionsTests(unittest.TestCase):
         from unittest.mock import patch
         with patch('scripts.visura_github_reviewer_permissions.observe_reviewer_permissions',
                    return_value={'lookup': 'inaccessible'}):
-            result = observe_snapshot_reviewer_permissions('owner/repo', {'reviews': [
+            result = observe_snapshot_reviewer_permissions('owner/repo', {'repository': 'owner/repo', 'reviews': [
                 {'reviewer_numeric_id': 12, 'reviewer_login': 'reviewer'}]}, 'token')
         self.assertEqual(result['lookup'], 'incomplete')
         self.assertFalse(result['execution_authorized'])
@@ -136,7 +155,7 @@ class SnapshotReviewerPermissionsTests(unittest.TestCase):
 class BatchPrevalidationTests(unittest.TestCase):
     def run_batch(self, reviews, token='token'):
         from scripts.visura_github_reviewer_permissions import observe_snapshot_reviewer_permissions
-        return observe_snapshot_reviewer_permissions('owner/repo', {'reviews': reviews},
+        return observe_snapshot_reviewer_permissions('owner/repo', {'repository': 'owner/repo', 'reviews': reviews},
                                                      token, opener=self.transport)
 
     def setUp(self):

@@ -19,6 +19,7 @@ BASE = "c" * 40
 
 def fixture_snapshot(branch="chore/visura-auto-dev-guardrails"):
     return {
+        "repository": REPO,
         "head_sha": HEAD, "base_branch": branch, "base_sha": BASE,
         "author_numeric_id": 123, "pr_state": "open",
         "execution_authorized": False,
