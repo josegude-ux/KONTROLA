@@ -804,3 +804,10 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 - Añadido `tests/pwa-update-safety.test.mjs` (commit `0395a584f0cc0d1ee130bb4771096e322e253d22`), integrado automáticamente en `npm run check` por el patrón `tests/*.test.mjs`.
 - Pruebas nuevas: mantener el proyecto Supabase y bucket actuales; rechazar claves secretas en configuración pública; conservar identidad `start_url` y `display` de la PWA; precarga de cuatro imágenes; coherencia entre `package.json`, `version.json` y `APP_VERSION`.
 - Estas pruebas no hacen peticiones a Supabase ni modifican datos. Pendiente confirmar resultado del CI del commit.
+
+
+### 2026-10-26 — CI #125 verde; preparación de actualización instalada
+- Ejecución #125, run `40261784658`, commit `c3f3ddc7f80d0c4b8716ab31def5f4c2cecdccdf`: SUCCESS. Pasaron regresión completa, prueba visual Chromium escritorio/móvil y publicación de capturas.
+- La prueba nueva de seguridad de PWA ya verifica la clave publicable real, sin falsos positivos por comentarios.
+- Rama de despliegue actual configurada en `pages.yml`: `cursor/verificacion-fisica-cargas-8ba0`, SHA `980fd9df854ce6accc59f569657661601f8c096e` al consultar GitHub. El SHA de la rama no prueba por sí solo cuál es el despliegue activo; verificarlo antes de publicar.
+- La actualización de la misma PWA requiere una publicación deliberada y controlada sobre la URL actual. No se ha lanzado `pages.yml`, ni merge, ni cambios de Supabase. Próximo control: establecer SHA del despliegue publicado, estrategia de reversión y autorización explícita de despliegue.
