@@ -121,6 +121,50 @@ class GitHubActionSummaryTests(unittest.TestCase):
         self.assertIn("NO autorización", result)
         self.assertIn("Snapshot atómico | No", result)
 
+    def test_rechecked_target_policy_is_observation_only(self):
+        data = bundle()
+        data["same_target_policy_after_audit"] = True
+        result = render_readonly_audit_summary(data)
+        self.assertIn(
+            "Política de destino releída | coincidente al releer (no autorización)",
+            result,
+        )
+        self.assertIn("NO autorización", result)
+
+    def test_legacy_report_does_not_claim_policy_was_rechecked(self):
+        text = render_readonly_audit_summary(bundle())
+        self.assertIn("Política de destino releída | desconocido", text)
+
+    def test_forged_policy_recheck_fails_closed(self):
+        for claim in (False, 0, 1, "true", {}, []):
+            with self.subTest(claim=claim):
+                data = bundle()
+                data["same_target_policy_after_audit"] = claim
+                with self.assertRaisesRegex(ValueError, "policy recheck claim"):
+                    render_readonly_audit_summary(data)
+
+    def test_review_recheck_reports_consistency_but_not_approval(self):
+        data = bundle()
+        data["same_review_records_after_audit"] = True
+        report = render_readonly_audit_summary(data)
+        self.assertIn(
+            "Revisiones releídas | coincidentes al releer (no aprobación)",
+            report,
+        )
+        self.assertIn("NO autorización", report)
+
+    def test_old_report_review_recheck_is_unknown(self):
+        report = render_readonly_audit_summary(bundle())
+        self.assertIn("Revisiones releídas | desconocido", report)
+
+    def test_forged_review_recheck_rejected(self):
+        for value in (False, 0, 1, "true", [], {}):
+            with self.subTest(value=value):
+                data = bundle()
+                data["same_review_records_after_audit"] = value
+                with self.assertRaisesRegex(ValueError, "review records recheck claim"):
+                    render_readonly_audit_summary(data)
+
     def test_same_target_as_default_has_only_one_policy_row(self):
         result = render_readonly_audit_summary(bundle(target="main"))
         self.assertEqual(result.count("| Destino `main` |"), 1)
@@ -406,6 +450,240 @@ class ReviewerPermissionSummaryTests(unittest.TestCase):
         data = self.evidence(); data['observations'] *= 2
         with self.assertRaises(ValueError):
             self.render(data)
+
+
+class ReviewControlSummaryTests(unittest.TestCase):
+    def test_reports_known_false_true_and_unknown_without_granting_authority(self):
+        data = bundle()
+        data["target_branch_policy"]["effective_ruleset_rules"].update({
+            "review_requirements_available": True,
+            "pull_request_approval_requirements": [{
+                "ruleset_id": 123,
+                "required_approving_review_count": 0,
+                "require_code_owner_review": False,
+                "dismiss_stale_reviews_on_push": True,
+                "required_review_thread_resolution": None,
+            }],
+        })
+        text = render_readonly_audit_summary(data)
+        self.assertIn("Controles de revisión observados", text)
+        self.assertIn("Revisión de CODEOWNERS", text)
+        self.assertIn("| Destino | 123 | 0 | sí | no | desconocido | desconocido | desconocido |", text)
+        self.assertIn("NO acreditan elegibilidad ni autorizan acciones", text)
+
+    def test_unavailable_rules_show_unknown_not_zero(self):
+        data = bundle()
+        data["target_branch_policy"]["effective_ruleset_rules"] = {
+            "lookup": "inaccessible",
+            "observed_rule_count": None,
+            "pull_request_approval_requirements": None,
+            "review_requirements_available": False,
+        }
+        text = render_readonly_audit_summary(data)
+        self.assertIn("| Destino | desconocido | desconocido |", text)
+        self.assertNotIn("| Destino | 0 |", text)
+
+    def test_no_observed_pr_rules_does_not_imply_no_review_policy(self):
+        data = bundle()
+        data["target_branch_policy"]["effective_ruleset_rules"].update({
+            "review_requirements_available": True,
+            "pull_request_approval_requirements": [],
+        })
+        text = render_readonly_audit_summary(data)
+        self.assertIn("sin regla PR observada", text)
+        self.assertIn("NO acreditan elegibilidad", text)
+
+    def test_rejects_inconsistent_known_rule_for_inaccessible_endpoint(self):
+        data = bundle()
+        data["target_branch_policy"]["effective_ruleset_rules"].update({
+            "lookup": "inaccessible",
+            "observed_rule_count": None,
+            "review_requirements_available": True,
+            "pull_request_approval_requirements": [{
+                "ruleset_id": 123, "required_approving_review_count": 2,
+            }],
+        })
+        with self.assertRaisesRegex(ValueError, "Inaccessible review controls"):
+            render_readonly_audit_summary(data)
+
+    def test_invalid_control_value_or_count_fails_closed(self):
+        for key, invalid in (
+            ("require_code_owner_review", "yes"),
+            ("required_review_thread_resolution", 0),
+            ("required_approving_review_count", True),
+            ("ruleset_id", "<table>"),
+        ):
+            with self.subTest(key=key):
+                data = bundle()
+                row = {"ruleset_id": 12, "required_approving_review_count": 1,
+                       key: invalid}
+                data["target_branch_policy"]["effective_ruleset_rules"].update({
+                    "review_requirements_available": True,
+                    "pull_request_approval_requirements": [row],
+                })
+                with self.assertRaises(ValueError):
+                    render_readonly_audit_summary(data)
+
+    def test_untrusted_rule_extra_fields_are_not_rendered(self):
+        data = bundle()
+        data["target_branch_policy"]["effective_ruleset_rules"].update({
+            "review_requirements_available": True,
+            "pull_request_approval_requirements": [{
+                "ruleset_id": 15, "required_approving_review_count": 2,
+                "source_name": "<script>SECRET_MARKER</script>",
+            }],
+        })
+        text = render_readonly_audit_summary(data)
+        self.assertNotIn("SECRET_MARKER", text)
+        self.assertNotIn("<script>", text)
+
+
+class CodeownersSummaryTests(unittest.TestCase):
+    def evidence(self):
+        return {
+            "repository": "josegude-ux/KONTROLA",
+            "branch": "chore/visura-auto-dev-guardrails",
+            "lookup": "file_observed",
+            "observations": [
+                {"path": ".github/CODEOWNERS", "lookup": "file_observed"},
+                {"path": "CODEOWNERS", "lookup": "not_found_or_inaccessible"},
+                {"path": "docs/CODEOWNERS", "lookup": "not_found_or_inaccessible"},
+            ],
+            "first_observed_path": ".github/CODEOWNERS",
+            "unshadowed_candidate_observed": True,
+            "file_absence_verified": False,
+            "effective_code_ownership_verified": False,
+            "reviewer_eligibility_verified": False,
+            "repository_policy_verified": False,
+            "execution_authorized": False,
+            "merge_authorized": False,
+            "deployment_authorized": False,
+        }
+
+    def test_visible_file_is_not_eligibility(self):
+        data = bundle()
+        data["target_branch_codeowners"] = self.evidence()
+        text = render_readonly_audit_summary(data)
+        self.assertIn("CODEOWNERS en rama de destino", text)
+        self.assertIn(".github/CODEOWNERS", text)
+        self.assertIn("no confirma", text)
+        self.assertIn("NO autorización", text)
+
+    def test_404s_are_unknown_not_verified_absence(self):
+        data = bundle()
+        evidence = self.evidence()
+        evidence["lookup"] = "no_file_observed"
+        evidence["first_observed_path"] = None
+        evidence["unshadowed_candidate_observed"] = False
+        evidence["observations"][0]["lookup"] = "not_found_or_inaccessible"
+        data["target_branch_codeowners"] = evidence
+        text = render_readonly_audit_summary(data)
+        self.assertIn("ausencia no verificada", text)
+
+    def test_forged_authorization_and_scope_are_rejected(self):
+        for key, bad in (
+            ("execution_authorized", True),
+            ("file_absence_verified", True),
+            ("effective_code_ownership_verified", True),
+            ("branch", "other/branch"),
+        ):
+            with self.subTest(key=key):
+                data = bundle()
+                evidence = self.evidence()
+                evidence[key] = bad
+                data["target_branch_codeowners"] = evidence
+                with self.assertRaises(ValueError):
+                    render_readonly_audit_summary(data)
+
+    def test_malformed_file_order_and_precedence_are_rejected(self):
+        for field in ("wrong_path", "wrong_lookup", "forged_precedence"):
+            with self.subTest(field=field):
+                data = bundle()
+                evidence = self.evidence()
+                if field == "wrong_path":
+                    evidence["observations"][0]["path"] = "docs/other.md"
+                elif field == "wrong_lookup":
+                    evidence["observations"][0]["lookup"] = "<script>"
+                else:
+                    evidence["unshadowed_candidate_observed"] = False
+                data["target_branch_codeowners"] = evidence
+                with self.assertRaises(ValueError):
+                    render_readonly_audit_summary(data)
+
+
+class GithubTransportSummaryTests(unittest.TestCase):
+    def valid_evidence(self):
+        return {
+            "repository": "josegude-ux/KONTROLA",
+            "pr_number": 37,
+            "repository_lookup": "retrieved",
+            "pull_request_lookup": "retrieved",
+            "observed_base_branch": "chore/visura-auto-dev-guardrails",
+            "observed_head_sha": SHA,
+            "get_only_transport": True,
+            "token_scopes_verified": False,
+            "authenticated_caller_identity_verified": False,
+            "effective_branch_policy_verified": False,
+            "reviewer_eligibility_verified": False,
+            "execution_authorized": False,
+            "merge_authorized": False,
+            "deployment_authorized": False,
+        }
+
+    def test_get_evidence_is_labeled_diagnostic_not_authentication(self):
+        data = bundle()
+        data["github_transport_preflight"] = self.valid_evidence()
+        rendered = render_readonly_audit_summary(data)
+        self.assertIn("Conexión GitHub GET (diagnóstico, no autenticación)", rendered)
+        self.assertIn("Consulta de repositorio: **retrieved**", rendered)
+        self.assertIn("Consulta de PR: **retrieved**", rendered)
+        self.assertIn("no acredita credenciales", rendered)
+        self.assertNotIn("Bearer", rendered)
+
+    def test_missing_preflight_from_historical_audit_is_unknown(self):
+        rendered = render_readonly_audit_summary(bundle())
+        self.assertIn("informe anterior", rendered)
+
+    def test_inaccessible_preflight_cannot_claim_pr_metadata(self):
+        data = bundle()
+        evidence = self.valid_evidence()
+        evidence.update(
+            repository_lookup="inaccessible", pull_request_lookup="not_queried",
+            observed_base_branch=None, observed_head_sha=None
+        )
+        data["github_transport_preflight"] = evidence
+        rendered = render_readonly_audit_summary(data)
+        self.assertIn("Consulta de repositorio: **inaccessible**", rendered)
+        evidence["observed_head_sha"] = SHA
+        with self.assertRaises(ValueError):
+            render_readonly_audit_summary(data)
+
+    def test_mismatched_sha_branch_number_and_permissions_fail_closed(self):
+        for key, value in (
+            ("observed_head_sha", "b" * 40),
+            ("observed_base_branch", "main"),
+            ("pr_number", 99),
+            ("repository", "wrong/repo"),
+            ("token_scopes_verified", True),
+            ("authenticated_caller_identity_verified", True),
+            ("execution_authorized", True),
+            ("get_only_transport", False),
+        ):
+            with self.subTest(key=key):
+                data = bundle()
+                evidence = self.valid_evidence()
+                evidence[key] = value
+                data["github_transport_preflight"] = evidence
+                with self.assertRaises(ValueError):
+                    render_readonly_audit_summary(data)
+
+    def test_unknown_preflight_lookup_is_never_embedded(self):
+        data = bundle()
+        evidence = self.valid_evidence()
+        evidence["repository_lookup"] = "<script>alert('x')</script>"
+        data["github_transport_preflight"] = evidence
+        with self.assertRaises(ValueError):
+            render_readonly_audit_summary(data)
 
 
 if __name__ == "__main__":

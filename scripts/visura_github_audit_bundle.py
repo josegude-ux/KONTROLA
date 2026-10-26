@@ -17,6 +17,8 @@ from scripts.visura_github_policy_probe import (
     _validate_branch, inspect_branch_policy,
 )
 from scripts.visura_github_reviewer_permissions import observe_snapshot_reviewer_permissions
+from scripts.visura_github_codeowners_probe import observe_codeowners
+from scripts.visura_github_auth_preflight import inspect_readonly_auth_preflight
 from scripts.visura_github_action_summary import render_readonly_audit_summary
 from scripts.visura_github_commit_checks import (
     observe_commit_checks, compare_required_check_observations,
@@ -24,6 +26,24 @@ from scripts.visura_github_commit_checks import (
 from scripts.visura_github_legacy_statuses import (
     observe_legacy_commit_statuses, compare_legacy_status_candidates,
 )
+
+
+def _stable_review_snapshot_evidence(snapshot):
+    """Canonicalize a validated GitHub PR/reviews snapshot for rechecking.
+
+    Review pages can be returned in a different order. Compare reviewer
+    decisions and identities, never rely on an unchanged PR head alone.
+    This observation is still non-atomic and never supplies approval rights.
+    """
+    keys = (
+        "repository", "pr_number", "head_sha", "base_branch",
+        "base_sha", "author_numeric_id", "pr_state",
+    )
+    fields = ("review_id", "reviewer_numeric_id", "reviewer_login", "state", "commit_sha")
+    return (
+        tuple(snapshot[key] for key in keys),
+        tuple(sorted(tuple(item[key] for key in fields) for item in snapshot["reviews"])),
+    )
 
 
 def inspect_readonly_audit_bundle(
@@ -37,7 +57,22 @@ def inspect_readonly_audit_bundle(
         raise ValueError("Missing or invalid GitHub token")
 
     opener = build_opener(_NoRedirectHandler()).open if opener is None else opener
+
+    # One trusted workflow command, one supplied token: observe fixed GET
+    # transport before running the existing unified audit. Never authorization.
+    transport_evidence = inspect_readonly_auth_preflight(
+        repository, pr_number, token, opener=opener
+    )
     pr = fetch_readonly_review_snapshot(repository, pr_number, token, opener=opener)
+    if transport_evidence["repository_lookup"] == "retrieved" and (
+        transport_evidence["pull_request_lookup"] == "retrieved"
+    ):
+        if (
+            transport_evidence["observed_base_branch"] != pr["base_branch"]
+            or transport_evidence["observed_head_sha"].lower()
+            != pr["head_sha"].lower()
+        ):
+            raise ValueError("PR changed between transport preflight and review snapshot")
     target_branch = pr["base_branch"]
     _validate_branch(target_branch)
     target_policy = inspect_branch_policy(repository, target_branch, token, opener=opener)
@@ -70,8 +105,34 @@ def inspect_readonly_audit_bundle(
         repository, pr, token, opener=opener
     )
 
-    # Check the PR again after all observations, which are not atomic.
-    # Even a consistent report can become stale immediately after return.
+    # Read CODEOWNERS paths from the *actual PR target branch*, never a task.
+    # Even a visible file is not an effective reviewer-policy verdict.
+    codeowners = observe_codeowners(repository, target_branch, token, opener=opener)
+
+    # Re-read *effective policy for the real PR target* after observing CI,
+    # CODEOWNERS and reviewers. A branch rule can change independently of
+    # the PR head/base SHA. Compare the full normalized observations, without
+    # turning a matching snapshot into permission to execute or merge.
+    target_policy_recheck = inspect_branch_policy(
+        repository, target_branch, token, opener=opener
+    )
+    if target_policy_recheck != target_policy:
+        raise ValueError("Target branch policy changed during the audit")
+
+    # Review decisions (including dismissals) can change without changing
+    # the PR's head SHA. Re-fetch the bounded pages and compare actual review
+    # identity/state records before calling this an internally consistent audit.
+    # A matching pair of snapshots still is NOT an authenticated approval.
+    reviews_recheck = fetch_readonly_review_snapshot(
+        repository, pr_number, token, opener=opener
+    )
+    if _stable_review_snapshot_evidence(reviews_recheck) != (
+        _stable_review_snapshot_evidence(pr)
+    ):
+        raise ValueError("Pull request reviews changed during the audit")
+
+    # Check the PR again LAST, after the review/policy rechecks. These reads
+    # are non-atomic: a subsequent edit still invalidates the observation.
     endpoint = "/repos/" + repository + "/pulls/" + str(pr_number)
     latest = _get_json(endpoint, token, opener)
     if not isinstance(latest, dict):
@@ -98,7 +159,9 @@ def inspect_readonly_audit_bundle(
         "repository": repository,
         "pr_number": pr_number,
         "review_snapshot": pr,
+        "github_transport_preflight": transport_evidence,
         "reviewer_repository_permissions": reviewer_permissions,
+        "target_branch_codeowners": codeowners,
         "head_check_runs": head_checks,
         "required_check_observations": candidate_requirements,
         "legacy_commit_statuses": legacy_statuses,
@@ -108,6 +171,8 @@ def inspect_readonly_audit_bundle(
         "default_branch_policy": default_policy,
         "target_differs_from_default": target_branch != default_branch,
         "same_pr_metadata_after_policy_lookup": True,
+        "same_target_policy_after_audit": True,
+        "same_review_records_after_audit": True,
         "report_is_atomic": False,
         "repository_policy_verified": False,
         "execution_authorized": False,

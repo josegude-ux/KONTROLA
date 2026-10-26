@@ -52,6 +52,172 @@ def _policy_cells(policy):
     return cells + [count_text]
 
 
+# Values in this table come from a *read-only* branch rules observation.
+# A value of "no" describes a returned setting, not authority to merge.
+_REVIEW_CONTROL_COLUMNS = (
+    ("dismiss_stale_reviews_on_push", "Descartar revisiones tras push"),
+    ("require_code_owner_review", "Revisión de CODEOWNERS"),
+    ("require_last_push_approval", "Aprobación de último push"),
+    ("required_review_thread_resolution", "Resolver conversaciones"),
+    ("require_extra_approval_for_unattributed_changes", "Aprobación adicional"),
+)
+
+
+def _policy_review_control_rows(policy, label):
+    """Render only validated primitive values; never review bodies or logins."""
+    effective = policy.get("effective_ruleset_rules")
+    if not isinstance(effective, dict):
+        raise ValueError("Incomplete applied rules snapshot")
+    status = effective.get("lookup")
+    rules = effective.get("pull_request_approval_requirements")
+    available = effective.get("review_requirements_available")
+    if available is not None and type(available) is not bool:
+        raise ValueError("Invalid review requirements availability")
+    unknown = "| " + label + " | " + " | ".join(
+        ["desconocido"] * (2 + len(_REVIEW_CONTROL_COLUMNS))
+    ) + " |"
+    if status != "retrieved":
+        if rules is not None or available is True:
+            raise ValueError("Inaccessible review controls cannot be known")
+        return [unknown]
+    if rules is None:
+        if available is True:
+            raise ValueError("Missing available review requirements")
+        return [unknown]
+    if not isinstance(rules, list) or len(rules) > 500:
+        raise ValueError("Invalid review requirements list")
+    if not rules:
+        return ["| " + label + " | sin regla PR observada | "
+                + " | ".join(["desconocido"] * (1 + len(_REVIEW_CONTROL_COLUMNS)))
+                + " |"]
+    if available is False:
+        raise ValueError("Incomplete review requirements cannot supply rows")
+    results = []
+    for rule in rules:
+        if not isinstance(rule, dict):
+            raise ValueError("Invalid review requirements row")
+        ruleset_id = rule.get("ruleset_id")
+        count = rule.get("required_approving_review_count")
+        if (ruleset_id is not None and (type(ruleset_id) is not int or ruleset_id <= 0)
+                or type(count) is not int or count < 0):
+            raise ValueError("Invalid rule identifier or approval count")
+        cells = [
+            str(ruleset_id) if ruleset_id is not None else "desconocido",
+            str(count),
+        ]
+        for key, _ in _REVIEW_CONTROL_COLUMNS:
+            value = rule.get(key)
+            if value is True:
+                cells.append("sí")
+            elif value is False:
+                cells.append("no")
+            elif value is None:
+                cells.append("desconocido")
+            else:
+                raise ValueError("Invalid observed review control")
+        results.append("| " + label + " | " + " | ".join(cells) + " |")
+    return results
+
+
+_PREFLIGHT_REPOSITORY_LOOKUPS = {
+    "retrieved", "unauthorized", "inaccessible", "not_found_or_inaccessible",
+}
+_PREFLIGHT_PR_LOOKUPS = _PREFLIGHT_REPOSITORY_LOOKUPS | {"not_queried"}
+
+
+def _preflight_lines(bundle, repository, number, branch, head_sha):
+    """Display enum-only GET evidence; never display credential or API bodies."""
+    heading = ["", "## Conexión GitHub GET (diagnóstico, no autenticación)", ""]
+    report = bundle.get("github_transport_preflight")
+    if report is None:
+        return heading + ["Consulta: **desconocido** (informe anterior)."]
+    if (
+        not isinstance(report, dict)
+        or report.get("repository") != repository
+        or report.get("pr_number") != number
+        or report.get("get_only_transport") is not True
+    ):
+        raise ValueError("GitHub preflight context mismatch")
+    for key in (
+        "token_scopes_verified", "authenticated_caller_identity_verified",
+        "effective_branch_policy_verified", "reviewer_eligibility_verified",
+        "execution_authorized", "merge_authorized", "deployment_authorized",
+    ):
+        if report.get(key) is not False:
+            raise ValueError("GitHub transport report must not grant authority")
+    repo_lookup = report.get("repository_lookup")
+    pr_lookup = report.get("pull_request_lookup")
+    if (
+        repo_lookup not in _PREFLIGHT_REPOSITORY_LOOKUPS
+        or pr_lookup not in _PREFLIGHT_PR_LOOKUPS
+        or (repo_lookup != "retrieved" and pr_lookup != "not_queried")
+        or (repo_lookup == "retrieved" and pr_lookup == "not_queried")
+    ):
+        raise ValueError("Invalid GitHub preflight lookup")
+    observed_branch = report.get("observed_base_branch")
+    observed_sha = report.get("observed_head_sha")
+    if pr_lookup == "retrieved":
+        if observed_branch != branch or not isinstance(observed_sha, str) or (
+            observed_sha.lower() != head_sha.lower()
+        ):
+            raise ValueError("GitHub preflight PR snapshot mismatch")
+    elif observed_branch is not None or observed_sha is not None:
+        raise ValueError("Inaccessible GitHub preflight cannot claim PR identity")
+    return heading + [
+        "- Consulta de repositorio: **" + repo_lookup + "**",
+        "- Consulta de PR: **" + pr_lookup + "**",
+        "**Una respuesta GET no acredita credenciales, scopes ni permisos de "
+        "revisión o ejecución; la evidencia puede caducar.**",
+    ]
+
+
+_CODEOWNERS_PATHS = (".github/CODEOWNERS", "CODEOWNERS", "docs/CODEOWNERS")
+_CODEOWNERS_LOOKUPS = {"file_observed", "inaccessible", "not_found_or_inaccessible"}
+
+
+def _codeowners_lines(bundle, repository, branch):
+    """Show only fixed paths and status enums; never display CODEOWNERS content."""
+    heading = ["", "## CODEOWNERS en rama de destino (observación)", ""]
+    report = bundle.get("target_branch_codeowners")
+    if report is None:
+        return heading + ["Consulta: **desconocido** (informe previo sin componente)."]
+    if not isinstance(report, dict):
+        raise ValueError("Invalid CODEOWNERS observation")
+    if report.get("repository") != repository or report.get("branch") != branch:
+        raise ValueError("CODEOWNERS context mismatch")
+    if any(report.get(key) is not False for key in (
+        "file_absence_verified", "effective_code_ownership_verified",
+        "reviewer_eligibility_verified", "repository_policy_verified",
+        "execution_authorized", "merge_authorized", "deployment_authorized",
+    )):
+        raise ValueError("CODEOWNERS observation cannot grant authority")
+    rows = report.get("observations")
+    if not isinstance(rows, list) or len(rows) != len(_CODEOWNERS_PATHS):
+        raise ValueError("Incomplete CODEOWNERS observations")
+    found = []
+    for row, expected in zip(rows, _CODEOWNERS_PATHS):
+        if (not isinstance(row, dict) or row.get("path") != expected
+                or row.get("lookup") not in _CODEOWNERS_LOOKUPS):
+            raise ValueError("Invalid CODEOWNERS lookup")
+        if row["lookup"] == "file_observed":
+            found.append(expected)
+    first = found[0] if found else None
+    if report.get("first_observed_path") != first:
+        raise ValueError("CODEOWNERS priority mismatch")
+    if report.get("lookup") != ("file_observed" if found else "no_file_observed"):
+        raise ValueError("CODEOWNERS lookup mismatch")
+    priority = report.get("unshadowed_candidate_observed")
+    if type(priority) is not bool or priority is not (first == _CODEOWNERS_PATHS[0]):
+        raise ValueError("CODEOWNERS precedence claim inconsistent")
+    observation = first if first is not None else "ningún archivo visible"
+    return heading + [
+        "Primera ruta observada: **" + observation + "**.",
+        "Estado: **" + ("archivo observado" if first else "ausencia no verificada") + "**.",
+        "**Los 403/404 no prueban ausencia; tener un archivo no confirma "
+        "responsables aplicables ni autoriza revisión, merge o ejecución.**",
+    ]
+
+
 def _reviewer_permission_lines(bundle, repository):
     evidence = bundle.get("reviewer_repository_permissions")
     heading = ["", "## Acceso de revisores al repositorio", ""]
@@ -145,6 +311,20 @@ def render_readonly_audit_summary(bundle):
         raise ValueError("Incorrect branch distinction")
     if bundle.get("same_pr_metadata_after_policy_lookup") is not True:
         raise ValueError("PR metadata not rechecked")
+    rechecked_target_policy = bundle.get("same_target_policy_after_audit")
+    if rechecked_target_policy is not None and rechecked_target_policy is not True:
+        raise ValueError("Invalid target policy recheck claim")
+    rechecked_target_text = (
+        "coincidente al releer (no autorización)"
+        if rechecked_target_policy is True else "desconocido"
+    )
+    rechecked_review_records = bundle.get("same_review_records_after_audit")
+    if rechecked_review_records is not None and rechecked_review_records is not True:
+        raise ValueError("Invalid review records recheck claim")
+    rechecked_review_text = (
+        "coincidentes al releer (no aprobación)"
+        if rechecked_review_records is True else "desconocido"
+    )
     if any(target.get(key) is not False for key in (
         "repository_policy_verified", "execution_authorized",
         "merge_authorized", "deployment_authorized",
@@ -383,13 +563,17 @@ def render_readonly_audit_summary(bundle):
         "| Rama de destino | `" + branch + "` |",
         "| Rama predeterminada | `" + default + "` |",
         "| Snapshot atómico | No |",
+        "| Política de destino releída | " + rechecked_target_text + " |",
+        "| Revisiones releídas | " + rechecked_review_text + " |",
         "",
         "## Revisiones registradas (no autorizaciones)",
         "",
     ]
     for label, count in counts.items():
         lines.append("- " + label.capitalize() + ": **" + str(count) + "**")
+    lines += _preflight_lines(bundle, repository, number, branch, head_sha)
     lines += _reviewer_permission_lines(bundle, repository)
+    lines += _codeowners_lines(bundle, repository, branch)
     lines += [
         "",
         "Las aprobaciones observadas no acreditan permisos efectivos del revisor.",
@@ -466,6 +650,20 @@ def render_readonly_audit_summary(bundle):
             + " | ".join(default_cells) + " |"
         )
     lines += [
+        "",
+        "## Controles de revisión observados (no autorizaciones)",
+        "",
+        "| Rama | Ruleset ID | Aprobaciones exigidas | "
+        + " | ".join(label for _, label in _REVIEW_CONTROL_COLUMNS) + " |",
+        "|---|---|---|" + "---|" * len(_REVIEW_CONTROL_COLUMNS),
+    ]
+    lines += _policy_review_control_rows(target_policy, "Destino")
+    if branch != default:
+        lines += _policy_review_control_rows(default_policy, "Predeterminada")
+    lines += [
+        "",
+        "**Las opciones observadas, incluso cuando dicen «no» o exigen cero "
+        "aprobaciones, NO acreditan elegibilidad ni autorizan acciones.**",
         "",
         "**No verificado:** suficiencia de la protección clásica, excepciones, "
         "permisos de revisores y vigencia posterior de los datos.",
