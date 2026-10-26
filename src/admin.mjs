@@ -158,7 +158,9 @@ export function createAdminController({client,getUser,bucket,global,errorText,on
     }finally{
       setBusy(false);
       $("pdfInput").value="";
-    $("reviewLoadSelect").replaceChildren();$("reviewLoadMessage").textContent="";
+      // El resultado del lote no borra la selección pendiente, se vuelve a consultar.
+      try{await Promise.all([refreshReviewSelector(),refreshPendingPublish()]);}
+      catch(error){global("Importación finalizada, pero no se pudo actualizar el listado: "+errorText(error),"error");}
     }
   }
   async function loadImport(id){
