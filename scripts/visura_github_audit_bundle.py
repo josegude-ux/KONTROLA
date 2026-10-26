@@ -17,7 +17,9 @@ from scripts.visura_github_policy_probe import (
     _validate_branch, inspect_branch_policy,
 )
 from scripts.visura_github_action_summary import render_readonly_audit_summary
-from scripts.visura_github_commit_checks import observe_commit_checks
+from scripts.visura_github_commit_checks import (
+    observe_commit_checks, compare_required_check_observations,
+)
 
 
 def inspect_readonly_audit_bundle(
@@ -46,6 +48,11 @@ def inspect_readonly_audit_bundle(
     # They are observations only, not proof of passing required status checks.
     head_checks = observe_commit_checks(
         repository, pr["head_sha"], token, opener=opener
+    )
+
+    # A candidate name/app match never attests satisfaction of branch rules.
+    candidate_requirements = compare_required_check_observations(
+        target_policy, head_checks
     )
 
     # Check the PR again after both policy calls, which are not atomic.
@@ -77,6 +84,7 @@ def inspect_readonly_audit_bundle(
         "pr_number": pr_number,
         "review_snapshot": pr,
         "head_check_runs": head_checks,
+        "required_check_observations": candidate_requirements,
         "target_branch_policy": target_policy,
         "default_branch": default_branch,
         "default_branch_policy": default_policy,
