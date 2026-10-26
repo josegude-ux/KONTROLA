@@ -831,3 +831,5 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 - La ejecución CI #131 superó las regresiones pero permaneció largo tiempo en la etapa visual. Se ha sustituido `waitUntil: networkidle` por `domcontentloaded` en `tests/visual-menu.spec.mjs`; la prueba ya verifica expresamente que cada imagen esté cargada y tenga ancho natural positivo, por lo que no necesita esperar a que queden inactivas todas las conexiones de la aplicación.
 - Añadido `timeout-minutes: 20` al job visual para evitar ejecuciones indefinidas.
 - Cambio limitado a pruebas/CI, sin alterar comportamiento de producción ni Supabase. Confirmar CI de la rama tras estos commits.
+
+- CI #134: las regresiones pasaron y la prueba móvil pasó; la prueba visual de escritorio falló porque `#openPreparation` quedó oculto tras mostrar el menú, compatible con una redirección asíncrona de autenticación. Se ha aislado `src/app.mjs` solo en el test visual (Playwright `page.route`), manteniendo DOM, CSS e imágenes reales, para que la verificación de maquetación no dependa del estado de sesión. Pendiente validar en CI. No afecta al código desplegable.
