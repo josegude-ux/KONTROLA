@@ -180,14 +180,36 @@ test("la preparación sitúa bultos totales sobre el peso con la misma jerarquí
   assert.match(css,/\.load-weight\{font-weight:800;font-size:16px/);
 });
 
-test("los palés se colocan junto a matrícula sin confundir huecos del camión con palés necesarios",()=>{
+test("los huecos del camión aparecen junto a matrícula con G y P",()=>{
   const start=app.indexOf("function renderLoadList()");
   const end=app.indexOf("// Historial de lectura",start);
   const preparation=app.slice(start,end);
   assert.match(preparation,/vehicle\.append\(plate,pallets\)/);
-  assert.match(preparation,/palletsCount=r\.palets_para_carga/);
-  assert.match(preparation,/palletsValue\.textContent=hasPallets\?fmt\(palletsCount\):"—"/);
-  assert.doesNotMatch(preparation,/palletsLarge|palletsSmall/);
+  assert.match(preparation,/palletsValue\.textContent=formatearHuecosPalets\(r\.huecos_palets_grandes,r\.huecos_palets_pequenos,r\.huecos_palets_total\)/);
+  assert.match(preparation,/HUECOS PALÉS/);
+  assert.doesNotMatch(preparation,/palets_para_carga/);
   assert.match(css,/#loadsList \.load-vehicle\{/);
   assert.match(css,/#loadsList \.load-pallets\{/);
+});
+
+test("la lista usa la cabecera de la revisión vigente del mismo almacén",()=>{
+  const refresh=app.slice(app.indexOf("async function refreshLoads()"),app.indexOf("function renderLoadList()"));
+  assert.match(refresh,/\.from\("kontrola_carga_revisiones"\)/);
+  assert.match(refresh,/\.eq\("vigente",true\)\.eq\("almacen",warehouse\)/);
+  assert.match(refresh,/if\(!validRequest\(warehouse,userId\)\)return/);
+  assert.match(refresh,/observaciones:carga_datos->>observaciones/);
+  assert.match(refresh,/huecos_palets_grandes:carga_datos->>huecos_palets_grandes/);
+  const list=app.slice(app.indexOf("function renderLoadList()"),app.indexOf("// Historial de lectura"));
+  assert.match(list,/id\.textContent=r\.codigo\+\(observaciones\?" - "\+observaciones:""\)/);
+  assert.match(list,/r\.observaciones/);
+  assert.doesNotMatch(list,/innerHTML/);
+});
+
+test("la importación conserva las observaciones y los huecos del PDF sin migraciones",()=>{
+  const admin=read("src/admin.mjs");
+  assert.match(admin,/observaciones:parsed\.observations\?\.trim\(\)\|\|null/);
+  assert.match(admin,/huecos_palets_grandes:parsed\.palletsLarge/);
+  assert.match(admin,/huecos_palets_pequenos:parsed\.palletsSmall/);
+  assert.match(admin,/observations:payload\.observaciones/);
+  assert.match(read("src/core.mjs"),/leerObservacionesCabecera\(pages\)/);
 });
