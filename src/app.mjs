@@ -77,6 +77,8 @@ async function authorize(authUser){
   $("profileRole").textContent=ownProfile.rol;
   visible($("openAdmin"),ownProfile.rol==="administrador");
   visible($("cargasAdministrar"),ownProfile.rol==="administrador");
+  visible($("cargasImportar"),ownProfile.rol==="administrador");
+  visible($("importLoadsShortcut"),ownProfile.rol==="administrador");
   visible($("loginView"),false);visible($("shell"),true);switchView("homeView");
   await loadWarehouses();
   await refreshOperatorDashboard().catch(()=>{});
@@ -460,6 +462,8 @@ $("cargasVerificar").addEventListener("click",()=>openReviewMenu("cargasMenuView
 $("cargasHistorial").addEventListener("click",()=>{if(switchView("cargasHistoryView"))refreshHistory().catch(()=>{});});
 $("backFromHistory").addEventListener("click",()=>switchView("cargasMenuView"));
 $("cargasAdministrar").addEventListener("click",()=>openAdminMenu("cargasMenuView"));
+$("cargasImportar").addEventListener("click",()=>openAdminMenu("cargasMenuView"));
+$("importLoadsShortcut").addEventListener("click",()=>openAdminMenu("loadsView"));
 $("openAdmin").addEventListener("click",()=>openAdminMenu("homeView"));
 $("backFromLoads").addEventListener("click",()=>switchView(loadsParent));
 $("backFromReviewLoads").addEventListener("click",()=>switchView(reviewLoadsParent));
