@@ -121,6 +121,28 @@ class GitHubActionSummaryTests(unittest.TestCase):
         self.assertIn("NO autorización", result)
         self.assertIn("Snapshot atómico | No", result)
 
+    def test_rechecked_target_policy_is_observation_only(self):
+        data = bundle()
+        data["same_target_policy_after_audit"] = True
+        result = render_readonly_audit_summary(data)
+        self.assertIn(
+            "Política de destino releída | coincidente al releer (no autorización)",
+            result,
+        )
+        self.assertIn("NO autorización", result)
+
+    def test_legacy_report_does_not_claim_policy_was_rechecked(self):
+        text = render_readonly_audit_summary(bundle())
+        self.assertIn("Política de destino releída | desconocido", text)
+
+    def test_forged_policy_recheck_fails_closed(self):
+        for claim in (False, 0, 1, "true", {}, []):
+            with self.subTest(claim=claim):
+                data = bundle()
+                data["same_target_policy_after_audit"] = claim
+                with self.assertRaisesRegex(ValueError, "policy recheck claim"):
+                    render_readonly_audit_summary(data)
+
     def test_same_target_as_default_has_only_one_policy_row(self):
         result = render_readonly_audit_summary(bundle(target="main"))
         self.assertEqual(result.count("| Destino `main` |"), 1)
