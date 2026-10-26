@@ -656,3 +656,8 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 - Log revisado: **193 pruebas, 193 aprobadas, 0 fallidas, 0 omitidas**. Enlace: https://github.com/josegude-ux/KONTROLA/actions/runs/40255277404
 - Alcance: suite Node de `tests/*.test.mjs` con dependencias instaladas; **no incluye integración PostgreSQL/Supabase**, recursos oficiales aún pendientes ni validación manual iPhone/Android/Windows.
 - Reversión sin riesgo: no fusionar PR #29. La rama y caché de producción no se han modificado.
+
+
+### 2026-10-26 — Comando de verificación estándar en CI
+- El workflow de la rama aislada ahora usa `npm run check` (sintaxis de todos los `src/*.mjs` y suite completa `tests/*.test.mjs`), además de verificar la sintaxis del test específico. Sustituye comprobaciones parciales por el comando oficial del proyecto.
+- Commit del cambio `3eab3dbcc3ac339dd0aa99965efea5261dc009f0`. La suite previa de 193 pruebas está aprobada; **la nueva ejecución de `npm run check` aún requiere confirmación**.
