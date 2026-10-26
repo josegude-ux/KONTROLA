@@ -167,6 +167,97 @@ def render_readonly_audit_summary(bundle):
             raise ValueError("Unavailable checks cannot report counts")
         total_text = success_text = failed_text = unfinished_text = "desconocido"
 
+    # Legacy commit statuses are a separate GitHub API, not check-runs.
+    legacy = bundle.get("legacy_commit_statuses")
+    if not isinstance(legacy, dict):
+        raise ValueError("Missing legacy commit statuses")
+    if (
+        legacy.get("repository") != repository
+        or not isinstance(legacy.get("head_sha"), str)
+        or legacy["head_sha"].lower() != head_sha.lower()
+    ):
+        raise ValueError("Legacy status SHA or repository mismatch")
+    if any(legacy.get(key) is not False for key in (
+        "required_checks_verified", "branch_policy_verified",
+        "execution_authorized", "merge_authorized", "deployment_authorized",
+    )):
+        raise ValueError("Legacy statuses must not grant authority")
+    legacy_lookup = legacy.get("lookup")
+    if legacy_lookup not in {"retrieved", "inaccessible_or_not_found"}:
+        raise ValueError("Invalid legacy statuses lookup")
+    legacy_records = legacy.get("observed_status_records")
+    legacy_context_count = legacy.get("observed_latest_contexts")
+    legacy_states = legacy.get("latest_state_counts")
+    latest_contexts = legacy.get("latest_context_states")
+    if legacy_lookup == "retrieved":
+        _require_count(legacy_records, "legacy status record count")
+        _require_count(legacy_context_count, "legacy context count")
+        if (
+            legacy_context_count > legacy_records
+            or not isinstance(legacy_states, dict)
+            or set(legacy_states) != {"success", "failure", "pending", "error"}
+            or not isinstance(latest_contexts, list)
+            or len(latest_contexts) != legacy_context_count
+        ):
+            raise ValueError("Invalid legacy status counts")
+        for value in legacy_states.values():
+            _require_count(value, "legacy state count")
+        if sum(legacy_states.values()) != legacy_context_count:
+            raise ValueError("Inconsistent legacy status counts")
+        legacy_total_text = str(legacy_records)
+        legacy_context_text = str(legacy_context_count)
+        legacy_success_text = str(legacy_states["success"])
+        legacy_problem_text = str(
+            legacy_states["failure"] + legacy_states["error"]
+            + legacy_states["pending"]
+        )
+    else:
+        if any(value is not None for value in (
+            legacy_records, legacy_context_count, legacy_states, latest_contexts
+        )):
+            raise ValueError("Inaccessible legacy statuses cannot have counts")
+        legacy_total_text = legacy_context_text = legacy_success_text = (
+            legacy_problem_text
+        ) = "desconocido"
+
+    legacy_comparison = bundle.get("legacy_status_observations")
+    if not isinstance(legacy_comparison, dict):
+        raise ValueError("Missing legacy status comparison")
+    if any(legacy_comparison.get(key) is not False for key in (
+        "legacy_context_origin_authenticated", "required_checks_verified",
+        "execution_authorized", "merge_authorized", "deployment_authorized",
+    )):
+        raise ValueError("Legacy comparison cannot grant authority")
+    legacy_comparison_lookup = legacy_comparison.get("lookup")
+    if legacy_comparison_lookup not in {
+        "unknown_policy_requirements", "unknown_legacy_statuses",
+        "candidate_contexts_only", "no_requirements_observed",
+    }:
+        raise ValueError("Invalid legacy candidate lookup")
+    keys = (
+        "required_context_count", "candidate_context_match_count",
+        "candidate_latest_success_count", "contexts_not_observed_count",
+        "app_pinned_unverifiable_count",
+    )
+    observed = [legacy_comparison.get(key) for key in keys]
+    if legacy_comparison_lookup.startswith("unknown_"):
+        if any(value is not None for value in observed):
+            raise ValueError("Unknown legacy comparison cannot contain counts")
+        legacy_candidate_text = ["desconocido"] * len(keys)
+    else:
+        for key, value in zip(keys, observed):
+            _require_count(value, key)
+        required, matched, success, missing, pinned = observed
+        if (
+            matched + missing + pinned != required or success > matched
+            or (legacy_comparison_lookup == "no_requirements_observed"
+                and required != 0)
+            or (legacy_comparison_lookup == "candidate_contexts_only"
+                and required == 0)
+        ):
+            raise ValueError("Inconsistent legacy candidate counts")
+        legacy_candidate_text = [str(value) for value in observed]
+
     comparison = bundle.get("required_check_observations")
     if not isinstance(comparison, dict):
         raise ValueError("Missing required-check comparison")
@@ -253,6 +344,35 @@ def render_readonly_audit_summary(bundle):
         "**Estos recuentos NO prueban que se hayan superado los checks "
         "obligatorios de la rama.**",
         "",
+        "## Estados heredados de commit (API separada)",
+        "",
+        "| Campo | Observación |",
+        "|---|---|",
+        "| Consulta | " + legacy_lookup + " |",
+        "| Registros históricos observados | " + legacy_total_text + " |",
+        "| Contextos con último estado | " + legacy_context_text + " |",
+        "| Últimos estados success | " + legacy_success_text + " |",
+        "| Últimos estados con fallo/error/pendiente | "
+        + legacy_problem_text + " |",
+        "",
+        "## Coincidencias orientativas de estados heredados",
+        "",
+        "| Campo | Observación |",
+        "|---|---|",
+        "| Estado | " + legacy_comparison_lookup + " |",
+        "| Contextos exigidos observados | " + legacy_candidate_text[0] + " |",
+        "| Contextos heredados con nombre coincidente | "
+        + legacy_candidate_text[1] + " |",
+        "| Últimos estados coincidentes success | "
+        + legacy_candidate_text[2] + " |",
+        "| Contextos no observados en estados heredados | "
+        + legacy_candidate_text[3] + " |",
+        "| Requisitos ligados a una aplicación no verificable | "
+        + legacy_candidate_text[4] + " |",
+        "",
+        "**Los estados heredados NO acreditan las comprobaciones obligatorias "
+        "ni una aplicación de origen autorizada.**",
+        "",
         "## Cruce orientativo con checks exigidos",
         "",
         "| Campo | Observación |",
@@ -268,8 +388,8 @@ def render_readonly_audit_summary(bundle):
         "| Aplicación de origen ambigua | " + compare_counts[4] + " |",
         "",
         "**Una coincidencia NO confirma que se haya cumplido un requisito.** "
-        "Este cruce no verifica los estados antiguos de commit, las reglas "
-        "de merge queue ni los permisos de aplicación.",
+        "Los estados heredados se presentan por separado; ninguno de los dos "
+        "orígenes verifica merge queue ni los permisos de aplicación.",
         "",
         "## Reglas de GitHub observadas",
         "",
