@@ -40,7 +40,7 @@
       <button class="primary full" type="submit" id="loginButton">Entrar</button>
     </form>
     <p id="authMessage" class="status" role="status" aria-live="polite"></p>
-    <p class="hint">Las cuentas son habilitadas por administración. No existen usuarios de demostración.<br>Versión <span id="loginVersion">0.3.36</span></p>
+    <p class="hint">Las cuentas son habilitadas por administración. No existen usuarios de demostración.<br>Versión <span id="loginVersion">0.3.37</span></p>
   </div>
 </section>
 <div id="shell" hidden>
@@ -98,7 +98,7 @@
       <div id="historyList" class="loads-list" aria-live="polite"></div>
     </section>
     <section id="loadsView" class="view" hidden>
-      <div class="page-heading"><button type="button" id="backFromLoads" class="back-button">← Volver</button><h1 id="loadsHeading">Preparación de cargas</h1><p id="loadsDescription" class="muted">Al seleccionar una carga publicada se inicia automáticamente la preparación. Para consultar sin iniciar, usa Control de Cargas → Consultar cargas.</p></div>
+      <div class="page-heading"><button type="button" id="backFromLoads" class="back-button">← Volver</button><h1 id="loadsHeading">Preparación de cargas</h1><p id="loadsDescription" class="muted">Al abrir una carga publicada se comprobarán los huecos antes de iniciar la preparación. Para consultar sin iniciar, usa Control de Cargas → Consultar cargas.</p></div>
       <div id="prepWarehouseTabs" class="warehouse-tabs" role="tablist" aria-label="Almacén"></div><p id="loadsWarehouseHint" class="active-warehouse-hint" role="status"></p>
       <div class="toolbar"><label class="search-wrap">Buscar carga<input id="loadSearch" type="search" placeholder="Nº de carga, ruta, matrícula, observaciones o repartidor"></label><button type="button" id="reloadLoads" class="secondary">Actualizar</button></div>
       <div class="legacy-header-actions"><button id="readLegacyHeaders" type="button" class="secondary">Leer cabeceras antiguas (máx. 5)</button><p id="legacyHeaderStatus" role="status" aria-live="polite"></p></div>
@@ -108,6 +108,36 @@
       <div class="page-heading"><button type="button" id="backToLoads" class="back-button">← Volver a cargas</button><p id="detailModeLabel" class="eyebrow">PREPARACIÓN POR PASILLOS</p><h1 id="detailTitle"></h1><p class="muted" id="detailSubtitle"></p></div>
       <div id="prepStatus" class="info-bar" aria-live="polite"></div>
       <div id="prepClock" class="prep-clock" role="timer" aria-live="off" hidden></div>
+
+      <section id="truckCapacityPanel" class="panel truck-capacity" hidden>
+        <h2>Comprobar huecos del camión</h2>
+        <p id="truckCapacitySource" class="muted" role="status"></p>
+        <label>¿Este camión ya lleva palés de otras cargas?
+          <select id="truckPreviousChoice"><option value="">Selecciona una respuesta</option><option value="no">No</option><option value="si">Sí, lleva cargas anteriores</option></select>
+        </label>
+        <label>Capacidad expresada en
+          <select id="truckCapacityMode"><option value="total">Huecos totales</option><option value="desglose">Huecos grandes (G) y pequeños (P)</option></select>
+        </label>
+        <div id="truckFieldsTotal" class="truck-grid">
+          <label>Huecos totales del camión<input id="truckCapacityTotal" inputmode="numeric" type="number" min="0" max="999" step="1" placeholder="Capacidad total"></label>
+          <div id="truckPreviousTotalRow"><label>Huecos ocupados por cargas anteriores<input id="truckPreviousTotal" inputmode="numeric" type="number" min="0" max="999" step="1" placeholder="Palés anteriores"></label></div>
+          <label>Huecos necesarios para esta carga<input id="truckCurrentTotal" inputmode="numeric" type="number" min="0" max="999" step="1" placeholder="Palés de esta carga"></label>
+        </div>
+        <div id="truckFieldsBySize" class="truck-grid" hidden>
+          <label>Huecos grandes (G) del camión<input id="truckCapacityG" inputmode="numeric" type="number" min="0" max="999" step="1" placeholder="Capacidad G"></label>
+          <label>Huecos pequeños (P) del camión<input id="truckCapacityP" inputmode="numeric" type="number" min="0" max="999" step="1" placeholder="Capacidad P"></label>
+          <div id="truckPreviousSizeRow" class="truck-grid-span">
+            <label>Grandes ocupados antes<input id="truckPreviousG" inputmode="numeric" type="number" min="0" max="999" step="1" placeholder="Palés anteriores G"></label>
+            <label>Pequeños ocupados antes<input id="truckPreviousP" inputmode="numeric" type="number" min="0" max="999" step="1" placeholder="Palés anteriores P"></label>
+          </div>
+          <label>Grandes necesarios ahora<input id="truckCurrentG" inputmode="numeric" type="number" min="0" max="999" step="1" placeholder="Palés actuales G"></label>
+          <label>Pequeños necesarios ahora<input id="truckCurrentP" inputmode="numeric" type="number" min="0" max="999" step="1" placeholder="Palés actuales P"></label>
+        </div>
+        <p class="hint">Solo se comprueban huecos: no se certifican peso, distribución ni seguridad del camión. Los datos manuales se mantienen durante esta sesión y no se guardan en Supabase.</p>
+        <div id="truckCapacityResult" class="truck-result incompleto" role="status" aria-live="polite">Introduce cantidades para calcular.</div>
+        <div class="actions"><button id="truckCapacityCheck" type="button" class="secondary">Calcular huecos disponibles</button><button id="truckCapacityStart" type="button" class="primary">Comprobar y empezar preparación</button></div>
+      </section>
+
       <button id="startPreparation" class="primary full" type="button">Iniciar preparación</button>
       <button id="finishPreparation" class="primary full" type="button" hidden>Finalizar preparación</button>
       <div class="facts" id="detailFacts"></div>
@@ -201,7 +231,7 @@
     <section id="settingsView" class="view" hidden>
       <div class="page-heading"><button type="button" data-back="home" class="back-button">← Volver</button><h1>Ajustes</h1></div>
       <section class="panel">
-        <p><b>Aplicación:</b> VISURA PREPARA</p><p><b>Versión:</b> <span id="appVersion">0.3.36</span></p>
+        <p><b>Aplicación:</b> VISURA PREPARA</p><p><b>Versión:</b> <span id="appVersion">0.3.37</span></p>
         <p><b>Usuario:</b> <span id="profileName"></span></p><p><b>Perfil:</b> <span id="profileRole"></span></p>
         <div class="actions"><button type="button" id="checkUpdates" class="secondary">Buscar actualización</button><button id="logout" type="button" class="ghost-danger">Cerrar sesión</button></div>
         <div class="status" id="settingsStatus" role="status" aria-live="polite"></div>

@@ -7,7 +7,8 @@ import {buildPreparationReport,filterProducts,desglosarBultos,totalBultosDelDesg
 import {filtrarHistorial,resumenHistorial,formatoFechaCarga,csvHistorial,htmlResumenHistorial} from "./history.mjs";
 import {createAdminController} from "./admin.mjs";
 import {parsePdfFile} from "./pdf.mjs";
-import {cargasCabeceraPendiente,cabeceraLeida,cabeceraSinMetadatos} from "./legacy-header.mjs";
+import {cargasCabeceraPendiente,cabeceraLeida,cabeceraSinMetadatos,cargaHuecosPendientes} from "./legacy-header.mjs";
+import {capacidadDeCarga,evaluarHuecosCamion} from "./palet-viabilidad.mjs";
 const $=id=>document.getElementById(id);
 let client=null,user=null,profile=null,loads=[],current=null,currentPreparation=null,groups=[],selectedAisle="TODOS",busy=false,opening=false;
 let reviewLoads=[],currentVerification=null,verificationLines=[];
@@ -15,6 +16,8 @@ let warehouses=[],selectedWarehouse=localStorage.getItem("kontrola-warehouse")||
 let loadsParent="homeView",reviewLoadsParent="homeView",loadsMode="preparacion",currentReadOnly=false,detailBackView="loadsView",historyRows=[],historyReady=false,adminParent="homeView",prepTimerId=null;
 let loadsRequestSerial=0,legacyHeaderBusy=false;
 const legacyHeaderCache=new Map();
+const truckCapacitySession=new Map();
+let truckCapacityTouched=false;
 $("appVersion").textContent=APP_VERSION;
 $("loginVersion").textContent=APP_VERSION;
 const visible=(element,show)=>{element.hidden=!show;};
@@ -41,6 +44,8 @@ function loggedOut(message=""){
   user=null;profile=null;loads=[];historyRows=[];historyReady=false;current=null;currentPreparation=null;currentReadOnly=false;reviewLoads=[];currentVerification=null;verificationLines=[];
   stopPreparationClock();
   loadsRequestSerial++;legacyHeaderCache.clear();legacyHeaderBusy=false;
+  truckCapacitySession.clear();truckCapacityTouched=false;
+  $("truckCapacityPanel").hidden=true;
   $("readLegacyHeaders").disabled=false;
   $("globalBack").hidden=true;
   adminController?.clearSensitive?.();
@@ -50,7 +55,7 @@ function loggedOut(message=""){
     "operatorSummary","operatorSummaryStatus","operatorActivity","loadsList","reviewLoadsList",
     "historyList","historySummary","historyStatusMessage","legacyHeaderStatus","productList",
     "verificationLines","detailFacts","detailTitle","detailSubtitle",
-    "prepStatus","aisleTabs","reviewDetailTitle","reviewDetailSubtitle",
+    "prepStatus","aisleTabs","truckCapacityResult","truckCapacitySource","reviewDetailTitle","reviewDetailSubtitle",
     "reviewStatus","reviewProgress","reportTitle","reportPaper","settingsStatus"]){
     const node=$(id);if(node)node.replaceChildren();
   }
@@ -432,7 +437,7 @@ function openLoadsMenu(parent="homeView",mode="preparacion"){
   $("loadsHeading").textContent=mode==="consulta"?"Consulta de cargas":"Preparación de cargas";
   $("loadsDescription").textContent=mode==="consulta"
     ?"Modo de solo lectura: consulta la mercancía y los PDF sin modificar los tiempos de preparación."
-    :"Al seleccionar una carga publicada, la preparación y el reloj comienzan automáticamente. Para consultar sin iniciar, utiliza Control de Cargas → Consultar cargas.";
+    :"Al abrir una carga publicada se comprobarán los huecos del camión antes de iniciar la preparación. Para consultar sin iniciar, utiliza Control de Cargas → Consultar cargas.";
   refreshLoads().catch(()=>{});
 }
 function openReviewMenu(parent="homeView"){
@@ -540,6 +545,111 @@ async function startCurrentPreparation(){
     global("No se pudo iniciar "+code+": "+errorText(error),"error");
   }finally{busy=false;$("startPreparation").disabled=false;}
 }
+
+const truckInputs=["truckCapacityTotal","truckCapacityG","truckCapacityP","truckPreviousTotal","truckPreviousG",
+  "truckPreviousP","truckCurrentTotal","truckCurrentG","truckCurrentP"];
+const truckKey=()=>user&&current?user.id+"|"+current.almacen+"|"+current.codigo:"";
+function assessment(){
+  return evaluarHuecosCamion({
+    modo:$("truckCapacityMode").value,previas:$("truckPreviousChoice").value,
+    capacidadTotal:$("truckCapacityTotal").value,capacidadG:$("truckCapacityG").value,
+    capacidadP:$("truckCapacityP").value,
+    anterioresTotal:$("truckPreviousTotal").value,anterioresG:$("truckPreviousG").value,
+    anterioresP:$("truckPreviousP").value,
+    actualTotal:$("truckCurrentTotal").value,actualG:$("truckCurrentG").value,
+    actualP:$("truckCurrentP").value
+  });
+}
+function renderTruckAssessment(){
+  const bySize=$("truckCapacityMode").value==="desglose";
+  const previous=$("truckPreviousChoice").value==="si";
+  $("truckFieldsTotal").hidden=bySize;
+  $("truckFieldsBySize").hidden=!bySize;
+  $("truckPreviousTotalRow").hidden=bySize||!previous;
+  $("truckPreviousSizeRow").hidden=!bySize||!previous;
+  const result=assessment();
+  $("truckCapacityResult").className="truck-result "+result.estado;
+  $("truckCapacityResult").textContent=result.detalle+(result.filas.length?"\n"+
+    result.filas.map(row=>row.nombre+": capacidad "+(row.capacidad??"—")+
+    ", ocupados antes "+(row.anteriores??"—")+", esta carga "+(row.actual??"—")+
+    ", libres después "+(row.restantes??"—")).join("\n"):"");
+  if(truckKey())truckCapacitySession.set(truckKey(),{
+    modo:$("truckCapacityMode").value,previas:$("truckPreviousChoice").value,
+    inputs:Object.fromEntries(truckInputs.map(id=>[id,$(id).value]))
+  });
+  return result;
+}
+function openTruckPanel(load){
+  truckCapacityTouched=false;
+  const supplied=capacidadDeCarga(load);
+  const cached=truckCapacitySession.get(user.id+"|"+load.almacen+"|"+load.codigo);
+  $("truckCapacityPanel").hidden=false;
+  $("truckCapacityMode").value=cached?.modo||(supplied.modo==="desglose"?"desglose":"total");
+  $("truckPreviousChoice").value=cached?.previas||"";
+  for(const id of truckInputs)$(id).value=cached?.inputs?.[id]??"";
+  if(!cached){
+    $("truckCapacityG").value=supplied.grandes??"";
+    $("truckCapacityP").value=supplied.pequenos??"";
+    $("truckCapacityTotal").value=supplied.total??"";
+  }
+  $("truckCapacitySource").textContent=supplied.modo==="sin_datos"?
+    "No constan huecos: se intentará leer el PDF original de esta carga. Si no aparecen, introduce la capacidad real del camión.":
+    "Capacidad leída del PDF de esta carga: confírmala antes de calcular. G y P no se pueden compensar.";
+  $("truckCapacityStart").hidden=currentReadOnly||currentPreparation.active||
+    currentPreparation.finalized||load.estado!=="publicada";
+  renderTruckAssessment();
+}
+async function recoverTruckCapacityFromPdf(load){
+  if(!cargaHuecosPendientes(load)||legacyHeaderCache.has(load.documento_ruta))return;
+  const route=load.documento_ruta,warehouse=load.almacen,code=load.codigo,userId=user?.id;
+  try{
+    const {data,error}=await client.storage.from(PDF_BUCKET).download(route);
+    if(error)throw error;
+    if(!validRequest(warehouse,userId)||current?.codigo!==code)return;
+    const original=new File([data],code+".pdf",{type:"application/pdf"});
+    const parsed=await parsePdfFile(original,{warehouse});
+    if(!validRequest(warehouse,userId)||current?.codigo!==code)return;
+    const extras=cabeceraLeida(load,parsed,warehouse);
+    if(!extras)throw Error("El PDF no coincide con carga/almacén");
+    legacyHeaderCache.set(route,extras);
+    for(const field of ["huecos_palets_grandes","huecos_palets_pequenos","huecos_palets_total"]){
+      if(extras[field]!==null)load[field]=extras[field];
+    }
+    if(!load.observaciones&&extras.observaciones)load.observaciones=extras.observaciones;
+    renderLoadList();
+    if(!truckCapacityTouched){
+      const supplied=capacidadDeCarga(load);
+      if(supplied.modo==="desglose")$("truckCapacityMode").value="desglose";
+      $("truckCapacityG").value=supplied.grandes??"";
+      $("truckCapacityP").value=supplied.pequenos??"";
+      $("truckCapacityTotal").value=supplied.total??"";
+      $("truckCapacitySource").textContent=supplied.modo==="sin_datos"?
+        "El PDF no trae huecos reconocibles. Introduce manualmente la capacidad real del camión.":
+        "Huecos recuperados del PDF original sin cambiar Supabase. Confirma sus valores antes de comenzar.";
+      renderTruckAssessment();
+    }else $("truckCapacitySource").textContent="El PDF se ha leído. Confirma los huecos que has introducido antes de calcular.";
+  }catch(error){
+    if(validRequest(warehouse,userId)&&current?.codigo===code){
+      $("truckCapacitySource").textContent="No se pudieron recuperar los huecos desde el PDF. Introduce la capacidad real del vehículo.";
+    }
+  }
+}
+for(const id of [...truckInputs,"truckCapacityMode","truckPreviousChoice"]){
+  $(id).addEventListener("input",()=>{truckCapacityTouched=true;renderTruckAssessment();});
+  $(id).addEventListener("change",()=>{truckCapacityTouched=true;renderTruckAssessment();});
+}
+$("truckCapacityCheck").addEventListener("click",()=>renderTruckAssessment());
+$("truckCapacityStart").addEventListener("click",async()=>{
+  if(currentReadOnly||!current||current.estado!=="publicada"||busy)return;
+  const result=renderTruckAssessment();
+  if(result.estado!=="viable"){
+    $("truckCapacityResult").textContent+="\nNo se inicia el reloj hasta verificar huecos suficientes.";
+    return;
+  }
+  await startCurrentPreparation();
+  $("truckCapacityStart").hidden=Boolean(currentPreparation?.active||currentPreparation?.finalized);
+});
+
 async function openLoad(code,{source=loads,returnTo="loadsView",readOnly=loadsMode==="consulta"}={}){
   if(opening||busy||!user)return;
   const load=source.find(x=>x.codigo===code);if(!load)return;
@@ -575,9 +685,11 @@ async function openLoad(code,{source=loads,returnTo="loadsView",readOnly=loadsMo
   renderAisles();
   if(!switchView("detailView"))return;
   startPreparationClock();
-  // Sólo las cargas aún publicadas, no asignadas ni finalizadas, arrancan al seleccionarlas.
+  openTruckPanel(load);
+  if(cargaHuecosPendientes(load))recoverTruckCapacityFromPdf(load).catch(()=>{});
+  // La carga publicada requiere evaluación de huecos antes de iniciar el reloj.
   if(!currentReadOnly&&!currentPreparation.active&&!currentPreparation.finalized&&load.estado==="publicada"){
-    await startCurrentPreparation();
+    $("prepStatus").textContent="Confirma los huecos y las cargas anteriores para iniciar la preparación.";
   }
 }
 $("startPreparation").addEventListener("click",()=>startCurrentPreparation());

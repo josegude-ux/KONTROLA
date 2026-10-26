@@ -893,3 +893,12 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 - Versión candidata 0.3.36, caché v069, módulo precargado, nuevas pruebas de PDF. El acceso actual a Supabase, los PDF antiguos y los datos no cambian. No borrar, migrar, fusionar ni publicar sin autorización. Verificar CI en la PR.
 
 - CI candidata 0.3.36 PR #45, run `40319026072`: 1 regresión de aserción fija de versión (`navigation.test.mjs` esperaba 0.3.35). Se corrige expectativa de versión/caché y etiqueta visible `appVersion` en un segundo commit; no se ha modificado ningún dato ni rama operativa. Comprobar CI de nueva HEAD antes de considerar validada.
+
+
+### 2026-10-26 — Casuística de palés ya cargados y capacidad pendiente, 0.3.37 candidata
+- La revisión vigente de LP26-19519 (23/10) carece de los tres campos de huecos; dato ausente, no un fallo de posición.
+- Preguntar al abrir la carga si el camión lleva cargas anteriores. El operario indica su ocupación y los palés requeridos ahora. El cálculo resta ambas cantidades a la capacidad, diferenciando grandes (G) y pequeños (P) cuando el PDF declara sus formatos. No se inventan equivalencias ni se convierten bultos en palés.
+- En una carga nueva publicada la preparación y su reloj se inician solo tras confirmar que el resultado es viable por huecos. El mensaje no certifica peso, estabilidad, distribución, seguridad ni cargas por eje.
+- Si faltan metadatos, se intenta descargar en modo solo lectura un PDF autorizado y recuperar su cabecera. Si no contiene huecos, el operario los teclea. Sin capacidad completa no se muestra viabilidad.
+- Las cantidades manuales permanecen en memoria de sesión por cuenta/carga/almacén y desaparecen al cerrar sesión. No se persisten ni se comparten entre dispositivos. Persistencia real sería una fase de backend aparte.
+- Rama aislada `feat/visura-prepara-pales-previos-viabilidad-20261026` parte de la corrección de impresión PR #45, SHA `c12375bc1a5967dc046216e63da58c8ec8e73345`. Versión candidata 0.3.37 y caché v070. El usuario autorizó publicar tras integrar y comprobar esta función; hacer HEAD y CI y validar despliegue. Sin SQL, cambios en Supabase ni eliminación de datos.

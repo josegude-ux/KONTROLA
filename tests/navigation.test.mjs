@@ -42,12 +42,12 @@ test("La navegación conserva los accesos previos y los regresos al submenú",()
 
 test("La versión y el caché están preparados para instalar nuevas pantallas",()=>{
   const version=JSON.parse(read("version.json")).version;
-  assert.equal(version,"0.3.36");
+  assert.equal(version,"0.3.37");
   assert.equal(JSON.parse(read("package.json")).version,version);
   assert.equal(JSON.parse(read("package-lock.json")).version,version);
   assert.ok(read("src/config.mjs").includes(`APP_VERSION="${version}"`));
   assert.ok(html.includes(`id="appVersion">${version}<`));
-  assert.match(read("sw.js"),/kontrola-integral-visura-v069/);
+  assert.match(read("sw.js"),/kontrola-integral-visura-v070/);
 });
 
 test("Las consultas descartan respuestas de sesiones o almacenes anteriores",()=>{
@@ -120,6 +120,7 @@ test("preparación recupera inicio automático con reloj del servidor y consulta
   assert.match(app,/p_request_id:crypto\.randomUUID\(\)/);
   assert.match(app,/if\(!currentReadOnly&&!currentPreparation\.active&&!currentPreparation\.finalized&&load\.estado==="publicada"\)/);
   assert.match(app,/await startCurrentPreparation\(\)/);
+  assert.match(app,/\$\("truckCapacityStart"\)\.addEventListener/);
   assert.match(app,/currentReadOnly=readOnly\|\|assignedToOther/);
   assert.match(app,/formatPreparationDuration\(current\.preparacion_inicio/);
   assert.match(app,/setInterval\(\(\)=>/);
@@ -153,7 +154,7 @@ test("almacenes visibles y filtros claros",()=>{
  assert.match(app,/function updateWarehouseLabels/);
  assert.match(app,/No hay cargas publicadas en /);
  assert.match(app,/No hay cargas verificables por este usuario en /);
- assert.match(html,/Al seleccionar una carga publicada se inicia automáticamente/);
+ assert.match(html,/Al abrir una carga publicada se comprobarán los huecos/);
  assert.match(app,/\$\("loadSearch"\)\.value=""/);
  assert.match(app,/\$\("reviewSearch"\)\.value=""/);
 });
