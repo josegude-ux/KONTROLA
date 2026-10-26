@@ -32,7 +32,7 @@ for (const viewport of [
 ]) {
   test(`menu layout and official images: ${viewport.name}`, async ({ page }) => {
     await page.setViewportSize({ width: viewport.width, height: viewport.height });
-    await page.goto("http://127.0.0.1:4173/", { waitUntil: "networkidle" });
+    await page.goto("http://127.0.0.1:4173/", { waitUntil: "domcontentloaded" });
     await page.evaluate(() => {
       document.querySelector("#loginView")?.setAttribute("hidden", "");
       document.querySelector("#shell")?.removeAttribute("hidden");
