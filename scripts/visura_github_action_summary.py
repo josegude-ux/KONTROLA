@@ -119,6 +119,58 @@ def _policy_review_control_rows(policy, label):
     return results
 
 
+_PREFLIGHT_REPOSITORY_LOOKUPS = {
+    "retrieved", "unauthorized", "inaccessible", "not_found_or_inaccessible",
+}
+_PREFLIGHT_PR_LOOKUPS = _PREFLIGHT_REPOSITORY_LOOKUPS | {"not_queried"}
+
+
+def _preflight_lines(bundle, repository, number, branch, head_sha):
+    """Display enum-only GET evidence; never display credential or API bodies."""
+    heading = ["", "## Conexión GitHub GET (diagnóstico, no autenticación)", ""]
+    report = bundle.get("github_transport_preflight")
+    if report is None:
+        return heading + ["Consulta: **desconocido** (informe anterior)."]
+    if (
+        not isinstance(report, dict)
+        or report.get("repository") != repository
+        or report.get("pr_number") != number
+        or report.get("get_only_transport") is not True
+    ):
+        raise ValueError("GitHub preflight context mismatch")
+    for key in (
+        "token_scopes_verified", "authenticated_caller_identity_verified",
+        "effective_branch_policy_verified", "reviewer_eligibility_verified",
+        "execution_authorized", "merge_authorized", "deployment_authorized",
+    ):
+        if report.get(key) is not False:
+            raise ValueError("GitHub transport report must not grant authority")
+    repo_lookup = report.get("repository_lookup")
+    pr_lookup = report.get("pull_request_lookup")
+    if (
+        repo_lookup not in _PREFLIGHT_REPOSITORY_LOOKUPS
+        or pr_lookup not in _PREFLIGHT_PR_LOOKUPS
+        or (repo_lookup != "retrieved" and pr_lookup != "not_queried")
+        or (repo_lookup == "retrieved" and pr_lookup == "not_queried")
+    ):
+        raise ValueError("Invalid GitHub preflight lookup")
+    observed_branch = report.get("observed_base_branch")
+    observed_sha = report.get("observed_head_sha")
+    if pr_lookup == "retrieved":
+        if observed_branch != branch or not isinstance(observed_sha, str) or (
+            observed_sha.lower() != head_sha.lower()
+        ):
+            raise ValueError("GitHub preflight PR snapshot mismatch")
+    elif observed_branch is not None or observed_sha is not None:
+        raise ValueError("Inaccessible GitHub preflight cannot claim PR identity")
+    return heading + [
+        "- Consulta de repositorio: **" + repo_lookup + "**",
+        "- Consulta de PR: **" + pr_lookup + "**",
+        "**Una respuesta GET no acredita credenciales, scopes ni permisos de "
+        "revisión o ejecución; la evidencia puede caducar.**",
+    ]
+
+
 _CODEOWNERS_PATHS = (".github/CODEOWNERS", "CODEOWNERS", "docs/CODEOWNERS")
 _CODEOWNERS_LOOKUPS = {"file_observed", "inaccessible", "not_found_or_inaccessible"}
 
@@ -503,6 +555,7 @@ def render_readonly_audit_summary(bundle):
     ]
     for label, count in counts.items():
         lines.append("- " + label.capitalize() + ": **" + str(count) + "**")
+    lines += _preflight_lines(bundle, repository, number, branch, head_sha)
     lines += _reviewer_permission_lines(bundle, repository)
     lines += _codeowners_lines(bundle, repository, branch)
     lines += [
