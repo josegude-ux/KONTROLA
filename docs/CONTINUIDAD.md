@@ -96,3 +96,5 @@ La idea de un portal común se documentó separadamente en `docs/MOVENTA_CONCEPT
 - Nuevo workflow `.github/workflows/visura-auto-dev-code-review.yml` en rama de guardrails (commit `84012b4`). Ejecuta compilación, tests Python `test_visura_*.py` y smoke test de bloqueo de IA de pago en PR con cambios relevantes.
 - Permisos GitHub mínimos `contents: read`; checkout sin credenciales persistidas; sin llamadas a OpenRouter ni acceso a datos.
 - **Pendiente de confirmar su primera ejecución**. Es una puerta de validación, no un ejecutor autónomo de programación. No fusionar ni publicar sin revisión humana.
+
+- Verificación Code Review Gate: run #4, ID `40259530585`, conclusión `success`; compilación correcta, 18 pruebas `OK` y smoke test confirma llamadas de pago bloqueadas y límite local de 10 €. Evidencia: https://github.com/josegude-ux/KONTROLA/actions/runs/40259530585. Este run corresponde al workflow de guardrails; **no confirma por sí mismo las pruebas CSV adicionales del PR #35**, cuyo workflow dedicado aún no aparece en las consultas.
