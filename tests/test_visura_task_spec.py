@@ -78,6 +78,34 @@ class TaskSpecTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "Invalid scope"):
             validate_task(task)
 
+    def test_rejects_non_object_task(self):
+        with self.assertRaisesRegex(ValueError, "Task must be an object"):
+            validate_task(["not", "a", "dict"])
+
+    def test_rejects_overlong_title(self):
+        task = valid_task()
+        task["title"] = "T" * 121
+        with self.assertRaisesRegex(ValueError, "Invalid title"):
+            validate_task(task)
+
+    def test_rejects_non_string_check(self):
+        task = valid_task()
+        task["checks"] = ["unit tests", 42]
+        with self.assertRaisesRegex(ValueError, "Invalid checks"):
+            validate_task(task)
+
+    def test_rejects_overlong_check(self):
+        task = valid_task()
+        task["checks"] = ["x" * 201]
+        with self.assertRaisesRegex(ValueError, "Invalid checks"):
+            validate_task(task)
+
+    def test_rejects_blank_scope(self):
+        task = valid_task()
+        task["scope"] = "   "
+        with self.assertRaisesRegex(ValueError, "Invalid scope"):
+            validate_task(task)
+
     def test_rejects_too_many_checks(self):
         task = valid_task()
         task["checks"] = ["check"] * 11
