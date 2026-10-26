@@ -1,5 +1,5 @@
 # VISURA — CENTRO DE MANDO
-**Versión:** V5.3 — 2026-10-26  
+**Versión:** V5.4 — 2026-10-26  
 **Objetivo:** conservar órdenes copiables de desarrollo y recuperación de contexto para VISURA.
 
 > Este archivo es una **copia maestra de instrucciones**, no un informe del estado actual del software. Antes de cualquier cambio hay que contrastar ramas, commits, PR y documentación con GitHub. No fusionar, desplegar ni borrar datos sin autorización. No se puede garantizar un proceso en segundo plano ni superar límites de Work.
@@ -185,7 +185,7 @@ En INTEGRACIÓN EN RAMA: la imagen aprobada y sus derivados necesarios están re
 En PRUEBA / SIMULACIÓN: se audita la viabilidad, se identifican rutas y alternativas, se detectan bloqueos y se entrega un plan ejecutable SIN modificar sistemas.
 ```
 
-## Menú actual — Accesos directos V5.3 (2026-10-26)
+## Menú actual — Accesos directos V5.4 (2026-10-26)
 
 **Nueve funciones**, sin duplicidad 01/03, y un gestor de chats compartido en la cabecera (no es una nueva orden). La función 08 permanece para órdenes, incidencias y consultas específicas; la nueva 09 recupera interrupciones de streaming. La nueva orden 01 reúne las tres formas de continuidad; se conserva 02 Preparar Work y las demás tareas de diseño, auditoría, integración y consulta. La interfaz muestra las funciones en una cuadrícula móvil, abre solo la elegida y ofrece «Volver al menú».
 
@@ -342,7 +342,7 @@ CONSULTA DE SOLO LECTURA: explica el funcionamiento actual, responde la pregunta
 
 **Auditoría antduplicados (26/10/2026):** revisadas órdenes 01–08 de `visura-panel`. La orden 01 reanuda o transfiere un desarrollo entre chats, mientras que la 08 comunica órdenes/incidencias/consultas. Ninguna verifica específicamente el resultado de acciones que podrían haber quedado ejecutadas durante un corte de respuesta ni recupera un checkpoint de streaming. **Se crea la orden 09 como función diferenciada**, para pegarla en el MISMO chat donde ocurrió la interrupción. No hace traspaso ni abre chats.
 
-**Diseño:** acceso móvil con icono vectorial local, original y compacto de aviso naranja + indicador de espera, inspirado en la captura del usuario «Streaming interrumpido. Esperando el mensaje completo…». La captura original se encuentra adjunta a la conversación de implementación; el SVG de la interfaz no copia el aviso como texto ilegible. No se aloja ni transmite la captura original.
+**Diseño V5.4 — recurso aprobado:** el acceso y el formulario de la orden 09 usan la **misma captura aportada por el usuario** («Streaming interrumpido. Esperando el mensaje completo…»), no una ilustración redibujada. Se ha preparado un derivado técnico optimizado para la web, conservando todo el contenido y la composición (WebP 500 × 114 px), en `docs/assets/streaming-aviso-original.webp`. El original JPEG de la conversación se conserva sin alteración; el derivado no es idéntico byte a byte debido a la compresión y reducción. Solo el botón 09 y su formulario adoptan fondo crema, borde suavemente anaranjado y acentos naranjas coherentes con la captura. El resto de funciones VISURA mantiene el diseño y comportamiento anterior.
 
 **Formulario:** campo «Tarea que estaba en curso» editable y precargado con «Comprobar las pruebas automáticas de la corrección conjunta de 6 G, 1 E y Observaciones, guardada presuntamente en una rama aislada.». Dos botones: **Copiar recuperación** y **Ver prompt** (con Ocultar al desplegar). Se sustituye únicamente `{{TAREA_EDITABLE}}` por el texto en el momento de copiar. Si el campo está vacío, pedir al usuario que lo complete y no copiar un prompt con marcador sin resolver. Copiar no ejecuta tareas ni escribe en GitHub.
 
