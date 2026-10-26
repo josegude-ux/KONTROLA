@@ -26,7 +26,12 @@ def summarize_pr_reviews(reviews, expected_head_sha):
             "APPROVED", "CHANGES_REQUESTED", "COMMENTED", "DISMISSED"
         }:
             raise ValueError("Invalid review state")
-        if review["head_sha"] != expected_head_sha:
+        head_sha = review["head_sha"]
+        if not isinstance(head_sha, str) or len(head_sha) != 40 or any(
+            ch not in "0123456789abcdefABCDEF" for ch in head_sha
+        ):
+            raise ValueError("Invalid review head SHA")
+        if head_sha.lower() != expected_head_sha.lower():
             continue
         accepted.append({"reviewer_id": reviewer, "state": review["state"]})
     return {
