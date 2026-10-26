@@ -32,7 +32,14 @@ for (const viewport of [
 ]) {
   test(`menu layout and official images: ${viewport.name}`, async ({ page }) => {
     await page.setViewportSize({ width: viewport.width, height: viewport.height });
-    await page.goto("http://127.0.0.1:4173/", { waitUntil: "networkidle" });
+    // La prueba es de maquetación: evitar que la autenticación asíncrona oculte el menú.
+    await page.route("**/src/app.mjs", route => route.fulfill({ status: 200, contentType: "text/javascript", body: "" }));
+    await page.goto("http://127.0.0.1:4173/", { waitUntil: "domcontentloaded" });
+    await page.evaluate(() => {
+      document.querySelector("#loginView")?.setAttribute("hidden", "");
+      document.querySelector("#shell")?.removeAttribute("hidden");
+      document.querySelector("#homeView")?.removeAttribute("hidden");
+    });
     for (const [id, , filename] of cards) {
       const card = page.locator(`#${id}`);
       await expect(card).toBeVisible();
@@ -40,6 +47,13 @@ for (const viewport of [
       await expect(card.locator("img")).toHaveJSProperty("complete", true);
       const naturalWidth = await card.locator("img").evaluate(img => img.naturalWidth);
       expect(naturalWidth, `image failed to load: ${filename}`).toBeGreaterThan(0);
+      const textBox = await card.locator(".feature-copy").boundingBox();
+      const artBox = await card.locator(".feature-art").boundingBox();
+      expect(textBox).not.toBeNull();
+      expect(artBox).not.toBeNull();
+      if (viewport.name === "mobile") {
+        expect(textBox.x + textBox.width, `text overlaps art: ${viewport.name}/${id}`).toBeLessThanOrEqual(artBox.x + 2);
+      }
     }
     await expect(page.locator("#openAdmin")).toHaveCount(1);
     const bodyWidth = await page.locator("body").evaluate(el => el.scrollWidth);

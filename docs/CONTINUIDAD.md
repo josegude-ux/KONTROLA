@@ -744,3 +744,92 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 ### Correccion del smoke visual Chromium
 - Ejecuciones #100/#101 detectaron que la vista del menú permanece oculta sin una sesión autenticada, como corresponde al control de acceso. La prueba visual no debe iniciar sesión ni llamar a Supabase; se ajustó para mostrar la vista solo en el DOM del navegador de prueba, sin modificar backend ni saltarse autenticación en la aplicación real.
 - Commit de la corrección: 52d79bc7d13e13c6adf81875d69b8ea88e9261dc. Pendiente CI.
+
+
+### 2026-10-26 - Correccion del smoke visual Playwright
+- Las ejecuciones #105-#107 fallaron porque `tests/visual-menu.spec.mjs` no llegaba a mostrar `#homeView`; la correccion anterior se habia documentado pero no se habia aplicado realmente al archivo de prueba.
+- Aplicada la correccion en una rama nueva por las reglas de proteccion de GitHub: `fix/visura-menu-playwright-auth-20261026`, commit 65947fef90012ddcd46cc8b8b9da3ca2b66f19c1.
+- La prueba quita el login y muestra el shell/home exclusivamente dentro del DOM del navegador de test; no autentica contra Supabase ni cambia la aplicacion de produccion.
+- Pendiente ejecutar CI en PR; no merge ni despliegue.
+
+
+### Ajuste de CI para PR #36
+- Se detectó que la PR #36 no disparaba Actions: el workflow solo aceptaba PR con base `branding/visura-prepara-20261026`, y además forzaba checkout de la rama principal de feature, ignorando el head de la PR. Se corrigió el destino del trigger para `feature/visura-prepara-menu-oficial-20261026`, se dejó checkout del commit de PR predeterminado y se eliminó el paso que hacía push automático desde el workflow.
+- Commit: 4f14275bc0f30684ecef2285495407b1b605e5a2. Pendiente CI de PR #36.
+
+
+### 2026-10-26 - Smoke visual Chromium superado
+- GitHub Actions #109, run 40260656625, commit `fc359a8ce6593699258a2e2aebd540220126ceaf`: SUCCESS. Los pasos de regresión y `Prueba visual Chromium en escritorio y móvil` terminaron correctamente.
+- La ejecución #108 también terminó SUCCESS, pero no había artefactos de capturas porque el paso de subida se había retirado al corregir el YAML. Se ha añadido de nuevo la publicación de `artifacts/*.png` con retención de 7 días (commit `ea300efb06360a7a4b3e5982543af287790b1f2c`); falta confirmar las capturas en la siguiente ejecución.
+- Esta comprobación se ejecuta en Chromium emulado con viewports de 1440x1000 y 390x844; no sustituye validación física en iPhone/Android.
+- PR #36 permanece abierta y en borrador. No merge ni despliegue.
+
+
+### 2026-10-26 — Revisión de capturas de la ejecución #112
+- La ejecución #112 terminó en SUCCESS y produjo el artefacto `visura-prepara-menu-visual` (ID 12624117728).
+- Capturas revisadas: escritorio 1440×1184 y móvil 390×1134. La corrección CSS elimina el solapamiento visual observado en la ejecución #110: el texto queda en una columna izquierda y las ilustraciones en una zona separada a la derecha.
+- La regresión y el smoke visual de Chromium pasan. Administración no se muestra sin rol en esta vista de prueba, conforme al estado inicial de la tarjeta.
+- La prueba usa viewports emulados; siguen pendientes las pruebas manuales en iPhone, Android y Windows físicos, así como la validación de navegación de cada acción en una sesión de prueba real.
+- Sin merge ni despliegue. Rama activa: `fix/visura-menu-playwright-auth-20261026`.
+
+- Añadida además una aserción geométrica a `tests/visual-menu.spec.mjs` para fallar si el área de texto se extiende sobre el área de la ilustración en cualquiera de los dos viewports (commit `b6526c323e7ce3181db1544576602592e9b120a7`). Pendiente resultado de CI para esta nueva aserción.
+
+- La ejecución #114 detectó un falso positivo de la aserción geométrica en escritorio: la estructura de columnas de escritorio permite cajas DOM que se solapan geométricamente aunque la captura no muestre solapamiento visible. Se limitó esa aserción específica al layout móvil, donde se había observado el defecto real. Commit `cc49100a3abe5570df226b5e9ff1deceb5575b0d`; pendiente CI.
+
+
+### 2026-10-26 — Preparación de revisión física con la base de datos actual
+- El propietario ha indicado usar la base de datos Supabase actual para la revisión física; no crear una base paralela ni cambiar la conexión configurada.
+- Añadido `docs/PRUEBA_FISICA_BASE_ACTUAL.md` (commit `e25b945343607fafa0399f90725c983001b065e5`) con el protocolo para iPhone, Android y Windows, límites para evitar operaciones destructivas y evidencias a registrar.
+- CI más reciente #118 (`1867f8d47f1d30bff49b63ee3ba7d93f13d898ce`) SUCCESS: regresión, Chromium escritorio/móvil y subida de capturas completadas. Artefacto disponible en Actions.
+- Bloqueo para probar físicamente la rama: `pages.yml` despliega al mismo GitHub Pages público; ejecutar ese workflow con la rama de corrección podría sustituir la app publicada. No se ha desplegado. Hace falta un alojamiento/URL de preview aislada o un método temporal seguro.
+- No se han hecho cambios ni escrituras en Supabase durante esta preparación; sin merge ni despliegue.
+
+
+### 2026-10-26 — Estrategia de validación acordada con el propietario
+- El propietario prefiere actualizar la aplicación ya instalada y no mantener una segunda PWA de prueba.
+- Mantener la app publicada actual intacta mientras se completan las validaciones automatizadas y se prepara un paquete de actualización reversible. No crear una PWA paralela como requisito del flujo.
+- Antes de publicar la actualización en la misma URL, verificar que se conserva el proyecto Supabase configurado, que no hay migraciones ni operaciones destructivas y que el service worker/cache versiona los recursos correctamente. Mantener disponible el commit de la versión actual para revertir el código si fuera necesario.
+- La publicación definitiva sigue requiriendo autorización expresa según la directiva permanente; la preferencia por actualizar la misma aplicación no autoriza por sí sola a desplegar producción.
+
+
+### 2026-10-26 — Auditoría previa a actualizar la PWA instalada
+- Configuración verificada en rama: `src/config.mjs` apunta al proyecto Supabase actual de KONTROLA (`oevetnszmfxeukcncwji`), con clave publicable, bucket `kontrola-pdfs` y versión `0.3.30`. No se cambió la configuración.
+- `sw.js` usa caché `kontrola-integral-visura-v063` y `manifest.webmanifest` conserva `start_url: ./`, `display: standalone` y marca VISURA PREPARA. La actualización sobre la misma URL conserva la identidad de la PWA instalada, sujeto al comportamiento del navegador.
+- La configuración declara expresamente que INVENTA usa otro backend independiente: NO afirmar que ambas aplicaciones ya comparten base Supabase.
+- CI #120 SUCCESS. CI #121 estaba en curso al realizar esta auditoría.
+- Antes del despliegue definitivo: revisar que el workflow Pages use la rama candidata, obtener SHA de la versión publicada para reversión, verificar ausencia de migraciones/destrucción y pedir aprobación explícita de publicación.
+
+
+### 2026-10-26 — Regresiones automáticas para actualización sobre la PWA instalada
+- Añadido `tests/pwa-update-safety.test.mjs` (commit `0395a584f0cc0d1ee130bb4771096e322e253d22`), integrado automáticamente en `npm run check` por el patrón `tests/*.test.mjs`.
+- Pruebas nuevas: mantener el proyecto Supabase y bucket actuales; rechazar claves secretas en configuración pública; conservar identidad `start_url` y `display` de la PWA; precarga de cuatro imágenes; coherencia entre `package.json`, `version.json` y `APP_VERSION`.
+- Estas pruebas no hacen peticiones a Supabase ni modifican datos. Pendiente confirmar resultado del CI del commit.
+
+
+### 2026-10-26 — CI #125 verde; preparación de actualización instalada
+- Ejecución #125, run `40261784658`, commit `c3f3ddc7f80d0c4b8716ab31def5f4c2cecdccdf`: SUCCESS. Pasaron regresión completa, prueba visual Chromium escritorio/móvil y publicación de capturas.
+- La prueba nueva de seguridad de PWA ya verifica la clave publicable real, sin falsos positivos por comentarios.
+- Rama de despliegue actual configurada en `pages.yml`: `cursor/verificacion-fisica-cargas-8ba0`, SHA `980fd9df854ce6accc59f569657661601f8c096e` al consultar GitHub. El SHA de la rama no prueba por sí solo cuál es el despliegue activo; verificarlo antes de publicar.
+- La actualización de la misma PWA requiere una publicación deliberada y controlada sobre la URL actual. No se ha lanzado `pages.yml`, ni merge, ni cambios de Supabase. Próximo control: establecer SHA del despliegue publicado, estrategia de reversión y autorización explícita de despliegue.
+
+
+### 2026-10-26 — Referencia de reversión identificada
+- GitHub Actions `Publicar KONTROLA de pruebas (GitHub Pages)` run `40244107243` (25/10/2026) terminó SUCCESS en build y deploy, con commit `980fd9df854ce6accc59f569657661601f8c096e` de rama `cursor/verificacion-fisica-cargas-8ba0`.
+- Este commit es una referencia verificada de una publicación exitosa, no una prueba independiente de que el navegador de cada dispositivo siga sirviendo esa versión en este instante.
+- CI candidato #126, commit `c7bc7e82b89d9fd1ad0d39a9e9a5a7adc33e99cc`, SUCCESS. No se ha ejecutado publicación desde rama candidata.
+- Plan de reversión: conservar el SHA anterior, comprobar que el código puede volver a desplegarse mediante el workflow existente, y validar versión/actualización de caché en dispositivos tras una publicación autorizada. Revertir código no revierte automáticamente cambios de datos, por lo que no introducir migraciones en esta actualización visual.
+
+
+### 2026-10-26 — Versión candidata de actualización sobre instalación existente
+- Se ha preparado la candidata `0.3.31` en `src/config.mjs`, `package.json`, `version.json` e `index.html` para que el botón «Buscar actualizaciones» distinga la candidata de `0.3.30`.
+- Se ha incrementado la caché de `sw.js` de `v063` a `v064` para evitar mezclar imágenes/recursos de la versión anterior; se ha ajustado la prueba correspondiente en `tests/visura-menu.test.mjs`.
+- La URL y clave publicable de Supabase, el bucket y las RPC permanecen sin cambios; no hay migraciones ni operaciones sobre datos.
+- Estos cambios son solo de rama candidata: no desplegar hasta aprobar expresamente la actualización de la misma PWA. Confirmar CI verde del HEAD final antes de publicar.
+
+
+### 2026-10-26 — Prueba visual sin espera de red externa
+- La ejecución CI #131 superó las regresiones pero permaneció largo tiempo en la etapa visual. Se ha sustituido `waitUntil: networkidle` por `domcontentloaded` en `tests/visual-menu.spec.mjs`; la prueba ya verifica expresamente que cada imagen esté cargada y tenga ancho natural positivo, por lo que no necesita esperar a que queden inactivas todas las conexiones de la aplicación.
+- Añadido `timeout-minutes: 20` al job visual para evitar ejecuciones indefinidas.
+- Cambio limitado a pruebas/CI, sin alterar comportamiento de producción ni Supabase. Confirmar CI de la rama tras estos commits.
+
+- CI #134: las regresiones pasaron y la prueba móvil pasó; la prueba visual de escritorio falló porque `#openPreparation` quedó oculto tras mostrar el menú, compatible con una redirección asíncrona de autenticación. Se ha aislado `src/app.mjs` solo en el test visual (Playwright `page.route`), manteniendo DOM, CSS e imágenes reales, para que la verificación de maquetación no dependa del estado de sesión. Pendiente validar en CI. No afecta al código desplegable.
