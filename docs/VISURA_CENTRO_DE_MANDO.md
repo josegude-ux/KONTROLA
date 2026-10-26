@@ -1,48 +1,67 @@
 # VISURA — CENTRO DE MANDO
-**Versión:** V4.4 — 2026-10-26  
+**Versión:** V5.0 — 2026-10-26  
 **Objetivo:** conservar órdenes copiables de desarrollo y recuperación de contexto para VISURA.
 
 > Este archivo es una **copia maestra de instrucciones**, no un informe del estado actual del software. Antes de cualquier cambio hay que contrastar ramas, commits, PR y documentación con GitHub. No fusionar, desplegar ni borrar datos sin autorización. No se puede garantizar un proceso en segundo plano ni superar límites de Work.
 
-## 1. REANUDAR DESARROLLO EN CHAT CONTINUADOR (V4)
+## 1. CONTINUAR DESARROLLO — TRES MODOS UNIFICADOS (V5)
 
-**Caso confirmado por el usuario:** el origen es **VISURA WORK** y el chat responsable y CORRECTO para continuar es **VISURA AUTO-DEV**. Ese segundo chat ya había recuperado y continuado el desarrollo. Una orden anterior lo paralizó porque interpretó un título previo «CHAT NUEVO» como si fuera una conversación incorrecta. Ese veto nominal queda eliminado.
+**Decisión confirmada:** los antiguos botones 01 «Reactivar» y 03 «Cambiar de chat» eran parcialmente redundantes y se unifican en una sola función **01 · Continuar desarrollo**, con **tres modos**: (A) Reanudar en el mismo chat, (B) Continuar en un chat sucesor que YA trabaja en el proyecto, (C) Traspasar por primera vez a otro chat. El formulario solo muestra los campos correspondientes al modo elegido.
 
-**Uso:** elige un origen (valor inicial: VISURA WORK) y un destino actual (valor inicial: VISURA AUTO-DEV). Si seleccionas otros, escribe el nombre correcto. El botón genera un prompt que se pega en la conversación de destino ya activa. Para hacer un traspaso realmente nuevo, usa el botón 03; no confundas reanudar una continuidad existente con transferir por primera vez.
+**Ejemplo por defecto:** origen **VISURA WORK**, destino **VISURA AUTO-DEV**, modo **CONTINUADOR EXISTENTE**. La orden va a AUTO-DEV, no al Work agotado; no debe detenerse solo por un título previo «CHAT NUEVO».
 
-**Evidencia de referencia:** en GitHub se ha confirmado la existencia del PR #44 del repositorio KONTROLA (commit asociado que comienza por `b934a2c`) y la rama `docs/visura-work-chat-nuevo-20261026`. La orden invita a comprobar su relación con el historial actual y los cambios posteriores; no presume que sean automáticamente el último estado.
+**Límites:** el botón copia instrucciones y, si aportas URL directa, abre el chat de destino. No lee la lista de tus conversaciones, no crea ni renombra chats y no pega automáticamente el mensaje. Un nombre o enlace no prueba acceso al historial. Se mantiene la protección de los chats reservados a pruebas y las autorizaciones para GitHub/producción.
 
-**Regla:** no detenerse por diferencias de títulos, ni exigir volver a Work o cambiar de chat cuando ya existe continuidad verificable. La conversación receptora debe comprobar el desarrollo y proseguir con la primera tarea segura. Las restricciones de pruebas, permisos de publicación, eliminación y protección de cambios ajenos se mantienen intactas.
+**Migración de enlaces:** los enlaces anteriores `#orden-1` y `#orden-3` abren la función unificada. Los antiguos `#orden-4` a `#orden-8` se redirigen a la tarea equivalente. Los nuevos enlaces permanentes son `#funcion-1` a `#funcion-7`.
 
-**Variables:** `{{ORIGEN}}`, `{{DESTINO}}`, `{{ENLACE_ORIGEN}}`, `{{ENLACE_DESTINO}}`.
+**Variables:** `{{MODO}}`, `{{ORIGEN}}`, `{{DESTINO}}`, `{{ENLACE_ORIGEN}}`, `{{ENLACE_DESTINO}}`, `{{FOCO}}`, `{{REGLA_MODO}}`.
 
+**Plantilla compartida del prompt:**
 ```text
-REANUDAR DESARROLLO VISURA EN SU CHAT CONTINUADOR YA ACTIVO.
+VISURA / EXCELL — CONTINUAR DESARROLLO, ORDEN ÚNICA.
 
-CHAT DE ORIGEN DEL DESARROLLO: {{ORIGEN}}
-CHAT ACTUAL DONDE DEBES CONTINUAR: {{DESTINO}}
-ENLACE DE REFERENCIA AL ORIGEN: {{ENLACE_ORIGEN}}
-ENLACE DE REFERENCIA AL DESTINO: {{ENLACE_DESTINO}}
+MODO SELECCIONADO: {{MODO}}
+CHAT O DESARROLLO DE ORIGEN: {{ORIGEN}}
+CHAT RECEPTOR / RESPONSABLE ACTUAL: {{DESTINO}}
+ENLACE A ORIGEN (SI EXISTE): {{ENLACE_ORIGEN}}
+ENLACE A DESTINO (SI EXISTE): {{ENLACE_DESTINO}}
+TAREA PRIORITARIA OPCIONAL: {{FOCO}}
 
-INSTRUCCIÓN FUNDAMENTAL
-ESTA ORDEN SE PEGA EN EL CHAT DE DESTINO, que ya ha recibido y continuado el desarrollo del chat de origen. El chat elegido como destino es el RESPONSABLE ACTUAL del trabajo. NO ordenes regresar al chat original, NO solicites repetir el traspaso y NO bloquees el desarrollo solo porque en mensajes previos se denominara «CHAT NUEVO», porque los títulos sean diferentes o porque se agotaran los créditos de Work. Para realizar un traspaso NUEVO que aún no se haya establecido, corresponde la orden 03, NO esta.
+INSTRUCCIÓN ESPECÍFICA DEL MODO
+{{REGLA_MODO}}
 
-CASO VISURA WORK → VISURA AUTO-DEV
-Si el origen es VISURA WORK y el destino es VISURA AUTO-DEV, el usuario confirma que esta última conversación YA continuó VISURA AUTO-DEV procedente de VISURA WORK. Usa esa confirmación para interpretar el encargo, pero verifica el estado técnico antes de editar. Como pistas concretas, revisa el PR #44 del repositorio josegude-ux/KONTROLA, el commit b934a2c (abreviatura) y la rama docs/visura-work-chat-nuevo-20261026, además de los avances posteriores. Son referencias, NO una orden de usar esos hitos si ya han sido superados. La tarea pendiente mencionada anteriormente fue la autenticación real del agente y la revisión de políticas de seguridad: contrasta si continúa pendiente antes de implementarla.
+OBJETIVO
+Continúa la línea de desarrollo elegida en el chat indicado y desde el punto más avanzado REALMENTE VERIFICADO. No vuelvas a empezar, no repitas tareas finalizadas y no confundas diferentes chats VISURA. El nombre del chat, el enlace o una mención antigua a «CHAT NUEVO» NO prueban ni niegan por sí solos continuidad.
 
-RECUPERACIÓN Y VERIFICACIÓN
-1. Lee el historial REALMENTE disponible en ESTE chat de destino para identificar lo ya desarrollado y su relación con el origen. No afirmes haber leído el chat de origen cuando no sea accesible; puedes usar contexto previamente recuperado aquí y evidencias técnicas verificables.
-2. Revisa repositorios pertinentes, ramas activas, commits, PR, archivos, pruebas y documentación de continuidad más reciente; verifica cuál es el avance real y cuál fue la última tarea terminada. No presupongas que main o un documento antiguo reflejan el estado más avanzado.
-3. Distingue lo aprobado, implementado, probado y pendiente. Evita reconstruir aplicaciones o repetir tareas finalizadas; comprueba que otros chats no estén desarrollando la misma funcionalidad ni vayas a sobrescribir trabajo ajeno.
+VERIFICAR ANTES DE ACTUAR
+1. Determina qué historial y documentación del chat de origen y del destino puedes consultar realmente. Si no puedes leer un chat distinto, dilo sin fingirlo. Identifica el trabajo ya realizado en esta conversación y cómo se relaciona con el origen.
+2. Comprueba los repositorios vinculados, ramas/HEAD, commits, PR abiertos y cerrados, archivos, pruebas y documentación de continuidad vigente (entre otros, docs/CONTINUIDAD.md y los documentos específicos de Work disponibles). No supongas que main ni documentos antiguos reflejan el máximo avance.
+3. Identifica la última tarea concluida y probada, el trabajo en curso, los riesgos de solapamiento con otros chats y la siguiente tarea segura. Distingue implementación, validación, aprobación de imágenes y publicación. Conserva cambios ajenos.
+4. Como pista para VISURA WORK → VISURA AUTO-DEV (solo si esa pareja coincide), considera el PR #44 de josegude-ux/KONTROLA, el commit b934a2c y la rama docs/visura-work-chat-nuevo-20261026, pero verifica si hay hitos posteriores; no asumas que esas referencias son el último estado. Comprueba si la autenticación del agente y las políticas de seguridad siguen pendientes antes de trabajar en ellas.
 
-CONTINUACIÓN
-4. En este chat de destino, si está dedicado al DESARROLLO, reanuda la primera tarea pendiente que resulte realmente comprobada y autorizada. Continúa de forma autónoma con las tareas siguientes seguras. No termines con una respuesta administrativa sobre el título del chat, el traspaso o la elección de conversación.
-5. Antes de cada cambio comprueba la rama y el estado remoto; después de cada hito valida, guarda los commits y actualiza la continuidad correspondiente. No declares trabajo completado sin evidencia.
-6. Si este chat receptor está expresamente reservado a PRUEBAS, no ejecutes cambios reales. Si hay incertidumbre técnica material, primero verifica en solo lectura; no trates una simple diferencia de nombres como bloqueo.
-7. No fusiones, despliegues, publiques, sustituyas cambios ajenos ni borres datos sin autorización expresa. No prometas trabajo en segundo plano y no insistas en intentos idénticos fallidos.
+CONTINUAR CON SEGURIDAD
+5. Si este chat está reservado expresamente para pruebas o no se ha podido corroborar la correspondencia necesaria, realiza solo una auditoría de lectura hasta aclarar la discrepancia. No escribas en GitHub desde un chat de pruebas.
+6. Si esta conversación es la responsable autorizada del desarrollo elegido, reanuda en ella la primera tarea pendiente segura, utilizando las herramientas realmente disponibles. Tras cada hito, verifica, guarda en la rama apropiada y actualiza la continuidad; no hagas una respuesta meramente administrativa ni solicites un traspaso ya asentado.
+7. No fusiones PR, no despliegues a producción, no borres datos ni sobrescribas trabajo ajeno sin autorización expresa. No te detengas por obstáculos resolubles: comprueba alternativas técnicas legítimas. Detente solo por un bloqueo real, una ambigüedad material o autorización imprescindible. No prometas trabajo en segundo plano.
+8. Antes de crear otro prompt o botón, consulta docs/VISURA_CENTRO_DE_MANDO.md y verifica que no exista ya una orden idéntica o similar. Reutiliza o evoluciona las órdenes existentes en vez de duplicarlas.
 
-RESULTADO REQUERIDO
-Enuncia brevemente ORIGEN, DESTINO, repositorio, rama/commit/PR verificados, última tarea finalizada, tarea pendiente actual y primera acción que vas a realizar. A continuación, EJECUTA la tarea segura en este mismo chat de destino sin pedir un nuevo traspaso.
+SALIDA
+Informa brevemente: modo aplicado, ORIGEN y DESTINO, evidencia de continuidad, repositorio/rama/commit/PR realmente comprobados, última tarea finalizada, siguiente tarea, riesgo de solapamiento y resultado de las acciones efectuadas. No inventes tiempos, porcentajes ni verificaciones.
+```
+
+**Instrucción para el modo A — mismo chat:**
+```text
+MISMO CHAT: esta orden se pega en la conversación que ya desarrolla el trabajo seleccionado. Reanuda aquí tras verificar el historial de esta conversación y GitHub. No pidas ir a otro chat por el nombre ni traslades responsabilidad. Si se detecta que el trabajo corresponde en realidad a otra conversación no continuada aquí, verifica en lectura y usa traspaso NUEVO solo si es necesario.
+```
+
+**Instrucción para el modo B — continuador existente:**
+```text
+CONTINUADOR EXISTENTE: el usuario señala que el chat de DESTINO YA RECIBIÓ Y CONTINUÓ el trabajo del ORIGEN. ESTA ORDEN SE PEGA EN ESE DESTINO, responsable actual. NO exijas volver al chat Work agotado, NO rehagas el traspaso, NO bloquees por títulos antiguos «CHAT NUEVO». Comprueba la continuidad real con contexto y GitHub y prosigue desde los avances posteriores, si los hay.
+```
+
+**Instrucción para el modo C — traspaso nuevo:**
+```text
+TRASPASO NUEVO: esta orden se pega en el chat de DESTINO que todavía va a asumir el trabajo del ORIGEN. El destino indicado es el nuevo responsable desde que la sucesión se compruebe con el historial/evidencias. Si el destino es un chat aún no creado, el usuario debe crearlo manualmente y pegar esta orden allí; el panel no puede crear ni renombrar conversaciones. Recupera el último estado verificable, evita colisiones con chats activos y continúa con la primera tarea segura. No atribuyas al chat de destino antecedentes que no sean accesibles o verificables.
 ```
 
 ## 2. PREPARAR TRASPASO WORK
@@ -52,74 +71,21 @@ Enuncia brevemente ORIGEN, DESTINO, repositorio, rama/commit/PR verificados, úl
 PREPARAR TRASPASO WORK. Antes de cualquier aviso de fin de créditos, verifica y guarda los avances reales; actualiza docs/CONTINUIDAD.md, CONTINUIDAD_WORK_A_CHAT_NORMAL.md y PROMPT_CONTINUAR_SIN_WORK.md donde corresponda. Incluye repositorios, ramas, commits, PR, imágenes aprobadas, decisiones, pruebas, bloqueos y la primera tarea pendiente. Comprueba que los documentos sean accesibles y entrega aquí el prompt completo, autocontenido y copiable para continuar desde un chat normal. Si no puedes guardar en GitHub, entrega la recuperación en esta conversación y declara qué no quedó persistido. Solo emite «DESARROLLO FIN DE CRÉDITOS WORK» si realmente no puedes continuar y después de entregar la recuperación disponible.
 ```
 
-## 3. TRASPASAR WORK AGOTADO A CHAT DE CONTINUACIÓN (V3)
-
-**Auditoría de duplicidad:** se ha comprobado que la función pedida ya estaba cubierta parcialmente por la orden 03 «RECUPERAR VISURA EN NUEVO CHAT», y que la 01 reactiva **en el mismo chat**, la 02 prepara el traspaso **antes** de agotar Work y la 08 informa del estado **sin desarrollar**. **No se crea una orden 09**: se amplía la 03 existente.
-
-**Uso:** selecciona el **chat Work que se detuvo** como origen. Después indica el chat que continuará, sea uno existente o uno nuevo con **nombre propio obligatorio**. Un enlace al origen o al destino es opcional. Puedes anotar la tarea prioritaria (por ejemplo, «agente virtual») sin confundirla con el nombre de chat. Copia la orden y pégala en el chat de destino.
-
-**Limitación:** el desplegable es una lista manual de chats conocidos y la web no puede consultar la lista completa de conversaciones, crear o renombrar chats directamente, pegar la orden o certificar acceso al historial del chat elegido. Para un chat nuevo, el usuario debe crear la conversación y darle el nombre solicitado; para uno existente, un enlace directo opcional permite abrirlo.
-
-**Garantías:** no se presume acceso al chat Work agotado; se reconstruye desde evidencia verificable. No se reinicia, no se duplican tareas, se detectan solapamientos, se continúa con la primera tarea segura si la conversación es de desarrollo y se bloquean cambios si el chat de destino está reservado a pruebas. La orden no autoriza fusionar ni publicar.
-
-**Campos:** `{{ORIGEN}}`, `{{ENLACE_ORIGEN}}`, `{{TIPO_DESTINO}}`, `{{DESTINO}}`, `{{ENLACE_DESTINO}}`, `{{FOCO}}`.
-
-```text
-TRASPASAR Y CONTINUAR DESARROLLO VISURA / EXCELL TRAS AGOTAR WORK.
-
-CHAT WORK DE ORIGEN: {{ORIGEN}}
-ENLACE AL CHAT DE ORIGEN: {{ENLACE_ORIGEN}}
-TIPO DE DESTINO: {{TIPO_DESTINO}}
-CHAT RESPONSABLE DE LA CONTINUACIÓN: {{DESTINO}}
-ENLACE DEL CHAT DE DESTINO: {{ENLACE_DESTINO}}
-FOCO O TAREA PRIORITARIA (OPCIONAL): {{FOCO}}
-
-MISIÓN
-Retoma EXCLUSIVAMENTE el desarrollo que estaba ejecutándose en el chat Work de origen y continúa desde el punto realmente alcanzado, sin empezar de cero, repetir tareas ni trasladar por error trabajo de otros chats. Work agotó su tiempo o créditos; este nuevo chat debe hacerse cargo de la continuación con sus herramientas actuales. El origen es la conversación que se desea recuperar; el destino es la conversación en la que SE PEGA ESTA ORDEN. No confundas ambos nombres.
-
-0. IDENTIDAD Y PROTECCIÓN CONTRA SOLAPAMIENTOS
-- Comprueba qué historial del chat de origen puedes consultar de verdad; el nombre o URL por sí solos NO demuestran acceso. Si no es accesible, decláralo y apóyate en evidencias de GitHub, documentos, archivos y pruebas que sí puedas leer. No atribuyas a un chat concreto avances no verificables.
-- Comprueba que este chat es el destino indicado. Si es una conversación reservada a pruebas, NO realices cambios reales. Para chat nuevo, el nombre indicado es el TÍTULO DESEADO; solicita o explica el cambio manual si no puedes renombrarlo automáticamente. No afirmes haberlo renombrado sin comprobarlo.
-- Antes de crear cualquier prompt, orden o flujo nuevo, consulta el catálogo docs/VISURA_CENTRO_DE_MANDO.md y compara propósito, entradas, resultados y riesgos con las órdenes existentes. Si ya hay una equivalente, REUTILÍZALA O AMPLÍALA; no dupliques botones ni instrucciones. Solo crea otra cuando una necesidad realmente distinta lo justifique, y documenta por qué.
-
-1. RECONSTRUIR EL ESTADO MÁS AVANZADO
-- Identifica el repositorio y subproyecto realmente vinculados al chat Work elegido; revisa todas las ramas relevantes, commits, PR abiertos/cerrados, archivos actuales y documentación de continuidad. Cuando existan, revisa docs/CONTINUIDAD.md, CONTINUIDAD_WORK_A_CHAT_NORMAL.md, PROMPT_CONTINUAR_SIN_WORK.md y documentos específicos, pero comprueba que estén actualizados.
-- NO presupongas que main ni un documento antiguo representan el estado más avanzado. Contrasta fechas y pruebas y explica los conflictos. Identifica qué quedó implementado, qué se verificó, qué está a medias, qué imágenes fueron aprobadas o integradas, los bloqueos y la siguiente tarea de desarrollo pendiente.
-- Comprueba colisiones con VISURA WORK, VISURA 0.1, VISURA 0.2, PROMPT E IMÁGENES y otras líneas implicadas. No sobrescribas commits o cambios ajenos ni ocupes archivos bajo responsabilidad de otro chat sin comprobarlo.
-
-2. CONTINUAR, NO RECONSTRUIR
-- Presenta brevemente el último hito REALMENTE verificado, la rama/commit y la tarea exacta que vas a reanudar. Respeta el foco prioritario indicado arriba si es compatible con la evidencia; si no se ha definido, sigue la prioridad verificada en la continuidad.
-- Ejecuta de forma autónoma la PRIMERA tarea segura y autorizada con las herramientas de ESTE chat, usando la rama de desarrollo adecuada. Si faltan herramientas exclusivas de Work, busca alternativas legítimas y compatibles; no prometas ejecución en segundo plano ni digas que una herramienta está disponible sin comprobarlo.
-- Después de cada avance, verifica los cambios y pruebas disponibles, guarda commits en la rama adecuada y actualiza la documentación de continuidad para un próximo traspaso. Continúa con el siguiente paso seguro mientras no exista un bloqueo real.
-
-3. AUTORIZACIONES Y CONDICIONES DE PARADA
-- No fusiones, publiques/despliegues a producción, borres datos, sustituyas recursos aprobados ni modifiques ramas ajenas sin autorización explícita. Si el destino es un chat de PRUEBAS, toda la ejecución es solo lectura.
-- No hagas cambios destructivos por el mero hecho de que el origen use datos de prueba. No repitas intentos idénticos ante un error y no des por terminada una integración solo porque creaste un ZIP o documentos.
-- Solicita intervención únicamente cuando falte el recurso imprescindible, haya un conflicto imposible de resolver de forma segura, se requieran permisos o exista una decisión de negocio indispensable. Explica el bloqueo concreto y deja lista la siguiente acción.
-
-4. SALIDA DE CONTROL
-Al iniciar: informa en pocas líneas del ORIGEN, DESTINO, repositorio, rama/commit verificados, última tarea terminada, siguiente tarea y riesgo de solapamiento.
-Tras cada hito: indica prueba realizada, commit/documentación guardados y primera tarea todavía pendiente. Distingue lo comprobado, lo inferido y lo que no has podido verificar.
-No inventes porcentajes, plazos, actividades, enlaces ni acceso al chat Work original.
-
-OBJETIVO FINAL: continuidad real del desarrollo del origen en el destino indicado, con avances comprobables y sin reinicios, duplicaciones ni operaciones no autorizadas.
-```
-
-## 4. CONTINUAR IMÁGENES VISURA
+## 3. CONTINUAR IMÁGENES VISURA
 **Cuándo:** reactivar el trabajo del chat «PROMPT E IMÁGENES».
 
 ```text
 CONTINUAR IMÁGENES VISURA. Recupera la evolución de «PROMPT E IMÁGENES» mediante el contexto accesible, los archivos gráficos y los registros verificables de GitHub. Identifica qué imágenes están solo diseñadas, cuáles aprobadas, cuáles integradas y cuáles verificadas. Conserva el estilo tridimensional acordado y adapta cada imagen al módulo, pantalla o función correspondiente dentro de VISURA. No reutilices imágenes indiscriminadamente ni sustituyas recursos aprobados. Detecta la última tarea visual pendiente, evita modificaciones concurrentes y continúa su implementación sin alterar funciones existentes. Documenta asignaciones, rutas, pruebas y recursos finales. Mantén preparado el traspaso de Work a chat normal antes de cualquier límite.
 ```
 
-## 5. AUDITAR SOLAPAMIENTOS
+## 4. AUDITAR SOLAPAMIENTOS
 **Cuándo:** sospechas que varios chats trabajan sobre la misma parte del proyecto.
 
 ```text
 AUDITAR SOLAPAMIENTOS VISURA. Compara las tareas de VISURA WORK, PROMPT E IMÁGENES y los demás chats relacionados mediante ramas, commits, PR, documentos de continuidad y estados accesibles. Identifica coincidencias de archivos o funciones, separa los responsables y propone la siguiente tarea independiente para cada línea. No modifiques ni fusiones nada durante esta auditoría. Si algún chat no es accesible, indica la incertidumbre en vez de asumir su estado.
 ```
 
-## 6. GENERAR IMAGEN O ICONO VISURA
+## 5. GENERAR IMAGEN O ICONO VISURA
 
 **Cuándo:** al diseñar un nuevo icono, recurso tridimensional o ilustración para cualquier función del ecosistema VISURA. El sistema debe generar como mínimo tres opciones visuales realmente distintas para poder comparar y elegir.
 
@@ -148,9 +114,9 @@ No te detengas a solicitar preferencias adicionales si la finalidad ya está ind
 - Tipo: `Icono`.
 - Para qué sirve: `Acceso directo al Centro de mando VISURA en la pantalla de inicio del iPhone. Permite abrir el panel de órdenes para reactivar, recuperar y controlar el desarrollo de VISURA. Debe ser un símbolo corporativo tridimensional, reconocible a tamaño pequeño y coherente con la estética VISURA.`
 
-## 7. INTEGRAR IMAGEN APROBADA EN VISURA — V2
+## 6. INTEGRAR IMAGEN APROBADA EN VISURA — V2
 
-**Cuándo:** una vez aprobada una imagen concreta, para integrarla en el destino correcto; se mantiene separada de la orden 06 que genera tres propuestas.
+**Cuándo:** una vez aprobada una imagen concreta, para integrarla en el destino correcto; se mantiene separada de la orden 05 que genera tres propuestas.
 
 **Modo de ejecución obligatorio:** «PRUEBA / SIMULACIÓN» (valor por defecto, sin escrituras) o «INTEGRACIÓN EN RAMA» (solo en un chat de desarrollo autorizado, sin publicar, desplegar ni fusionar). El panel solo prepara y copia una orden; no ejecuta por sí mismo sus instrucciones.
 
@@ -219,16 +185,14 @@ En INTEGRACIÓN EN RAMA: la imagen aprobada y sus derivados necesarios están re
 En PRUEBA / SIMULACIÓN: se audita la viabilidad, se identifican rutas y alternativas, se detectan bloqueos y se entrega un plan ejecutable SIN modificar sistemas.
 ```
 
-## Menú actual — Accesos directos V4.4 (2026-10-26)
+## Menú actual — Accesos directos V5.0 (2026-10-26)
 
-El diseño anterior de desplegable único con flechas fue descartado. **La interfaz actual V4.4** utiliza una portada con **ocho accesos directos en una cuadrícula de dos columnas** y abre solo el formulario seleccionado.
+**Siete funciones**, sin duplicidad 01/03. La nueva orden 01 reúne las tres formas de continuidad; se conserva 02 Preparar Work y las demás tareas de diseño, auditoría, integración y consulta. La interfaz muestra las funciones en una cuadrícula móvil, abre solo la elegida y ofrece «Volver al menú».
 
-- Cada vista ofrece **«Volver al menú»**. Los enlaces `#orden-1` a `#orden-8` abren la tarea correspondiente y `#inicio` vuelve a la portada.
-- El botón **«↻ Actualizar»** continúa en la cabecera. La marca **V4.4** distingue la versión nueva de las copias antiguas que puede servir el alojamiento externo.
-- La información complementaria de GitHub sigue plegada y cerrada al cargar la página.
-- Las siete órdenes anteriores, sus campos y protecciones se conservan. Se incorpora únicamente la **orden 08 — Estado de desarrollo de un chat del proyecto EXCELL**, siempre de solo lectura.
-- Los archivos del panel son `docs/index.html` y `docs/VISURA_ORDENES.html`, junto con este documento maestro en la rama `visura-panel`. No se autoriza modificar `main`, aplicaciones ni datos.
-- El apartado de menú compacto V3 de más abajo es un antecedente histórico superado, no la interfaz actual.
+- Enlaces nuevos `#funcion-1` a `#funcion-7`. Enlaces históricos `#orden-1` a `#orden-8` compatibles con un mapeo explícito para no enviar a la función equivocada.
+- Se mantiene botón «↻ Actualizar», cabecera y logo aprobado, selector de archivos de la integración, todos los prompts independientes y la protección de PRUEBA / SIMULACIÓN.
+- Las instrucciones antiguas 01 y 03 siguen consultables en el historial Git de esta rama, pero no se duplican en el menú.
+- Solo se editan `docs/index.html`, `docs/VISURA_ORDENES.html` y este documento maestro en `visura-panel`; no se autoriza modificar `main` o aplicaciones.
 
 ## Evolución de navegación móvil — Panel compacto (2026-10-26)
 
@@ -238,7 +202,7 @@ El diseño anterior de desplegable único con flechas fue descartado. **La inter
 - Accesos y documentación secundaria plegados, no ocupan la pantalla inicial. El menú debe mantener contraste, tamaño táctil cómodo y funcionar en móvil sin dependencias externas.
 - Orden 07: añade **«Elegir imagen en el dispositivo»** mediante un `<input type="file">` que abre el selector nativo de iOS (Archivos/Fotos, según dispositivo) y muestra nombre y vista previa local cuando sea posible. Mantiene la opción alternativa de URL pública.
 - **Limitación explícita:** por seguridad del navegador, seleccionar un archivo en una web independiente NO lo adjunta automáticamente a ChatGPT ni concede al asistente acceso a su ruta local. El prompt copiado incluye el nombre del archivo seleccionado e indica que el usuario debe adjuntarlo al chat receptor. Nunca inventar una URL local accesible al agente.
-- La herramienta de elección es totalmente local: no transmite bytes a servidores ni a GitHub desde el panel. La orden 07 V2 sigue respetando PRUEBA / SIMULACIÓN predeterminado y los permisos de integración en rama.
+- La herramienta de elección es totalmente local: no transmite bytes a servidores ni a GitHub desde el panel. La orden 06 de integración V2 sigue respetando PRUEBA / SIMULACIÓN predeterminado y los permisos de integración en rama.
 
 ## Botón de actualizar panel (2026-10-26)
 
@@ -262,7 +226,7 @@ El diseño anterior de desplegable único con flechas fue descartado. **La inter
 - El original aprobado se conserva aparte y la integración de los PNG para el acceso directo iPhone sigue registrada como pendiente en `feat/visura-centro-mando-icono-b-20261026`; evitar declararla completada por esta modificación de cabecera.
 - Cambios únicamente en `visura-panel`; no fusionar `main` ni alterar INVENTA/PREPARA.
 
-## 8. ESTADO DE DESARROLLO DE UN CHAT — Proyecto EXCELL
+## 7. ESTADO DE DESARROLLO DE UN CHAT — Proyecto EXCELL
 
 **Cuándo:** cuando quieras seleccionar un chat concreto del proyecto Excel/EXCELL y obtener una evaluación de qué construye, último hito confirmado, cuánto queda para terminar y siguientes pasos, sin reactivar el desarrollo.
 
@@ -270,7 +234,7 @@ El diseño anterior de desplegable único con flechas fue descartado. **La inter
 
 **Funcionamiento:** el botón 08 prepara y copia un prompt específico al chat seleccionado, que debe pegarse en una conversación donde el historial o las fuentes verificables sean accesibles. **El panel no tiene permisos para consultar todos los chats, ni un nombre o enlace por sí solo aporta acceso**. La orden exige no inventar avances ni porcentajes. En especial, las estimaciones de tiempo o % solo se entregan si el alcance y las evidencias lo justifican; en otro caso señala «no estimable».
 
-**Prohibición:** evaluación en **solo lectura**; no cambiar GitHub, PR, códigos, imágenes, bases de datos ni la aplicación. La orden 08 no reactiva trabajo y no sustituye las órdenes 01 y 03.
+**Prohibición:** evaluación en **solo lectura**; no cambiar GitHub, PR, códigos, imágenes, bases de datos ni la aplicación. La orden 07 no reactiva trabajo y no sustituye la orden 01 unificada.
 
 **Variables:** `{{CHAT}}`, `{{ENLACE}}` y `{{CONTEXTO}}`.
 
@@ -310,7 +274,7 @@ Antes de redactar, guardar, proponer o añadir un prompt/botón al Centro de man
 4. Probar el generador con al menos dos opciones diferentes y con opciones vacías; verificar que cambia correctamente origen/destino y que no mezcla chats ni ejecuta acciones desde el panel.
 5. Mantener las dos copias HTML, el documento maestro y la numeración sincronizados. No tocar `main`, no fusionar ni desplegar aplicaciones sin autorización.
 
-**Separación de funciones actual:** 01 Reanudar desarrollo en el chat original o en un continuador que YA trabajó en él (como VISURA WORK → VISURA AUTO-DEV); 02 Preparar Work antes del límite; 03 Hacer un traspaso NUEVO a otra conversación; 08 Consultar el estado de un chat sin modificarlo. Son funciones relacionadas pero no duplicadas.
+**Separación de funciones actual:** 01 Continuar desarrollo con tres modos (mismo chat / continuador ya activo / traspaso nuevo); 02 Preparar traspaso Work antes del límite; 03 Continuar imágenes; 04 Auditar solapamientos; 05 Crear imágenes; 06 Integrar imagen; 07 Consultar estado en solo lectura. Son funciones relacionadas pero no duplicadas.
 
 ## Reglas comunes
 1. Consultar primero el estado verificado en GitHub, **sin tratar la documentación antigua de main como último estado**.
