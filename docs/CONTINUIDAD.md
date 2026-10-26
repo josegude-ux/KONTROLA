@@ -638,3 +638,8 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 - La prueba comprueba tarjetas y recursos de respaldo actuales; **no verifica las imágenes oficiales todavía ausentes**, ni navegación real en dispositivos, ni el conjunto completo de pruebas de integración.
 - Enlace de ejecución: https://github.com/josegude-ux/KONTROLA/actions/runs/40254280063
 - Pendientes: transferencia segura de binarios oficiales, cambio de rutas y caché PWA, actualización de pruebas para nombres definitivos, CI final, revisión visual en dispositivos y fusión únicamente tras autorización. Reversión: PR #29 sigue aislada.
+
+
+### 2026-10-26 — Ampliación de regresión en CI de PR #29
+- El workflow aislado ahora ejecuta `node --test tests/*.test.mjs` en lugar de solo el test de menú; conserva `node --check src/app.mjs` y `node --check tests/visura-menu.test.mjs`. No ejecuta tests de integración PostgreSQL/Supabase y no despliega.
+- Commit de ampliación: `0b343ba6476d9ff6986f8c3194a8746d61ebdc58`. La ejecución previa `40254280063` solo cubría el test de menú; **pendiente comprobar el resultado del nuevo workflow ampliado**.
