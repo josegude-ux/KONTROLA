@@ -323,7 +323,6 @@ function renderLoadList(){
     const pallets=document.createElement("span");pallets.className="load-pallets";
     const palletsLabel=document.createElement("span");palletsLabel.className="load-pallets-label";palletsLabel.textContent="HUECOS PALÉS";
     const palletsValue=document.createElement("strong");palletsValue.className="load-pallets-value";
-    palletsValue.textContent=formatearHuecosPalets(r.huecos_palets_grandes,r.huecos_palets_pequenos,r.huecos_palets_total);
     palletsValue.textContent=textoHuecosConOrigen(r);
     pallets.title=r.huecos_origen==="pdf_leido"?"Lectura local del PDF sin modificar Supabase: confirma el dato al abrir la carga.":
       r.huecos_origen==="revision"?"Huecos guardados en la revisión vigente del PDF.":
@@ -566,6 +565,7 @@ function renderTruckAssessment(){
   const previous=$("truckPreviousChoice").value==="si";
   $("truckFieldsTotal").hidden=bySize;
   $("truckFieldsBySize").hidden=!bySize;
+  $("truckSecondKindRow").hidden=!bySize;
   $("truckPreviousTotalRow").hidden=bySize||!previous;
   $("truckPreviousSizeRow").hidden=!bySize||!previous;
   const european=$("truckSecondKind").value==="E";
@@ -596,11 +596,11 @@ function openTruckPanel(load){
   if(!cached){
     $("truckCapacityG").value=supplied.grandes??"";
     $("truckCapacityP").value=$("truckSecondKind").value==="E"?(supplied.europeos??""):(supplied.pequenos??"");
-    $("truckCapacityTotal").value=supplied.total??"";
+    $("truckCapacityTotal").value=supplied.modo==="sin_datos"?"":(supplied.total??"");
   }
   $("truckCapacitySource").textContent=supplied.modo==="sin_datos"?
     "No constan huecos: se intentará leer el PDF original de esta carga. Si no aparecen, introduce la capacidad real del camión.":
-    "Capacidad leída del PDF de esta carga: confírmala antes de calcular. G y P no se pueden compensar.";
+    "Capacidad según los datos de la carga: confirma sus formatos y palés reales. G, E y P no se compensan entre sí.";
   $("truckCapacityStart").hidden=currentReadOnly||currentPreparation.active||
     currentPreparation.finalized||load.estado!=="publicada";
   renderTruckAssessment();
@@ -627,7 +627,7 @@ async function recoverTruckCapacityFromPdf(load){
       $("truckSecondKind").value=supplied.segundoTipo||"E";
       $("truckCapacityG").value=supplied.grandes??"";
       $("truckCapacityP").value=$("truckSecondKind").value==="E"?(supplied.europeos??""):(supplied.pequenos??"");
-      $("truckCapacityTotal").value=supplied.total??"";
+      $("truckCapacityTotal").value=supplied.modo==="sin_datos"?"":(supplied.total??"");
       $("truckCapacitySource").textContent=supplied.modo==="sin_datos"?
         "El PDF no trae huecos reconocibles. Introduce manualmente la capacidad real del camión.":
         "Huecos recuperados del PDF original sin cambiar Supabase. Confirma sus valores antes de comenzar.";
