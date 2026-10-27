@@ -25,9 +25,9 @@ test("rechaza rutas arbitrarias, documentos ajenos y cargas con cabecera ya guar
     load("LP26-10004",{huecos_palets_grandes:0}),
     load("LP26-10005")
   ];
-  assert.deepEqual(cargasCabeceraPendiente(items).map(x=>x.codigo),["LP26-10005"]);
+  assert.deepEqual(cargasCabeceraPendiente(items).map(x=>x.codigo),["LP26-10004","LP26-10005"]);
   assert.equal(cabeceraSinMetadatos(load("LP26-10005")),true);
-  assert.equal(cabeceraSinMetadatos(load("LP26-10005",{huecos_palets_pequenos:0})),false);
+  assert.equal(cabeceraSinMetadatos(load("LP26-10005",{huecos_palets_pequenos:0})),true);
 });
 
 test("solo acepta cabeceras del código y almacén de la carga",()=>{
@@ -39,7 +39,7 @@ test("solo acepta cabeceras del código y almacén de la carga",()=>{
   };
   assert.deepEqual(cabeceraLeida(reference,parsed,"COR_01_COR"),{
     observaciones:"Entregar puerta 3",
-    huecos_palets_grandes:6,huecos_palets_pequenos:null,huecos_palets_total:null
+    huecos_palets_grandes:6,huecos_palets_pequenos:null,huecos_palets_europeos:null,huecos_palets_total:null
   });
   assert.equal(cabeceraLeida(reference,{...parsed,id:"LP26-10009"},"COR_01_COR"),null);
   assert.equal(cabeceraLeida(reference,{...parsed,warehouse:"COR_02_NAR"},"COR_01_COR"),null);
@@ -53,6 +53,6 @@ test("ausencia de huecos no se transforma en cero y elimina cantidades inválida
     palletsLarge:"6",palletsSmall:2.2,palletsTotal:-3
   },"COR_01_COR");
   assert.deepEqual(result,{
-    observaciones:null,huecos_palets_grandes:null,huecos_palets_pequenos:null,huecos_palets_total:null
+    observaciones:null,huecos_palets_grandes:null,huecos_palets_pequenos:null,huecos_palets_europeos:null,huecos_palets_total:null
   });
 });
