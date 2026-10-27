@@ -77,6 +77,15 @@ export function analyzeDocument(parsed={}){
   if(parsed.refs==null)findings.push(finding(
     "missing_reference_total","error","No se pudo contrastar el número total de referencias del PDF."
   ));
+  const bcQuantityCorrections=Array.isArray(parsed.corrections)
+    &&parsed.corrections.some(c=>c?.field==="qty"&&c?.tipo==="dato_pdf_bc");
+  if(bcQuantityCorrections&&!hasDocumentedBCQuantityOverride(parsed)){
+    findings.push(finding(
+      "quantity_bc_evidence_missing","error",
+      "Hay cantidades contrastadas con Business Central sin evidencia válida en todas las líneas modificadas.",
+      null,"Revisar justificación, línea, cantidad final y origen PDF"
+    ));
+  }
   if(parsed.declaredTotal!=null&&Math.abs(Number(parsed.declaredTotal)-Number(parsed.actualTotal))>0.000001){
     const audited=hasDocumentedBCQuantityOverride(parsed);
     findings.push(finding(
