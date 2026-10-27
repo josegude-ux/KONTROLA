@@ -1,5 +1,6 @@
 import {classifyFixedPositions,filterFixedRows,fixedReportCsv} from "./fixed-position-report.mjs";
 import {buildFixedPrintHtml} from "./fixed-position-print.mjs";
+import {buildFixedXlsx} from "./fixed-position-xlsx.mjs";
 const $=id=>document.getElementById(id);
 const tags={sin_fija:"Sin posición fija",cero:"Fija con stock cero",negativo:"Fija con stock negativo",insuficientes:"Datos insuficientes"};
 const escape=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -50,6 +51,7 @@ export function configureAdminFixedPositions({client,getUser,errorText}){
       "<label>Orden<select id='fixedSort'><option value='severity'>Gravedad</option><option value='code'>Código</option><option value='location'>Ubicación</option><option value='quantity'>Cantidad</option></select></label>",
       "</div><div class='actions'><button id='fixedRefresh' type='button'>Consultar</button>",
       "<button id='fixedExport' type='button' disabled>Descargar CSV</button>",
+      "<button id='fixedXlsx' type='button' disabled>Descargar Excel XLSX</button>",
       "<button id='fixedPrint' type='button' disabled>Imprimir / Guardar PDF</button></div>",
       "<p id='fixedStatus' role='status' aria-live='polite' class='status'></p>",
       "<div id='fixedProvenance' class='fixed-provenance'></div>",
@@ -66,6 +68,7 @@ export function configureAdminFixedPositions({client,getUser,errorText}){
       $(id).addEventListener(id==="fixedSearch"?"input":"change",()=>{page=0;render();});
     });
     $("fixedExport").addEventListener("click",exportCSV);
+    $("fixedXlsx").addEventListener("click",exportXlsx);
     $("fixedPrint").addEventListener("click",print);
     $("fixedPrev").addEventListener("click",()=>{page=Math.max(0,page-1);render();});
     $("fixedNext").addEventListener("click",()=>{page++;render();});
@@ -79,7 +82,7 @@ export function configureAdminFixedPositions({client,getUser,errorText}){
   }
   function emptyDisplay(){
     ["fixedProvenance","fixedMetrics","fixedCount","fixedTable","fixedCards","fixedPage"].forEach(id=>$(id).replaceChildren());
-    $("fixedExport").disabled=true;$("fixedPrint").disabled=true;
+    $("fixedExport").disabled=true;$("fixedXlsx").disabled=true;$("fixedPrint").disabled=true;
   }
   function clear(){serial++;report=null;active="todos";page=0;emptyDisplay();$("fixedStatus").textContent="";}
   async function refresh(){
@@ -104,7 +107,7 @@ export function configureAdminFixedPositions({client,getUser,errorText}){
           const option=element("option",val);option.value=val;$(id).append(option);
         }
       }
-      $("fixedExport").disabled=false;$("fixedPrint").disabled=false;
+      $("fixedExport").disabled=false;$("fixedXlsx").disabled=false;$("fixedPrint").disabled=false;
       $("fixedStatus").textContent=report.complete?
         "Informe calculado. Comprueba la antigüedad de los datos.":"Datos insuficientes: no se ha supuesto stock a cero.";
       render();
@@ -163,6 +166,28 @@ export function configureAdminFixedPositions({client,getUser,errorText}){
     const url=URL.createObjectURL(new Blob([csv],{type:"text/csv;charset=utf-8"}));
     const link=element("a");link.href=url;link.download="VISURA_PREPARA_fijas_"+report.warehouse+"_"+generatedAt.slice(0,10)+".csv";
     document.body.append(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),5000);
+  }
+  function exportXlsx(){
+    if(!report||loading||!getUser()?.id)return;
+    const generatedAt=new Date().toISOString();
+    try{
+      const data=buildFixedXlsx({
+        report,rows:filtered(),generatedAt,
+        filters:{category:active,search:$("fixedSearch").value,aisle:$("fixedAisle").value,
+          zone:$("fixedZone").value,other:$("fixedOther").value,sort:$("fixedSort").value}
+      });
+      const url=URL.createObjectURL(new Blob([data],{
+        type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+      }));
+      const link=element("a");
+      link.href=url;
+      link.download="VISURA_PREPARA_fijas_"+report.warehouse.replace(/[^A-Z0-9_-]/gi,"_")+
+        "_"+generatedAt.slice(0,10)+".xlsx";
+      document.body.append(link);link.click();link.remove();
+      setTimeout(()=>URL.revokeObjectURL(url),5000);
+    }catch(error){
+      $("fixedStatus").textContent="No se pudo generar XLSX: "+errorText(error);
+    }
   }
   function print(){
     if(!report||loading||!getUser()?.id)return;
