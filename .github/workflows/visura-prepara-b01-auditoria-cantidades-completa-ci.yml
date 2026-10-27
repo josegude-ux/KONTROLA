@@ -56,3 +56,57 @@ jobs:
         run: |
           psql -v ON_ERROR_STOP=1 -d "$KONTROLA_TEST_DB" -f tests/integration/b01-quantity-full-coverage.sql | tee /tmp/kontrola-b01-coverage.log
           grep -q 'KONTROLA_B01_CANTIDADES_TODAS_AUDITADAS_OK' /tmp/kontrola-b01-coverage.log
+
+  adversarial_pr72:
+    name: Diagnóstico adversarial PR72 en BD ficticia (no aprobación)
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      CI: 'true'
+      PGHOST: localhost
+      PGPORT: 5432
+      PGUSER: postgres
+      PGPASSWORD: postgres
+      KONTROLA_TEST_DB: kontrola_test_b01_two_step
+      KONTROLA_TEST_REINTENTOS: '1'
+      KONTROLA_TEST_PROVISIONALES: '1'
+      KONTROLA_TEST_HASH_CRUZADO: '1'
+      KONTROLA_TEST_TOTAL_BC: '1'
+    services:
+      postgres:
+        image: postgres:16@sha256:9e2cf6287f25c3151f4c9421ccce2b17f3e60061c111a29165e0d2cdd9ff0a97
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports: [5432:5432]
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+      - name: Preparar solo base local sintética de PR69
+        run: npm run test:db
+      - name: Leer propuesta de PR72 desde SHA inmóvil, sin merge
+        run: |
+          git -c http.extraheader="" fetch --no-tags origin \
+            "+refs/heads/feat/visura-prepara-b01-evidencia-por-linea-20261027:refs/remotes/origin/feat/visura-prepara-b01-evidencia-por-linea-20261027"
+          actual="$(git rev-parse refs/remotes/origin/feat/visura-prepara-b01-evidencia-por-linea-20261027)"
+          expected="8cdab594088eba9960968df6d0be6352733c82ea"
+          if [[ "$actual" != "$expected" ]]; then
+            echo "PR72 cambió. No usar resultados adversos desactualizados." >&2
+            exit 2
+          fi
+          git show "$expected:supabase/proposals/kontrola_bc_evidencia_por_linea_b01.sql" > "$RUNNER_TEMP/pr72.sql"
+          psql -v ON_ERROR_STOP=1 -d "$KONTROLA_TEST_DB" -f "$RUNNER_TEMP/pr72.sql"
+      - name: Intentar dos guardados sucesivos sin origen en segunda cantidad
+        run: |
+          psql -v ON_ERROR_STOP=1 -d "$KONTROLA_TEST_DB" -f tests/integration/b01-two-step-origin-audit.sql | tee /tmp/prepara-pr72-two-step.log
+          grep -q "KONTROLA_PR72_ADVERSARIAL_FINDING_TWO_STEP_UNAUDITED" /tmp/prepara-pr72-two-step.log
+          echo "::warning::Hallazgo reproducido sobre propuesta PR72 SIN corregir ni modificar: resultado SUCCESS acredita defecto, NO seguridad."
