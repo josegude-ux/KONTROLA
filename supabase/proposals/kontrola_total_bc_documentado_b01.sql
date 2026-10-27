@@ -133,8 +133,13 @@ begin
  end if;
  perform pg_catalog.pg_advisory_xact_lock(pg_catalog.hashtextextended('carga:'||v_i.codigo,0));
  select c.* into v_existing from public.kontrola_cargas c where c.codigo=v_i.codigo for update;
- if found and exists(select 1 from public.kontrola_preparaciones p where p.codigo=v_i.codigo) then
-  raise exception 'No se sustituye un documento asociado a una carga iniciada' using errcode='42501';
+ -- Preparación y Verificación pueden empezar de forma independiente.
+ -- Una revisión material queda protegida si CUALQUIERA de ambas ya empezó.
+ if found and (
+   exists(select 1 from public.kontrola_preparaciones p where p.codigo=v_i.codigo)
+   or exists(select 1 from public.kontrola_verificaciones v where v.codigo=v_i.codigo)
+ ) then
+  raise exception 'No se sustituye un documento asociado a una carga iniciada (Preparación o Verificación)' using errcode='42501';
  end if;
  v_revision:=coalesce(v_existing.revision,0)+1;
  if found then
