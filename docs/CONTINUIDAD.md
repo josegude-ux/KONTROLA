@@ -1080,3 +1080,19 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 **Pendiente y límites:** pruebas manuales con roles reales y PDF de empresa en entorno autorizado, revisión de seguridad antes de una migración definitiva, orden de integración de PR encadenadas. No se ha aplicado SQL a Supabase real, ni fusionado ni desplegado. La documentación del usuario de BC se contrasta manualmente, no mediante API.
 
 **Siguiente tarea exacta:** verificar CI final y registrar PR en borrador; después auditar coexistencia entre PR #60 (flujos paralelos) y la cadena de PR #52/#62–69 antes de cualquier integración, especialmente condiciones de reemplazo material y el enlace a documentos; no fusionar sin autorización.
+
+---
+
+## 2026-10-27 — Bloque 01 · Hallazgo de doble guardado en PR #72 y PWA, sin integración
+
+**Chat responsable:** 02 - VISURA PREPARA - Desarrollo Bloque 01. Orden universal no destructiva mantenida: no repetir, sobrescribir, fusionar o desplegar sin autorización.
+
+**Continuidad verificada:** PR #70 (`audit/visura-prepara-b01-preflight-cruces-20261027`) y PR #72 (`feat/visura-prepara-b01-evidencia-por-linea-20261027`) están en borrador y no fusionadas; CI originales satisfactorias para sus pruebas respectivas. Al detectar que PR #72 implementaba ya cobertura BC por línea y un anclaje de origen más amplio, se evitó presentar la rama experimental `feat/visura-prepara-b01-auditoria-cantidades-completa-20261027` como PR nueva.
+
+**Prueba independiente:** `tests/integration/b01-two-step-origin-audit.sql` y un job GitHub Actions PostgreSQL 16 temporal aplican **solo en base ficticia** la propuesta de PR #72 desde SHA fijado `8cdab594088eba9960968df6d0be6352733c82ea`. Dos llamadas consecutivas a `kontrola_corregir_importacion`, la primera no aprobada con la segunda cantidad sin `pdfOriginal`, demuestran que la segunda llamada puede aprobar/publicar mediante evidencia BC exclusiva de la primera línea, pues el origen ya se rebasó al borrador modificado. **CI [40506956592](https://github.com/josegude-ux/KONTROLA/actions/runs/40506956592) SUCCESS en reproducción del defecto**, NO certificación de seguridad. Se registró el hallazgo en [comentario de PR #72](https://github.com/josegude-ux/KONTROLA/pull/72#issuecomment-6442335454) sin modificar el trabajo del responsable.
+
+**Chequeo PWA (lectura):** operativa `0.3.45` / caché `v078`, paralela y responsive `0.3.44` / `v077`, documental `0.3.40` / `v073`. El archivo `vendor/pdf-lib.min.mjs` se genera con `npm run build:vendor` en el flujo Pages, antes de copiar `dist`; la ausencia como blob no basta para afirmar una avería. No restaurar numeración antigua al reconciliar funcionalidades.
+
+**Documentación:** `docs/BLOQUE_01_ADVERSARIAL_DOS_GUARDADOS_Y_PWA.md`. Esta rama experimental queda **sin PR y sin fusión** por solapamiento con PR #72, como apoyo a auditoría únicamente.
+
+**Siguiente tarea segura:** verificar en lectura un HEAD nuevo de PR #72 si el responsable corrige el doble guardado y comprobar su CI; no promover PR #69, #70 o #72 sin integración explícita. Las pruebas de interfaz combinada y uso real de usuarios siguen pendientes. No se aplicó SQL a Supabase, no se desplegó ni se cambió Business Central.
