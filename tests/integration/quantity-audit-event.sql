@@ -74,12 +74,17 @@ select test.assert((select carga_datos->'productos'->0->>'qty'='2'
  'rechazo parcial conserva origen para siguientes intentos');
 
 -- No atribuir una revisión a un administrador distinto del de la sesión.
+reset role;
+-- La helper es interna y sin GRANT a authenticated; inspeccionarla como
+-- rol de diagnóstico exclusivamente en PostgreSQL efímero.
 select test.assert(not public.kontrola_cambios_cantidad_trazados(
  :'event_data_modified'::jsonb,:'event_data_original'::jsonb,
  '[{"line":1,"field":"qty","before":2,"after":4,"tipo":"lectura_pdf","by":"00000000-0000-0000-0000-000000000099","at":"2026-10-27T13:00:00Z","justificacion":"Primera línea auditada por administrador ajeno"},
    {"line":2,"field":"qty","before":3,"after":1,"tipo":"lectura_pdf","by":"00000000-0000-0000-0000-000000000099","at":"2026-10-27T13:01:00Z","justificacion":"Segunda línea auditada por administrador ajeno"}]'::jsonb,
  '00000000-0000-0000-0000-000000000001'::uuid
 ),'no se acepta una identidad arbitraria del autor de la corrección');
+set role authenticated;
+select set_config('request.jwt.claim.sub','00000000-0000-0000-0000-000000000001',false);
 
 -- Dos correcciones de lectura de PDF documentadas por el propio administrador
 -- siguen permitidas: no confundirlas con un contraste BC faltante.
