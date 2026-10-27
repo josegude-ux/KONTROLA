@@ -31,12 +31,18 @@ jobs:
           npm run check
       - name: Leer blobs y obtener lista de archivos coincidentes sin modificar ramas
         run: node scripts/preflight-b01.mjs
+      - name: Auditar contratos DOM y funciones de frontend por rama SIN integración
+        run: |
+          node --test tests/preflight-b01-frontend.test.mjs
+          node scripts/preflight-b01-frontend.mjs
       - name: Adjuntar informe read-only
         if: always()
         uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08 # v4
         with:
           name: visura-prepara-preflight-no-integrado
-          path: artifacts/preflight-b01.*
+          path: |
+            artifacts/preflight-b01.*
+            artifacts/preflight-b01-frontend.*
           if-no-files-found: warn
           retention-days: 7
 
