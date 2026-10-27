@@ -104,7 +104,7 @@ export function createAdminController({client,getUser,bucket,global,errorText,on
     const actor=getUser()?.id;
     const {data,error}=await client.from("kontrola_pdf_provisionales")
       .select("id,archivo_nombre,documento_ruta,estado,creado_en,motivo")
-      .order("creado_en",{ascending:false}).limit(100);
+      .neq("estado","identificada").order("creado_en",{ascending:false}).limit(100);
     if(getUser()?.id!==actor)return;
     list.replaceChildren();
     if(error){box.hidden=false;list.textContent="No se pudieron consultar borradores provisionales: "+errorText(error);return;}
@@ -129,7 +129,60 @@ export function createAdminController({client,getUser,bucket,global,errorText,on
         }catch(e){setStatus("No se pudo descargar el original provisional: "+errorText(e),"error");}
         finally{button.disabled=false;}
       });
-      line.append(meta,button);list.appendChild(line);
+      const form=document.createElement("div");form.className="provisional-identity-form";
+      const codeLabel=document.createElement("label");codeLabel.textContent="Código LP contrastado en BC";
+      const codeInput=document.createElement("input");codeInput.type="text";
+      codeInput.placeholder="LP26-12345";codeInput.maxLength=11;codeInput.autocomplete="off";
+      codeLabel.appendChild(codeInput);
+      const zoneLabel=document.createElement("label");zoneLabel.textContent="Almacén contrastado en BC";
+      const zoneInput=document.createElement("select");zoneInput.className="warehouse-select";
+      for(const [value,label] of [["","Selecciona almacén"],["COR_01_COR","A Coruña"],["COR_02_NAR","Ferrol"]]){
+        const option=document.createElement("option");option.value=value;option.textContent=label;zoneInput.appendChild(option);
+      }
+      zoneLabel.appendChild(zoneInput);
+      const evidenceLabel=document.createElement("label");evidenceLabel.textContent="Evidencia o justificación del contraste manual";
+      const evidenceInput=document.createElement("textarea");evidenceInput.rows=2;evidenceInput.maxLength=2000;
+      evidenceInput.placeholder="Referencia comprobada en Business Central y motivo de la identificación";
+      evidenceLabel.appendChild(evidenceInput);
+      const identify=document.createElement("button");identify.type="button";identify.className="primary";
+      identify.textContent="Identificar para revisión";
+      identify.addEventListener("click",async()=>{
+        if(busy)return;
+        const codigo=codeInput.value.trim().toUpperCase(),almacen=zoneInput.value;
+        const evidencia=evidenceInput.value.trim();
+        if(!/^LP\\d{2}-\\d{4,6}$/.test(codigo)||!["COR_01_COR","COR_02_NAR"].includes(almacen)||evidencia.length<15){
+          setStatus("Indica código LP, almacén y evidencia de al menos 15 caracteres contrastados con BC.","error");
+          return;
+        }
+        if(!window.confirm("¿Confirmas que has contrastado manualmente el código y el almacén con Business Central? El PDF pasará solo a revisión, sin publicarse."))return;
+        setBusy(true);identify.disabled=true;
+        try{
+          const {data:raw,error:downloadError}=await client.storage.from(bucket).download(row.documento_ruta);
+          if(downloadError)throw downloadError;
+          const file=new File([raw],row.archivo_nombre||"provisional.pdf",{type:"application/pdf"});
+          const parsed=await parsePdfFile(file,{warehouse:almacen});
+          if(!Array.isArray(parsed.products)||!parsed.products.length){
+            throw Error("No se han reconocido artículos del almacén; el borrador permanece sin identificar.");
+          }
+          const at=new Date().toISOString();
+          const changes=[{line:null,field:"codigo",before:parsed.id||"",after:codigo,
+            by:getUser().id,at,justificacion:evidencia}];
+          if(parsed.warehouse!==almacen)changes.push({line:null,field:"warehouse",before:parsed.warehouse||"",after:almacen,
+            by:getUser().id,at,justificacion:evidencia});
+          const reviewed={...parsed,id:codigo,warehouse:almacen,verified:false,corrections:changes};
+          const {data:id,error:promoteError}=await client.rpc("kontrola_identificar_provisional_pdf",{
+            p_id:row.id,p_codigo:codigo,p_almacen:almacen,p_evidencia:evidencia,
+            p_carga:asPayload(reviewed),p_hallazgos:analyzeDocument(reviewed),p_correcciones:changes
+          });
+          if(promoteError)throw promoteError;
+          await loadImport(id);
+          await Promise.all([refreshProvisionalDrafts(),refreshReviewSelector(),refreshPendingPublish()]);
+          setStatus("PDF identificado y conservado. Revisa sus hallazgos y guarda la revisión antes de publicar.","success");
+        }catch(error){setStatus("La identificación no se ha completado: "+errorText(error),"error");}
+        finally{setBusy(false);identify.disabled=false;updateActions();}
+      });
+      form.append(codeLabel,zoneLabel,evidenceLabel,identify);
+      line.append(meta,button,form);list.appendChild(line);
     }
   }
   async function processSinglePdf(file,seenCodes){
