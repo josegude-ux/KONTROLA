@@ -1080,3 +1080,89 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 **Pendiente y límites:** pruebas manuales con roles reales y PDF de empresa en entorno autorizado, revisión de seguridad antes de una migración definitiva, orden de integración de PR encadenadas. No se ha aplicado SQL a Supabase real, ni fusionado ni desplegado. La documentación del usuario de BC se contrasta manualmente, no mediante API.
 
 **Siguiente tarea exacta:** verificar CI final y registrar PR en borrador; después auditar coexistencia entre PR #60 (flujos paralelos) y la cadena de PR #52/#62–69 antes de cualquier integración, especialmente condiciones de reemplazo material y el enlace a documentos; no fusionar sin autorización.
+
+---
+
+## 2026-10-27 — Bloque 01: preflight de compatibilidad no destructivo entre cadenas activas
+
+**Chat responsable:** VISURA PREPARA / desarrollo Bloque 01, con orden universal de continuidad no destructiva. No se han cambiado autorizaciones ni responsables.
+
+**Trabajo verificado, SIN fusionar:** PR #60 (`18c46b0c742bae9321f08603da40dfd1e7d76323`), PR #61 (`d66ecad37a13c3af6dafe2463236a1e2b874f77a`) y PR #69 (`13b5fbdac50b6e7a2ec4b97bbf2313b7bdbd9fcf`), todas en borrador y divergentes desde un ancestro compartido `e453c6e9cd04b7e92daea54bb95bcc53c2fb5c16`. La rama operativa `cursor/verificacion-fisica-cargas-8ba0` permanece en `042724a90b897c9c5d289c52cb36ed970bec9dde`; no se ha tocado.
+
+**Rama de auditoría creada desde el HEAD exacto de PR #69:** `audit/visura-prepara-b01-preflight-cruces-20261027`. No modifica el código funcional ni ninguna PR de origen.
+
+**Preflight programado:** `scripts/preflight-b01.mjs` y `tests/preflight-b01.test.mjs` leen Git `rev-parse/show/diff/merge-base` desde SHA fijados, sin ejecutar fusiones ni escrituras remotas, y generan Markdown/JSON en un ejecutor efímero. CI `.github/workflows/visura-prepara-b01-preflight-ci.yml`: Node y auditoría de ramas sin desplegar nada.
+
+**Resultado reproducible:** [GitHub Actions 40491929041](https://github.com/josegude-ux/KONTROLA/actions/runs/40491929041) **SUCCESS**, [40492045485](https://github.com/josegude-ux/KONTROLA/actions/runs/40492045485) **SUCCESS** tras añadir documentación. Las diferencias entre PR #60 y #69 son 17 archivos que ambas modifican, y entre PR #61 y #69 otros 17 (pueden coincidir en nombres; no sumar como 34 archivos únicos). Los 9 contratos fuente verificados estaban presentes, pero hay 3 vacíos de integración comprobados: en PR #69 falta el módulo de flujos paralelos y el CSS de escritorio ancho, y en PR #61 faltan los formularios de cantidades. Por tanto **NO INTEGRADO / NO LISTO PARA DESPLIEGUE**.
+
+**Archivos de solapamiento relevantes:** `index.html`, `src/app.mjs`, `src/admin.mjs`, `src/core.mjs`, `styles.css`, `tests/integration/run.sh`, `docs/CONTINUIDAD.md`, `package.json`, `sw.js`, entre otros. La CI es una inspección; no acredita convivencia real ni reglas SQL conjuntas.
+
+**Detalle:** `docs/BLOQUE_01_PREFLIGHT_NO_DESTRUCTIVO.md`. Informes de GitHub Actions en artefacto `visura-prepara-preflight-no-integrado`, con retención de siete días, y salida legible en logs.
+
+**Protecciones:** no cambiar condiciones 01–23, ni un único preparador, palets informativos, picking BC, independencia de Preparación y Verificación. Bloque 02 fuera de alcance. No fusionar, desplegar, alterar registros empresariales ni aplicar SQL a Supabase.
+
+**Siguiente trabajo seguro:** preservar resultados de auditoría y elaborar una matriz de integración documental por archivo, sin combinar código. Una prueba real de ambas líneas juntas requiere autorización de una fase de integración separada y debe ejecutarse primero contra PostgreSQL de prueba, nunca datos reales. No asumir que el éxito verde de este preflight equivale a la aprobación de producción.
+
+---
+
+## 2026-10-27 — Bloque 01: comprobación SQL cruzada sin fusionar PR
+
+**Responsable:** 02 - VISURA PREPARA - Desarrollo Bloque 01. Modo reanudar en el mismo chat. Sin traspaso de responsabilidad ni autorización de despliegue.
+
+**Verificación previa:** repositorio `josegude-ux/KONTROLA`, rama original operativa `cursor/verificacion-fisica-cargas-8ba0` `042724a90b897c9c5d289c52cb36ed970bec9dde`. Los HEAD de PR #60 `18c46b0c742bae9321f08603da40dfd1e7d76323`, PR #61 `d66ecad37a13c3af6dafe2463236a1e2b874f77a`, PR #69 `13b5fbdac50b6e7a2ec4b97bbf2313b7bdbd9fcf` y PR #70 `7cd1d9c432428f823ac89296048deca932a68e97` estaban verificados al comenzar. Sin nuevas fusiones ni despliegues detectados en estas líneas.
+
+**Tarea implementada, sin tocar ramas de origen:** en `audit/visura-prepara-b01-preflight-cruces-20261027` (PR #70) se han añadido `tests/integration/preflight-cross-contract.sql`, `scripts/preflight-b01-cross-db.sh` y un segundo job PostgreSQL 16 temporal a `.github/workflows/visura-prepara-b01-preflight-ci.yml`. Ejercita las propuestas documentales y paralelas desde SHA inmóviles, sin efectuar merge ni modificar datos empresariales.
+
+**Incompatibilidad real encontrada:** ambas propuestas redefinen `public.kontrola_publicar_importacion(uuid)`. Si se aplica la SQL paralela de PR #60 después de la SQL de total BC de PR #69, se restaura la restricción antigua `actual_total = declared_total`, perdiendo la posibilidad de publicación documental BC auditada y el guard de Verificación iniciada. CI [40499729039](https://github.com/josegude-ux/KONTROLA/actions/runs/40499729039) falló reproduciendo el problema. Se implementó **solo en entorno efímero de pruebas** una secuencia que detecta la sobreescritura y reaplica exactamente la propuesta documental de PR #69 después de la paralela; `pg_get_functiondef` verifica presencia del contrato BC y del guard de Verificación. La SQL original de PR #60 y #69 permanece intacta.
+
+**Prueba adicional:** la ejecución [40499943882](https://github.com/josegude-ux/KONTROLA/actions/runs/40499943882) detectó una aserción incorrecta bajo RLS al consultar sesión de verificador desde el preparador. Se ajustó el **test**, no los permisos: la integridad inter-usuarios se valida mediante `reset role` exclusivamente en PostgreSQL de pruebas; ambas cuentas operativas siguen limitadas por RLS.
+
+**Éxito verificado:** GitHub Actions [40500100793](https://github.com/josegude-ux/KONTROLA/actions/runs/40500100793) concluyó con éxito en jobs de auditoría Git y contratos SQL cruzados. Regresiones documentales, flujo paralelo, carrera de verificadores y prueba nueva de cantidades BC/publicación protegida/sesiones de Preparación y Verificación independientes pasaron con datos ficticios. Ver detalle `docs/BLOQUE_01_CRUCE_SQL_PARALELO_DOCUMENTAL.md`.
+
+**Límites:** PR #60/#61/#69/#70 continúan separadas. El éxito no valida una aplicación UI integrada, navegador autenticado ni permisos reales del cliente. No se han modificado Supabase real, Business Central, datos empresariales, archivos de origen ni producción. El Bloque 02 permanece excluido.
+
+**Próxima tarea segura:** documentar la secuencia SQL contractual necesaria para futura integración y revisar las discrepancias de interfaz sin fusionar. Todo merge de PR, publicación real y pruebas con datos empresariales necesita autorización expresa.
+
+
+**Refuerzo de seguridad adicional (misma fase, 27/10/2026):** `tests/integration/preflight-cross-contract.sql` también valida una carga cuya **única** actividad es Verificación realmente iniciada por su RPC, sin preparación. Se intenta reemplazar el PDF y se comprueba que el servidor rechaza la publicación, conservando revisión/hash y sin crear preparación. [CI 40500594013](https://github.com/josegude-ux/KONTROLA/actions/runs/40500594013) falló exclusivamente por delimitador PL/pgSQL erróneo de la prueba; corregido ese test, [CI 40500715130](https://github.com/josegude-ux/KONTROLA/actions/runs/40500715130) **SUCCESS** en ambos jobs. Documentado en `docs/BLOQUE_01_CRUCE_SQL_PARALELO_DOCUMENTAL.md`. No se tocaron propuestas SQL originales, ramas ajenas ni producción.
+
+**Reanudación exacta:** rama audit `audit/visura-prepara-b01-preflight-cruces-20261027`, PR #70 abierta en borrador; comprobación SQL cruzada completada en laboratorio, no hay frontend conjunto. Si no se autoriza una integración aislada, conservar estas pruebas/documentación y evitar modificar PR #60/#61/#69 o sistemas reales. El próximo desarrollo integrado necesitará revisar los 17 archivos comunes antes de combinar, con responsable definido y permiso de integración; no hacer merge de PR ni despliegue por esta nota.
+
+
+---
+
+## 2026-10-27 — Bloque 01: auditoría ampliada a frontend, RPC y endurecimiento BC por línea
+
+**Mismo chat responsable del desarrollo**; el usuario refuerza continuar sin detenerse tras cada tarea segura, conservando prohibición de merges, despliegues, datos empresariales y cambios de ramas ajenas.
+
+**Trabajo automático de inspección de frontend:** `scripts/preflight-b01-frontend.mjs` y `tests/preflight-b01-frontend.test.mjs` leen `index.html`, `styles.css`, `src/app.mjs` y `src/admin.mjs` desde SHA exactos de PR #60/#61/#69 sin combinar archivos. Identifican **diez contratos exclusivos por líneas de origen**, incluido módulo paralelo, matriz de pasillos, A4 COR 1/COR 2 y amplitud escritorio, frente a provisionales, correcciones documentales, histórico y contraseñas. La línea documental posee 14 IDs HTML ausentes en paralela y la paralela siete IDs que faltan en documental. No hay IDs DOM duplicados ni referencias `$(id)` inválidas detectadas en esas ramas. [CI 40502771216](https://github.com/josegude-ux/KONTROLA/actions/runs/40502771216) SUCCESS, tras corregir en el auditor el error de sobrescribir en memoria el módulo admin. Informe `docs/BLOQUE_01_INVENTARIO_FRONTEND_SIN_FUSION.md`.
+
+**Contratos RPC de frontend:** `scripts/preflight-b01-rpc.mjs` y `tests/preflight-b01-rpc.test.mjs` verifican 20 nombres RPC comunes y los tres adicionales documentales `kontrola_reservar_provisional_pdf`, `kontrola_completar_provisional_pdf`, `kontrola_identificar_provisional_pdf`, todos presentes como funciones SQL con `REVOKE PUBLIC/anon` y `GRANT authenticated`. Es prueba de presencia, no de RLS o autorización real. [CI 40503306034](https://github.com/josegude-ux/KONTROLA/actions/runs/40503306034) SUCCESS. Documento `docs/BLOQUE_01_CONTRATOS_RPC_SIN_FUSION.md`.
+
+**Defecto original descubierto:** la propuesta PR #69 aceptaba una corrección BC con evidencia mientras una segunda cantidad también había variado sin prueba. Se agregó `tests/integration/preflight-b01-adversarial-quantity.sql` y un aviso explícito en CI para reflejar el riesgo de la propuesta original, no una falsa certificación. [CI 40503733037](https://github.com/josegude-ux/KONTROLA/actions/runs/40503733037) SUCCESS **como auditoría de fallo confirmado**.
+
+**Corrección separada:** creada [PR #72](https://github.com/josegude-ux/KONTROLA/pull/72) en borrador sobre PR #69, rama `feat/visura-prepara-b01-evidencia-por-linea-20261027`, HEAD `8cdab594088eba9960968df6d0be6352733c82ea`. Añade evidencia por línea, anclaje del origen y suite de pruebas, sin aplicar nada al servidor ni modificar PR #69.
+
+**Cruce reforzado desde PR #70:** workflow SQL temporal incorpora copia exacta de propuesta y tests PR #72 después del contrato paralelo y documental; exige SHA inmóvil. Verificado en [CI 40505801598](https://github.com/josegude-ux/KONTROLA/actions/runs/40505801598) **SUCCESS** (dos jobs): línea documental original, detección de error original, restauración de orden, independencia de Preparación y Verificación, carrera de verificadores, rechazo de segunda cantidad sin evidencia y bloqueo de publicación de revisión al iniciar cualquiera de los dos trabajos. Salida `KONTROLA_B01_HARDENED_CROSS_OK`. Detalle `docs/BLOQUE_01_CRUCE_SQL_PARALELO_DOCUMENTAL.md`.
+
+**Estado:** PR #60, #61, #69, #70 y #72 siguen independientes, borrador, no fusionadas; la prueba SQL es temporal y la UI continúa sin integrarse. Ningún permiso/Supabase/BC/usuario empresarial fue alterado.
+
+**Siguiente tarea aún no autorizada:** reconciliar el frontend real de ramas divergentes, los 17 archivos modificados por ambos lados, y aplicar una secuencia SQL unificada. Requiere fase de integración específica; no sustituir componentes de UI ni desplegar sin permiso. La continuidad segura realizada está cerrada al máximo permitido por las ramas sin fusionar; cualquier cambio adicional deberá ser independiente, seguro y ya autorizado.
+
+---
+
+## 2026-10-27 — Bloque 01: continuidad automática PR #75, pruebas SQL y PWA sin merge
+
+**Responsable:** `02 - VISURA PREPARA - Desarrollo Bloque 01`, reanudado en el mismo chat. El usuario señaló expresamente que NO debe detenerse el trabajo tras un hito cuando existan otras tareas autorizadas y seguras. Se continuó con tareas independientes, sin cambiar el alcance ni las prohibiciones de fusión/despliegue.
+
+**Ramas originales comprobadas antes de intervenir:** PR #60 `18c46b0c742bae9321f08603da40dfd1e7d76323`, PR #61 `d66ecad37a13c3af6dafe2463236a1e2b874f77a`, PR #69 `13b5fbdac50b6e7a2ec4b97bbf2313b7bdbd9fcf`, PR #72 `8cdab594088eba9960968df6d0be6352733c82ea` y PR #70 `05dfebc86b4b8f6179b2b8c29956c8db19634c5b`; abiertas en borrador, sin merge.
+
+**Nueva PR propia en borrador:** [#75](https://github.com/josegude-ux/KONTROLA/pull/75), rama `feat/visura-prepara-b01-correcciones-neto-cero-20261027` derivada exactamente de PR #72; HEAD verificado en esa fase `b7827629089e33ebf5b95bd509f430d69a07dc61`. Detecta y protege cantidades con suma final compensada (2+3=5 y 4+1=5) aunque la evidencia BC esté incompleta o no haya evento; exige correcciones con actor actual, antes/después, tipo, fecha y evidencia. Rechaza modificaciones incompletas antes de persistirlas; preserva rectificaciones legítimas de lectura PDF. Prueba CI del último HEAD [40509183180](https://github.com/josegude-ux/KONTROLA/actions/runs/40509183180) **SUCCESS** en PostgreSQL 16 temporal y Node. Documentación de PR75 `docs/BLOQUE_01_CANTIDADES_NETO_CERO.md`.
+
+**Compatibilidad conjunta:** la rama de auditoría PR #70 se amplió para leer desde `git show` el SHA fijo de PR #75 junto a PR #60/#69/#72, aplicar sus propuestas solo sobre PostgreSQL efímero y comprobar preservación de guard de Verificación y de evidencia BC. CI [40509512782](https://github.com/josegude-ux/KONTROLA/actions/runs/40509512782) **SUCCESS** ambos jobs, sin fusionar ramas ni migrar datos reales. Detalle `docs/BLOQUE_01_CRUCE_SQL_PARALELO_DOCUMENTAL.md`.
+
+**Auditoría PWA siguiente:** `scripts/preflight-b01-pwa.mjs`, `tests/preflight-b01-pwa.test.mjs` y job CI verifican caché SW y version.json de tres ramas; detectan token v077 y versión 0.3.44 idénticos en paralela/responsive aunque el HTML/CSS cambia, y v073/0.3.40 en documental. El recurso `vendor/pdf-lib.min.mjs` no está versionado, pero está declarado como generado por `scripts/build-vendor.mjs` y el Pages workflow lo compila antes de copiar vendor. **Se ejecutó la compilación real en directorio efímero** desde el SHA de PR61; `vendor/pdf-lib.min.mjs` fue generado e incluido en `dist/vendor/`. [CI #40510866461](https://github.com/josegude-ux/KONTROLA/actions/runs/40510866461) **SUCCESS** ambos jobs, con `KONTROLA_B01_PWA_BUILD_OK`. Detalles `docs/BLOQUE_01_PWA_COMPATIBILIDAD.md`.
+
+**Límites y siguientes pasos:** no hay frontend combinado, instalación PWA real ni aplicación de SQL a Supabase. Antes de integración se deben reconciliar los 17 archivos coincidentes sin perder funciones y definir versión de cache, con permiso expreso. El caso de altas y bajas de referencias requiere decisión específica para no impedir las correcciones de importación ya aprobadas. No se ha fusionado ni desplegado, ni modificado Business Central, datos empresariales o Bloque 02.
+
+**Reanudación:** verificar nuevamente HEAD/CI actuales de PR #70/#75 y de las ramas responsables, después escoger siguiente tarea independiente segura o, si no existe, documentar el bloqueo exacto sin inventar requisitos ni autorizar merges.
