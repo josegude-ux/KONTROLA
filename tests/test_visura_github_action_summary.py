@@ -592,6 +592,52 @@ class CodeownersSummaryTests(unittest.TestCase):
         self.assertIn("no confirma", text)
         self.assertIn("NO autorización", text)
 
+    def test_versioned_codeowners_recheck_is_not_ownership_proof(self):
+        data = bundle()
+        evidence = self.evidence()
+        evidence["observations"][0]["blob_sha"] = SHA
+        data["target_branch_codeowners"] = evidence
+        data["same_codeowners_metadata_after_audit"] = True
+        summary = render_readonly_audit_summary(data)
+        self.assertIn("Metadatos releídos: **coincidentes al releer", summary)
+        self.assertIn("no propiedad verificada", summary)
+        self.assertNotIn("a" * 40, summary)
+        self.assertIn("NO autorización", summary)
+
+    def test_legacy_codeowners_report_version_unknown_not_falsely_verified(self):
+        data = bundle()
+        data["target_branch_codeowners"] = self.evidence()
+        summary = render_readonly_audit_summary(data)
+        self.assertIn("Metadatos releídos: **desconocido**", summary)
+        data["same_codeowners_metadata_after_audit"] = True
+        with self.assertRaisesRegex(ValueError, "needs observed blob SHA"):
+            render_readonly_audit_summary(data)
+
+    def test_malformed_blob_sha_and_forged_recheck_fail_closed(self):
+        for value in ("<script>alert(1)</script>", "", True, "z" * 40):
+            with self.subTest(value=value):
+                data = bundle()
+                evidence = self.evidence()
+                evidence["observations"][0]["blob_sha"] = value
+                data["target_branch_codeowners"] = evidence
+                with self.assertRaisesRegex(ValueError, "Invalid CODEOWNERS blob SHA"):
+                    render_readonly_audit_summary(data)
+        for value in (False, 0, 1, "true", {}, []):
+            with self.subTest(flag=value):
+                data = bundle()
+                data["target_branch_codeowners"] = self.evidence()
+                data["same_codeowners_metadata_after_audit"] = value
+                with self.assertRaisesRegex(ValueError, "CODEOWNERS metadata recheck claim"):
+                    render_readonly_audit_summary(data)
+
+    def test_unknown_codeowners_path_cannot_claim_blob_sha(self):
+        data = bundle()
+        evidence = self.evidence()
+        evidence["observations"][1]["blob_sha"] = SHA
+        data["target_branch_codeowners"] = evidence
+        with self.assertRaisesRegex(ValueError, "cannot provide blob SHA"):
+            render_readonly_audit_summary(data)
+
     def test_404s_are_unknown_not_verified_absence(self):
         data = bundle()
         evidence = self.evidence()
