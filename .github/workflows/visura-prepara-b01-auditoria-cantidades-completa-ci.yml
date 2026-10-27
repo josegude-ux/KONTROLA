@@ -1,0 +1,58 @@
+name: VISURA PREPARA B01 · Evidencia en todas las cantidades corregidas
+on:
+  push:
+    branches:
+      - feat/visura-prepara-b01-auditoria-cantidades-completa-20261027
+permissions:
+  contents: read
+jobs:
+  quantity_guard:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      CI: 'true'
+      PGHOST: localhost
+      PGPORT: 5432
+      PGUSER: postgres
+      PGPASSWORD: postgres
+      KONTROLA_TEST_DB: kontrola_test_quantity_coverage
+      KONTROLA_TEST_REINTENTOS: '1'
+      KONTROLA_TEST_PROVISIONALES: '1'
+      KONTROLA_TEST_HASH_CRUZADO: '1'
+      KONTROLA_TEST_TOTAL_BC: '1'
+    services:
+      postgres:
+        image: postgres:16@sha256:9e2cf6287f25c3151f4c9421ccce2b17f3e60061c111a29165e0d2cdd9ff0a97
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports: [5432:5432]
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Validar JavaScript, regresiones y bloqueos de cantidades sin prueba
+        run: |
+          npm ci
+          npm run check
+      - name: Ejecutar TODA la suite existente sobre PostgreSQL local temporal
+        run: npm run test:db
+      - name: Aplicar SOLO nueva propuesta SQL en base de pruebas
+        run: |
+          if [[ "$KONTROLA_TEST_DB" != "kontrola_test_quantity_coverage" || "$PGHOST" != "localhost" ]]; then
+            echo "Base no apta para test" >&2
+            exit 2
+          fi
+          psql -v ON_ERROR_STOP=1 -d "$KONTROLA_TEST_DB" -f supabase/proposals/kontrola_total_bc_todas_lineas_auditadas_b01.sql
+      - name: Verificar cobertura línea a línea y publicación con evidencia completa
+        run: |
+          psql -v ON_ERROR_STOP=1 -d "$KONTROLA_TEST_DB" -f tests/integration/b01-quantity-full-coverage.sql | tee /tmp/kontrola-b01-coverage.log
+          grep -q 'KONTROLA_B01_CANTIDADES_TODAS_AUDITADAS_OK' /tmp/kontrola-b01-coverage.log
