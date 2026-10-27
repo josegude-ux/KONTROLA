@@ -63,6 +63,9 @@ select * from public.kontrola_iniciar_preparacion(
 select test.assert((select count(*)=1 from public.kontrola_preparaciones
  where codigo='LP26-94001' and fin is null),
  'Preparación independiente se mantiene abierta');
+-- La RLS del preparador prohíbe consultar la Verificación de otra persona.
+-- Validar la integridad del estado como rol de diagnóstico SOLO en esta BD.
+reset role;
 select test.assert((select count(*)=1 from public.kontrola_verificaciones
  where codigo='LP26-94001' and fin is null),
  'iniciar Preparación no corta la Verificación activa');
@@ -103,6 +106,8 @@ select test.assert((
 ), 'la carga operativa sigue íntegra tras el rechazo');
 select test.assert((select count(*)=1 from public.kontrola_carga_revisiones
  where codigo='LP26-94001'), 'no se agrega revisión material indebida');
+-- Estado de dos sesiones de propietarios distintos: prueba de integridad como postgres.
+reset role;
 select test.assert((select count(*)=1 from public.kontrola_preparaciones
  where codigo='LP26-94001' and fin is null),'Preparación mantiene su sesión');
 select test.assert((select count(*)=1 from public.kontrola_verificaciones
@@ -115,8 +120,10 @@ select test.assert((select count(*)=1 from public.kontrola_actividad
 select set_config('request.jwt.claim.sub','00000000-0000-0000-0000-000000000003',false);
 select * from public.kontrola_registrar_linea(:'verified_id',1,4);
 select * from public.kontrola_finalizar_verificacion(:'verified_id');
+reset role;
 select test.assert((select fin is null from public.kontrola_preparaciones where codigo='LP26-94001'),
  'cerrar Verificación no cierra la Preparación de otro usuario');
+set role authenticated;
 select set_config('request.jwt.claim.sub','00000000-0000-0000-0000-000000000002',false);
 select public.kontrola_finalizar_preparacion('LP26-94001');
 select test.assert((select estado='cerrada' and revision=1
