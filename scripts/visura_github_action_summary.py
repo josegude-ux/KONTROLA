@@ -353,6 +353,15 @@ def render_readonly_audit_summary(bundle):
         "coincidentes al releer (no elegibilidad)"
         if rechecked_reviewer_permissions is True else "desconocido"
     )
+    ci_rechecks = {}
+    for field in ("same_commit_checks_after_audit", "same_legacy_statuses_after_audit"):
+        value = bundle.get(field)
+        if value is not None and value is not True:
+            raise ValueError("Invalid CI evidence recheck claim")
+        ci_rechecks[field] = (
+            "coincidentes al releer (no aprobación de CI)"
+            if value is True else "desconocido"
+        )
     if any(target.get(key) is not False for key in (
         "repository_policy_verified", "execution_authorized",
         "merge_authorized", "deployment_authorized",
@@ -594,6 +603,8 @@ def render_readonly_audit_summary(bundle):
         "| Política de destino releída | " + rechecked_target_text + " |",
         "| Revisiones releídas | " + rechecked_review_text + " |",
         "| Permisos de revisores releídos | " + rechecked_reviewer_text + " |",
+        "| Check-runs releídos | " + ci_rechecks["same_commit_checks_after_audit"] + " |",
+        "| Estados heredados releídos | " + ci_rechecks["same_legacy_statuses_after_audit"] + " |",
         "",
         "## Revisiones registradas (no autorizaciones)",
         "",

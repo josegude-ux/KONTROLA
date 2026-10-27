@@ -188,6 +188,31 @@ class GitHubActionSummaryTests(unittest.TestCase):
                 with self.assertRaisesRegex(ValueError, "reviewer permissions recheck"):
                     render_readonly_audit_summary(data)
 
+    def test_matching_ci_rechecks_are_observations_only(self):
+        data = bundle()
+        data["same_commit_checks_after_audit"] = True
+        data["same_legacy_statuses_after_audit"] = True
+        report = render_readonly_audit_summary(data)
+        self.assertIn("Check-runs releídos | coincidentes al releer", report)
+        self.assertIn("Estados heredados releídos | coincidentes al releer", report)
+        self.assertIn("no aprobación de CI", report)
+        self.assertIn("NO autorización", report)
+
+    def test_missing_ci_rechecks_in_legacy_reports_stay_unknown(self):
+        report = render_readonly_audit_summary(bundle())
+        self.assertIn("Check-runs releídos | desconocido", report)
+        self.assertIn("Estados heredados releídos | desconocido", report)
+
+    def test_forged_ci_rechecks_rejected(self):
+        for field in ("same_commit_checks_after_audit",
+                      "same_legacy_statuses_after_audit"):
+            for value in (False, 0, 1, "true", {}, []):
+                with self.subTest(field=field, value=value):
+                    data = bundle()
+                    data[field] = value
+                    with self.assertRaisesRegex(ValueError, "CI evidence recheck claim"):
+                        render_readonly_audit_summary(data)
+
     def test_same_target_as_default_has_only_one_policy_row(self):
         result = render_readonly_audit_summary(bundle(target="main"))
         self.assertEqual(result.count("| Destino `main` |"), 1)
