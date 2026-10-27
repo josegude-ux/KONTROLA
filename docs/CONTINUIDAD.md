@@ -1080,3 +1080,21 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 **Pendiente y límites:** pruebas manuales con roles reales y PDF de empresa en entorno autorizado, revisión de seguridad antes de una migración definitiva, orden de integración de PR encadenadas. No se ha aplicado SQL a Supabase real, ni fusionado ni desplegado. La documentación del usuario de BC se contrasta manualmente, no mediante API.
 
 **Siguiente tarea exacta:** verificar CI final y registrar PR en borrador; después auditar coexistencia entre PR #60 (flujos paralelos) y la cadena de PR #52/#62–69 antes de cualquier integración, especialmente condiciones de reemplazo material y el enlace a documentos; no fusionar sin autorización.
+
+---
+
+## 2026-10-27 — Bloque 01 · Seguridad de cantidad BC: evidencia por cada línea, origen PDF protegido
+
+**Continuación real, mismo chat responsable:** `02 - VISURA PREPARA - Desarrollo Bloque 01`. Trabajos anteriores verificados en PR #69 (documentos) y PR #70 (auditoría Git/SQL/frontend/RPC sin merge). La PR #70 tiene un test que prueba en la propuesta original la aceptación indebida de otra línea alterada sin su evidencia BC; no se modifica ni sobrescribe la PR original.
+
+**Rama aislada de corrección:** `feat/visura-prepara-b01-evidencia-por-linea-20261027`, derivada directamente de HEAD `13b5fbdac50b6e7a2ec4b97bbf2313b7bdbd9fcf` de PR #69, sin ninguna fusión ni reaplicación de una rama ajena.
+
+**Código:** `src/document-review.mjs` exige justificar cada línea cuya cantidad difiera de `pdfOriginal.qty`, en lugar de considerar suficiente una única corrección. `supabase/proposals/kontrola_bc_evidencia_por_linea_b01.sql` actualiza de forma **solo propuesta** el predicado `kontrola_total_bc_documentado` con cotejo por línea y añade `kontrola_bc_origen_preservado` anclado al registro persistido, evitando cantidades o valor original del PDF fabricados al utilizar una excepción BC. `kontrola_corregir_importacion` conserva rol administrativo, total PDF inmutable y guard extra únicamente para la vía BC, sin suprimir otras modalidades aprobadas de revisión.
+
+**Pruebas realizadas:** `tests/quantity-every-line.test.mjs`, `tests/integration/bc-evidence-every-line.sql` y workflow PostgreSQL 16 temporal. [CI 40504781871](https://github.com/josegude-ux/KONTROLA/actions/runs/40504781871), [40505070832](https://github.com/josegude-ux/KONTROLA/actions/runs/40505070832) y [40505194781](https://github.com/josegude-ux/KONTROLA/actions/runs/40505194781), todas **SUCCESS**. Prueba real de RPC con carga ficticia de dos líneas, rechazo si solo una tiene evidencia y bloqueo si se inventa `pdfOriginal` o se modifica `declared_total`. Suite histórica documental preservada y comprobada.
+
+**Documentación:** `docs/BLOQUE_01_EVIDENCIA_BC_POR_LINEA.md`.
+
+**Límites:** rama propuesta/no aplicada; ni merge, ni despliegue, ni datos reales de empresa ni cambios en Business Central/Supabase. Conserva independencia de Preparación/Verificación; Bloque 02 no se toca.
+
+**Siguiente tarea segura:** comprobar CI del HEAD final y registrar PR en borrador, luego actualizar la auditoría de compatibilidad para que la futura integración respete el orden de las propuestas documentales reforzadas sin fusionarlas. La integración real de las líneas frontend sigue pendiente de autorización.
