@@ -74,4 +74,42 @@ select test.assert((select count(*)=0 from public.kontrola_preparaciones where c
  'publicar no inicia preparación ni inventa picking BC');
 select test.assert((select count(*)=0 from public.kontrola_verificaciones where codigo='LP26-93001'),
  'publicar no inicia verificación ni hace recuentos físicos');
+
+-- Protección material de flujos paralelos: iniciar SOLO Verificación debe
+-- impedir que una revisión documental distinta sustituya la carga vigente.
+reset role;
+insert into public.kontrola_verificaciones(codigo,verificador_id)
+ values('LP26-93001','00000000-0000-0000-0000-000000000003');
+set role authenticated;
+select set_config('request.jwt.claim.sub','00000000-0000-0000-0000-000000000001',false);
+select test.assert((select count(*)=0 from public.kontrola_preparaciones where codigo='LP26-93001'),
+ 'no hay Preparación iniciada al comprobar bloqueo independiente');
+
+select * from public.kontrola_reservar_importacion(
+ 'LP26-93001',repeat('8f34',16),'revision-nueva.pdf',1200
+) \gset newer_
+insert into storage.objects(bucket_id,name,owner_id)
+ values('kontrola-pdfs',:'newer_documento_ruta','00000000-0000-0000-0000-000000000001');
+select public.kontrola_completar_importacion(
+ :'newer_id',test.revision_payload('LP26-93001'),'[]'::jsonb
+);
+select test.assert(public.kontrola_corregir_importacion(
+ :'newer_id',test.revision_payload('LP26-93001'),'[]'::jsonb,'[]'::jsonb,true
+)='aprobada','la revisión nueva se puede estudiar sin reemplazar carga en curso');
+do $$
+begin
+ perform * from public.kontrola_publicar_importacion(
+  (select id from public.kontrola_importaciones where codigo='LP26-93001'
+    and documento_hash=repeat('8f34',16))
+ );
+ raise exception 'ASSERTION FAILED: una verificación ya iniciada permitió reemplazar original';
+exception when insufficient_privilege then null;
+end$$;
+select test.assert((
+ select revision=1 and documento_hash=repeat('9f34',16)
+ from public.kontrola_cargas where codigo='LP26-93001'
+),'la verificación iniciada protege el PDF original y revisión vigente');
+select test.assert((select count(*)=1 from public.kontrola_carga_revisiones
+ where codigo='LP26-93001'),'el rechazo no crea revisión material nueva');
+
 select 'KONTROLA_TOTAL_BC_AUDITADO_OK' as result;
