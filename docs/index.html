@@ -198,10 +198,55 @@ header .intro{font-size:.85rem;line-height:1.38}
 .streaming-command .actions button.secondary{background:#fff!important;color:#904115!important;border-color:#e5b89d!important}
 .streaming-command pre{background:#fff!important;color:#202f3d!important;border-color:#e6bda8!important}
 
+
+/* V5.5 — orden universal, estética de aviso crema/naranja sin copiar el texto de streaming */
+.safe-dashboard-action{display:flex;flex-direction:column;align-items:stretch;justify-content:space-between;gap:8px;background:#fbf6f2!important;border:1.5px solid #e1c7b8!important;border-radius:20px!important;color:#e66c2e!important;min-height:132px!important;padding:13px!important}
+.safe-menu-visual{display:flex;align-items:center;justify-content:space-between;gap:8px;min-width:0;flex:1}
+.safe-menu-visual strong{font-size:clamp(1rem,2vw,1.28rem);line-height:1.18;color:#e96a28;font-weight:750;overflow-wrap:anywhere;letter-spacing:.004em}
+.safe-wheel{display:block;flex:none;width:36px;height:36px}
+.safe-dashboard-action .action-copy small{font-size:.73rem;color:#906f5f!important;line-height:1.26}
+.safe-command{background:#fcf7f3!important;border:1.5px solid #e4c8b9!important;color:#1b2b3a!important;box-shadow:0 5px 22px #7c4b3316}
+.safe-alert-hero{padding:21px 22px;display:flex;align-items:center;justify-content:space-between;gap:14px;border:1.5px solid #dec6ba;border-radius:25px;background:#faf5f1;margin-bottom:16px}
+.safe-alert-wording{display:flex;flex-direction:column;gap:8px;min-width:0}
+.safe-alert-wording strong{font-size:clamp(1.5rem,3.3vw,2.65rem);font-weight:520;line-height:1.16;color:#e66b29;overflow-wrap:anywhere}
+.safe-alert-wording span{font-size:.9rem;line-height:1.34;color:#986852}
+.safe-alert-hero .safe-wheel{width:43px;height:43px}
+.safe-eyebrow{color:#ab5e32!important}
+.safe-command h2{color:#d7652c!important}
+.safe-command .when{color:#68554b!important;max-width:80ch}
+.safe-command .when strong{color:#824a31}
+.safe-command .actions button.primary,.safe-copy-footer button.primary{background:#e66b29!important;border-color:#bd531d!important;color:white!important}
+.safe-command .actions button.secondary{background:#fff!important;border-color:#deb8a4!important;color:#8f4e2d!important}
+.safe-prompt-panel[hidden]{display:none!important}
+.safe-command pre{background:#fff!important;color:#213142!important;border:1px solid #e7c5b2!important;max-height:50vh;overflow:auto;white-space:pre-wrap;overflow-wrap:anywhere}
+.safe-copy-footer{display:flex;justify-content:flex-end;margin-top:13px}
+.safe-copy-footer button{min-width:220px}
+@media(max-width:480px){
+ .safe-dashboard-action{min-height:122px!important;padding:10px!important}
+ .safe-menu-visual strong{font-size:1rem}
+ .safe-dashboard-action .safe-wheel{width:28px;height:28px}
+ .safe-alert-hero{padding:17px 14px;border-radius:22px}
+ .safe-alert-hero .safe-wheel{width:30px;height:30px}
+ .safe-alert-wording strong{font-size:1.55rem}
+ .safe-command{padding:15px}
+ .safe-command .actions{flex-direction:column}
+ .safe-copy-footer button{width:100%}
+}
+@media(min-width:650px) and (max-width:999px){
+ main{max-width:920px}
+ .dashboard-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+@media(min-width:1000px){
+ main{max-width:1320px;padding:30px 30px 90px}
+ .dashboard-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
+ .dashboard-action{min-height:115px}
+ .command-toolbar~.command:not([hidden]){max-width:960px;margin-inline:auto}
+}
+
 </style>
 </head>
 <body>
-<main><header><div class="header-top"><div class="brand-lockup"><img class="brand-mark" src="./assets/icons/visura-centro-mando-logo-64.png" width="54" height="54" alt="Logo aprobado VISURA Centro de mando"><div class="brand-text"><strong>VISURA</strong><span>CENTRO DE MANDO <b class="panel-version">V5.4</b></span></div></div><div class="header-tools"><button type="button" class="manage-button" id="open-chat-manager" aria-expanded="false" aria-controls="chat-manager">⚙ Mis chats</button><button type="button" class="refresh-panel" id="refresh-panel" title="Cargar de nuevo el Centro de mando" aria-label="Actualizar Centro de mando"><span aria-hidden="true">↻</span> Actualizar</button></div></div><h1>¿Qué quieres hacer?</h1><p class="intro">Nueve funciones claras, sin órdenes duplicadas.</p></header>
+<main><header><div class="header-top"><div class="brand-lockup"><img class="brand-mark" src="./assets/icons/visura-centro-mando-logo-64.png" width="54" height="54" alt="Logo aprobado VISURA Centro de mando"><div class="brand-text"><strong>VISURA</strong><span>CENTRO DE MANDO <b class="panel-version">V5.5</b></span></div></div><div class="header-tools"><button type="button" class="manage-button" id="open-chat-manager" aria-expanded="false" aria-controls="chat-manager">⚙ Mis chats</button><button type="button" class="refresh-panel" id="refresh-panel" title="Cargar de nuevo el Centro de mando" aria-label="Actualizar Centro de mando"><span aria-hidden="true">↻</span> Actualizar</button></div></div><h1>¿Qué quieres hacer?</h1><p class="intro">Diez funciones claras, sin órdenes duplicadas.</p></header>
 <section id="chat-manager" class="chat-manager" hidden aria-labelledby="manager-title">
 <div class="manager-head"><h2 id="manager-title">Mis chats VISURA</h2><button class="secondary" type="button" id="manager-close">✕ Cerrar</button></div>
 <p>Registro único para los botones. Lo mantienes tú: esta web no puede consultar automáticamente tus conversaciones de ChatGPT.</p>
@@ -223,7 +268,7 @@ header .intro{font-size:.85rem;line-height:1.38}
 <p id="manager-feedback" class="manager-feedback" role="status" aria-live="polite"></p>
 </section>
 <nav id="command-menu" class="dashboard-nav" aria-label="Accesos VISURA">
-<div class="dashboard-caption"><strong>ACCESOS DIRECTOS</strong><span>9 funciones</span></div>
+<div class="dashboard-caption"><strong>ACCESOS DIRECTOS</strong><span>10 funciones</span></div>
 <div class="dashboard-grid"><button type="button" class="dashboard-action" data-open-order="funcion-1" aria-controls="funcion-1"><span class="action-mark" aria-hidden="true">↻</span><span class="action-copy"><strong>Continuar desarrollo</strong><small>Mismo chat, sucesor o traspaso</small></span></button>
 <button type="button" class="dashboard-action" data-open-order="funcion-2" aria-controls="funcion-2"><span class="action-mark" aria-hidden="true">↗</span><span class="action-copy"><strong>Preparar Work</strong><small>Guardar continuidad</small></span></button>
 <button type="button" class="dashboard-action" data-open-order="funcion-3" aria-controls="funcion-3"><span class="action-mark" aria-hidden="true">▧</span><span class="action-copy"><strong>Imágenes</strong><small>Continuar diseños</small></span></button>
@@ -232,9 +277,10 @@ header .intro{font-size:.85rem;line-height:1.38}
 <button type="button" class="dashboard-action" data-open-order="funcion-6" aria-controls="funcion-6"><span class="action-mark" aria-hidden="true">↳</span><span class="action-copy"><strong>Integrar imagen</strong><small>Aplicar la aprobada</small></span></button>
 <button type="button" class="dashboard-action" data-open-order="funcion-7" aria-controls="funcion-7"><span class="action-mark" aria-hidden="true">▤</span><span class="action-copy"><strong>Estado del chat</strong><small>Avance y tareas pendientes</small></span></button>
 <button type="button" class="dashboard-action" data-open-order="funcion-8" aria-controls="funcion-8"><span class="action-mark" aria-hidden="true">✉</span><span class="action-copy"><strong>Orden / consulta</strong><small>Incidencias y peticiones</small></span></button>
-<button type="button" class="dashboard-action streaming-dashboard-action" data-open-order="funcion-9" aria-controls="funcion-9"><img class="streaming-menu-shot" src="./assets/streaming-aviso-original.webp" alt="" width="500" height="114" loading="lazy"><span class="action-copy"><strong>Recuperar tras streaming</strong><small>Respuesta interrumpida</small></span></button></div>
+<button type="button" class="dashboard-action streaming-dashboard-action" data-open-order="funcion-9" aria-controls="funcion-9"><img class="streaming-menu-shot" src="./assets/streaming-aviso-original.webp" alt="" width="500" height="114" loading="lazy"><span class="action-copy"><strong>Recuperar tras streaming</strong><small>Respuesta interrumpida</small></span></button>
+<button type="button" class="dashboard-action safe-dashboard-action" data-open-order="funcion-10" aria-controls="funcion-10"><span class="safe-menu-visual"><strong>CONTINUIDAD<br>SEGURA</strong><svg class="safe-wheel" viewBox="0 0 48 48" width="43" height="43" aria-hidden="true" focusable="false"><g stroke="#aaa7a4" stroke-width="4" stroke-linecap="round"><path d="M24 5v6" opacity=".28"/><path d="M37.4 10.6l-4.2 4.2" opacity=".4"/><path d="M43 24h-6" opacity=".5"/><path d="M37.4 37.4l-4.2-4.2" opacity=".65"/><path d="M24 43v-6" opacity=".9"/><path d="M10.6 37.4l4.2-4.2" opacity="1"/><path d="M5 24h6" opacity=".83"/><path d="M10.6 10.6l4.2 4.2" opacity=".6"/></g></svg></span><span class="action-copy"><small>Protección del trabajo existente</small></span></button></div>
 </nav>
-<div class="command-toolbar" id="command-toolbar" hidden><button class="back-to-dashboard" type="button" id="back-to-dashboard">‹ Volver al menú</button><span class="toolbar-order" id="current-order-label">ORDEN 01 / 09</span></div>
+<div class="command-toolbar" id="command-toolbar" hidden><button class="back-to-dashboard" type="button" id="back-to-dashboard">‹ Volver al menú</button><span class="toolbar-order" id="current-order-label">ORDEN 01 / 10</span></div>
 <article class="command" id="funcion-1">
 <div class="top"><div class="symbol" aria-hidden="true">↻</div><div><div class="eyebrow">ORDEN 01 · CONTINUIDAD DE DESARROLLO</div><h2>CONTINUAR DESARROLLO</h2></div></div>
 <p class="when">Una sola función para reanudar en el mismo chat, continuar en un sucesor ya activo o hacer un traspaso realmente nuevo.</p>
@@ -469,6 +515,14 @@ header .intro{font-size:.85rem;line-height:1.38}
 </div>
 <div class="actions"><button type="button" class="primary" id="copy-streaming-prompt">Copiar recuperación</button><button type="button" class="secondary" id="toggle-streaming-prompt" aria-controls="streaming-prompt" aria-expanded="false">Ver prompt</button></div>
 <pre id="streaming-prompt" hidden></pre>
+</article>
+<article class="command safe-command" id="funcion-10" aria-label="Orden 10 · Continuidad segura">
+<div class="safe-alert-hero"><div class="safe-alert-wording"><strong>CONTINUIDAD SEGURA</strong><span>Protección y continuidad del trabajo</span></div><svg class="safe-wheel" viewBox="0 0 48 48" width="43" height="43" aria-hidden="true" focusable="false"><g stroke="#aaa7a4" stroke-width="4" stroke-linecap="round"><path d="M24 5v6" opacity=".28"/><path d="M37.4 10.6l-4.2 4.2" opacity=".4"/><path d="M43 24h-6" opacity=".5"/><path d="M37.4 37.4l-4.2-4.2" opacity=".65"/><path d="M24 43v-6" opacity=".9"/><path d="M10.6 37.4l4.2-4.2" opacity="1"/><path d="M5 24h6" opacity=".83"/><path d="M10.6 10.6l4.2 4.2" opacity=".6"/></g></svg></div>
+<div class="eyebrow safe-eyebrow">ORDEN 10 · UNIVERSAL Y COMPLEMENTARIA</div>
+<h2>CONTINUIDAD SEGURA</h2>
+<p class="when">Refuerza las instrucciones vigentes del chat, conserva lo ya realizado y permite avanzar <strong>únicamente en tareas que ya estén autorizadas</strong>. No cambia de chat, no crea tareas ni ejecuta operaciones desde este panel.</p>
+<div class="actions"><button type="button" class="primary" id="copy-safe-continuity">Copiar continuidad segura</button><button type="button" class="secondary" id="toggle-safe-continuity" aria-controls="safe-continuity-prompt" aria-expanded="false">Ver prompt</button></div>
+<section class="safe-prompt-panel" id="safe-prompt-panel" hidden aria-label="Texto íntegro de continuidad segura"><pre id="safe-continuity-prompt"></pre><div class="safe-copy-footer"><button type="button" class="primary" id="copy-safe-continuity-all">Copiar todo el prompt</button></div></section>
 </article>
 <div class="foot"><details class="foot-details"><summary>Acerca del panel y copia en GitHub</summary><div class="foot-content"><h2>Copia maestra en GitHub</h2>
 <p>Las instrucciones se guardan en una rama independiente. No se ha fusionado ni modificado la rama principal.</p>
@@ -716,7 +770,7 @@ document.getElementById("show-integration-command").addEventListener("click",()=
 
 
 /* Vista móvil de siete funciones y compatibilidad de enlaces históricos V4. */
-const orderIds=Array.from({length:9},(_,i)=>"funcion-"+(i+1));
+const orderIds=Array.from({length:10},(_,i)=>"funcion-"+(i+1));
 const oldHashes={"orden-1":"funcion-1","orden-2":"funcion-2","orden-3":"funcion-1","orden-4":"funcion-3","orden-5":"funcion-4","orden-6":"funcion-5","orden-7":"funcion-6","orden-8":"funcion-7"};
 const dashboard=document.getElementById("command-menu"),toolbar=document.getElementById("command-toolbar"),foot=document.querySelector(".foot");
 function resolvedOrderId(hash){
@@ -731,7 +785,7 @@ function showOrder(id,scroll=true){
  const n=orderIds.indexOf(id),selected=n>=0;
  for(const [i,key] of orderIds.entries())document.getElementById(key).hidden=(!selected||i!==n);
  dashboard.hidden=selected;toolbar.hidden=!selected;foot.hidden=selected;
- if(selected)document.getElementById("current-order-label").textContent="FUNCIÓN "+String(n+1).padStart(2,"0")+" / 09";
+ if(selected)document.getElementById("current-order-label").textContent="FUNCIÓN "+String(n+1).padStart(2,"0")+" / 10";
  const hash=selected?"#"+id:"#inicio";
  if(location.hash!==hash){try{history.replaceState(null,"",hash)}catch(_){}}
  if(scroll)window.scrollTo({top:0,behavior:"smooth"});
@@ -1085,6 +1139,21 @@ streamingToggle.addEventListener("click",()=>{
  streamingToggle.setAttribute("aria-expanded",String(!streamingPreview.hidden));
  streamingToggle.textContent=streamingPreview.hidden?"Ver prompt":"Ocultar prompt";
  syncStreamingPreview();
+});
+
+
+/* Orden 10 universal: texto literal único, sin variables, acciones externas ni cambios de contexto. */
+const safeContinuityText="ORDEN UNIVERSAL — CONTINUIDAD SEGURA Y PROTECCIÓN DEL TRABAJO EXISTENTE\n\nAPLICACIÓN: CUALQUIER CHAT O PROYECTO\nTIPO: INSTRUCCIÓN COMPLEMENTARIA NO DESTRUCTIVA\nPRIORIDAD: RESPETAR EL ALCANCE, LAS DECISIONES Y LAS AUTORIZACIONES EXISTENTES\n\n1. REGLA PRINCIPAL\n\nEsta orden complementa las instrucciones vigentes del chat donde se utilice.\n\nNO sustituye su prompt maestro, NO cambia el proyecto, NO modifica las decisiones aprobadas y NO autoriza por sí misma cambios de código, archivos, repositorios, datos, permisos o despliegues.\n\nNo reinicies trabajos. No repitas tareas completadas. No cambies el responsable del desarrollo.\n\n2. VERIFICAR EL CONTEXTO REAL\n\nIdentifica primero:\n- Proyecto y función del chat.\n- Tarea actual y alcance autorizado.\n- Decisiones y restricciones existentes.\n- Trabajo realizado, pendiente y bloqueado.\n- Estado real de repositorios y documentación, solo cuando corresponda y exista acceso.\n\nNo inventes información ni presupongas que otros chats han terminado tareas.\n\nSi no existe una tarea activa o autorizada, esta orden NO crea una nueva.\n\nREFUERZO 1: tras comprobar el contexto, continúa únicamente con el trabajo ya autorizado y seguro.\n\n3. CONTINUIDAD SEGÚN EL TIPO DE CHAT\n\nSi el chat está autorizado para programar, continúa implementando, probando, corrigiendo y documentando las tareas de su alcance sin pedir «sigue» después de cada hito.\n\nSi el chat está dedicado al diseño, continúa diseñando, sin programar por esta orden.\n\nSi está dedicado a auditoría, investigación, documentación, pruebas o coordinación, continúa exclusivamente esa actividad.\n\nNo conviertas un chat de planificación en uno de programación.\n\nREFUERZO 2: cada fase completada debe dar paso a la siguiente tarea autorizada, sin ampliar el alcance.\n\n4. PROTECCIÓN DEL TRABAJO EXISTENTE\n\nNo sobrescribas modificaciones ajenas.\nNo elimines funciones existentes sin autorización.\nNo alteres requisitos aprobados.\nNo rehagas trabajo verificado.\nNo cambies de rama o repositorio de forma insegura.\nNo fusiones, despliegues ni modifiques producción sin permiso expreso.\n\nEsta orden NO exige cambios inmediatos ni afecta por sí misma al estado del proyecto.\n\n5. CRITERIO DE DISEÑO ADAPTABLE\n\nCuando el trabajo autorizado incluya desarrollar o mejorar una interfaz, comprobar que el diseño responda al ancho real de la ventana y a la orientación.\n\nEn escritorio, aprovechar la anchura disponible, con menús legibles y contenido distribuido adecuadamente.\n\nEn tablet, adaptar navegación y distribución.\n\nEn móvil, mantener controles táctiles y presentación compacta.\n\nConservar la identidad visual y las funcionalidades existentes.\n\nEste criterio NO autoriza rediseñar aplicaciones ajenas al alcance vigente. Si su aplicación requiere cambios todavía no aprobados, documentarlos como propuesta, sin ejecutarlos.\n\n6. PRUEBAS Y CALIDAD\n\nCuando corresponda al trabajo actual, comprobar los resultados y las posibles regresiones.\n\nNo declarar realizadas pruebas que no se hayan ejecutado.\n\nREFUERZO 3: después de cada prueba o revisión satisfactoria, continuar con la siguiente tarea segura del alcance autorizado. No detenerse únicamente para pedir confirmación.\n\n7. BLOQUEOS Y CONFLICTOS\n\nSi una tarea presenta un bloqueo, documentarlo y buscar otra tarea independiente y autorizada.\n\nNo resolver conflictos inventando requisitos ni sobrescribiendo trabajo de otros responsables.\n\nREFUERZO 4: un bloqueo parcial no obliga a detener toda la actividad. Continuar únicamente cuando exista trabajo alternativo seguro.\n\n8. CONTINUIDAD Y RECUPERACIÓN\n\nCuando corresponda, actualizar la documentación de continuidad, indicando trabajo realizado, pruebas, pendientes, bloqueos y siguiente tarea.\n\nSi hay repositorio, registrar rama y commits reales verificados.\n\nSi la sesión se interrumpe, dejar instrucciones precisas para reanudar sin repetir el trabajo.\n\nNo prometer ejecución en segundo plano cuando el entorno no esté disponible.\n\n9. COMPROBACIÓN FINAL OBLIGATORIA\n\nAntes de finalizar, preguntar internamente:\n\n«¿Queda alguna tarea del alcance actual, ya autorizada y técnicamente segura, que pueda ejecutar ahora?»\n\nSi SÍ, continuar.\n\nSi NO, informar del estado real y del motivo.\n\nREFUERZO 5: NO ESPERAR «SIGUE» ENTRE TAREAS AUTORIZADAS. NO INICIAR TRABAJOS NUEVOS FUERA DEL ALCANCE. NO ALTERAR LO EXISTENTE POR EL SIMPLE HECHO DE RECIBIR ESTA ORDEN.\n\n10. ORDEN FINAL\n\nCONSERVAR EL TRABAJO EXISTENTE.\nRESPETAR LAS DECISIONES DEL CHAT.\nVERIFICAR ANTES DE ACTUAR.\nCONTINUAR SOLO CON ACTIVIDADES AUTORIZADAS.\nPROBAR Y DOCUMENTAR CUANDO CORRESPONDA.\nNO REINICIAR NI DUPLICAR.\nNO FUSIONAR NI DESPLEGAR SIN AUTORIZACIÓN.\n\nESTA ORDEN ES UNIVERSAL, COMPLEMENTARIA Y NO DESTRUCTIVA.\n\nFIN DE LA ORDEN UNIVERSAL.";
+const safeContinuitySection=document.getElementById("safe-prompt-panel");
+const safeContinuityPreview=document.getElementById("safe-continuity-prompt");
+const safeContinuityToggle=document.getElementById("toggle-safe-continuity");
+safeContinuityPreview.textContent=safeContinuityText;
+document.getElementById("copy-safe-continuity").addEventListener("click",()=>copyCommand(safeContinuityText));
+document.getElementById("copy-safe-continuity-all").addEventListener("click",()=>copyCommand(safeContinuityText));
+safeContinuityToggle.addEventListener("click",()=>{
+ safeContinuitySection.hidden=!safeContinuitySection.hidden;
+ safeContinuityToggle.setAttribute("aria-expanded",String(!safeContinuitySection.hidden));
+ safeContinuityToggle.textContent=safeContinuitySection.hidden?"Ver prompt":"Ocultar prompt";
 });
 
 </script>
