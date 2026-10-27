@@ -29,10 +29,28 @@ trap 'rm -rf "$overlay"' EXIT
 git show "$parallel_sha:supabase/proposals/kontrola_prepara_verificacion_paralelas.sql" > "$overlay/parallel-proposal.sql"
 git show "$parallel_sha:tests/integration/parallel.sql" > "$overlay/parallel.sql"
 git show "$parallel_sha:tests/integration/parallel-concurrency.sh" > "$overlay/parallel-concurrency.sh"
+git show "$document_sha:supabase/proposals/kontrola_total_bc_documentado_b01.sql" > "$overlay/document-override.sql"
 
 # La base local YA fue creada y probada con los contratos documentales por
 # tests/integration/run.sh. La propuesta paralela se superpone solo en esa BD.
 psql -v ON_ERROR_STOP=1 -d "$DB" -f "$overlay/parallel-proposal.sql" > "$overlay/proposal.log"
+
+# REGRESIÓN DETECTADA: la propuesta paralela contiene un CREATE OR REPLACE
+# de publicar_importacion más antiguo, que restaura la igualdad PDF/BC y
+# suprime la excepción auditable. Verificar el defecto antes de restaurarla.
+psql -qAt -d "$DB" -c "select pg_get_functiondef('public.kontrola_publicar_importacion(uuid)'::regprocedure)" > "$overlay/after-parallel-function.sql"
+if grep -q 'kontrola_total_bc_documentado' "$overlay/after-parallel-function.sql"; then
+  echo "ERROR: contrato SQL de origen cambió. Reauditar antes de continuar." >&2;exit 2
+fi
+
+# Orden determinista de overlay DE PRUEBAS: primero contrato paralelo,
+# después la propuesta documental del SHA exacto, para conservar las DOS
+# protecciones de publicar_importacion. No cambia archivos de ninguna PR.
+psql -v ON_ERROR_STOP=1 -d "$DB" -f "$overlay/document-override.sql" > "$overlay/document-reapplied.log"
+psql -qAt -d "$DB" -c "select pg_get_functiondef('public.kontrola_publicar_importacion(uuid)'::regprocedure)" > "$overlay/after-document-function.sql"
+grep -q 'kontrola_total_bc_documentado' "$overlay/after-document-function.sql"
+grep -q 'kontrola_verificaciones' "$overlay/after-document-function.sql"
+echo "KONTROLA_B01_ORDER_GUARD_OK: detectar sobreescritura y restaurar validación documental."
 psql -v ON_ERROR_STOP=1 -d "$DB" -f "$overlay/parallel.sql" > "$overlay/parallel.log"
 grep -q "KONTROLA_PARALLEL_OK" "$overlay/parallel.log"
 bash "$overlay/parallel-concurrency.sh" "$DB"
