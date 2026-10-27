@@ -3,13 +3,17 @@ import assert from "node:assert/strict";
 import {classifyFixedPositions,filterFixedRows,fixedReportCsv,safeCsvCell,FIXED_CATEGORIES} from "../src/fixed-position-report.mjs";
 
 const meta={authorized:true,warehouse:"COR_01_COR",stockComplete:true,catalogComplete:true,
-  positionsComplete:true,absentStockIsZero:false,sourceFile:"BC-demo.xlsx",
+  positionsComplete:true,locationsComplete:true,absentStockIsZero:false,sourceFile:"BC-demo.xlsx",
   importedAt:"2026-10-27T10:00:00Z",truncated:false};
 const p=(code="PRD001",unit="UD")=>({code,description:"Artículo "+code,unit});
 const f=(loc="A01-P01",code="PRD001")=>({product_code:code,location_code:loc});
 const s=(loc,quantity,lot="L1",code="PRD001")=>({product_code:code,location_code:loc,lot,quantity,unit:"UD"});
-const classify=(options={})=>classifyFixedPositions({
-  warehouse:"COR_01_COR",products:[p()],fixed:[],stock:[],locations:[],meta,...options});
+const classify=(options={})=>{
+  const assignments=options.fixed||[],lines=options.stock||[];
+  const codes=new Set([...assignments.map(x=>x.location_code),...lines.map(x=>x.location_code)]);
+  const locations=options.locations??[...codes].filter(Boolean).map(code=>({code}));
+  return classifyFixedPositions({warehouse:"COR_01_COR",products:[p()],fixed:[],stock:[],meta,...options,locations});
+};
 const count=(report,key)=>report.byCategory[key].references;
 test("sin fija con stock positivo se clasifica una vez y conserva ubicaciones",()=>{
   const x=classify({stock:[s("B01-P01",12)]});
@@ -122,4 +126,15 @@ test("solo los lotes del almacén designado y filtros no mutan el informe",()=>{
   const x=classify({fixed:[f()],stock:[s("A01-P01",-2),s("B01-P01",2)]});
   const snapshot=JSON.stringify(x.rows);filterFixedRows(x.rows,{sort:"quantity"});
   assert.equal(JSON.stringify(x.rows),snapshot);
+});
+
+test("posición o línea fuera de ubicaciones validadas se clasifica como insuficiente",()=>{
+  const x=classify({fixed:[f()],stock:[s("A01-P01",0)],locations:[]});
+  assert.equal(count(x,"insuficientes"),1);
+  assert.equal(count(x,"cero"),0);
+});
+test("ubicaciones sin certificado de completitud impiden falsos resultados",()=>{
+  const x=classify({fixed:[f()],stock:[s("A01-P01",0)],meta:{...meta,locationsComplete:false}});
+  assert.equal(count(x,"insuficientes"),1);
+  assert.equal(x.complete,false);
 });
