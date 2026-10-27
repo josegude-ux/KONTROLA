@@ -19,16 +19,31 @@ export function warehouseZone(raw){
 // cuando una corrección de cantidad final conserva su valor PDF y evidencia.
 export function hasDocumentedBCQuantityOverride(parsed={}){
   const products=Array.isArray(parsed.products)?parsed.products:[];
-  return (Array.isArray(parsed.corrections)?parsed.corrections:[]).some(correction=>{
-    if(correction?.field!=="qty"||correction?.tipo!=="dato_pdf_bc"
-      ||String(correction?.justificacion||"").trim().length<15
-      ||!correction?.by||!correction?.at)return false;
-    const product=products[Number(correction.line)-1];
-    return !!product&&Number.isFinite(Number(product.qty))
-      &&Number.isFinite(Number(product.pdfOriginal?.qty))
-      &&Number(product.pdfOriginal?.qty)!==Number(product.qty)
-      &&Number(correction.after)===Number(product.qty);
-  });
+  const corrections=Array.isArray(parsed.corrections)?parsed.corrections:[];
+  if(!products.length)return false;
+  let hasBC=false;
+  for(const [index,product] of products.entries()){
+    const actual=Number(product?.qty);
+    const origValue=product?.pdfOriginal?.qty??product?.qty;
+    const original=Number(origValue);
+    if(origValue==null||product?.qty==null||!Number.isFinite(actual)||!Number.isFinite(original)
+      ||actual<0||original<0)return false;
+    if(original===actual)continue;
+    const valid=corrections.filter(correction=>
+      Number(correction?.line)===index+1
+      &&correction?.field==="qty"
+      &&["dato_pdf_bc","lectura_pdf"].includes(correction?.tipo)
+      &&String(correction?.justificacion||"").trim().length>=15
+      &&Boolean(correction?.by)&&Boolean(correction?.at)
+      &&Number.isFinite(Number(correction?.before))
+      &&Number(correction?.after)===actual
+    );
+    // Una corrección BC documentada NO ampara cantidades distintas sin
+    // prueba: cada línea cambiada debe tener su propia trazabilidad.
+    if(!valid.length)return false;
+    if(valid.some(correction=>correction.tipo==="dato_pdf_bc"))hasBC=true;
+  }
+  return hasBC;
 }
 
 export function analyzeDocument(parsed={}){
