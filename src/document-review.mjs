@@ -31,7 +31,7 @@ export function hasDocumentedBCQuantityOverride(parsed={}){
     if(before===after)continue;
     modified++;
     const valid=corrections.some(correction=>
-      correction?.line===index+1
+      Number(correction?.line)===index+1
       &&correction?.field==="qty"
       &&correction?.tipo==="dato_pdf_bc"
       &&String(correction?.justificacion||"").trim().length>=15
