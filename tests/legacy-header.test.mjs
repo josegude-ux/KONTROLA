@@ -25,9 +25,9 @@ test("rechaza rutas arbitrarias, documentos ajenos y cargas con cabecera ya guar
     load("LP26-10004",{huecos_palets_grandes:0}),
     load("LP26-10005")
   ];
-  assert.deepEqual(cargasCabeceraPendiente(items).map(x=>x.codigo),["LP26-10005"]);
+  assert.deepEqual(cargasCabeceraPendiente(items).map(x=>x.codigo),["LP26-10004","LP26-10005"]);
   assert.equal(cabeceraSinMetadatos(load("LP26-10005")),true);
-  assert.equal(cabeceraSinMetadatos(load("LP26-10005",{huecos_palets_pequenos:0})),false);
+  assert.equal(cabeceraSinMetadatos(load("LP26-10005",{huecos_palets_pequenos:0})),true);
 });
 
 test("solo acepta cabeceras del código y almacén de la carga",()=>{
@@ -65,4 +65,11 @@ test("cabecera 6G 1E conserva Observaciones y no declara palés P",()=>{
  assert.equal(r.huecos_palets_grandes,6);
  assert.equal(r.huecos_palets_europeos,1);
  assert.equal(r.huecos_palets_pequenos,null);
+});
+
+test("el cero genérico y el desglose nulo obligan a releer PDF verificado",()=>{
+  const zero=load("LP26-10006",{huecos_palets_total:"0"});
+  assert.equal(cargasCabeceraPendiente([zero]).length,1);
+  assert.equal(cargasCabeceraPendiente([load("LP26-10007",{huecos_palets_grandes:8})]).length,0);
+  assert.equal(cargasCabeceraPendiente([load("LP26-10008",{observaciones:"Solo texto"})]).length,0);
 });
