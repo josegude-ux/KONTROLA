@@ -42,6 +42,13 @@ fi
 if [[ "${KONTROLA_TEST_PROVISIONALES:-}" == "1" ]]; then
   "${PSQL[@]}" -f supabase/proposals/kontrola_pdf_provisionales_b01.sql >>/tmp/kontrola-migrations.log
 fi
+if [[ "${KONTROLA_TEST_HASH_CRUZADO:-}" == "1" ]]; then
+  if [[ "${KONTROLA_TEST_REINTENTOS:-}" != "1" || "${KONTROLA_TEST_PROVISIONALES:-}" != "1" ]]; then
+    echo "ERROR: el test hash cruzado requiere activar auditoría y provisionales en base local." >&2
+    exit 2
+  fi
+  "${PSQL[@]}" -f supabase/proposals/kontrola_hash_cruzado_b01.sql >>/tmp/kontrola-migrations.log
+fi
 "${PSQL[@]}" -f tests/integration/workflow.sql >/tmp/kontrola-workflow.log
 "${PSQL[@]}" -f tests/integration/revisions.sql >/tmp/kontrola-revisions.log
 "${PSQL[@]}" -f tests/integration/operator-stats.sql >/tmp/kontrola-operator-stats.log
@@ -55,6 +62,10 @@ fi
 if [[ "${KONTROLA_TEST_PROVISIONALES:-}" == "1" ]]; then
   "${PSQL[@]}" -f tests/integration/provisional-drafts.sql >/tmp/kontrola-provisionales.log
   grep -q "KONTROLA_PROVISIONALES_OK" /tmp/kontrola-provisionales.log
+fi
+if [[ "${KONTROLA_TEST_HASH_CRUZADO:-}" == "1" ]]; then
+  "${PSQL[@]}" -f tests/integration/hash-cross.sql >/tmp/kontrola-hash-cruzado.log
+  grep -q "KONTROLA_HASH_CRUZADO_OK" /tmp/kontrola-hash-cruzado.log
 fi
 grep -q "KONTROLA_OPERATOR_STATS_OK" /tmp/kontrola-operator-stats.log
 # Propuesta de archivo: ejecutar SOLO en base aislada tras las pruebas principales.

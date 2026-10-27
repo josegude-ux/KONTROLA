@@ -1029,3 +1029,19 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 **Restricciones:** propuesta SQL no aplicada; sin tocar Supabase productivo, Business Central, documentos reales, reglas de Preparación/Verificación, impresión, palets o Bloque 02. No fusionar ni desplegar sin autorización. Las pruebas no acreditan el comportamiento con identidades reales.
 
 **Siguiente tarea:** confirmar GitHub Actions del HEAD; corregir los fallos si los hay. Después auditar la interacción de reservas normales y provisionales para evitar asociación doble del mismo hash, manteniendo independencia de ramas y registro de evidencias.
+
+---
+
+## 2026-10-27 — Bloque 01 · Duplicados cruzados por hash de PDF (propuesta aislada)
+
+**Base comprobada:** PR #65, commit `14bf09d9511c7740a0c461a636ea8387680fec3c`, que protege el estado terminal de documentos identificados. PR #64/65 permanecen como borradores, sin fusionar o desplegar. Rama derivada `feat/visura-prepara-b01-hash-cruzado-20261027`, sin interferir con la PR #61 responsive ni PR #60 paralela.
+
+**Carencia del contrato anterior:** `kontrola_reservar_provisional_pdf` solo buscaba hashes de `kontrola_importaciones`, pero `kontrola_reservar_importacion` no comprobaba PDF aún pendientes en `kontrola_pdf_provisionales`. El mismo SHA-256 podía reservarse por rutas distintas, especialmente en condiciones concurrentes.
+
+**Implementación incremental aislada:** `supabase/proposals/kontrola_hash_cruzado_b01.sql` sustituye los dos procedimientos de reserva **en una única transacción**, preservando firmas, control administrativo, rutas, historial y eventos existentes. Las dos RPC adquieren el mismo `pg_advisory_xact_lock` a partir del hash; la ruta ordinaria rechaza el hash que sigue pendiente en provisionales. Una vez identificado el provisional, su hash se resuelve mediante el registro documental estándar existente. No se genera carga publicada ni duplicado físico.
+
+**Pruebas:** `tests/integration/hash-cross.sql` prueba rechazo de hash ya reconocido, rechazo de reserva normal para provisional, regreso idempotente al registro importado tras identificación y rechazo de código LP ajeno. `tests/integration/run.sh` solo carga la propuesta y ejecuta los tests con `KONTROLA_TEST_HASH_CRUZADO=1`, que exige además `KONTROLA_TEST_REINTENTOS=1` y `KONTROLA_TEST_PROVISIONALES=1`. La protección existente de base local `kontrola_test` y PGHOST local permanece. CI exclusiva `.github/workflows/visura-prepara-b01-hash-cruzado-ci.yml` usa PostgreSQL 16 efímero y `npm run check`.
+
+**Estado:** propuestas únicamente en repositorio; verificar CI final y corregir fallos antes de considerar funcionalmente probado. Sin acceso ni modificaciones a Supabase real, Business Central, originales empresariales o Bloque 02.
+
+**Próxima tarea:** verificar resultado en GitHub Actions, revisar los eventos en reintentos y el aislamiento de errores; consolidar únicamente cuando exista autorización de fusión. No aplicar propuestas SQL al backend empresarial.
