@@ -77,7 +77,7 @@ export function createAdminController({client,getUser,bucket,global,errorText,on
     return draft.file;
   }
   // Bloque 01: un PDF sin código confirmado no entra en Preparación/Verificación.
-  async function storeProvisionalPdf(file,parsed){
+  async function storeProvisionalPdf(file,parsed,motivo="Código LP no confirmado en la lectura del PDF"){
     const hash=await hashFile(file);
     const {data,error}=await client.rpc("kontrola_reservar_provisional_pdf",{
       p_hash:hash,p_archivo:file.name,p_tamano:file.size
@@ -92,7 +92,6 @@ export function createAdminController({client,getUser,bucket,global,errorText,on
     if(uploadError&&!/already exists|duplicate/i.test(String(uploadError.message||uploadError))&&
       Number(uploadError.statusCode||uploadError.status)!==409)throw uploadError;
     const payload=parsed&&typeof parsed==="object"?parsed:{};
-    const motivo="Código LP no confirmado en la lectura del PDF";
     const {error:completeError}=await client.rpc("kontrola_completar_provisional_pdf",{
       p_id:provisional.id,p_datos:payload,p_motivo:motivo
     });
@@ -135,7 +134,16 @@ export function createAdminController({client,getUser,bucket,global,errorText,on
   }
   async function processSinglePdf(file,seenCodes){
     setStatus("Analizando "+file.name+"…");
-    const parsed=await parsePdfFile(file);
+    let parsed;
+    try{parsed=await parsePdfFile(file);}
+    catch(error){
+      // Errores documentales de identidad, no errores de lectura binaria o de red.
+      const message=String(error?.message||"");
+      if(/no se pudo verificar el año|no coincide con el año|pero la cabecera del PDF indica|no se puede clasificar en/i.test(message)){
+        return await storeProvisionalPdf(file,{},message);
+      }
+      throw error;
+    }
     if(!/^LP\d{2}-\d{4,6}$/.test(parsed.id)){
       return await storeProvisionalPdf(file,parsed);
     }
