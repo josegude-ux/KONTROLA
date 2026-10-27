@@ -76,11 +76,68 @@ export function createAdminController({client,getUser,bucket,global,errorText,on
     draft.file=new File([data],draft.parsed.id+".pdf",{type:"application/pdf"});
     return draft.file;
   }
+  // Bloque 01: un PDF sin código confirmado no entra en Preparación/Verificación.
+  async function storeProvisionalPdf(file,parsed){
+    const hash=await hashFile(file);
+    const {data,error}=await client.rpc("kontrola_reservar_provisional_pdf",{
+      p_hash:hash,p_archivo:file.name,p_tamano:file.size
+    });
+    if(error)throw error;
+    const provisional=Array.isArray(data)?data[0]:data;
+    if(!provisional?.id||!provisional.documento_ruta)throw Error("Reserva provisional incompleta.");
+    if(provisional.repetida&&provisional.estado==="pendiente_identificacion")return "provisional";
+    const {error:uploadError}=await client.storage.from(bucket).upload(provisional.documento_ruta,file,{
+      contentType:"application/pdf",upsert:false
+    });
+    if(uploadError&&!/already exists|duplicate/i.test(String(uploadError.message||uploadError))&&
+      Number(uploadError.statusCode||uploadError.status)!==409)throw uploadError;
+    const payload=parsed&&typeof parsed==="object"?parsed:{};
+    const motivo="Código LP no confirmado en la lectura del PDF";
+    const {error:completeError}=await client.rpc("kontrola_completar_provisional_pdf",{
+      p_id:provisional.id,p_datos:payload,p_motivo:motivo
+    });
+    if(completeError)throw completeError;
+    return "provisional";
+  }
+  async function refreshProvisionalDrafts(){
+    const box=$("provisionalPdfSection"),list=$("provisionalPdfList");
+    if(!box||!list)return;
+    const actor=getUser()?.id;
+    const {data,error}=await client.from("kontrola_pdf_provisionales")
+      .select("id,archivo_nombre,documento_ruta,estado,creado_en,motivo")
+      .order("creado_en",{ascending:false}).limit(100);
+    if(getUser()?.id!==actor)return;
+    list.replaceChildren();
+    if(error){box.hidden=false;list.textContent="No se pudieron consultar borradores provisionales: "+errorText(error);return;}
+    box.hidden=!(data||[]).length;
+    for(const row of data||[]){
+      const line=document.createElement("div");line.className="revision-entry";
+      const meta=document.createElement("span"),name=document.createElement("b");
+      name.textContent=row.archivo_nombre;
+      const detail=document.createElement("small");
+      detail.textContent="Pendiente de identificación · "+(row.motivo||"Revisión administrativa necesaria");
+      meta.append(name,detail);
+      const button=document.createElement("button");button.type="button";button.className="secondary";
+      button.textContent="Descargar original";
+      button.addEventListener("click",async()=>{
+        button.disabled=true;
+        try{
+          const {data:raw,error:downloadError}=await client.storage.from(bucket).download(row.documento_ruta);
+          if(downloadError)throw downloadError;
+          const url=URL.createObjectURL(raw);
+          const link=document.createElement("a");link.href=url;link.download=row.archivo_nombre||"provisional.pdf";
+          link.click();setTimeout(()=>URL.revokeObjectURL(url),1500);
+        }catch(e){setStatus("No se pudo descargar el original provisional: "+errorText(e),"error");}
+        finally{button.disabled=false;}
+      });
+      line.append(meta,button);list.appendChild(line);
+    }
+  }
   async function processSinglePdf(file,seenCodes){
     setStatus("Analizando "+file.name+"…");
     const parsed=await parsePdfFile(file);
     if(!/^LP\d{2}-\d{4,6}$/.test(parsed.id)){
-      throw Error("No se pudo identificar el código LP de este PDF ("+file.name+"). Comprueba que el documento incluye un código LP válido y que no está escaneado; no se reservará una importación con un identificador deducido del nombre.");
+      return await storeProvisionalPdf(file,parsed);
     }
     if(seenCodes.has(parsed.id))throw Error("El lote contiene más de un PDF para la carga "+parsed.id+". Importa las revisiones de esa carga por separado.");
     seenCodes.add(parsed.id);
@@ -138,9 +195,10 @@ export function createAdminController({client,getUser,bucket,global,errorText,on
         }
       }
       const total=resumenLotePdf(outcomes);
+      const provisionales=outcomes.filter(item=>item.estado==="provisional").length;
       const summary="Importación terminada: "+total.nuevos+" nuevo(s), "+total.recuperados+
         " recuperado(s), "+total.repetidos+" repetido(s), "+total.cancelados+
-        " cancelado(s), "+total.errores+" error(es)."+
+        " cancelado(s), "+provisionales+" provisional(es), "+total.errores+" error(es)."+
         " Los documentos admitidos quedan pendientes de revisión; ninguno se publica automáticamente.";
       // Resultado compacto: los errores detallados quedan disponibles bajo demanda.
       setStatus(summary,total.hayErrores?"error":"success");
@@ -161,7 +219,7 @@ export function createAdminController({client,getUser,bucket,global,errorText,on
       $("pdfInput").value="";
       // El selector representa las pendientes del servidor; no vaciarlo al
       // terminar el lote, ya que parecería que las cargas han desaparecido.
-      try{await Promise.all([refreshReviewSelector(),refreshPendingPublish()]);}
+      try{await Promise.all([refreshReviewSelector(),refreshPendingPublish(),refreshProvisionalDrafts()]);}
       catch(error){global("Importación finalizada, pero no se pudo actualizar el listado de pendientes: "+errorText(error),"error");}
     }
   }
@@ -589,7 +647,7 @@ export function createAdminController({client,getUser,bucket,global,errorText,on
   $("refreshArchived").addEventListener("click",refreshArchivedLoads);
   async function open(){
     selectAdminTab(0);
-    await Promise.all([refreshAttention(),refreshPendingPublish(),refreshReviewSelector(),refreshSummary(),refreshIncidents(),operatorStats.refresh(),printBatch.refresh()]);
+    await Promise.all([refreshAttention(),refreshPendingPublish(),refreshReviewSelector(),refreshProvisionalDrafts(),refreshSummary(),refreshIncidents(),operatorStats.refresh(),printBatch.refresh()]);
   }
   function clearSensitive(){
     archiveGeneration++;
@@ -604,6 +662,7 @@ export function createAdminController({client,getUser,bucket,global,errorText,on
     }
     $("pdfInput").value="";
     $("importResultDetails").hidden=true;$("importResultList").replaceChildren();
+    $("provisionalPdfList")?.replaceChildren();if($("provisionalPdfSection"))$("provisionalPdfSection").hidden=true;
     $("reportView").hidden=true;document.body.classList.remove("report-open");
     $("onedriveArchiveHelp").hidden=false;
     setStatus("");updateActions();
