@@ -550,3 +550,13 @@ Antes de redactar, guardar, proponer o añadir un prompt/botón al Centro de man
 - Este enlace funciona a través del proveedor externo **raw.githack.com** y no es GitHub Pages. Puede mostrar una pantalla de confirmación de seguridad antes de cargar archivos HTML; la disponibilidad depende de ese servicio.
 - Los cambios futuros en `visura-panel/docs/index.html` podrán verse en el mismo enlace tras propagarse la caché.
 - Para pasar a **GitHub Pages oficial sin tocar la publicación existente de KONTROLA**, utilizar otro repositorio dedicado para el panel. No modificar la fuente GitHub Pages de KONTROLA sin verificar su configuración y autorización específica.
+
+## Estado técnico del icono B para iPhone — rama de integración aislada (2026-10-27)
+
+- Base comprobada: `visura-panel` @ `4a286e67d3967576fe0868a1ee9c3685d31498ec`; rama de trabajo `fix/visura-centro-mando-icono-b-ios-20261027`.
+- **Icono B aprobado recuperado y verificado** desde la Biblioteca: PNG 1024×1024, SHA-256 `45890808fada6590d90a925c06139d4ea860d1ff37423835f71dce801c75ab2e`. No se rediseñó.
+- **Cinco PNG reales incorporados a GitHub** en `docs/assets/icons/`: original 1024, Apple Touch 180, favicon 32, iconos 192 y 512. Commit de binarios `ab6c6618aa4b10cef0efe0ed79e9dfda11a890da`. Ver hashes SHA-256 y SHA-1 Git en `docs/ICONO_CENTRO_DE_MANDO_B_INTEGRACION.md`.
+- Ambos HTML `docs/index.html` y `docs/VISURA_ORDENES.html` son idénticos en rama de corrección, con enlaces a `apple-touch-icon`, favicon de 32 y manifest; conservan favicon antiguo 64 como alternativa.
+- **Regresiones estáticas superadas**: comparación exacta con los HTML de `visura-panel` después de retirar únicamente cinco metadatos nuevos del `<head>`; permanecen funciones 01–10, orden 10 y botones de copia. Manifest JSON válido. Los recursos PNG son los blobs originales verificados contra `git hash-object`.
+- **Aún pendientes**: comprobar HTTP 200/Content-Type mediante acceso web externo; probar en Safari/iPhone real y otros navegadores; actualización del enlace público **solo tras autorización independiente**. La presencia de los PNG en la rama no demuestra que la pantalla de inicio del usuario esté actualizada.
+- **Protección**: ni `main` ni `visura-panel` fueron modificadas; no se han fusionado PR ni publicado cambios. No cambiar funciones 01–10, gestor de chats, OneDrive, prompts ni CSS/JS por esta tarea.
