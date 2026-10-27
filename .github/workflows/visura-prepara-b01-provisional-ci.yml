@@ -40,3 +40,19 @@ jobs:
           npm run check
       - name: Propuestas SQL sobre base local efímera
         run: npm run test:db
+      - name: Preparar prueba visual Chromium
+        run: |
+          npm install --no-save @playwright/test
+          npx playwright install --with-deps chromium
+      - name: Probar formulario adaptable sin cuenta ni datos reales
+        run: |
+          mkdir -p artifacts
+          npx playwright test tests/provisional-layout.spec.mjs --reporter=line --workers=1
+      - name: Conservar capturas para revisión visual
+        if: always()
+        uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08 # v4
+        with:
+          name: visura-prepara-b01-provisionales-responsive
+          path: artifacts/*.png
+          if-no-files-found: warn
+          retention-days: 7
