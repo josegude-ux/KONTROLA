@@ -101,12 +101,12 @@ test("La navegación conserva los accesos previos y los regresos al submenú",()
 
 test("La versión y el caché están preparados para instalar nuevas pantallas",()=>{
   const version=JSON.parse(read("version.json")).version;
-  assert.equal(version,"0.3.45");
+  assert.equal(version,"0.3.46");
   assert.equal(JSON.parse(read("package.json")).version,version);
   assert.equal(JSON.parse(read("package-lock.json")).version,version);
   assert.ok(read("src/config.mjs").includes(`APP_VERSION="${version}"`));
   assert.ok(html.includes(`id="appVersion">${version}<`));
-  assert.match(read("sw.js"),/kontrola-integral-visura-v078/);
+  assert.match(read("sw.js"),/kontrola-integral-visura-v079/);
 });
 
 test("Las consultas descartan respuestas de sesiones o almacenes anteriores",()=>{
@@ -245,7 +245,7 @@ test("los huecos del camión aparecen junto a matrícula con G y P",()=>{
   const end=app.indexOf("// Historial de lectura",start);
   const preparation=app.slice(start,end);
   assert.match(preparation,/vehicle\.append\(plate,pallets\)/);
-  assert.match(preparation,/palletsValue\.textContent=formatearHuecosPalets\(r\.huecos_palets_grandes,r\.huecos_palets_pequenos,r\.huecos_palets_total\)/);
+  assert.match(preparation,/palletsValue\.textContent=formatearHuecosPalets\(r\.huecos_palets_grandes,r\.huecos_palets_pequenos,r\.huecos_palets_total,r\.huecos_palets_europeos\)/);
   assert.match(preparation,/HUECOS PALÉS/);
   assert.doesNotMatch(preparation,/palets_para_carga/);
   assert.match(css,/#loadsList \.load-vehicle\{/);
@@ -297,7 +297,7 @@ test("la lectura de PDF antiguos es voluntaria y no modifica Supabase ni relojes
 test("los PDF leídos se muestran solo durante la sesión y se mantienen al refrescar",()=>{
  assert.match(app,/legacyHeaderCache\.set\(load\.documento_ruta,extras\)/);
  assert.match(app,/const cached=legacyHeaderCache\.get\(load\.documento_ruta\)/);
- assert.match(app,/cached&&cabeceraSinMetadatos\(enriched\)/);
+ assert.match(app,/cached&&cargaHuecosPendientes\(enriched\)/);
  assert.match(app,/legacyHeaderCache\.clear\(\)/);
  assert.match(app,/id\.textContent=r\.codigo\+\(observaciones\?" - "\+observaciones:""\)/);
 });

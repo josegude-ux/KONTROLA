@@ -215,7 +215,7 @@ async function refreshLoads(){
     const codes=[...new Set(loads.map(load=>load.codigo).filter(Boolean))];
     for(let start=0;start<codes.length;start+=50){
       const {data,error}=await client.from("kontrola_carga_revisiones")
-        .select("codigo,observaciones:carga_datos->>observaciones,huecos_palets_grandes:carga_datos->>huecos_palets_grandes,huecos_palets_pequenos:carga_datos->>huecos_palets_pequenos,huecos_palets_total:carga_datos->>huecos_palets_total")
+        .select("codigo,observaciones:carga_datos->>observaciones,huecos_palets_grandes:carga_datos->>huecos_palets_grandes,huecos_palets_pequenos:carga_datos->>huecos_palets_pequenos,huecos_palets_europeos:carga_datos->>huecos_palets_europeos,huecos_palets_total:carga_datos->>huecos_palets_total")
         .eq("vigente",true).eq("almacen",warehouse).in("codigo",codes.slice(start,start+50));
       if(!validRequest(warehouse,userId))return;
       if(error)throw error;
@@ -223,6 +223,7 @@ async function refreshLoads(){
         observaciones:row.observaciones,
         huecos_palets_grandes:row.huecos_palets_grandes,
         huecos_palets_pequenos:row.huecos_palets_pequenos,
+        huecos_palets_europeos:row.huecos_palets_europeos,
         huecos_palets_total:row.huecos_palets_total
       });
     }
@@ -235,7 +236,11 @@ async function refreshLoads(){
   loads=loads.map(load=>{
     const enriched={...load,...(extras.get(load.codigo)||{})};
     const cached=legacyHeaderCache.get(load.documento_ruta);
-    return cached&&cabeceraSinMetadatos(enriched)?{...enriched,...cached}:enriched;
+    // Lectura local de un PDF verificado puede desmentir un 0 genérico guardado.
+    if(cached&&cargaHuecosPendientes(enriched)&&
+       [cached.huecos_palets_grandes,cached.huecos_palets_europeos,cached.huecos_palets_pequenos].some(v=>Number(v)>0))
+      return {...enriched,...cached,huecos_palets_total:null,huecos_origen:"PDF releído"};
+    return enriched;
   });
   renderLoadList();
 }
@@ -311,8 +316,8 @@ function renderLoadList(){
     const pallets=document.createElement("span");pallets.className="load-pallets";
     const palletsLabel=document.createElement("span");palletsLabel.className="load-pallets-label";palletsLabel.textContent="HUECOS PALÉS";
     const palletsValue=document.createElement("strong");palletsValue.className="load-pallets-value";
-    palletsValue.textContent=formatearHuecosPalets(r.huecos_palets_grandes,r.huecos_palets_pequenos,r.huecos_palets_total);
-    pallets.title="Huecos disponibles del camión: G = grandes, P = pequeños. No son palés ya preparados.";
+    palletsValue.textContent=formatearHuecosPalets(r.huecos_palets_grandes,r.huecos_palets_pequenos,r.huecos_palets_total,r.huecos_palets_europeos);
+    pallets.title="Capacidad de huecos del camión: G = grandes, E = europeos, P = pequeños. No representa los palés de esta carga y requiere confirmación.";
     pallets.append(palletsLabel,palletsValue);vehicle.append(plate,pallets);
     const bundles=document.createElement("span");bundles.className="load-bundles";
     // Reutiliza el desglose por unidades de la hoja de preparación.
@@ -561,7 +566,7 @@ const truckInputs=["truckCapacityTotal","truckCapacityG","truckCapacityP","truck
 const truckKey=()=>user&&current?user.id+"|"+current.almacen+"|"+current.codigo:"";
 function assessment(){
   return evaluarHuecosCamion({
-    modo:$("truckCapacityMode").value,previas:$("truckPreviousChoice").value,
+    modo:$("truckCapacityMode").value,segundoTipo:$("truckSecondKind").value,previas:$("truckPreviousChoice").value,
     capacidadTotal:$("truckCapacityTotal").value,capacidadG:$("truckCapacityG").value,
     capacidadP:$("truckCapacityP").value,
     anterioresTotal:$("truckPreviousTotal").value,anterioresG:$("truckPreviousG").value,
@@ -575,6 +580,11 @@ function renderTruckAssessment(){
   const previous=$("truckPreviousChoice").value==="si";
   $("truckFieldsTotal").hidden=bySize;
   $("truckFieldsBySize").hidden=!bySize;
+  $("truckSecondKindRow").hidden=!bySize;
+  const european=$("truckSecondKind").value==="E";
+  $("truckCapacityPLabel").textContent=european?"Huecos europeos (E) del camión":"Huecos pequeños (P) del camión";
+  $("truckPreviousPLabel").textContent=european?"Europeos ocupados antes":"Pequeños ocupados antes";
+  $("truckCurrentPLabel").textContent=european?"Europeos necesarios ahora":"Pequeños necesarios ahora";
   $("truckPreviousTotalRow").hidden=bySize||!previous;
   $("truckPreviousSizeRow").hidden=!bySize||!previous;
   const result=assessment();
@@ -584,7 +594,7 @@ function renderTruckAssessment(){
     ", ocupados antes "+(row.anteriores??"—")+", esta carga "+(row.actual??"—")+
     ", libres después "+(row.restantes??"—")).join("\n"):"");
   if(truckKey())truckCapacitySession.set(truckKey(),{
-    modo:$("truckCapacityMode").value,previas:$("truckPreviousChoice").value,
+    modo:$("truckCapacityMode").value,segundoTipo:$("truckSecondKind").value,previas:$("truckPreviousChoice").value,
     inputs:Object.fromEntries(truckInputs.map(id=>[id,$(id).value]))
   });
   return result;
@@ -595,16 +605,17 @@ function openTruckPanel(load){
   const cached=truckCapacitySession.get(user.id+"|"+load.almacen+"|"+load.codigo);
   $("truckCapacityPanel").hidden=false;
   $("truckCapacityMode").value=cached?.modo||(supplied.modo==="desglose"?"desglose":"total");
+  $("truckSecondKind").value=cached?.segundoTipo||supplied.segundoTipo||"E";
   $("truckPreviousChoice").value=cached?.previas||"";
   for(const id of truckInputs)$(id).value=cached?.inputs?.[id]??"";
   if(!cached){
     $("truckCapacityG").value=supplied.grandes??"";
-    $("truckCapacityP").value=supplied.pequenos??"";
+    $("truckCapacityP").value=$("truckSecondKind").value==="E"?(supplied.europeos??""):(supplied.pequenos??"");
     $("truckCapacityTotal").value=supplied.total??"";
   }
   $("truckCapacitySource").textContent=supplied.modo==="sin_datos"?
     "No constan huecos: se intentará leer el PDF original de esta carga. Si no aparecen, introduce la capacidad real del camión.":
-    "Capacidad leída del PDF de esta carga: confírmala antes de calcular. G y P no se pueden compensar.";
+    "Capacidad leída del PDF de esta carga: confirma G/E o G/P antes de calcular. No son los palés que requiere esta carga.";
   $("truckCapacityStart").hidden=currentReadOnly||currentPreparation.active||
     currentPreparation.finalized||load.estado!=="publicada";
   renderTruckAssessment();
@@ -622,16 +633,23 @@ async function recoverTruckCapacityFromPdf(load){
     const extras=cabeceraLeida(load,parsed,warehouse);
     if(!extras)throw Error("El PDF no coincide con carga/almacén");
     legacyHeaderCache.set(route,extras);
-    for(const field of ["huecos_palets_grandes","huecos_palets_pequenos","huecos_palets_total"]){
-      if(extras[field]!==null)load[field]=extras[field];
+    const formatos=["huecos_palets_grandes","huecos_palets_europeos","huecos_palets_pequenos"];
+    if(formatos.some(field=>Number(extras[field])>0)){
+      // Solo vista local. Nunca se reescribe una revisión de Supabase.
+      for(const field of formatos)load[field]=extras[field];
+      load.huecos_palets_total=null;load.huecos_origen="PDF releído";
+    }else if(Number(extras.huecos_palets_total)>0){
+      load.huecos_palets_total=extras.huecos_palets_total;
+      load.huecos_origen="PDF releído";
     }
     if(!load.observaciones&&extras.observaciones)load.observaciones=extras.observaciones;
     renderLoadList();
     if(!truckCapacityTouched){
       const supplied=capacidadDeCarga(load);
       if(supplied.modo==="desglose")$("truckCapacityMode").value="desglose";
+      $("truckSecondKind").value=supplied.segundoTipo||"E";
       $("truckCapacityG").value=supplied.grandes??"";
-      $("truckCapacityP").value=supplied.pequenos??"";
+      $("truckCapacityP").value=$("truckSecondKind").value==="E"?(supplied.europeos??""):(supplied.pequenos??"");
       $("truckCapacityTotal").value=supplied.total??"";
       $("truckCapacitySource").textContent=supplied.modo==="sin_datos"?
         "El PDF no trae huecos reconocibles. Introduce manualmente la capacidad real del camión.":
@@ -644,6 +662,11 @@ async function recoverTruckCapacityFromPdf(load){
     }
   }
 }
+$("truckSecondKind").addEventListener("change",()=>{
+  // Cambiar E por P no puede reutilizar cantidades del otro formato.
+  for(const id of ["truckCapacityP","truckPreviousP","truckCurrentP"])$(id).value="";
+  truckCapacityTouched=true;renderTruckAssessment();
+});
 for(const id of [...truckInputs,"truckCapacityMode","truckPreviousChoice"]){
   $(id).addEventListener("input",()=>{truckCapacityTouched=true;renderTruckAssessment();});
   $(id).addEventListener("change",()=>{truckCapacityTouched=true;renderTruckAssessment();});

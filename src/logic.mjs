@@ -4,11 +4,12 @@ export function ordenarCargas(rows) {
 }
 // Huecos para palés del camión, no palés reales a preparar.
 // Si el PDF solo indica grandes, no deducir que los pequeños son cero.
-export function formatearHuecosPalets(grandes,pequenos,total){
+export function formatearHuecosPalets(grandes,pequenos,total,europeos=null){
  const valido=v=>v!==null&&v!==undefined&&v!==""&&Number.isInteger(Number(v))&&Number(v)>=0;
  const g=valido(grandes)?Number(grandes):null;
  const p=valido(pequenos)?Number(pequenos):null;
- if(g!==null||p!==null)return [g===null?null:g+" G",p===null?null:p+" P"].filter(Boolean).join(" · ");
+ const e=valido(europeos)?Number(europeos):null;
+ if(g!==null||p!==null||e!==null)return [g===null?null:g+" G",e===null?null:e+" E",p===null?null:p+" P"].filter(Boolean).join(" · ");
  return valido(total)?Number(total)+" huecos":"—";
 }
 // Dentro de cada pasillo: primero cajas, después botellas; en cada formato,
