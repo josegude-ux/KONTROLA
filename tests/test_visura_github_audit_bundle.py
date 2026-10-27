@@ -193,12 +193,100 @@ class AuditBundleTests(unittest.TestCase):
             result = inspect_readonly_audit_bundle(
                 REPO, 37, "main", "secret", opener=lambda *args: None
             )
-        self.codeowners_mock.assert_called_once()
-        self.assertEqual(self.codeowners_mock.call_args.args[:3], (
-            REPO, "chore/visura-auto-dev-guardrails", "secret",
-        ))
+        self.assertEqual(self.codeowners_mock.call_count, 2)
+        self.assertEqual(
+            [call.args[:3] for call in self.codeowners_mock.call_args_list],
+            [(REPO, "chore/visura-auto-dev-guardrails", "secret")] * 2,
+        )
         self.assertFalse(result["target_branch_codeowners"]["file_absence_verified"])
         self.assertFalse(result["execution_authorized"])
+
+    def test_codeowners_content_sha_change_aborts_before_final_pr(self):
+        original = dict(self.codeowners_mock.return_value)
+        original["lookup"] = "file_observed"
+        original["observations"] = [
+            {"path": ".github/CODEOWNERS", "lookup": "file_observed",
+             "blob_sha": "a" * 40},
+            {"path": "CODEOWNERS", "lookup": "not_found_or_inaccessible",
+             "blob_sha": None},
+            {"path": "docs/CODEOWNERS", "lookup": "not_found_or_inaccessible",
+             "blob_sha": None},
+        ]
+        original["first_observed_path"] = ".github/CODEOWNERS"
+        original["unshadowed_candidate_observed"] = True
+        changed = dict(original)
+        changed["observations"] = [
+            dict(original["observations"][0], blob_sha="b" * 40),
+            *original["observations"][1:],
+        ]
+        self.codeowners_mock.side_effect = [original, changed]
+        with patch(
+            "scripts.visura_github_audit_bundle.fetch_readonly_review_snapshot",
+            return_value=fixture_snapshot(),
+        ), patch(
+            "scripts.visura_github_audit_bundle.inspect_branch_policy",
+            return_value={"branch": "any"},
+        ), patch(
+            "scripts.visura_github_audit_bundle._get_json",
+        ) as final_pr:
+            with self.assertRaisesRegex(
+                ValueError, "CODEOWNERS metadata changed during the audit"
+            ):
+                inspect_readonly_audit_bundle(
+                    REPO, 37, "main", "secret", opener=lambda *args: None
+                )
+            final_pr.assert_not_called()
+        self.assertEqual(self.codeowners_mock.call_count, 2)
+
+    def test_codeowners_access_becomes_inaccessible_fails_closed(self):
+        first = self.codeowners_mock.return_value
+        second = dict(first, observations=[
+            {"path": ".github/CODEOWNERS", "lookup": "inaccessible",
+             "blob_sha": None},
+            *first["observations"][1:],
+        ])
+        self.codeowners_mock.side_effect = [first, second]
+        with patch(
+            "scripts.visura_github_audit_bundle.fetch_readonly_review_snapshot",
+            return_value=fixture_snapshot(),
+        ), patch(
+            "scripts.visura_github_audit_bundle.inspect_branch_policy",
+            return_value={"branch": "any"},
+        ):
+            with self.assertRaisesRegex(
+                ValueError, "CODEOWNERS metadata changed during the audit"
+            ):
+                inspect_readonly_audit_bundle(
+                    REPO, 37, "main", "secret", opener=lambda *args: None
+                )
+
+    def test_codeowners_recheck_precedes_final_pr_get(self):
+        events = []
+        evidence = self.codeowners_mock.return_value
+        self.codeowners_mock.side_effect = lambda *args, **kwargs: (
+            events.append("codeowners") or evidence
+        )
+
+        def last_pr(*args):
+            events.append("final_pr")
+            return fixture_pr()
+
+        with patch(
+            "scripts.visura_github_audit_bundle.fetch_readonly_review_snapshot",
+            return_value=fixture_snapshot(),
+        ), patch(
+            "scripts.visura_github_audit_bundle.inspect_branch_policy",
+            return_value={"branch": "any"},
+        ), patch(
+            "scripts.visura_github_audit_bundle._get_json",
+            side_effect=last_pr,
+        ):
+            result = inspect_readonly_audit_bundle(
+                REPO, 37, "main", "secret", opener=lambda *args: None
+            )
+        self.assertEqual(events, ["codeowners", "codeowners", "final_pr"])
+        self.assertIs(result["same_codeowners_metadata_after_audit"], True)
+        self.assertFalse(result["repository_policy_verified"])
 
     def test_preflight_scopes_repo_and_pr_with_single_supplied_token(self):
         with patch(
