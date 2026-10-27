@@ -980,3 +980,14 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 - **Sin cambios:** original PDF, lectura F/C, código LP, hashes, RPC, SQL, datos reales, BC, verificación, autorización y publicación.
 - **Pendiente importante del Bloque 01:** borradores provisionales de PDF sin identificación LP siguen bloqueados actualmente antes de la reserva; requieren diseño del contrato SQL y política de identidad confiable, sin códigos LP inventados. Ver `docs/BLOQUE_01_IMPORTACION_ERRORES_POR_ARCHIVO.md`.
 - **Siguiente paso:** verificar CI y PR aislada; analizar contrato de reserva/identificación y escoger implementación segura sin solapar otras ramas. Prohibido fusionar, desplegar o tocar Supabase real sin autorización.
+
+
+---
+
+## 2026-10-27 · Bloque 01 — Auditoría segura de reintentos por SHA-256
+- **Base:** PR #62, commit `8e63ca63270baa90b96e78e90ef819011f6c64fa`. **Rama aislada:** `feat/visura-prepara-b01-auditoria-reintentos-20261027`. PR #61 responsive y PR #60 flujos paralelos continúan separadas.
+- **Hallazgo:** el mismo PDF (SHA-256) era correctamente detectado como repetido pero no existía un evento duradero por cada repetición.
+- **Cambio:** `supabase/proposals/kontrola_auditoria_reintentos_b01.sql` conserva firma, permisos y contratos de `kontrola_reservar_importacion` y añade exclusivamente un `kontrola_importacion_eventos` por cada repetición válida de la **misma carga**, con administrador, fecha servidor, código, hash, nombre y tamaño. No cambia el PDF ni crea revisiones nuevas. No aplicar a Supabase real sin autorización.
+- **Pruebas:** `tests/integration/import-attempt-audit.sql` y bandera de pruebas optativa `KONTROLA_TEST_REINTENTOS=1` en `tests/integration/run.sh`, solo en PostgreSQL efímero/local con guardia `kontrola_test`. Workflow aislado `.github/workflows/visura-prepara-b01-reintentos-ci.yml`. CI de código `41312e91ea79eda354612e9716f70a7dc130ed35`: [run 40482284968](https://github.com/josegude-ux/KONTROLA/actions/runs/40482284968) **SUCCESS**; volver a confirmar HEAD posterior a documentación.
+- **Importante:** los hash asociados a otro código LP siguen bloqueados (auditoría de rechazos necesita transacción separada); no confundir con borradores sin LP, aún pendientes. Ver `docs/BLOQUE_01_AUDITORIA_REINTENTOS.md`.
+- **Siguiente tarea:** verificar CI/PR sin fusionar, estudiar contrato seguro de borradores provisionales no identificados y continuar con tareas seguras independientes de Bloque 01 sin inventar Verificación física detallada.
