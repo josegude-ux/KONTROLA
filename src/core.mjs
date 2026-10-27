@@ -16,6 +16,19 @@ export const normalizeWarehouseCode=raw=>{
  return cleaned.replace(/^COR_1_/,'COR_01_').replace(/^COR_2_/,'COR_02_')||null;
 };
 const KNOWN_WAREHOUSES=new Set(['COR_01_COR','COR_02_NAR']);
+// Capacity code (6G 1E) is not "Huecos plts. camión: 0".
+export function extraerFormatoCamion(truckLine="",huecosLine=""){
+ const expr=/(?:^|[^A-Z0-9])(\d{1,2})\s*G(?:\s*[-\/ ]?\s*(\d{1,2})\s*([EP]))?(?=\b|$)/i;
+ const cap=String(huecosLine).match(expr)||String(truckLine).match(expr);
+ if(cap){
+  const second=cap[2]==null?null:Number(cap[2]);
+  return {palletsLarge:Number(cap[1]),palletsSmall:cap[3]?.toUpperCase()==="P"?second:null,
+    palletsEuropean:cap[3]?.toUpperCase()==="E"?second:null,palletsTotal:null};
+ }
+ const plain=String(huecosLine).match(/^\s*(\d{1,3})(?=\s|$)/);
+ return {palletsLarge:null,palletsSmall:null,palletsEuropean:null,
+   palletsTotal:plain?Number(plain[1]):null};
+}
 // Convención de archivo: F19711.pdf es una carga con destino Ferrol, que puede
 // contener mercancía de COR1 y COR2. El prefijo NUNCA autoriza preparar COR2.
 // C19711.pdf también se procesa exclusivamente desde COR1; la letra no integra el LP.
@@ -141,17 +154,11 @@ export function parseDocumentPages(pages, fileName='Documento.pdf', options={}) 
  const visits=numeric(extract(/N[º°o.]?\s*visitas\s*:?\s*(\d+)/i));
  const driver=(extract(/Repartidor\s*:\s*(.{1,65}?)(?=N[º°o.]?\s*copias|N[º°o.]?\s*visitas|Peso\s*carga|Almac[eé]n|$)/i)||'').trim();
  const plate=extract(/Matr[ií]cula\s*:?\s*([A-Z0-9-]{5,12})/i)||extract(/Cami[oó]n\s*:\s*CR(\d{4}[A-Z]{3})/i)||'';
- // Leer «6G 4» como grandes/pequeños y «8G» sin inventar pequeños.
+ // El código 8G 4E del camión determina capacidad por formato, incluso
+ // cuando el campo independiente «Huecos plts. camión» muestra 0.
  const truckLine=extract(/Cami[oó]n\s*:\s*(.{1,120}?)(?=\s*Matr[ií]cula\s*:|\s*Huecos\s*plts\.?\s*cami[oó]n\s*:|\s*Almac[eé]n\s*:|$)/i)||'';
- // Cuando consta el campo explícito "Huecos plts. camión", tiene prioridad
- // sobre cualquier código de capacidad presente junto al nombre del camión.
- const huecosLine=extract(/Huecos\s*(?:plts?\.?|palets?)\s*(?:del?\s*)?cami[oó]n\s*:\s*(.{1,90}?)(?=\s*(?:Matr[ií]cula|Almac[eé]n|Ruta|Repartidor|Fecha\s*carga|Observaciones?)\s*:|$)/i)||"";
- const palletMatch=(huecosLine||truckLine).match(/(?:^|[\s-])(\d{1,2})\s*G(?:\s*[-\/]?\s*(\d{1,2})\s*P?)?(?=\s|$|[-\/])/i);
- const palletsLarge=palletMatch?Number(palletMatch[1]):null;
- const palletsSmall=palletMatch&&palletMatch[2]!=null?Number(palletMatch[2]):null;
- // Un número sin G/P solo expresa el total de huecos: no adivinar formatos.
- const plainSlots=!palletMatch&&huecosLine.match(/^\s*(\d{1,3})(?=\s|$)/);
- const palletsTotal=plainSlots?Number(plainSlots[1]):null;
+ const huecosLine=extract(/Huecos\s*(?:plts?\.?|palets?)\s*(?:del?\s*)?cami[oó]n\s*:\s*(.{1,90}?)(?=\s*(?:Matr[ií]cula|Almac[eé]n|Ruta|Repartidor|Fecha\s*carga|Observaciones?|Peso\s*carga)\s*:|$)/i)||"";
+ const {palletsLarge,palletsSmall,palletsEuropean,palletsTotal}=extraerFormatoCamion(truckLine,huecosLine);
  const observations=leerObservacionesCabecera(pages);
  const date=extract(/Fecha\s*carga\s*:\s*(\d{2}\/\d{2}\/\d{2,4})/i);
  const route=(extract(/Ruta\s*:\s*(.{1,60}?)(?=\s+(?:Repartidor|Matr[ií]cula|Cami[oó]n|Fecha|Peso|Almac[eé]n|N[º°o.]?\s*(?:copias|visitas))\s*:|$)/i)||'').trim();
@@ -228,7 +235,7 @@ export function parseDocumentPages(pages, fileName='Documento.pdf', options={}) 
  if(amountOK===false)warnings.push('Suma detectada: '+sum.toFixed(3)+' / declarada: '+declaredTotal);
  if(declaredTotal===null)warnings.push('No se pudo contrastar el total del PDF');
  const verified=countOK&&amountOK===true&&warnings.length===0;
- return {id,weight,refs,bultos:declaredTotal,visits,driver,plate,palletsLarge,palletsSmall,palletsTotal,observations,date,route,source:fileName,products,declaredTotal,actualTotal:sum,verified,warnings,warehouse,warehouseKnown:KNOWN_WAREHOUSES.has(warehouse),mixedWarehouse,availableWarehouses:warehouses,pageNumbers};
+ return {id,weight,refs,bultos:declaredTotal,visits,driver,plate,palletsLarge,palletsSmall,palletsEuropean,palletsTotal,observations,date,route,source:fileName,products,declaredTotal,actualTotal:sum,verified,warnings,warehouse,warehouseKnown:KNOWN_WAREHOUSES.has(warehouse),mixedWarehouse,availableWarehouses:warehouses,pageNumbers};
 }
 export function summarize(products){
  const units={},aisles={},unlocated=[];
