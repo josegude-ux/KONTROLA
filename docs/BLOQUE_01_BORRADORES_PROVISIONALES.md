@@ -35,3 +35,9 @@ Las importaciones estándar requieren código `LPyy-nnnn...` no nulo. Un PDF cuy
 
 ## Siguiente tarea
 Confirmar que CI de SQL y Node supera el último commit y comprobar escenarios negativos de Storage/RLS, documento ya existente e identidad distinta. Completar una revisión de seguridad y probar en entorno de pruebas autorizado antes de declarar la funcionalidad operativa. Continuar con otros huecos pendientes de las decisiones 01–23 sin invadir otras ramas.
+
+
+## Comprobación visual transversal (móvil, tablet y ordenador)
+- Nuevo `tests/provisional-layout.spec.mjs`: Chromium comprueba el formulario de provisionales a 390×844, 768×1024 y 1440×900, distribución de columnas, visibilidad de controles y ausencia de desbordamiento horizontal.
+- El workflow `visura-prepara-b01-provisional-ci.yml` genera capturas como artefactos de la CI, sin autenticar a usuarios, subir PDF ni tocar datos reales.
+- Es imprescindible revisar las capturas y probar dispositivos físicos autorizados antes de despliegue. CI pendiente de confirmación en el HEAD.
