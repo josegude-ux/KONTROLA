@@ -112,7 +112,7 @@ test("CSV Excel: formula injection, BOM UTF-8 y no se corta a 100 ni 1000",()=>{
   const csv=fixedReportCsv(result.rows,{warehouse:"COR_01_COR",
     sourceFile:"BC.xlsx",importedAt:"2026-10-27",generatedAt:"2026-10-27"});
   assert.equal(csv.charCodeAt(0),65279);assert.match(csv,/PRD1204/);
-  assert.equal(csv.split("PRD").length-1,1205);
+  assert.equal(csv.split("\r\n").filter(line=>/^"sin_fija";"PRD\d{4}";/.test(line)).length,1205);
 });
 test("contrato de lectura nunca referencia stock físico, recuentos o movimientos",()=>{
   const x=classify({fixed:[f()],stock:[{...s("A01-P01",0),physical_quantity:300,difference:300}]});
