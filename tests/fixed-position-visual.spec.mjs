@@ -1,4 +1,6 @@
 import {test,expect} from "@playwright/test";
+import {PDFDocument} from "pdf-lib";
+import {writeFileSync} from "node:fs";
 const url="http://127.0.0.1:8765/tests/fixed-position-visual.html";
 const sizes=[
   {name:"desktop",width:1440,height:900,cols:4,metricCols:5,card:false},
@@ -50,4 +52,28 @@ test("cambio de almacén erróneo borra resultados anteriores",async({page})=>{
   await expect(page.locator("#fixedExport")).toBeDisabled();
   await expect(page.locator("#fixedPrint")).toBeDisabled();
   await expect(page.locator("#fixedTable tbody tr")).toHaveCount(0);
+});
+
+test("PDF real A4: informe multipágina, paginación y seguridad del documento",async({page})=>{
+  await page.goto(url);
+  const html=await page.evaluate(async()=>{
+    const {buildFixedPrintHtml}=await import("../src/fixed-position-print.mjs");
+    const rows=Array.from({length:58},(_,i)=>({
+      code:"SIM"+String(i).padStart(4,"0"),description:"Artículo ficticio "+i,
+      warehouse:"COR_01_COR",location:"A01-P"+String(i).padStart(2,"0"),
+      aisle:"A01",zone:"PICKING",unit:"UD",category:i%2?"cero":"negativo",
+      positionQuantity:i%2?"0":"-1",warehouseQuantity:"50",
+      otherQuantity:"50",replenishment:i%2===1,locations:[]
+    }));
+    return buildFixedPrintHtml({
+      report:{warehouse:"COR_01_COR",complete:true,
+        meta:{sourceFile:"PRUEBA_FICTICIA.xlsx",importedAt:"2026-10-27T11:00:00Z",stale:false}},
+      rows,generatedAt:"2026-10-27T11:10:00Z",pageSize:18
+    });
+  });
+  await page.setContent(html);
+  const bytes=await page.pdf({format:"A4",landscape:true,printBackground:true});
+  const pdf=await PDFDocument.load(bytes);
+  expect(pdf.getPageCount()).toBeGreaterThanOrEqual(4);
+  writeFileSync("artifacts/fijos-multipagina.pdf",bytes);
 });
