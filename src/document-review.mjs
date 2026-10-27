@@ -85,6 +85,33 @@ export function applyLineCorrection(parsed,lineNumber,changes,userId,at=new Date
   return {...parsed,products,actualTotal,verified:false,corrections};
 }
 
+// Bloque 01: los cambios de cantidades requieren evidencia de contraste manual
+// con Business Central. El PDF original no cambia y el total operativo se
+// recalcula; un desajuste con el total documental sigue bloqueando publicación.
+export function applyValidatedQuantityCorrection(parsed,lineNumber,rawQuantity,details,userId,at=new Date().toISOString()){
+  const type=String(details?.type||"").trim();
+  const evidence=String(details?.evidence||"").trim();
+  if(!["lectura_pdf","dato_pdf_bc"].includes(type))
+    throw Error("Indica si se corrige la lectura o un dato del propio PDF contrastado con BC.");
+  if(evidence.length<15||evidence.length>2000)
+    throw Error("Documenta el contraste manual con Business Central (15–2000 caracteres).");
+  if(!userId)throw Error("La corrección necesita responsable identificado.");
+  const normalized=String(rawQuantity??"").trim().replace(",",".");
+  if(!/^\\d+(?:\\.\\d{1,3})?$/.test(normalized))
+    throw Error("Cantidad no válida: indica un número no negativo con hasta tres decimales.");
+  const quantity=Number(normalized);
+  if(!Number.isFinite(quantity))throw Error("Cantidad operativa no válida.");
+  const product=parsed?.products?.[Number(lineNumber)-1];
+  if(!product)throw Error("La línea seleccionada no existe.");
+  if(Number(product.qty)===quantity)
+    throw Error("La cantidad no ha cambiado. No se registrará una corrección ficticia.");
+  const updated=applyLineCorrection(parsed,lineNumber,{qty:quantity},userId,at);
+  const corrections=updated.corrections.slice();
+  const last=corrections.length-1;
+  corrections[last]={...corrections[last],tipo:type,justificacion:evidence,fuente:"contraste_manual_bc"};
+  return {...updated,corrections};
+}
+
 export const normalizeReviewFindings=(findings=[])=>findings.filter(item=>item.code!=="special_marker");
 
 export function publicationReadiness(findings=[],acknowledgedIds=[]){
