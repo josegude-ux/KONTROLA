@@ -35,12 +35,20 @@ fi
 for migration in supabase/migrations/*.sql;do
   "${PSQL[@]}" -f "$migration" >>/tmp/kontrola-migrations.log
 done
+# Extensión optativa del Bloque 01: solo en CI aislada, nunca en la base real.
+if [[ "${KONTROLA_TEST_REINTENTOS:-}" == "1" ]]; then
+  "${PSQL[@]}" -f supabase/proposals/kontrola_auditoria_reintentos_b01.sql >>/tmp/kontrola-migrations.log
+fi
 "${PSQL[@]}" -f tests/integration/workflow.sql >/tmp/kontrola-workflow.log
 "${PSQL[@]}" -f tests/integration/revisions.sql >/tmp/kontrola-revisions.log
 "${PSQL[@]}" -f tests/integration/operator-stats.sql >/tmp/kontrola-operator-stats.log
 tests/integration/concurrency.sh "$DB"
 grep -q "KONTROLA_INTEGRATION_OK" /tmp/kontrola-workflow.log
 grep -q "KONTROLA_REVISION_OK" /tmp/kontrola-revisions.log
+if [[ "${KONTROLA_TEST_REINTENTOS:-}" == "1" ]]; then
+  "${PSQL[@]}" -f tests/integration/import-attempt-audit.sql >/tmp/kontrola-auditoria-reintentos.log
+  grep -q "KONTROLA_REINTENTOS_AUDITORIA_OK" /tmp/kontrola-auditoria-reintentos.log
+fi
 grep -q "KONTROLA_OPERATOR_STATS_OK" /tmp/kontrola-operator-stats.log
 # Propuesta de archivo: ejecutar SOLO en base aislada tras las pruebas principales.
 "${PSQL[@]}" -f tests/integration/archive.sql >/tmp/kontrola-archivo.log
