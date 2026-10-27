@@ -95,5 +95,10 @@ jobs:
         run: node scripts/preflight-b01.mjs
       - name: Ejecutar TODAS las pruebas documentales en BD local ficticia
         run: npm run test:db
+      - name: Registrar riesgo documental original con dos líneas y una sola evidencia BC
+        run: |
+          psql -v ON_ERROR_STOP=1 -d "$KONTROLA_TEST_DB" -f tests/integration/preflight-b01-adversarial-quantity.sql | tee /tmp/visura-b01-adversarial.log
+          grep -q "KONTROLA_B01_ADVERSARIAL_FINDING_UNAUDITED_QUANTITY" /tmp/visura-b01-adversarial.log
+          echo "::warning::La propuesta PR69 documenta un riesgo: una corrección BC válida puede cubrir otra cantidad alterada sin evidencia. Esto es una auditoría de baseline, NO una prueba de seguridad aprobada."
       - name: Aplicar copia SQL paralela de lectura y ejecutar regresiones cruzadas
         run: bash scripts/preflight-b01-cross-db.sh
