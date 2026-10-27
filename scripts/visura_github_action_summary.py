@@ -191,6 +191,9 @@ def _codeowners_lines(bundle, repository, branch):
         "execution_authorized", "merge_authorized", "deployment_authorized",
     )):
         raise ValueError("CODEOWNERS observation cannot grant authority")
+    rechecked = bundle.get("same_codeowners_metadata_after_audit")
+    if rechecked is not None and rechecked is not True:
+        raise ValueError("Invalid CODEOWNERS metadata recheck claim")
     rows = report.get("observations")
     if not isinstance(rows, list) or len(rows) != len(_CODEOWNERS_PATHS):
         raise ValueError("Incomplete CODEOWNERS observations")
@@ -199,8 +202,19 @@ def _codeowners_lines(bundle, repository, branch):
         if (not isinstance(row, dict) or row.get("path") != expected
                 or row.get("lookup") not in _CODEOWNERS_LOOKUPS):
             raise ValueError("Invalid CODEOWNERS lookup")
+        version = row.get("blob_sha")
         if row["lookup"] == "file_observed":
+            # Legacy reports may omit blob_sha; they cannot assert recheck.
+            if version is not None and (
+                not isinstance(version, str) or len(version) != 40
+                or any(ch not in "0123456789abcdefABCDEF" for ch in version)
+            ):
+                raise ValueError("Invalid CODEOWNERS blob SHA")
+            if rechecked is True and version is None:
+                raise ValueError("CODEOWNERS recheck needs observed blob SHA")
             found.append(expected)
+        elif version is not None:
+            raise ValueError("Inaccessible CODEOWNERS cannot provide blob SHA")
     first = found[0] if found else None
     if report.get("first_observed_path") != first:
         raise ValueError("CODEOWNERS priority mismatch")
@@ -213,6 +227,10 @@ def _codeowners_lines(bundle, repository, branch):
     return heading + [
         "Primera ruta observada: **" + observation + "**.",
         "Estado: **" + ("archivo observado" if first else "ausencia no verificada") + "**.",
+        "Metadatos releídos: **" + (
+            "coincidentes al releer (no propiedad verificada)"
+            if rechecked is True else "desconocido"
+        ) + "**.",
         "**Los 403/404 no prueban ausencia; tener un archivo no confirma "
         "responsables aplicables ni autoriza revisión, merge o ejecución.**",
     ]
