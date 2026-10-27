@@ -1148,3 +1148,21 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 **Estado:** PR #60, #61, #69, #70 y #72 siguen independientes, borrador, no fusionadas; la prueba SQL es temporal y la UI continúa sin integrarse. Ningún permiso/Supabase/BC/usuario empresarial fue alterado.
 
 **Siguiente tarea aún no autorizada:** reconciliar el frontend real de ramas divergentes, los 17 archivos modificados por ambos lados, y aplicar una secuencia SQL unificada. Requiere fase de integración específica; no sustituir componentes de UI ni desplegar sin permiso. La continuidad segura realizada está cerrada al máximo permitido por las ramas sin fusionar; cualquier cambio adicional deberá ser independiente, seguro y ya autorizado.
+
+---
+
+## 2026-10-27 — Bloque 01: continuidad automática PR #75, pruebas SQL y PWA sin merge
+
+**Responsable:** `02 - VISURA PREPARA - Desarrollo Bloque 01`, reanudado en el mismo chat. El usuario señaló expresamente que NO debe detenerse el trabajo tras un hito cuando existan otras tareas autorizadas y seguras. Se continuó con tareas independientes, sin cambiar el alcance ni las prohibiciones de fusión/despliegue.
+
+**Ramas originales comprobadas antes de intervenir:** PR #60 `18c46b0c742bae9321f08603da40dfd1e7d76323`, PR #61 `d66ecad37a13c3af6dafe2463236a1e2b874f77a`, PR #69 `13b5fbdac50b6e7a2ec4b97bbf2313b7bdbd9fcf`, PR #72 `8cdab594088eba9960968df6d0be6352733c82ea` y PR #70 `05dfebc86b4b8f6179b2b8c29956c8db19634c5b`; abiertas en borrador, sin merge.
+
+**Nueva PR propia en borrador:** [#75](https://github.com/josegude-ux/KONTROLA/pull/75), rama `feat/visura-prepara-b01-correcciones-neto-cero-20261027` derivada exactamente de PR #72; HEAD verificado en esa fase `b7827629089e33ebf5b95bd509f430d69a07dc61`. Detecta y protege cantidades con suma final compensada (2+3=5 y 4+1=5) aunque la evidencia BC esté incompleta o no haya evento; exige correcciones con actor actual, antes/después, tipo, fecha y evidencia. Rechaza modificaciones incompletas antes de persistirlas; preserva rectificaciones legítimas de lectura PDF. Prueba CI del último HEAD [40509183180](https://github.com/josegude-ux/KONTROLA/actions/runs/40509183180) **SUCCESS** en PostgreSQL 16 temporal y Node. Documentación de PR75 `docs/BLOQUE_01_CANTIDADES_NETO_CERO.md`.
+
+**Compatibilidad conjunta:** la rama de auditoría PR #70 se amplió para leer desde `git show` el SHA fijo de PR #75 junto a PR #60/#69/#72, aplicar sus propuestas solo sobre PostgreSQL efímero y comprobar preservación de guard de Verificación y de evidencia BC. CI [40509512782](https://github.com/josegude-ux/KONTROLA/actions/runs/40509512782) **SUCCESS** ambos jobs, sin fusionar ramas ni migrar datos reales. Detalle `docs/BLOQUE_01_CRUCE_SQL_PARALELO_DOCUMENTAL.md`.
+
+**Auditoría PWA siguiente:** `scripts/preflight-b01-pwa.mjs`, `tests/preflight-b01-pwa.test.mjs` y job CI verifican caché SW y version.json de tres ramas; detectan token v077 y versión 0.3.44 idénticos en paralela/responsive aunque el HTML/CSS cambia, y v073/0.3.40 en documental. El recurso `vendor/pdf-lib.min.mjs` no está versionado, pero está declarado como generado por `scripts/build-vendor.mjs` y el Pages workflow lo compila antes de copiar vendor. **Se ejecutó la compilación real en directorio efímero** desde el SHA de PR61; `vendor/pdf-lib.min.mjs` fue generado e incluido en `dist/vendor/`. [CI #40510866461](https://github.com/josegude-ux/KONTROLA/actions/runs/40510866461) **SUCCESS** ambos jobs, con `KONTROLA_B01_PWA_BUILD_OK`. Detalles `docs/BLOQUE_01_PWA_COMPATIBILIDAD.md`.
+
+**Límites y siguientes pasos:** no hay frontend combinado, instalación PWA real ni aplicación de SQL a Supabase. Antes de integración se deben reconciliar los 17 archivos coincidentes sin perder funciones y definir versión de cache, con permiso expreso. El caso de altas y bajas de referencias requiere decisión específica para no impedir las correcciones de importación ya aprobadas. No se ha fusionado ni desplegado, ni modificado Business Central, datos empresariales o Bloque 02.
+
+**Reanudación:** verificar nuevamente HEAD/CI actuales de PR #70/#75 y de las ramas responsables, después escoger siguiente tarea independiente segura o, si no existe, documentar el bloqueo exacto sin inventar requisitos ni autorizar merges.
