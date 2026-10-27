@@ -36,3 +36,20 @@ test("una corrección del PDF sin alegar BC no activa comprobación BC",()=>{
  const pdf={...base,corrections:[{...corr(1,2,4),tipo:"lectura_pdf"}]};
  assert.equal(bcFinding(pdf),undefined);
 });
+
+test("dos cambios compensados sin registro de ningún tipo son error",()=>{
+ const silent={...base,corrections:[]};
+ const finding=analyzeDocument(silent).find(x=>x.code==="quantity_change_unaudited");
+ assert.equal(finding?.severity,"error");
+});
+test("dos correcciones de lectura de PDF correctamente documentadas no se confunden con BC",()=>{
+ const input={...base,corrections:[
+  {...corr(1,2,4),tipo:"lectura_pdf"},
+  {...corr(2,3,1),tipo:"lectura_pdf"}
+ ]};
+ assert.equal(analyzeDocument(input).some(x=>x.code==="quantity_change_unaudited"),false);
+ assert.equal(analyzeDocument(input).some(x=>x.code==="quantity_bc_evidence_missing"),false);
+});
+test("solo una línea auditada mantiene el error genérico en la segunda",()=>{
+ assert.equal(analyzeDocument(base).some(x=>x.code==="quantity_change_unaudited"),true);
+});
