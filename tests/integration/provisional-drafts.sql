@@ -52,7 +52,7 @@ exception when insufficient_privilege then null;
 end$$;
 -- Convertir a documento en revisión, nunca a carga publicada.
 select set_config('request.jwt.claim.sub','00000000-0000-0000-0000-000000000001',false);
-do $
+do $$
 begin
  perform public.kontrola_identificar_provisional_pdf(
   (select id from public.kontrola_pdf_provisionales where documento_hash=repeat('4f36',16)),
@@ -61,7 +61,7 @@ begin
  );
  raise exception 'ASSERTION FAILED: se permitió identificar sin evidencia suficiente';
 exception when sqlstate '22023' then null;
-end$;
+end$$;
 
 select public.kontrola_identificar_provisional_pdf(
  :'prov_id','LP26-90001','COR_01_COR',
