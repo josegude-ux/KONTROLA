@@ -8,7 +8,7 @@ No alterar PR #58, #69, #72, #75, main, otros módulos o repositorios. Reutiliza
 
 ## Archivos y funcionalidad propuesta
 - src/fixed-position-report.mjs: clasificación pura por almacén, artículo, posición y lotes. Incidencias sin fija, cero, negativa e insuficientes; acumulación decimal exacta hasta seis posiciones.
-- src/admin-fixed-positions.mjs: pestaña exclusiva Administración, indicadores de referencias únicas y posiciones, filtro por búsqueda/almacén/pasillo/zona/otras ubicaciones, escritorio en tabla, móvil en tarjetas, paginación de pantalla de 50 y exportación CSV del conjunto filtrado completo.
+- src/admin-fixed-positions.mjs: pestaña exclusiva Administración, indicadores de referencias únicas y posiciones, filtro por búsqueda/almacén/pasillo/zona/otras ubicaciones, escritorio en tabla, móvil en tarjetas, paginación de pantalla de 50 y exportaciones CSV y XLSX del conjunto filtrado completo.
 - src/admin.mjs: integración mínima con pestañas, limpieza de sesión y RPC administrativa.
 - tests/fixed-position-report.test.mjs: pruebas ficticias.
 - Impresión A4 horizontal: vista HTML imprimible y diálogo nativo para guardar PDF.
@@ -41,7 +41,7 @@ Inventario histórico: INVENTA tenía catálogo y ubicaciones, KONTROLA sus carg
 - No se han tocado Supabase, Business Central, producción, usuarios ni permisos.
 - La seguridad cliente depende además de una autorización RPC del servidor cuando exista; no basta ocultar la pestaña.
 - La ausencia de línea no supone stock cero salvo política BC acreditada por el importador.
-- CSV completo protegido frente a fórmulas maliciosas. XLSX nativo pendiente de evaluar infraestructura.
+- CSV y XLSX completos protegidos frente a fórmulas maliciosas. XLSX OOXML sin bibliotecas externas, macros ni acceso a servicios.
 - El PDF imprimible necesita pruebas en Safari/PWA iOS y de multipágina.
 - Probar con usuarios reales autorizados y no autorizados, cambios de almacén, volúmenes elevados, móviles/tablets/escritorio y regresiones de INVENTA/PREPARA.
 - Revisar si se requieren más de seis decimales de BC antes de activar.
@@ -81,7 +81,7 @@ No reiniciar; no duplicar; no fusionar; no desplegar sin autorización.
 
 ### Archivos nuevos y modificaciones
 - src/fixed-position-report.mjs: motor de clasificación por artículo, posición, lotes y almacén; decimales exactos hasta 6 posiciones; evaluación explícita de datos insuficientes y antigüedad; mapas para evitar coste cuadrático.
-- src/admin-fixed-positions.mjs y src/admin.mjs: pestaña de Administración, indicadores pulsables, filtros por almacén/referencia/pasillo/zona y existencia en reserva; tablas en escritorio, tarjetas móviles y exportación CSV sin límite por paginación.
+- src/admin-fixed-positions.mjs y src/admin.mjs: pestaña de Administración, indicadores pulsables, filtros por almacén/referencia/pasillo/zona y existencia en reserva; tablas en escritorio, tarjetas móviles y exportación CSV/XLSX sin límite por paginación.
 - src/fixed-position-print.mjs: informe imprimible A4 apaisado con categorías, cabecera, procedencia, filtros, recuentos de referencias y posiciones, numeración de páginas y observaciones.
 - supabase/proposals/visura_posiciones_fijas_central_rpc.sql: SQL de la futura función administrativa de SOLO LECTURA (security invoker). No se ha aplicado a ninguna base.
 - tests/fixed-position-report.test.mjs y tests/fixed-position-print.test.mjs: motor, fuente, ausencia de cero ficticio, CSV seguro, datos obsoletos e impresión >1000 filas.
@@ -107,6 +107,19 @@ Los resultados definitivos exigen stockComplete, catalogComplete, positionsCompl
 2. Aplicación real de migraciones, RPC, grants y RLS con cuentas de prueba en ambos almacenes; requiere consentimiento específico.
 3. Integración de la PR con la pila Bloque 01, fusión y despliegue; prohibidos sin aprobación expresa y revisión de solapamientos.
 4. Validación física de Safari en iPhone/PWA, impresión y Guardar PDF.
-5. XLSX nativo no incluido por falta de infraestructura de exportación bloqueada. CSV con BOM es compatible con Excel y no necesita librerías ni costes adicionales.
+5. XLSX nativo implementado en la propuesta aislada; quedan pendientes únicamente su integración autorizada y validación en dispositivos físicos.
 
 ESTADO: desarrollo aislado terminado y probado en simulación; sin desplegar ni conectar con datos empresariales reales. No afirmar funcionamiento productivo antes de completar las autorizaciones y las pruebas físicas.
+
+## Extensión segura dentro del alcance original: Excel XLSX — 27/10/2026
+
+El alcance solicitaba exportar CSV **y XLSX**. Se ha añadido sin modificar dependencias existentes:
+
+- `src/fixed-position-xlsx.mjs`: formato Office Open XML XLSX, archivo ZIP almacenado sin macros, con hojas **Resumen** e **Incidencias**. Metadatos: almacén, archivo Business Central, fecha de importación y generación, filtros, calidad de origen, referencias y posiciones únicas, incidencias de las cuatro categorías.
+- Las existencias de posición, almacén y otras ubicaciones admiten cantidades negativas y decimales. Para cantidades cuya representación numérica supera la precisión fiable de Excel (15 dígitos), se conserva la cifra literal en una celda de texto para no falsificar su valor. Ausencia de dato: **SIN DATOS**, nunca cero supuesto.
+- Los campos externos se escriben como cadenas de texto OOXML, no fórmulas; se neutralizan elementos XML y se limita la longitud de celda. No hay macros, enlaces activos, red ni modificación de stock.
+- `src/admin-fixed-positions.mjs`: nuevo botón **Descargar Excel XLSX** que descarga todas las filas filtradas, no únicamente la página visible.
+- `tests/fixed-position-xlsx.test.mjs`: test de paquete ZIP, dos hojas, integridad de cantidades, prevención de fórmulas y >1.200 incidencias.
+- `tests/fixed-position-visual.spec.mjs`: descarga real en Chromium y validación del XLSX con zipfile y el parser XML de Python estándar; no implica aceptación en Excel de escritorio/iOS.
+
+La incorporación está en la misma PR #76 abierta en borrador. Solo cuenta como verificada cuando las ejecuciones CI de su último HEAD confirmen SUCCESS. Sigue prohibido fusionar, aplicar SQL o desplegar sin autorización específica.
