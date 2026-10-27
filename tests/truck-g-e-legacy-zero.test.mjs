@@ -75,5 +75,5 @@ test("la UI muestra E/P y no mezcla capacidades tras cambiar formato",()=>{
  assert.match(app,/const formatos=\["huecos_palets_grandes","huecos_palets_europeos","huecos_palets_pequenos"\]/);
  assert.match(app,/truckSecondKind"\)\.addEventListener\("change"/);
  assert.match(app,/if\(!truckCapacityTouched\)/);
- assert.match(app,/no se reescribe una revisión de Supabase/);
+ assert.match(app,/Nunca se reescribe una revisión de Supabase/);
 });
