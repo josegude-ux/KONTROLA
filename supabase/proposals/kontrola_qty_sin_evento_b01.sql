@@ -61,8 +61,12 @@ begin
    or jsonb_typeof(p_hallazgos) is distinct from 'array' or jsonb_typeof(p_correcciones) is distinct from 'array' then
   raise exception 'Contenido corregido inválido' using errcode='22023';end if;
  v_almacen:=upper(nullif(p_carga->>'almacen',''));
- -- Cada cantidad realmente alterada, sea lectura PDF o BC, debe tener
- -- corrección trazada. Una ausencia mantiene el borrador NO publicable.
+ -- No persistir cantidades nuevas sin evidencia: de lo contrario,
+ -- una segunda llamada vería esas cantidades como "anteriores" y podría
+ -- aprobarlas ocultando el cambio inicial.
+ if not public.kontrola_cambios_cantidad_trazados(p_carga,v_row.carga_datos,p_correcciones,v_user) then
+  raise exception 'Cada cambio de cantidad exige evidencia del administrador responsable' using errcode='22023';
+ end if;
 
  -- El total impreso es inmutable incluso cuando no haya una excepción BC.
  if (p_carga->>'declared_total') is distinct from (v_row.carga_datos->>'declared_total') then
@@ -76,9 +80,10 @@ begin
  -- y el total final coincida exactamente con el PDF.
  if v_bc_requested and not public.kontrola_bc_origen_preservado(p_carga,v_row.carga_datos) then
   raise exception 'Las cantidades no conservan el origen del PDF' using errcode='22023';end if;
+ if v_bc_requested and not v_bc then
+  raise exception 'Falta evidencia BC de alguna línea modificada' using errcode='22023';
+ end if;
  v_has_errors:=exists(select 1 from jsonb_array_elements(p_hallazgos) h where h->>'severity'='error')
-   or not public.kontrola_cambios_cantidad_trazados(p_carga,v_row.carga_datos,p_correcciones,v_user)
-   or (v_bc_requested and not v_bc)
    or (
      coalesce(p_carga->>'actual_total','') ~ '^[0-9]+([.][0-9]{1,3})?$'
      and coalesce(p_carga->>'declared_total','') ~ '^[0-9]+([.][0-9]{1,3})?$'
