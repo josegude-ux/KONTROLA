@@ -103,7 +103,8 @@ export function run(){
  // El analizador recibe todos los imports como entradas conocidas.
  for(const lane of Object.keys(snapshots)){
   for(const relative of imports(snapshots[lane]["src/app.mjs"])){
-   snapshots[lane]["src/"+relative.slice(2)]="exists";
+   const modulePath="src/"+relative.slice(2);
+   if(!Object.hasOwn(snapshots[lane],modulePath))snapshots[lane][modulePath]="exists";
   }
  }
  const info=analyze(snapshots);
