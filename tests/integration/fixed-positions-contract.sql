@@ -96,21 +96,21 @@ create policy products_admin on public.products for select to authenticated
 create policy batches_wh on public.bc_import_batches for select to authenticated
  using(exists(select 1 from visura_reporting.warehouse_access w
    join public.profiles p on p.user_id=w.user_id where w.user_id=(select auth.uid())
-   and w.warehouse=warehouse and p.role='admin' and p.enabled));
+   and w.warehouse=public.bc_import_batches.warehouse and p.role='admin' and p.enabled));
 create policy lines_wh on public.bc_import_lines for select to authenticated
  using(exists(select 1 from public.bc_import_batches b where b.id=import_id));
 create policy state_wh on visura_reporting.import_state for select to authenticated
  using(exists(select 1 from visura_reporting.warehouse_access w
    join public.profiles p on p.user_id=w.user_id where w.user_id=(select auth.uid())
-   and w.warehouse=warehouse and p.role='admin' and p.enabled));
+   and w.warehouse=visura_reporting.import_state.warehouse and p.role='admin' and p.enabled));
 create policy locations_wh on visura_reporting.locations_by_warehouse for select to authenticated
  using(exists(select 1 from visura_reporting.warehouse_access w
    join public.profiles p on p.user_id=w.user_id where w.user_id=(select auth.uid())
-   and w.warehouse=warehouse and p.role='admin' and p.enabled));
+   and w.warehouse=visura_reporting.locations_by_warehouse.warehouse and p.role='admin' and p.enabled));
 create policy fixed_wh on visura_reporting.fixed_by_warehouse for select to authenticated
  using(exists(select 1 from visura_reporting.warehouse_access w
    join public.profiles p on p.user_id=w.user_id where w.user_id=(select auth.uid())
-   and w.warehouse=warehouse and p.role='admin' and p.enabled));
+   and w.warehouse=visura_reporting.fixed_by_warehouse.warehouse and p.role='admin' and p.enabled));
 
 \i supabase/proposals/visura_posiciones_fijas_central_rpc.sql
 
