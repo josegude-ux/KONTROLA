@@ -46,6 +46,40 @@ def _stable_review_snapshot_evidence(snapshot):
     )
 
 
+def _stable_check_observations(report):
+    """Compare bounded check observations independent of REST result order.
+
+    Names, app IDs, status and conclusions are candidate metadata only.
+    This cannot prove required-check satisfaction or authorization.
+    """
+    if not isinstance(report, dict):
+        raise ValueError("Invalid check observation")
+    rows = report.get("named_check_runs")
+    if rows is not None:
+        if not isinstance(rows, list):
+            raise ValueError("Invalid check run rows")
+        try:
+            rows = tuple(sorted(
+                (item["name"], item["app_id"], item["status"], item["conclusion"])
+                for item in rows
+            , key=lambda entry: (
+                entry[0], -1 if entry[1] is None else entry[1],
+                entry[2], "" if entry[3] is None else entry[3],
+            )))
+        except (TypeError, KeyError):
+            raise ValueError("Invalid check run record") from None
+    return (
+        report.get("repository"), report.get("head_sha"), report.get("lookup"),
+        report.get("observed_total"), report.get("status_counts"),
+        report.get("conclusion_counts"), report.get("named_checks_complete"),
+        rows,
+        tuple(report.get(key) for key in (
+            "required_checks_verified", "branch_policy_verified",
+            "execution_authorized", "merge_authorized", "deployment_authorized",
+        )),
+    )
+
+
 def inspect_readonly_audit_bundle(
     repository, pr_number, default_branch, token, opener=None
 ):
@@ -151,8 +185,24 @@ def inspect_readonly_audit_bundle(
     if codeowners_recheck != codeowners:
         raise ValueError("CODEOWNERS metadata changed during the audit")
 
-    # Check the PR again LAST, after the review/policy/CODEOWNERS rechecks.
-    # These reads are non-atomic: subsequent edits remain possible.
+    # CI conclusions, check-run reruns and commit-status contexts can
+    # change with the *same* PR head SHA. Re-fetch each independent API after
+    # the other evidence, without treating equality as a passing CI gate.
+    checks_recheck = observe_commit_checks(
+        repository, pr["head_sha"], token, opener=opener
+    )
+    if _stable_check_observations(checks_recheck) != (
+        _stable_check_observations(head_checks)
+    ):
+        raise ValueError("Commit check observations changed during the audit")
+
+    statuses_recheck = observe_legacy_commit_statuses(
+        repository, pr["head_sha"], token, opener=opener
+    )
+    if statuses_recheck != legacy_statuses:
+        raise ValueError("Legacy commit statuses changed during the audit")
+
+    # Check the PR LAST. No multi-request snapshot is atomic.
     endpoint = "/repos/" + repository + "/pulls/" + str(pr_number)
     latest = _get_json(endpoint, token, opener)
     if not isinstance(latest, dict):
@@ -195,6 +245,8 @@ def inspect_readonly_audit_bundle(
         "same_review_records_after_audit": True,
         "same_reviewer_repository_permissions_after_audit": True,
         "same_codeowners_metadata_after_audit": True,
+        "same_commit_checks_after_audit": True,
+        "same_legacy_statuses_after_audit": True,
         "report_is_atomic": False,
         "repository_policy_verified": False,
         "execution_authorized": False,
