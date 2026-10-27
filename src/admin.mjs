@@ -2,7 +2,7 @@ import {fechaAlmacen} from "./business-date.mjs";
 import {validarSeleccionPdf,validarArchivoPdf,resumenLotePdf} from "./import-batch.mjs";
 import {configurarEstadisticasOperarios} from "./admin-stats.mjs";
 import {configurarLoteImpresion} from "./admin-print-batch.mjs";
-import {analyzeDocument,applyLineCorrection,publicationReadiness,warehouseZone,normalizeReviewFindings} from "./document-review.mjs";
+import {analyzeDocument,applyLineCorrection,applyValidatedQuantityCorrection,publicationReadiness,warehouseZone,normalizeReviewFindings} from "./document-review.mjs";
 import {fechaISO} from "./logic.mjs";
 import {parsePdfFile} from "./pdf.mjs";
 import {buildPreparationReport} from "./report.mjs";
@@ -360,6 +360,7 @@ export function createAdminController({client,getUser,bucket,global,errorText,on
       const option=document.createElement("option");option.value=value;option.textContent=label;warehouse.appendChild(option);
     }
     warehouse.value=zone.known?zone.code:"";
+    warehouse.disabled=draft.state==="publicada";
     warehouse.addEventListener("change",async()=>{
       const before=draft.parsed.warehouse||"";
       try{
@@ -400,6 +401,64 @@ export function createAdminController({client,getUser,bucket,global,errorText,on
       findings.appendChild(row);
     }
     root.appendChild(findings);
+    // Correcciones solo administrativas sobre borradores, sin escribir a BC ni
+    // permitir editar cargas ya publicadas/iniciadas. El servidor revalida al guardar.
+    if(draft.state!=="publicada"&&Array.isArray(draft.parsed.products)&&draft.parsed.products.length){
+      const correctionSection=document.createElement("section");
+      correctionSection.className="quantity-review";
+      const headingText=document.createElement("h4");
+      headingText.textContent="Cantidades operativas · revisión administrativa";
+      const intro=document.createElement("p");intro.className="muted";
+      intro.textContent="Corrige únicamente tras consultar Business Central. El PDF original se conserva; las cantidades modificadas quedan identificadas. Guarda la revisión para persistir los cambios.";
+      correctionSection.append(headingText,intro);
+      for(const [index,product] of draft.parsed.products.entries()){
+        const row=document.createElement("details");row.className="quantity-review-row";
+        const original=product.pdfOriginal?.qty??product.qty;
+        const changed=Number(original)!==Number(product.qty);
+        if(changed)row.classList.add("quantity-corrected");
+        const top=document.createElement("summary");
+        const label=document.createElement("span");
+        label.textContent="Línea "+(index+1)+" · "+(product.sku||"Referencia sin identificar")+" · "+(product.description||"Sin descripción");
+        const qty=document.createElement("strong");
+        qty.textContent="Cantidad VISURA: "+fmt(product.qty)+(changed?" · CORREGIDA (PDF: "+fmt(original)+")":"");
+        top.append(label,qty);row.append(top);
+        const form=document.createElement("div");form.className="quantity-correction-form";
+        const qtyLabel=document.createElement("label");qtyLabel.textContent="Cantidad validada en BC";
+        const quantityInput=document.createElement("input");quantityInput.type="text";
+        quantityInput.inputMode="decimal";quantityInput.value=String(product.qty??"");quantityInput.maxLength=24;
+        qtyLabel.appendChild(quantityInput);
+        const kindLabel=document.createElement("label");kindLabel.textContent="Origen de la corrección";
+        const kind=document.createElement("select");
+        for(const [value,title] of [["","Selecciona motivo"],["lectura_pdf","Lectura o interpretación incorrecta del PDF"],["dato_pdf_bc","Dato del PDF distinto de lo comprobado en BC"]]){
+          const option=document.createElement("option");option.value=value;option.textContent=title;kind.appendChild(option);
+        }
+        kindLabel.appendChild(kind);
+        const evidenceLabel=document.createElement("label");evidenceLabel.textContent="Evidencia y justificación (contraste manual BC)";
+        const evidence=document.createElement("textarea");evidence.rows=2;evidence.maxLength=2000;
+        evidence.placeholder="Indica qué contrastaste en Business Central y por qué corresponde corregir esta línea";
+        evidenceLabel.appendChild(evidence);
+        const button=document.createElement("button");button.type="button";button.className="secondary";
+        button.textContent="Registrar corrección de cantidad";
+        button.addEventListener("click",()=>{
+          if(busy||draft.state==="publicada")return;
+          try{
+            const next=applyValidatedQuantityCorrection(draft.parsed,index+1,quantityInput.value,{
+              type:kind.value,evidence:evidence.value
+            },getUser()?.id);
+            draft.parsed=next;
+            draft.findings=analyzeDocument(next);
+            draft.state="revision_requerida";
+            renderDraft();
+            setStatus("Cantidad corregida localmente con evidencia. Pulsa Guardar revisión para conservarla en el servidor.","success");
+          }catch(error){setStatus(errorText(error),"error");}
+        });
+        form.append(qtyLabel,kindLabel,evidenceLabel,button);
+        row.append(form);correctionSection.append(row);
+      }
+      const note=document.createElement("p");note.className="hint";
+      note.textContent="Si la suma corregida difiere del total documental, VISURA mantiene bloqueada la publicación hasta resolver ese contraste. No se sustituye el PDF original.";
+      correctionSection.appendChild(note);root.appendChild(correctionSection);
+    }
     updateActions();
   }
   function updateActions(){
