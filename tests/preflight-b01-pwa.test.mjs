@@ -16,7 +16,7 @@ test("identifica riesgos cuando cambian recursos con el mismo token de caché",(
  assert.deepEqual(result.modified,["styles.css"]);
 });
 test("la auditoría deja claro que no acredita la PWA integrada",()=>{
- const x={cache:"v1",version:"0.3",assets:["./"],missing:[],blobs:{"index.html":"a","styles.css":"b","src/app.mjs":"c","src/admin.mjs":"d"}};
+ const x={cache:"v1",version:"0.3",assets:["./"],missing:[],generated:[],blobs:{"index.html":"a","styles.css":"b","src/app.mjs":"c","src/admin.mjs":"d"}};
  const r=report({parallel:x,responsive:x,documental:{...x,cache:"v2"}});
  assert.match(r.text,/NO INTEGRADO/);
  assert.match(r.text,/sin despliegue/);
