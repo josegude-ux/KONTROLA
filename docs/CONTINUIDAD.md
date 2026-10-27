@@ -1045,3 +1045,20 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 **Estado:** propuestas únicamente en repositorio; verificar CI final y corregir fallos antes de considerar funcionalmente probado. Sin acceso ni modificaciones a Supabase real, Business Central, originales empresariales o Bloque 02.
 
 **Próxima tarea:** verificar resultado en GitHub Actions, revisar los eventos en reintentos y el aislamiento de errores; consolidar únicamente cuando exista autorización de fusión. No aplicar propuestas SQL al backend empresarial.
+
+---
+
+## 2026-10-27 — Bloque 01 · Correcciones operativas de cantidades con evidencia (rama aislada)
+
+**Rama aislada:** `feat/visura-prepara-b01-correcciones-cantidades-20261027`, desde SHA `9f36a2da93509124b883db807d0c2e1d0f19f48d` (PR #66). No se han modificado otras ramas, no se han fusionado PR #60–66 ni cambiado documentos/SQL en producción. Se mantienen Preparación/Verificación paralelas, un único preparador, palets informativos y picking en BC.
+
+**Gap comprobado:** `src/document-review.mjs` guardaba `pdfOriginal` y antes/después con `applyLineCorrection`, pero `src/admin.mjs` no mostraba controles administrativos para corregir cantidades ni sus evidencias.
+
+**Nuevo cambio:** `applyValidatedQuantityCorrection` exige tipo `lectura_pdf` o `dato_pdf_bc`, responsable, número hasta tres decimales y justificación de contraste con Business Central. `src/admin.mjs` añade formulario por referencia previo a publicación, muestra cantidad operativa y PDF original, destaca corregidas y deja cambios localmente hasta `Guardar revisión` mediante la RPC administrativa existente. Corrige los hallazgos y recalcula suma, conservando el original. `styles.css` adapta formulario a ordenador/tablet/móvil.
+
+**Protección esencial:** si las sumas operativas difieren del total declarado documental, la publicación continúa bloqueada. No se alteran totales PDF para forzar aprobación. Para `dato_pdf_bc` con origen incorrecto queda pendiente un contrato servidor/admisión segura de correcciones documentadas, con original y total BC separados. `src/admin.mjs` no permite editar cargas publicadas; ningún operario recibe función de cambiar cantidades.
+
+**Regresión:** `tests/quantity-audit.test.mjs` valida trazabilidad, motivo, original, múltiples correcciones y bloqueo. `tests/quantity-layout.spec.mjs` valida presentación sin scroll horizontal a 390/768/1024/1440/1920 px. GitHub Actions aislada `.github/workflows/visura-prepara-b01-cantidades-ci.yml` ejecuta Node, PostgreSQL temporal y Chromium, adjuntando capturas. **Confirmar CI del último HEAD antes de declarar completado**; pruebas visuales sin autenticación no equivalen a prueba en empresa.
+
+**Documentación:** `docs/BLOQUE_01_CORRECCIONES_CANTIDADES.md`.
+**Siguiente tarea:** revisar CI, corregir regresiones, crear PR en borrador sin fusionar ni desplegar. Posteriormente proponer contrato SQL para total original del PDF distinto de total operativo BC, sin invadir Bloque 02.
