@@ -41,6 +41,15 @@ El orden de ensayo reproducible es:
 
 Los tests de integridad entre dos usuarios consultan las filas cruzadas con `reset role` **solo en la base ficticia**. Ningún permiso de producción ni policy RLS se modifica.
 
+
+## Refuerzo posterior — Verificación iniciada sin Preparación
+
+La suite también ensaya una segunda carga ficticia `LP26-94002` que se publica normalmente, cuyo verificador (usuario de prueba distinto de administración) inicia **solo** Verificación mediante `kontrola_iniciar_verificacion`, sin registro en `kontrola_preparaciones`. Administración puede revisar un segundo PDF, pero `kontrola_publicar_importacion` debe rechazar su sustitución. Se valida que el PDF publicado, su hash, revisión y ausencia de Preparación permanezcan invariables. No se cambian permisos del operario.
+
+El primer intento del test nuevo [40500594013](https://github.com/josegude-ux/KONTROLA/actions/runs/40500594013) **falló por un delimitador PL/pgSQL mal formado en el test**; se corrigió exclusivamente el archivo de prueba, sin tocar funciones productivas. La ejecución posterior [40500715130](https://github.com/josegude-ux/KONTROLA/actions/runs/40500715130) **SUCCESS** confirmó ambos jobs y el bloqueo de sustitución en caso de Verificación exclusiva.
+
+Este escenario refuerza que el bloqueo de publicación es válido cuando Preparación y Verificación no han empezado simultáneamente. **No implica que el frontend esté integrado.**
+
 ## Pendientes autorizables y límites
 
 - **No integrado:** PR #60, PR #61, PR #69 y PR #70 continúan independientes y sin fusionar.
