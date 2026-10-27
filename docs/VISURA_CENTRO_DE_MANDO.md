@@ -550,3 +550,12 @@ Antes de redactar, guardar, proponer o añadir un prompt/botón al Centro de man
 - Este enlace funciona a través del proveedor externo **raw.githack.com** y no es GitHub Pages. Puede mostrar una pantalla de confirmación de seguridad antes de cargar archivos HTML; la disponibilidad depende de ese servicio.
 - Los cambios futuros en `visura-panel/docs/index.html` podrán verse en el mismo enlace tras propagarse la caché.
 - Para pasar a **GitHub Pages oficial sin tocar la publicación existente de KONTROLA**, utilizar otro repositorio dedicado para el panel. No modificar la fuente GitHub Pages de KONTROLA sin verificar su configuración y autorización específica.
+
+## Estado técnico del icono B para iPhone — rama de preparación aislada (2026-10-27)
+
+- Base comprobada: `visura-panel` @ `4a286e67d3967576fe0868a1ee9c3685d31498ec`; rama de preparación `fix/visura-centro-mando-icono-b-ios-20261027`.
+- Imagen B aprobada recuperada de Biblioteca y verificada localmente como PNG 1024×1024, SHA-256 `45890808fada6590d90a925c06139d4ea860d1ff37423835f71dce801c75ab2e`.
+- Derivados PNG 180/32/192/512 creados localmente y embalados junto al original y manifest; sus hashes constan en `docs/ICONO_CENTRO_DE_MANDO_B_INTEGRACION.md` de esta rama.
+- **Alcance de esta rama:** solo preparar referencias HTML Apple Touch Icon/favicon/manifest y documentación. Los binarios NO están en GitHub; los enlaces a nuevos PNG no responderán hasta subirlos. No utilizar esta rama como publicación antes de verificar recursos.
+- No se modifican funciones 01–10, prompts, gestor, OneDrive ni lógica JS/CSS del panel.
+- No fusionar, publicar ni alterar `visura-panel` o `main` sin autorización. Una vez subidos binarios, comprobar HTTP 200/MIME, regresiones, Safari real y dar nueva autorización para publicación.
