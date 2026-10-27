@@ -65,6 +65,16 @@ test("cero genérico en revisión nunca basta para declarar huecos viables",()=>
  assert.equal(cap.modo,"sin_datos");
  assert.equal(evaluarHuecosCamion({modo:"total",previas:"no",capacidadTotal:"0",actualTotal:"0"}).estado,"incompleto");
 });
+test("un desglose formado únicamente por ceros nunca acredita capacidad del camión",()=>{
+ const a=capacidadDeCarga({huecos_palets_grandes:0,huecos_palets_europeos:0});
+ assert.equal(a.modo,"sin_datos");
+ assert.equal(a.fuente,"pendiente de confirmación");
+ assert.equal(evaluarHuecosCamion({modo:"desglose",segundoTipo:"E",previas:"no",
+  capacidadG:0,capacidadP:0,actualG:0,actualP:0}).estado,"incompleto");
+ const b=capacidadDeCarga({huecos_palets_grandes:8,huecos_palets_europeos:0,huecos_palets_pequenos:2});
+ assert.equal(b.segundoTipo,"P","un cero E no debe sustituir a 2 pequeños P");
+});
+
 test("la UI muestra E/P y no mezcla capacidades tras cambiar formato",()=>{
  const html=readFileSync(new URL("../index.html",import.meta.url),"utf8");
  const app=readFileSync(new URL("../src/app.mjs",import.meta.url),"utf8");
