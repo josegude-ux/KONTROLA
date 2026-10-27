@@ -61,6 +61,38 @@ select jsonb_set(
 ) as initial \gset payload_
 
 select public.kontrola_completar_importacion(:'bc2_id',:'payload_initial'::jsonb,'[]'::jsonb);
+-- Intentos administrativos con JSON manipulados: protección en la RPC, no solo en UI.
+do $origin_guard$
+declare v_id uuid;v_saved jsonb;v_fake jsonb;v_blocked boolean:=false;
+begin
+ select id,carga_datos into v_id,v_saved from public.kontrola_importaciones
+ where codigo='LP26-95002' and documento_hash=repeat('8e12',16);
+ v_fake:=jsonb_set(
+   jsonb_set(v_saved,'{productos,0,qty}','4'::jsonb),
+   '{productos,0,pdfOriginal}','{"qty":99}'::jsonb
+ );
+ v_fake:=jsonb_set(v_fake,'{actual_total}','7'::jsonb);
+ begin
+  perform public.kontrola_corregir_importacion(
+    v_id,v_fake,'[]'::jsonb,
+    '[{"line":1,"field":"qty","after":4,"tipo":"dato_pdf_bc","by":"00000000-0000-0000-0000-000000000001","at":"2026-10-27T10:00:00Z","justificacion":"Business Central cotejado con original"}]'::jsonb,
+    true
+  );
+ exception when sqlstate '22023' then v_blocked:=true;
+ end;
+ if not v_blocked then raise exception 'ASSERTION FAILED: aceptó origen PDF inventado';end if;
+ select carga_datos into v_saved from public.kontrola_importaciones where id=v_id;
+ if v_saved->>'declared_total'<>'5' then raise exception 'ASSERTION FAILED: alteró total PDF tras bloqueo';end if;
+ v_fake:=jsonb_set(v_saved,'{declared_total}','999'::jsonb);
+ v_blocked:=false;
+ begin
+  perform public.kontrola_corregir_importacion(v_id,v_fake,'[]'::jsonb,'[]'::jsonb,true);
+ exception when sqlstate '22023' then v_blocked:=true;
+ end;
+ if not v_blocked then raise exception 'ASSERTION FAILED: aceptó falsificar total PDF';end if;
+end;
+$origin_guard$;
+
 select jsonb_set(
  jsonb_set(:'payload_initial'::jsonb,'{actual_total}','13'::jsonb),
  '{productos}',
