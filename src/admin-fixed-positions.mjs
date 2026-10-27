@@ -1,4 +1,5 @@
-import {classifyFixedPositions,filterFixedRows,fixedReportCsv,FIXED_CATEGORIES} from "./fixed-position-report.mjs";
+import {classifyFixedPositions,filterFixedRows,fixedReportCsv} from "./fixed-position-report.mjs";
+import {buildFixedPrintHtml} from "./fixed-position-print.mjs";
 const $=id=>document.getElementById(id);
 const tags={sin_fija:"Sin posición fija",cero:"Fija con stock cero",negativo:"Fija con stock negativo",insuficientes:"Datos insuficientes"};
 const escape=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -167,20 +168,11 @@ export function configureAdminFixedPositions({client,getUser,errorText}){
     if(!report||loading||!getUser()?.id)return;
     const win=window.open("","_blank");if(!win){$("fixedStatus").textContent="Ventana de impresión bloqueada. Utiliza Safari.";return;}
     const rows=filtered();
-    const html="<html lang='es'><head><meta charset='utf-8'><title>VISURA PREPARA · Posiciones fijas</title>"+
-      "<style>@page{size:A4 landscape;margin:10mm}body{font:10px Arial;color:#163451}h1{font-size:20px}"+
-      "table{width:100%;border-collapse:collapse}th,td{border:1px solid #bdcdda;padding:5px;text-align:left;overflow-wrap:anywhere}"+
-      "th{background:#edf2f7}thead{display:table-header-group}tr{break-inside:avoid}"+
-      "@media print{button{display:none}}</style></head><body><h1>VISURA · Control de posiciones fijas</h1>"+
-      "<p>Almacén: "+escape(report.warehouse)+" · Origen Excel BC: "+escape(report.meta.sourceFile)+
-      " · Importado: "+escape(report.meta.importedAt)+" · Generado: "+escape(new Date().toLocaleString("es-ES"))+
-      " · Estado: "+escape(report.meta.stale===true?"DESACTUALIZADO":report.complete?"completo declarado":"INCOMPLETO")+"</p>"+
-      "<p>Filtro: "+escape(active)+" · Registros: "+rows.length+" · Referencias: "+new Set(rows.map(r=>r.code)).size+
-      " · Posiciones afectadas: "+rows.filter(r=>r.location).length+"</p>"+
-      "<table><thead><tr>"+labels.map(v=>"<th>"+escape(v)+"</th>").join("")+"</tr></thead><tbody>"+
-      rows.map(r=>"<tr>"+cells(r).map(v=>"<td>"+escape(v)+"</td>").join("")+"</tr>").join("")+
-      "</tbody></table><p>Observaciones: ____________________________________________________________</p>"+
-      "<button onclick='window.print()'>Imprimir / Guardar PDF</button></body></html>";
+    const html=buildFixedPrintHtml({
+      report,rows,generatedAt:new Date().toISOString(),
+      filters:{category:active,search:$("fixedSearch").value,aisle:$("fixedAisle").value,
+        zone:$("fixedZone").value,other:$("fixedOther").value,sort:$("fixedSort").value}
+    });
     win.document.open();win.document.write(html);win.document.close();
   }
   return {mount,refresh,clear};
