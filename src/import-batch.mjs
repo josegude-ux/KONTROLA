@@ -11,7 +11,7 @@ export function validarSeleccionPdf(files){
 export function validarArchivoPdf(file){
   if(!file||!/\.pdf$/i.test(String(file.name||""))
     ||file.type&&file.type!=="application/pdf")
-    throw Error("El archivo seleccionado debe ser PDF.");
+    throw Error("Los archivos seleccionados deben ser PDF.");
   if(!Number.isFinite(file.size)||file.size<=0||file.size>25*1024*1024)
     throw Error("Cada PDF debe tener contenido y ocupar como máximo 25 MB.");
   return file;
