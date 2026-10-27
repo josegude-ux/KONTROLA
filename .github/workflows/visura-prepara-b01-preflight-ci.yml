@@ -39,3 +39,50 @@ jobs:
           path: artifacts/preflight-b01.*
           if-no-files-found: warn
           retention-days: 7
+
+  cross_sql:
+    name: Contratos SQL combinados solo en PostgreSQL efímero
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      CI: 'true'
+      PGHOST: localhost
+      PGPORT: 5432
+      PGUSER: postgres
+      PGPASSWORD: postgres
+      KONTROLA_TEST_DB: kontrola_test_cross_b01
+      KONTROLA_TEST_REINTENTOS: '1'
+      KONTROLA_TEST_PROVISIONALES: '1'
+      KONTROLA_TEST_HASH_CRUZADO: '1'
+      KONTROLA_TEST_TOTAL_BC: '1'
+    services:
+      postgres:
+        image: postgres:16@sha256:9e2cf6287f25c3151f4c9421ccce2b17f3e60061c111a29165e0d2cdd9ff0a97
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports: [5432:5432]
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+      - name: Obtener versiones originales de Git (sin fusionar ramas)
+        run: |
+          git -c http.extraheader="" fetch --no-tags origin \
+            "+refs/heads/feat/visura-prepara-integracion-pr49-pr58-20261026:refs/remotes/origin/feat/visura-prepara-integracion-pr49-pr58-20261026" \
+            "+refs/heads/feat/visura-prepara-b01-responsive-20261027:refs/remotes/origin/feat/visura-prepara-b01-responsive-20261027" \
+            "+refs/heads/feat/visura-prepara-b01-totales-bc-auditados-20261027:refs/remotes/origin/feat/visura-prepara-b01-totales-bc-auditados-20261027"
+      - name: Asegurar SHAs de ambas líneas
+        run: node scripts/preflight-b01.mjs
+      - name: Ejecutar TODAS las pruebas documentales en BD local ficticia
+        run: npm run test:db
+      - name: Aplicar copia SQL paralela de lectura y ejecutar regresiones cruzadas
+        run: bash scripts/preflight-b01-cross-db.sh
