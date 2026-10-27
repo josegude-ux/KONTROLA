@@ -58,3 +58,25 @@ Este escenario refuerza que el bloqueo de publicación es válido cuando Prepara
 - Bloque 02, Business Central API, picking, operaciones físicas o despliegue fuera de alcance.
 - No adoptar los SQL conjuntos en ambiente real sin revisión de permisos, RLS, seguridad y autorización.
 - **Siguiente tarea segura:** registrar resultados en continuidad, verificar última CI del HEAD y mantener propuestas independientes. La combinación efectiva de frontend/DB requiere autorización específica, sin hacer merge automático de PR.
+
+
+## Contraste cruzado posterior con seguridad por línea — PR #72
+
+El laboratorio detectó un problema independiente de seguridad en la propuesta documental de PR #69: la función `kontrola_total_bc_documentado` podía considerar suficiente **una** corrección BC justificada aunque hubiera **otra** línea diferente sin evidencia. La prueba `tests/integration/preflight-b01-adversarial-quantity.sql` reproduce el defecto *en el baseline original* y emite un aviso inequívoco; no representa una política segura. CI de referencia [40503733037](https://github.com/josegude-ux/KONTROLA/actions/runs/40503733037).
+
+La corrección se desarrolló en rama **independiente**, derivada de PR #69, bajo [PR #72](https://github.com/josegude-ux/KONTROLA/pull/72), `feat/visura-prepara-b01-evidencia-por-linea-20261027`, HEAD fijado `8cdab594088eba9960968df6d0be6352733c82ea`. No se ha fusionado ni aplicado SQL real.
+
+La auditoría ampliada añade lectura `git show` del contrato SQL de PR #72 y su test desde ese SHA inmóvil. Orden en la misma BD PostgreSQL 16 temporal:
+
+1. Regresión documental histórica y propuesta de PR #69.
+2. Demostración adversa del defecto original (registra un warning, sin presentarlo como protegido).
+3. Propuesta paralela PR #60; detector de RPC antigua.
+4. Reaplicación documental PR #69 para preservar validación BC original y guard de Verificación.
+5. Flujos paralelos, test de carrera y escenario cruzado documental/operativo.
+6. Propuesta endurecida PR #72 con evidencia por línea y anclaje al registro PDF guardado.
+7. Test de dos líneas BC, su origen y la publicación; comprobación posterior de que `kontrola_publicar_importacion` mantiene el predicado BC y protección de Verificación iniciada.
+
+**Resultado exacto:** [GitHub Actions 40505801598](https://github.com/josegude-ux/KONTROLA/actions/runs/40505801598) **SUCCESS** en ambos jobs, salida `KONTROLA_B01_HARDENED_CROSS_OK`. El ensayo incluye pruebas de seguridad negativas, funciones RPC y simultaneidad, siempre con datos ficticios.
+
+**Límite esencial:** el orden de overlay es experimental y depende de SHAs fijos; no se ha consolidado una migración de producción ni un frontend combinado. No hay autorización de merge o despliegue. Se deberá revisar la secuencia contractual completa en una futura integración autorizada.
+
