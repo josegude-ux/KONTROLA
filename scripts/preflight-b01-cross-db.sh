@@ -15,9 +15,14 @@ fi
 parallel_sha="18c46b0c742bae9321f08603da40dfd1e7d76323"
 document_sha="13b5fbdac50b6e7a2ec4b97bbf2313b7bdbd9fcf"
 hardening_sha="8cdab594088eba9960968df6d0be6352733c82ea"
+netzero_sha="b7827629089e33ebf5b95bd509f430d69a07dc61"
 head_parallel="$(git rev-parse refs/remotes/origin/feat/visura-prepara-integracion-pr49-pr58-20261026)"
 head_document="$(git rev-parse refs/remotes/origin/feat/visura-prepara-b01-totales-bc-auditados-20261027)"
 head_hardening="$(git rev-parse refs/remotes/origin/feat/visura-prepara-b01-evidencia-por-linea-20261027)"
+head_netzero="$(git rev-parse refs/remotes/origin/feat/visura-prepara-b01-correcciones-neto-cero-20261027)"
+if [[ "$head_netzero" != "$netzero_sha" ]]; then
+  echo "ERROR: PR75 avanzó, reauditar antes de ensayar." >&2; exit 2
+fi
 if [[ "$head_hardening" != "$hardening_sha" ]]; then
   echo "ERROR: rama de seguridad documental ha avanzado: reauditar." >&2; exit 2
 fi
@@ -72,6 +77,27 @@ grep -q "KONTROLA_B01_EVIDENCIA_CADA_LINEA_OK" "$overlay/quantity-hardening-test
 psql -qAt -d "$DB" -c "select pg_get_functiondef('public.kontrola_publicar_importacion(uuid)'::regprocedure)" > "$overlay/after-hardening-publication.sql"
 grep -q 'kontrola_total_bc_documentado' "$overlay/after-hardening-publication.sql"
 grep -q 'kontrola_verificaciones' "$overlay/after-hardening-publication.sql"
+# Ensayo APILADO de PR75: cantidades compensadas y registro inmutable de
+# modificaciones, sin modificar ninguna rama ni migración instalada real.
+for part in \
+  "supabase/proposals/kontrola_bc_neto_cero_b01.sql" \
+  "tests/integration/bc-zero-net.sql" \
+  "supabase/proposals/kontrola_qty_sin_evento_b01.sql" \
+  "tests/integration/quantity-audit-event.sql"; do
+  git show "$netzero_sha:$part" > "$overlay/$(basename "$part")"
+done
+psql -v ON_ERROR_STOP=1 -d "$DB" -f "$overlay/kontrola_bc_neto_cero_b01.sql" > "$overlay/netzero-override.log"
+psql -v ON_ERROR_STOP=1 -d "$DB" -f "$overlay/bc-zero-net.sql" > "$overlay/netzero-test.log"
+grep -q "KONTROLA_B01_NETO_CERO_EVIDENCIA_OK" "$overlay/netzero-test.log"
+psql -v ON_ERROR_STOP=1 -d "$DB" -f "$overlay/kontrola_qty_sin_evento_b01.sql" > "$overlay/qty-events-override.log"
+psql -v ON_ERROR_STOP=1 -d "$DB" -f "$overlay/quantity-audit-event.sql" > "$overlay/qty-events-test.log"
+grep -q "KONTROLA_B01_CANTIDAD_EVENTO_INTEGRIDAD_OK" "$overlay/qty-events-test.log"
+psql -qAt -d "$DB" -c "select pg_get_functiondef('public.kontrola_corregir_importacion(uuid,jsonb,jsonb,jsonb,boolean)'::regprocedure)" > "$overlay/after-netzero-correction.sql"
+grep -q 'kontrola_cambios_cantidad_trazados' "$overlay/after-netzero-correction.sql"
+psql -qAt -d "$DB" -c "select pg_get_functiondef('public.kontrola_publicar_importacion(uuid)'::regprocedure)" > "$overlay/after-netzero-publication.sql"
+grep -q 'kontrola_verificaciones' "$overlay/after-netzero-publication.sql"
+grep -q 'kontrola_total_bc_documentado' "$overlay/after-netzero-publication.sql"
+echo "KONTROLA_B01_NETZERO_CROSS_OK: evidencia neto cero, registro por línea, publicación y flujos paralelos, solo en DB temporal."
 echo "KONTROLA_B01_HARDENED_CROSS_OK: propuestas BC original, paralela y evidencia por línea coexistentes en BD efímera."
 echo "KONTROLA_B01_CROSS_OK: PDF/BC, revisión protegida, flujos paralelos y prueba de carrera."
 echo "SQL probada localmente; NO se fusionaron PR, NO se desplegó, NO equivale a prueba de navegador."
