@@ -1,4 +1,4 @@
 {
-  "version": "0.3.45",
-  "notes": "Listado A4 COR1: matrícula, referencias, casillas HECHO grandes y totales exclusivamente por formato"
+  "version": "0.3.46",
+  "notes": "Lectura de capacidad de camión G/E o G/P incluso con 0 genérico; revisión manual y cálculo conservador"
 }
