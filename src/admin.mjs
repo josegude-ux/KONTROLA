@@ -1,5 +1,5 @@
 import {fechaAlmacen} from "./business-date.mjs";
-import {validarLotePdf,resumenLotePdf} from "./import-batch.mjs";
+import {validarSeleccionPdf,validarArchivoPdf,resumenLotePdf} from "./import-batch.mjs";
 import {configurarEstadisticasOperarios} from "./admin-stats.mjs";
 import {configurarLoteImpresion} from "./admin-print-batch.mjs";
 import {analyzeDocument,applyLineCorrection,publicationReadiness,warehouseZone,normalizeReviewFindings} from "./document-review.mjs";
@@ -115,7 +115,7 @@ export function createAdminController({client,getUser,bucket,global,errorText,on
   async function processPdf(){
     if(busy)return;
     let files;
-    try{files=validarLotePdf($("pdfInput").files);}
+    try{files=validarSeleccionPdf($("pdfInput").files);}
     catch(error){return setStatus(errorText(error),"error");}
     if(draft&&!window.confirm(
       "Hay una revisión abierta. Antes de importar otros PDF, comprueba que has pulsado Guardar revisión. "+
@@ -130,6 +130,7 @@ export function createAdminController({client,getUser,bucket,global,errorText,on
         const file=files[i];
         setStatus("Procesando PDF "+(i+1)+" de "+files.length+": "+file.name+"…");
         try{
+          validarArchivoPdf(file);
           const estado=await processSinglePdf(file,seenCodes);
           outcomes.push({archivo:file.name,estado});
         }catch(error){
