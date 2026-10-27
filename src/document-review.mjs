@@ -19,16 +19,29 @@ export function warehouseZone(raw){
 // cuando una corrección de cantidad final conserva su valor PDF y evidencia.
 export function hasDocumentedBCQuantityOverride(parsed={}){
   const products=Array.isArray(parsed.products)?parsed.products:[];
-  return (Array.isArray(parsed.corrections)?parsed.corrections:[]).some(correction=>{
-    if(correction?.field!=="qty"||correction?.tipo!=="dato_pdf_bc"
-      ||String(correction?.justificacion||"").trim().length<15
-      ||!correction?.by||!correction?.at)return false;
-    const product=products[Number(correction.line)-1];
-    return !!product&&Number.isFinite(Number(product.qty))
-      &&Number.isFinite(Number(product.pdfOriginal?.qty))
-      &&Number(product.pdfOriginal?.qty)!==Number(product.qty)
-      &&Number(correction.after)===Number(product.qty);
-  });
+  const corrections=Array.isArray(parsed.corrections)?parsed.corrections:[];
+  // Un total BC distinto del PDF exige evidencia por cada línea alterada.
+  // No basta encontrar una sola corrección mientras otras siguen sin justificar.
+  let modified=0;
+  for(let index=0;index<products.length;index++){
+    const product=products[index];
+    if(product?.pdfOriginal?.qty===undefined||product.pdfOriginal.qty===null)continue;
+    const before=Number(product.pdfOriginal.qty),after=Number(product.qty);
+    if(!Number.isFinite(before)||!Number.isFinite(after))return false;
+    if(before===after)continue;
+    modified++;
+    const valid=corrections.some(correction=>
+      correction?.line===index+1
+      &&correction?.field==="qty"
+      &&correction?.tipo==="dato_pdf_bc"
+      &&String(correction?.justificacion||"").trim().length>=15
+      &&!!correction?.by&&!!correction?.at
+      &&Number.isFinite(Number(correction.after))
+      &&Number(correction.after)===after
+    );
+    if(!valid)return false;
+  }
+  return modified>0;
 }
 
 export function analyzeDocument(parsed={}){
