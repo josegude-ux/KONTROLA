@@ -1007,3 +1007,6 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 **Estado real:** trabajo guardado en GitHub, no instalado ni verificado con documentos de empresa o dispositivos reales. El original queda inalterado y solo Administración puede avanzar el estado.
 
 **Siguiente tarea exacta:** verificar Node/PostgreSQL del HEAD sin errores, corregir fallos reproducibles, revisar casos límite de promoción y, después, documentar la PR en borrador. No aplicar SQL a Supabase sin autorización. Detalle: `docs/BLOQUE_01_BORRADORES_PROVISIONALES.md`.
+
+
+**Ampliación visual del mismo hito:** `tests/provisional-layout.spec.mjs` verifica mediante Chromium un formulario administrativo visible a 390×844 (móvil), 768×1024 (tablet) y 1440×900 (ordenador), con contenido en columnas fluidas y sin desbordamiento horizontal. `.github/workflows/visura-prepara-b01-provisional-ci.yml` instala navegador temporal y adjunta capturas a GitHub Actions para revisión. Estas pruebas de diseño no equivalen a autenticación con datos reales. Confirmar resultado en el último commit antes de declarar completada la CI.
