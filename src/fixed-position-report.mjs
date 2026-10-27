@@ -74,6 +74,7 @@ export function classifyFixedPositions({warehouse,products=[],fixed=[],stock=[],
     if(!code||!loc){globalInvalid=true;continue;}
     allCodes.add(code);
     const qty=decimal(line.quantity),lot=str(line.lot);
+    if(!locationData.has(loc))invalid.add(code);
     if(qty===null){invalid.add(code);continue;}
     const u=str(line.unit);
     if(u&&catalogue.has(code)&&catalogue.get(code).unit&&u!==catalogue.get(code).unit){
@@ -93,7 +94,8 @@ export function classifyFixedPositions({warehouse,products=[],fixed=[],stock=[],
     totals.set(code,(totals.get(code)||0n)+qty);
   }
   const full=meta.stockComplete===true&&meta.catalogComplete===true&&
-    meta.positionsComplete===true&&Boolean(meta.importedAt)&&Boolean(meta.sourceFile)&&
+    meta.positionsComplete===true&&meta.locationsComplete===true&&
+    Boolean(meta.importedAt)&&Boolean(meta.sourceFile)&&
     meta.stale!==true&&!globalInvalid;
   const result=[];
   for(const code of [...allCodes].sort()){
@@ -116,7 +118,7 @@ export function classifyFixedPositions({warehouse,products=[],fixed=[],stock=[],
       const at=perPlace.get(key(code,loc));
       const other=total!==null&&at!==undefined?total-at:null;
       const zeroCertified=meta.absentStockIsZero===true&&full;
-      const unavailable=issue||(at===undefined&&!zeroCertified);
+      const unavailable=issue||!locationData.has(loc)||(at===undefined&&!zeroCertified);
       const position=at===undefined?(zeroCertified?0n:null):at;
       const category=unavailable?FIXED_CATEGORIES.INSUFFICIENT:
         position<0n?FIXED_CATEGORIES.NEGATIVE:position===0n?FIXED_CATEGORIES.ZERO:null;
@@ -126,7 +128,7 @@ export function classifyFixedPositions({warehouse,products=[],fixed=[],stock=[],
       const q={positionQuantity:decimalText(position),warehouseQuantity:totalText,
         otherQuantity:decimalText(others)};
       result.push({...record(article,loc,category,unavailable?
-        (at===undefined?"No consta línea BC en esta ubicación fija":"Datos maestros o BC sin validación"):
+        (!locationData.has(loc)?"Ubicación fija no validada en el almacén":at===undefined?"No consta línea BC en esta ubicación fija":"Datos maestros o BC sin validación"):
         category===FIXED_CATEGORIES.ZERO?"Posición fija sin unidades":"Existencia negativa en posición fija",
         q,selected,meta,!unavailable&&position===0n&&others!==null&&others>0n),
         aisle:zone.aisle,zone:zone.zone,locations:presentPlaces});
