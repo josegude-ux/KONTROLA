@@ -49,6 +49,9 @@ if [[ "${KONTROLA_TEST_HASH_CRUZADO:-}" == "1" ]]; then
   fi
   "${PSQL[@]}" -f supabase/proposals/kontrola_hash_cruzado_b01.sql >>/tmp/kontrola-migrations.log
 fi
+if [[ "${KONTROLA_TEST_TOTAL_BC:-}" == "1" ]]; then
+  "${PSQL[@]}" -f supabase/proposals/kontrola_total_bc_documentado_b01.sql >>/tmp/kontrola-migrations.log
+fi
 "${PSQL[@]}" -f tests/integration/workflow.sql >/tmp/kontrola-workflow.log
 "${PSQL[@]}" -f tests/integration/revisions.sql >/tmp/kontrola-revisions.log
 "${PSQL[@]}" -f tests/integration/operator-stats.sql >/tmp/kontrola-operator-stats.log
@@ -66,6 +69,10 @@ fi
 if [[ "${KONTROLA_TEST_HASH_CRUZADO:-}" == "1" ]]; then
   "${PSQL[@]}" -f tests/integration/hash-cross.sql >/tmp/kontrola-hash-cruzado.log
   grep -q "KONTROLA_HASH_CRUZADO_OK" /tmp/kontrola-hash-cruzado.log
+fi
+if [[ "${KONTROLA_TEST_TOTAL_BC:-}" == "1" ]]; then
+  "${PSQL[@]}" -f tests/integration/bc-total-difference.sql >/tmp/kontrola-total-bc.log
+  grep -q "KONTROLA_TOTAL_BC_AUDITADO_OK" /tmp/kontrola-total-bc.log
 fi
 grep -q "KONTROLA_OPERATOR_STATS_OK" /tmp/kontrola-operator-stats.log
 # Propuesta de archivo: ejecutar SOLO en base aislada tras las pruebas principales.

@@ -15,6 +15,22 @@ export function warehouseZone(raw){
   };
 }
 
+// La diferencia BC/documento no se ignora: solo puede pasar a advertencia
+// cuando una corrección de cantidad final conserva su valor PDF y evidencia.
+export function hasDocumentedBCQuantityOverride(parsed={}){
+  const products=Array.isArray(parsed.products)?parsed.products:[];
+  return (Array.isArray(parsed.corrections)?parsed.corrections:[]).some(correction=>{
+    if(correction?.field!=="qty"||correction?.tipo!=="dato_pdf_bc"
+      ||String(correction?.justificacion||"").trim().length<15
+      ||!correction?.by||!correction?.at)return false;
+    const product=products[Number(correction.line)-1];
+    return !!product&&Number.isFinite(Number(product.qty))
+      &&Number.isFinite(Number(product.pdfOriginal?.qty))
+      &&Number(product.pdfOriginal?.qty)!==Number(product.qty)
+      &&Number(correction.after)===Number(product.qty);
+  });
+}
+
 export function analyzeDocument(parsed={}){
   const findings=[];
   const warehouse=warehouseZone(parsed.warehouse);
@@ -48,10 +64,15 @@ export function analyzeDocument(parsed={}){
   if(parsed.refs==null)findings.push(finding(
     "missing_reference_total","error","No se pudo contrastar el número total de referencias del PDF."
   ));
-  if(parsed.declaredTotal!=null&&Math.abs(Number(parsed.declaredTotal)-Number(parsed.actualTotal))>0.000001)findings.push(finding(
-    "quantity_total_mismatch","error","La suma extraída no coincide con el total documental.",null,
-    `${parsed.actualTotal}/${parsed.declaredTotal}`
-  ));
+  if(parsed.declaredTotal!=null&&Math.abs(Number(parsed.declaredTotal)-Number(parsed.actualTotal))>0.000001){
+    const audited=hasDocumentedBCQuantityOverride(parsed);
+    findings.push(finding(
+      "quantity_total_mismatch",audited?"warning":"error",
+      audited?"El total validado manualmente con BC difiere del PDF original. Requiere aprobación administrativa documentada.":
+        "La suma extraída no coincide con el total documental.",null,
+      `${parsed.actualTotal}/${parsed.declaredTotal}`
+    ));
+  }
   if(parsed.declaredTotal==null)findings.push(finding(
     "missing_quantity_total","error","No se pudo contrastar la cantidad total del PDF."
   ));

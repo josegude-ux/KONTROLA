@@ -31,7 +31,7 @@ test("distingue error en el PDF respecto a Business Central",()=>{
  },"admin-1","2026-10-27T10:30:00Z");
  assert.equal(r.corrections[0].tipo,"dato_pdf_bc");
  assert.equal(r.products[1].pdfOriginal.qty,1);
- assert.ok(analyzeDocument(r).some(x=>x.code==="quantity_total_mismatch"&&x.severity==="error"));
+ assert.ok(analyzeDocument(r).some(x=>x.code==="quantity_total_mismatch"&&x.severity==="warning"));
 });
 test("una segunda corrección conserva siempre el primer valor documental",()=>{
  const first=applyValidatedQuantityCorrection(fixture,1,"3",proof,"admin-1","2026-10-27T10:00:00Z");

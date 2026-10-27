@@ -1062,3 +1062,21 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 
 **Documentación:** `docs/BLOQUE_01_CORRECCIONES_CANTIDADES.md`.
 **Siguiente tarea:** revisar CI, corregir regresiones, crear PR en borrador sin fusionar ni desplegar. Posteriormente proponer contrato SQL para total original del PDF distinto de total operativo BC, sin invadir Bloque 02.
+
+---
+
+## 2026-10-27 — Bloque 01 · Total documental PDF y total BC corregido, sin falsear original
+
+**Rama aislada:** `feat/visura-prepara-b01-totales-bc-auditados-20261027`, derivada del HEAD `0b9d02a1d7b89444a14f0f00b4bc2850ad2ac6c9` de PR #68. PR #60 paralelismo, PR #61 responsive y PR #62–68 siguen sin fusionar ni desplegar. Se mantiene la división del Bloque 02.
+
+**Carencia identificada:** una corrección en la que el PDF original es erróneo respecto de Business Central permitía documentar un cambio pero no aprobar/publicar la revisión, porque el servidor exigía `declared_total = actual_total`. Se requería preservar total PDF original y total operativo BC de manera diferenciada.
+
+**Implementación de código aislado:** `src/document-review.mjs` incorpora `hasDocumentedBCQuantityOverride` para pasar el hallazgo de discrepancia de total a advertencia **solo** si hay corrección final de cantidad `dato_pdf_bc` con valor original, persona, fecha y evidencia. Sin prueba o cuando solo existe un error de lectura incompatible, sigue siendo bloqueante. La propuesta SQL `supabase/proposals/kontrola_total_bc_documentado_b01.sql` conserva el total original en `declared_total`, la suma operativa validada en `actual_total` y el historial, y exige justificación y coincidencia de cantidad final. No modifica PDFs ni conecta con BC.
+
+**Protección imprescindible detectada al verificar:** la RPC de publicar comprobaba una Preparación existente, pero no una Verificación iniciada de modo independiente. La propuesta bloquea nuevas revisiones materiales si hay **Preparación o Verificación** iniciadas, conservando la carga y revisión anteriores. Esto es Bloque 01 (seguridad de publicación), no implementación de recuentos físicos del Bloque 02.
+
+**Pruebas:** `tests/integration/bc-total-difference.sql` usa datos ficticios: evidencia corta rechazada, evidencia válida aprobada, total PDF no editable, publicación con cantidades BC justificadas sin iniciar trabajo físico, y sustitución bloqueada cuando solo existe Verificación. `tests/quantity-audit.test.mjs` actualiza la distinción de severidad. Workflow exclusiva `.github/workflows/visura-prepara-b01-total-bc-ci.yml` con `KONTROLA_TEST_TOTAL_BC=1` sobre PostgreSQL temporal, sin datos empresariales. CI de la protección servidor [40487833597](https://github.com/josegude-ux/KONTROLA/actions/runs/40487833597) **SUCCESS**; confirmar run del último HEAD antes de revisión de PR. Ver `docs/BLOQUE_01_TOTALES_PDF_BC.md`.
+
+**Pendiente y límites:** pruebas manuales con roles reales y PDF de empresa en entorno autorizado, revisión de seguridad antes de una migración definitiva, orden de integración de PR encadenadas. No se ha aplicado SQL a Supabase real, ni fusionado ni desplegado. La documentación del usuario de BC se contrasta manualmente, no mediante API.
+
+**Siguiente tarea exacta:** verificar CI final y registrar PR en borrador; después auditar coexistencia entre PR #60 (flujos paralelos) y la cadena de PR #52/#62–69 antes de cualquier integración, especialmente condiciones de reemplazo material y el enlace a documentos; no fusionar sin autorización.
