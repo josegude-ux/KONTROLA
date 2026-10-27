@@ -66,12 +66,12 @@
         <button type="button" data-back="home" class="back-button">← Volver al inicio</button>
         <p class="eyebrow">VISURA PREPARA / CONTROL DE CARGAS</p>
         <h1>Control de Cargas</h1>
-        <p class="muted">Accede a las funciones de las cargas. Consultar un documento no inicia ningún reloj.</p>
+        <p class="muted">Accede a las funciones de las cargas. Consultar un documento no inicia ningún proceso operativo.</p>
       </div>
       <div class="submenu-grid" aria-label="Funciones de Control de Cargas">
         <button id="cargasConsultar" type="button" class="submenu-card"><span class="submenu-icon" aria-hidden="true">📄</span><span><b>Consultar cargas</b><small>Documentos, referencias y mercancía por pasillos</small></span><span class="submenu-arrow" aria-hidden="true">›</span></button>
-        <button id="cargasPreparar" type="button" class="submenu-card"><span class="submenu-icon" aria-hidden="true">📦</span><span><b>Preparación de cargas</b><small>Inicia el reloj solo cuando comiences a preparar</small></span><span class="submenu-arrow" aria-hidden="true">›</span></button>
-        <button id="cargasVerificar" type="button" class="submenu-card"><span class="submenu-icon" aria-hidden="true">✅</span><span><b>Verificación física</b><small>Comprueba cantidades de cargas preparadas por otra persona</small></span><span class="submenu-arrow" aria-hidden="true">›</span></button>
+        <button id="cargasPreparar" type="button" class="submenu-card"><span class="submenu-icon" aria-hidden="true">📦</span><span><b>Preparación de cargas</b><small>Registra el inicio al comenzar y finaliza al concluir el trabajo físico</small></span><span class="submenu-arrow" aria-hidden="true">›</span></button>
+        <button id="cargasVerificar" type="button" class="submenu-card"><span class="submenu-icon" aria-hidden="true">✅</span><span><b>Verificación física</b><small>Comprueba la mercancía disponible sin esperar a que termine Preparación</small></span><span class="submenu-arrow" aria-hidden="true">›</span></button>
         <button id="cargasHistorial" type="button" class="submenu-card"><span class="submenu-icon" aria-hidden="true">📊</span><span><b>Historial y resumen</b><small>Buscar por fecha, estado, ruta y repartidor</small></span><span class="submenu-arrow" aria-hidden="true">›</span></button>
         <button id="cargasImportar" type="button" class="submenu-card" hidden><span class="submenu-icon submenu-3d" aria-hidden="true"><img src="./assets/home/visura-prepara-administracion-3d.webp" loading="lazy" decoding="async" alt="" width="96" height="96"></span><span><b>Importar cargas</b><small>Seleccionar PDF y revisar antes de publicar (administración)</small></span><span class="submenu-arrow" aria-hidden="true">›</span></button>
         <button id="cargasAdministrar" type="button" class="submenu-card" hidden><span class="submenu-icon" aria-hidden="true">🗂️</span><span><b>Documentos y administración</b><small>Importar, revisar y publicar PDF descargados manualmente</small></span><span class="submenu-arrow" aria-hidden="true">›</span></button>
@@ -151,7 +151,7 @@
       </section>
     </section>
     <section id="reviewLoadsView" class="view" hidden>
-      <div class="page-heading"><button type="button" id="backFromReviewLoads" class="back-button">← Volver</button><h1>Verificación física</h1><p class="muted">Aparecen cargas preparadas por otra persona, incluso si su reloj sigue abierto. Selecciona una para comprobarla línea por línea.</p></div>
+      <div class="page-heading"><button type="button" id="backFromReviewLoads" class="back-button">← Volver</button><h1>Verificación física</h1><p class="muted">Puedes iniciar la verificación desde que se publica la carga, aunque no haya comenzado o finalizado su preparación. No puedes verificar una carga preparada por ti.</p></div>
       <div id="reviewWarehouseTabs" class="warehouse-tabs" role="tablist" aria-label="Almacén"></div><p id="reviewWarehouseHint" class="active-warehouse-hint" role="status"></p>
       <div class="toolbar"><label class="search-wrap">Buscar carga<input id="reviewSearch" type="search" placeholder="Nº de carga, ruta, matrícula o repartidor"></label><button type="button" id="reloadReviewLoads" class="secondary">Actualizar</button></div>
       <div id="reviewLoadsList" class="loads-list" aria-live="polite"></div>
