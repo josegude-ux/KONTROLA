@@ -42,8 +42,8 @@ begin
    v_valid:=false;
    for v_corr in select value from jsonb_array_elements(p_correcciones) loop
     if coalesce(v_corr->>'line','')<>v_pos::text
-      or v_corr->>'field'<>'qty'
-      or v_corr->>'tipo' not in ('dato_pdf_bc','lectura_pdf')
+      or coalesce(v_corr->>'field','')<>'qty'
+      or coalesce(v_corr->>'tipo','') not in ('dato_pdf_bc','lectura_pdf')
       or coalesce(v_corr->>'before','') !~ '^[0-9]+([.][0-9]{1,3})?$'
       or coalesce(v_corr->>'after','') !~ '^[0-9]+([.][0-9]{1,3})?$'
       or length(trim(coalesce(v_corr->>'justificacion','')))<15
