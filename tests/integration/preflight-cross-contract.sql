@@ -130,5 +130,67 @@ select test.assert((select estado='cerrada' and revision=1
  from public.kontrola_cargas where codigo='LP26-94001'),
  'ambas tareas finalizan sin perder la revisión original');
 
+
+-- 6. Caso adverso: existe SOLO Verificación iniciada realmente por RPC;
+-- no hay Preparación VISURA que pudiera activar accidentalmente el guard.
+set role authenticated;
+select set_config('request.jwt.claim.sub','00000000-0000-0000-0000-000000000001',false);
+select * from public.kontrola_reservar_importacion(
+ 'LP26-94002',repeat('6f12',16),'solo-verificacion-original.pdf',1200
+) \gset solo_
+insert into storage.objects(bucket_id,name,owner_id)
+ values('kontrola-pdfs',:'solo_documento_ruta','00000000-0000-0000-0000-000000000001');
+select public.kontrola_completar_importacion(
+ :'solo_id',test.revision_payload('LP26-94002'),'[]'::jsonb
+);
+select test.assert(public.kontrola_corregir_importacion(
+ :'solo_id',test.revision_payload('LP26-94002'),'[]'::jsonb,'[]'::jsonb,true
+)='aprobada','carga de verificación exclusiva aprobada');
+select * from public.kontrola_publicar_importacion(:'solo_id') \gset published_solo_
+select set_config('request.jwt.claim.sub','00000000-0000-0000-0000-000000000003',false);
+select * from public.kontrola_iniciar_verificacion(
+ 'LP26-94002','94000000-0000-0000-0000-000000000003'
+) \gset ver_solo_
+reset role;
+select test.assert((select count(*)=0 from public.kontrola_preparaciones
+ where codigo='LP26-94002'),'sin Preparación al iniciar Verificación exclusiva');
+select test.assert((select count(*)=1 from public.kontrola_verificaciones
+ where codigo='LP26-94002' and fin is null),'Verificación exclusiva realmente activa');
+set role authenticated;
+select set_config('request.jwt.claim.sub','00000000-0000-0000-0000-000000000001',false);
+select * from public.kontrola_reservar_importacion(
+ 'LP26-94002',repeat('7f12',16),'solo-verificacion-revision.pdf',1200
+) \gset solo2_
+insert into storage.objects(bucket_id,name,owner_id)
+ values('kontrola-pdfs',:'solo2_documento_ruta','00000000-0000-0000-0000-000000000001');
+select public.kontrola_completar_importacion(
+ :'solo2_id',test.revision_payload('LP26-94002'),'[]'::jsonb
+);
+select test.assert(public.kontrola_corregir_importacion(
+ :'solo2_id',test.revision_payload('LP26-94002'),'[]'::jsonb,'[]'::jsonb,true
+)='aprobada','revisión de propuesta no sustituye original por sí misma');
+do $
+declare blocked boolean:=false;
+begin
+ begin
+  perform * from public.kontrola_publicar_importacion(
+   (select id from public.kontrola_importaciones
+    where codigo='LP26-94002' and documento_hash=repeat('7f12',16))
+  );
+ exception when insufficient_privilege then blocked:=true;
+ end;
+ if not blocked then
+  raise exception 'ASSERTION FAILED: Verificación sin Preparación no protegió publicación';
+ end if;
+end$;
+reset role;
+select test.assert((select revision=1 and documento_hash=repeat('6f12',16)
+ from public.kontrola_cargas where codigo='LP26-94002'),
+ 'no sustituyó PDF vigente aunque Preparación nunca se inició');
+select test.assert((select count(*)=0 from public.kontrola_preparaciones
+ where codigo='LP26-94002'),'bloqueo independiente de Preparación inexistente');
+select test.assert((select count(*)=1 from public.kontrola_carga_revisiones
+ where codigo='LP26-94002'),'no creó revisión material después del bloqueo');
+
 reset role;
 select 'KONTROLA_B01_CROSS_CONTRACT_OK' as result;
