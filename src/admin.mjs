@@ -150,7 +150,7 @@ export function createAdminController({client,getUser,bucket,global,errorText,on
         if(busy)return;
         const codigo=codeInput.value.trim().toUpperCase(),almacen=zoneInput.value;
         const evidencia=evidenceInput.value.trim();
-        if(!/^LP\\d{2}-\\d{4,6}$/.test(codigo)||!["COR_01_COR","COR_02_NAR"].includes(almacen)||evidencia.length<15){
+        if(!/^LP\d{2}-\d{4,6}$/.test(codigo)||!["COR_01_COR","COR_02_NAR"].includes(almacen)||evidencia.length<15){
           setStatus("Indica código LP, almacén y evidencia de al menos 15 caracteres contrastados con BC.","error");
           return;
         }
