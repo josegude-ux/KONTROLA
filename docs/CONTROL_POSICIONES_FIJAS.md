@@ -137,3 +137,29 @@ La incorporación está en la misma PR #76 abierta en borrador. Su último HEAD 
 **Tratamiento de los bloqueos:** la fuente central autorizada, mapeo de identidades entre PREPARA/INVENTA, asignación inequívoca de posiciones y ubicaciones POR almacén y posterior despliegue **no están aprobados ni implantados**. Ninguna prueba del prototipo sustituye una verificación con roles, almacenes y datos reales autorizados. El servicio `kontrola_admin_posiciones_fijas` permanece como propuesta SQL, no RPC existente en Supabase operativo. La PWA no presenta cifras inventadas si la fuente no está activada.
 
 **Próxima tarea segura identificada:** durante la revisión de integración, comprobar estado actual de ramas/PR ajenas sin modificarlas y preparar correspondencias de migración *documentales*. Cualquier aplicación SQL real, integración de identidades, merge, publicación o prueba en usuarios reales requiere las autorizaciones independientes que ya constan. No se inician tareas nuevas mediante la orden universal.
+
+## Auditoría de solapamientos, no destructiva — 27/10/2026
+
+Inspeccionados directamente en GitHub los cambios respecto de la base operativa `042724a90b897c9c5d289c52cb36ed970bec9dde`, sin merge ni escritura en ramas ajenas:
+
+| Línea | Head verificado | Relación con base | Solapamientos relevantes |
+| --- | --- | --- | --- |
+| Informe de posiciones fijas, PR #76 | `84735a0f1a74cdbb880e7c39fcbc0c44e74e76fd` (antes de esta auditoría) | 34 commits por delante, 0 por detrás | Pestaña en `src/admin.mjs`; módulos nuevos aislados |
+| Hotfix huecos 8G/4E, PR #74 | `e5aacd809b80cd9457bd83b9cfc3f03a3774469d` | 27 por delante, 0 por detrás | `src/admin.mjs` y ficheros de la aplicación |
+| Bloque 01 acumulado, cabeza PR #75 | `b7827629089e33ebf5b95bd509f430d69a07dc61` | Ramas divergentes: 110 delante y 10 detrás | `src/admin.mjs`, `app.mjs`, `index.html`, configuración, CSS y múltiples interfaces |
+
+Detalle confirmado de `src/admin.mjs`:
+- **PR #74** agrega `huecos_palets_europeos` y `palletsEuropean` al contrato y objeto de importación, sin tocar el bloque de pestañas.
+- **PR #76** importa `configureAdminFixedPositions`, monta la sección de posiciones fijas, añade la acción 9 y libera el informe al limpiar sesión.
+- **Bloque 01** modifica el módulo extensamente y amplía la acción de cargas archivadas con `refreshOldLoads`. Durante la futura integración debe mantenerse esa ampliación además de todas las nuevas acciones, sin sobrescribir ninguna función.
+- El índice 9 estaba libre en los `adminActions` inspeccionados, pero eso NO garantiza que no exista un cambio posterior de navegación o roles en ramas que no se hayan auditado.
+
+Se retiró de PR #76 el cambio accidental, de un salto de línea final, en `.github/workflows/ci.yml`: archivo restaurado exactamente al contenido y SHA blob de la base `1e2110597449484d699ba80839aab14d5f2854dd`. No se modificó CI de terceros. Mantener exclusivamente workflows nuevos y pruebas propias.
+
+**Riesgos abiertos que no autoriza resolver esta auditoría:**
+- Al integrar la pila B01/PR #74 con PR #76 hay que validar compatibilidad de la pestaña y valores de importación; NO hacer rebase, merge o cherry-pick sin autorización.
+- La PWA offline tiene una lista de módulos cacheados en `sw.js` que no incluye los tres nuevos módulos de informe (`fixed-position-report`, `fixed-position-print`, `fixed-position-xlsx`) ni la interfaz; antes de desplegar hay que diseñar la actualización de caché y versión en la rama de integración correspondiente. **No se tocó `sw.js`** porque las otras líneas lo modifican.
+- La fuente central y política de stock por almacén, equivalencia de usuarios, RLS real y viabilidad en Safari iOS siguen sin certificar.
+- Ningún resultado de GitHub Actions valida por sí solo la convivencia de estas ramas todavía no integradas.
+
+**Protocolo de continuidad:** antes de la futura integración, consultar de nuevo HEAD/PR/CI reales; comparar el `src/admin.mjs` del destinatario, aplicar únicamente las adiciones aisladas del informe conservando `palletsEuropean` y `refreshOldLoads`, garantizar importación/caché offline, repetir pruebas completas y revisar despliegue con autorización independiente. No continuar si la rama responsable de Bloque 01 ha cambiado sin nueva comprobación.
