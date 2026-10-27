@@ -80,3 +80,15 @@ La auditoría ampliada añade lectura `git show` del contrato SQL de PR #72 y su
 
 **Límite esencial:** el orden de overlay es experimental y depende de SHAs fijos; no se ha consolidado una migración de producción ni un frontend combinado. No hay autorización de merge o despliegue. Se deberá revisar la secuencia contractual completa en una futura integración autorizada.
 
+
+## Extensión posterior: PR #75 — total neto compensado y cantidad sin evento
+
+El usuario reiteró la continuidad automática. Se desarrolló una nueva propuesta **aislada y no fusionada**, [PR #75](https://github.com/josegude-ux/KONTROLA/pull/75), `feat/visura-prepara-b01-correcciones-neto-cero-20261027`, SHA fijado `b7827629089e33ebf5b95bd509f430d69a07dc61`.
+
+Riesgo identificado: cantidades PDF `2+3=5` y cantidades corregidas `4+1=5` permiten que los totales coincidan pese a que una línea BC carezca de evidencia, o incluso no exista ningún evento de cantidad. La propuesta de PR #75 añade controles de evidencia aun con total neto igual y exige no persistir cambios de cantidad sin evento válido vinculado al usuario administrador de esa sesión. Se conserva el flujo de correcciones de lectura PDF con evidencia.
+
+El preflight lee **solo** blobs de PR #75 desde SHA inmutable, prueba la propuesta de neto cero y la de registro de cantidad después de PR #60, #69 y #72 **en la misma base PostgreSQL efímera**, y verifica que la RPC de publicación preserve tanto `kontrola_total_bc_documentado` como el guard de Verificación iniciada. Ninguna rama de origen se modifica, no se aplica SQL a Supabase real.
+
+**[GitHub Actions #40509512782](https://github.com/josegude-ux/KONTROLA/actions/runs/40509512782): SUCCESS en ambos jobs.** El resultado confirma compatibilidad SQL en ese laboratorio, **no certifica el frontend combinado**.
+
+**Límite pendiente:** la helper `kontrola_cambios_cantidad_trazados` de PR #75 conserva provisionalmente el comportamiento anterior cuando cambia la **longitud de productos/referencias**; un control estricto de adiciones o eliminaciones requiere definir cómo se documentan y autorizan sin romper correcciones de importación legítimas. No afirmar cobertura completa sobre ese supuesto.
