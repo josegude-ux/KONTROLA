@@ -1010,3 +1010,22 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 
 
 **Ampliación visual del mismo hito:** `tests/provisional-layout.spec.mjs` verifica mediante Chromium un formulario administrativo visible a 390×844 (móvil), 768×1024 (tablet) y 1440×900 (ordenador), con contenido en columnas fluidas y sin desbordamiento horizontal. `.github/workflows/visura-prepara-b01-provisional-ci.yml` instala navegador temporal y adjunta capturas a GitHub Actions para revisión. Estas pruebas de diseño no equivalen a autenticación con datos reales. Confirmar resultado en el último commit antes de declarar completada la CI.
+
+
+---
+
+## 2026-10-27 — Bloque 01 · Protección de estados de PDF provisionales (rama aislada)
+
+**Continuidad verificada:** la PR #64 (`feat/visura-prepara-b01-borradores-provisionales-20261027`) conserva propuesta SQL, formulario responsive, batería Node, Postgres efímero y Chromium (run [40485026014](https://github.com/josegude-ux/KONTROLA/actions/runs/40485026014) SUCCESS en el HEAD visual). Antes de crear esta rama se comprobó el estado de PR #61/#62/#63/#64 y los commits recientes; no se reinician ni fusionan trabajos.
+
+**Nueva rama de endurecimiento:** `feat/visura-prepara-b01-provisionales-estados-seguros-20261027`, base exacta `3431dae302ad57ed15704138c512eb930e0c0522` de PR #64. No se modifica PR #64 ni los archivos de otras ramas, para evitar solapamiento.
+
+**Defecto concreto:** `kontrola_completar_provisional_pdf` devolvía `pendiente_identificacion` si ya estaba pendiente, pero ante `estado='identificada'` ejecutaba UPDATE que reabría el PDF como pendiente. Un reintento tardío podía dejar `importacion_id`, LP y almacén asociados a una fase equivocada.
+
+**Corrección propuesta:** `supabase/proposals/kontrola_pdf_provisionales_b01.sql` incorpora estado terminal explícito para completar: solo `reservada` puede pasar a `pendiente_identificacion`; pendiente es idempotente; identificada no puede ser reprocesada (error 22023). Se mantienen los bloqueos administrativos, registros y vínculos ya aprobados.
+
+**Regresiones:** `tests/integration/provisional-drafts.sql` añade reintentos tras identificación y prueba de operador sin privilegios, verificando conservación de hash, ruta, LP, almacén, evidencia, `importacion_id` y ausencia de publicación automática. CI aislada `.github/workflows/visura-prepara-b01-estados-ci.yml` con Node + PostgreSQL 16 temporal y `KONTROLA_TEST_PROVISIONALES=1`. Verificar el éxito del último HEAD antes de dar por validado.
+
+**Restricciones:** propuesta SQL no aplicada; sin tocar Supabase productivo, Business Central, documentos reales, reglas de Preparación/Verificación, impresión, palets o Bloque 02. No fusionar ni desplegar sin autorización. Las pruebas no acreditan el comportamiento con identidades reales.
+
+**Siguiente tarea:** confirmar GitHub Actions del HEAD; corregir los fallos si los hay. Después auditar la interacción de reservas normales y provisionales para evitar asociación doble del mismo hash, manteniendo independencia de ramas y registro de evidencias.
