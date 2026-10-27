@@ -53,3 +53,8 @@ jobs:
           psql -v ON_ERROR_STOP=1 -d "$KONTROLA_TEST_DB" -f supabase/proposals/kontrola_bc_neto_cero_b01.sql
           psql -v ON_ERROR_STOP=1 -d "$KONTROLA_TEST_DB" -f tests/integration/bc-zero-net.sql | tee /tmp/visura-b01-neto-cero.log
           grep -q KONTROLA_B01_NETO_CERO_EVIDENCIA_OK /tmp/visura-b01-neto-cero.log
+      - name: Protección contra modificaciones sin ningún evento de cantidad
+        run: |
+          psql -v ON_ERROR_STOP=1 -d "$KONTROLA_TEST_DB" -f supabase/proposals/kontrola_qty_sin_evento_b01.sql
+          psql -v ON_ERROR_STOP=1 -d "$KONTROLA_TEST_DB" -f tests/integration/quantity-audit-event.sql | tee /tmp/visura-b01-qty-event.log
+          grep -q KONTROLA_B01_CANTIDAD_EVENTO_INTEGRIDAD_OK /tmp/visura-b01-qty-event.log
