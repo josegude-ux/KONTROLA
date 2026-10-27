@@ -968,3 +968,15 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 - Si almacén de cabecera, almacén solicitado, código LP escrito en el PDF o año de fecha contradicen la nomenclatura, rechazar sin reservar ni publicar. Si el documento no lleva almacén detectable, permitir clasificar por prefijo con advertencia y revisión administrativa obligatoria. Si no hay año acreditado ni LP explícito, rechazar con mensaje específico.
 - Se corrige además el vaciado indebido del selector de cargas pendientes tras importar un lote: refrescarlo desde Supabase, sin tocar carga almacenada ni publicar automáticamente. Conserva máximo 20 PDF, revisión y publicación expresas.
 - Desarrollo en rama `feat/visura-prepara-pdf-por-almacen-f-c-20261026`, derivada de PR #51; **aún no instalada ni desplegada**. Nueva prueba `tests/filename-convention.test.mjs` con F/C, compatibilidad, contradicciones y ausencia de año. Validar CI y PDF auténtico antes de integración o despliegue, y no repetir la importación mientras esté pendiente.
+
+
+---
+
+## Bloque 01 — 27/10/2026: Errores individuales en la importación múltiple (rama aislada)
+- **Rama:** `feat/visura-prepara-b01-importacion-aislada-20261027`; base exacta `9a48ce9cef6c9afd5f4e719dec83406103c0f7f6` (PR #52). No confundir con el trabajo UI/responsive de PR #61 ni con la integración paralela PR #60.
+- **Defecto confirmado:** la función UI validaba todos los archivos a la vez antes del bucle y rechazaba el lote entero por una única extensión, MIME o tamaño inválidos.
+- **Cambio acotado:** `validarSeleccionPdf` solo limita la selección; `validarArchivoPdf` se ejecuta dentro del `try` por documento y los errores se recogen individualmente; se conserva la API estricta anterior `validarLotePdf`. La carga de los otros documentos continúa y el resumen no autopublica.
+- **Tests:** ampliados `tests/import-batch.test.mjs` y CI aislada de Node en `.github/workflows/visura-prepara-b01-import-ci.yml`. Verificar resultado del HEAD antes de declarar cerrado.
+- **Sin cambios:** original PDF, lectura F/C, código LP, hashes, RPC, SQL, datos reales, BC, verificación, autorización y publicación.
+- **Pendiente importante del Bloque 01:** borradores provisionales de PDF sin identificación LP siguen bloqueados actualmente antes de la reserva; requieren diseño del contrato SQL y política de identidad confiable, sin códigos LP inventados. Ver `docs/BLOQUE_01_IMPORTACION_ERRORES_POR_ARCHIVO.md`.
+- **Siguiente paso:** verificar CI y PR aislada; analizar contrato de reserva/identificación y escoger implementación segura sin solapar otras ramas. Prohibido fusionar, desplegar o tocar Supabase real sin autorización.
