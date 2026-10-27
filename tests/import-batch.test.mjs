@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import {readFileSync} from "node:fs";
-import {validarLotePdf,resumenLotePdf} from "../src/import-batch.mjs";
+import {validarLotePdf,validarSeleccionPdf,validarArchivoPdf,resumenLotePdf} from "../src/import-batch.mjs";
 const pdf=(name="carga.pdf",size=1200,type="application/pdf")=>({name,size,type});
 
 test("permite de uno a veinte PDF sin modificar los originales",()=>{
@@ -32,11 +32,36 @@ test("la interfaz no autopublica PDFs en el bucle ni descarta el historial",()=>
   const end=code.indexOf("async function loadImport",start);
   assert.ok(start>0&&end>start);
   const body=code.slice(start,end);
-  assert.match(body,/validarLotePdf\(\$\("pdfInput"\)\.files\)/);
+  assert.match(body,/validarSeleccionPdf\(\$\("pdfInput"\)\.files\)/);
+  assert.match(body,/validarArchivoPdf\(file\)/);
   assert.match(body,/for\(let i=0;i<files\.length;i\+\+\)/);
   assert.match(body,/processSinglePdf\(file,seenCodes\)/);
   assert.match(code,/if\(seenCodes\.has\(parsed\.id\)\)throw Error/);
   assert.doesNotMatch(body,/kontrola_publicar_importacion/);
   assert.match(body,/window\.confirm/);
   assert.match(html,/id="pdfInput" multiple/);
+});
+
+test("PDF inválido se informa individualmente sin detener los demás seleccionados",()=>{
+  const all=validarSeleccionPdf([
+    pdf("primero.pdf"),pdf("defectuoso.txt"),pdf("segundo.pdf")
+  ]);
+  assert.equal(all.length,3);
+  const state=all.map(file=>{
+    try{validarArchivoPdf(file);return "apto";}
+    catch{return "error";}
+  });
+  assert.deepEqual(state,["apto","error","apto"]);
+  assert.throws(()=>validarLotePdf(all),/deben ser PDF/);
+  assert.throws(()=>validarSeleccionPdf([]),/Selecciona/);
+});
+
+test("el navegador valida dentro del try por archivo y conserva el resultado de lote",()=>{
+  const code=readFileSync(new URL("../src/admin.mjs",import.meta.url),"utf8");
+  const body=code.slice(code.indexOf("async function processPdf()"),code.indexOf("async function loadImport"));
+  assert.match(body,/for\(let i=0;i<files\.length;i\+\+\)/);
+  assert.match(body,/try\{\s*validarArchivoPdf\(file\);\s*const estado=await processSinglePdf\(file,seenCodes\)/);
+  assert.match(body,/catch\(error\)\{\s*outcomes\.push\(\{archivo:file\.name,estado:"error"/);
+  assert.match(body,/resumenLotePdf\(outcomes\)/);
+  assert.doesNotMatch(body,/kontrola_publicar_importacion/);
 });
