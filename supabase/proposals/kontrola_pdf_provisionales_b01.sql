@@ -2,6 +2,9 @@
 -- Exclusivamente PostgreSQL temporal en CI; NO desplegar ni aplicar a Supabase real.
 -- Tabla separada: ninguna carga, preparación o verificación puede nacer de un provisional.
 
+-- Un solo commit: evitar exposición transitoria de funciones antes de sus REVOKE.
+begin;
+
 create table if not exists public.kontrola_pdf_provisionales (
   id uuid primary key default gen_random_uuid(),
   documento_hash text not null unique check (documento_hash ~ '^[a-f0-9]{64}$'),
@@ -197,3 +200,5 @@ end;
 $$;
 revoke all on function public.kontrola_identificar_provisional_pdf(uuid,text,text,text,jsonb,jsonb,jsonb) from public,anon;
 grant execute on function public.kontrola_identificar_provisional_pdf(uuid,text,text,text,jsonb,jsonb,jsonb) to authenticated;
+
+commit;
