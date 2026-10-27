@@ -4,7 +4,7 @@ import {classifyFixedPositions,filterFixedRows,fixedReportCsv,safeCsvCell} from 
 import {buildFixedPrintHtml} from "../src/fixed-position-print.mjs";
 
 const meta={authorized:true,warehouse:"COR_01_COR",stockComplete:true,catalogComplete:true,
-  positionsComplete:true,absentStockIsZero:false,sourceFile:"BC-completo.xlsx",
+  positionsComplete:true,locationsComplete:true,absentStockIsZero:false,sourceFile:"BC-completo.xlsx",
   importedAt:"2026-10-27T10:00:00Z",truncated:false};
 const products=[{code:"A1",description:"Artículo <script>alert(1)</script>",unit:"UD"},
   {code:"B2",description:"Segundo artículo",unit:"UD"}];
@@ -13,7 +13,8 @@ const fixed=[{product_code:"A1",location_code:"A01-P01"},
 const stock=[{product_code:"A1",location_code:"A01-P01",lot:"L1",quantity:"0"},
   {product_code:"A1",location_code:"R01-P01",lot:"L1",quantity:"20"},
   {product_code:"B2",location_code:"B01-P01",lot:"L1",quantity:"-2"}];
-const report=classifyFixedPositions({warehouse:"COR_01_COR",products,fixed,stock,meta});
+const locations=[...new Set([...fixed.map(x=>x.location_code),...stock.map(x=>x.location_code)])].map(code=>({code}));
+const report=classifyFixedPositions({warehouse:"COR_01_COR",products,fixed,stock,locations,meta});
 test("A4 apaisado con resumen, categorías, fuente, fechas y observaciones",()=>{
   const html=buildFixedPrintHtml({report,rows:report.rows,filters:{category:"todos"},generatedAt:"2026-10-27T16:00:00Z"});
   assert.match(html,/@page\{size:A4 landscape/);
@@ -30,7 +31,8 @@ test("A4 apaisado con resumen, categorías, fuente, fechas y observaciones",()=>
 });
 test("sin fija muestra ubicaciones reales en impresión",()=>{
   const source=classifyFixedPositions({warehouse:"COR_01_COR",products:[{code:"SIN",description:"Sin fija",unit:"UD"}],
-    fixed:[],stock:[{product_code:"SIN",location_code:"R01-P01",lot:"L1",quantity:"3"}],meta});
+    fixed:[],stock:[{product_code:"SIN",location_code:"R01-P01",lot:"L1",quantity:"3"}],
+    locations:[{code:"R01-P01"}],meta});
   const html=buildFixedPrintHtml({report:source,rows:source.rows});
   assert.match(html,/R01-P01: 3/);
   assert.match(html,/SIN POSICIÓN FIJA/);
