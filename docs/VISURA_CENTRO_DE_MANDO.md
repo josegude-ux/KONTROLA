@@ -550,3 +550,14 @@ Antes de redactar, guardar, proponer o añadir un prompt/botón al Centro de man
 - Este enlace funciona a través del proveedor externo **raw.githack.com** y no es GitHub Pages. Puede mostrar una pantalla de confirmación de seguridad antes de cargar archivos HTML; la disponibilidad depende de ese servicio.
 - Los cambios futuros en `visura-panel/docs/index.html` podrán verse en el mismo enlace tras propagarse la caché.
 - Para pasar a **GitHub Pages oficial sin tocar la publicación existente de KONTROLA**, utilizar otro repositorio dedicado para el panel. No modificar la fuente GitHub Pages de KONTROLA sin verificar su configuración y autorización específica.
+
+
+## Publicación autorizada del icono B para iPhone — 2026-10-27
+
+- Autorización expresa en chat para aplicar **exclusivamente** la corrección del icono a `visura-panel`, conservando las funciones 01–10 y sin modificar `main`.
+- Partida de `visura-panel` en `4a286e67d3967576fe0868a1ee9c3685d31498ec`. Recursos comprobados en rama `fix/visura-centro-mando-icono-b-ios-20261027` @ `935e0396c5cf7d63dd3c2d8025c8efafcad61449`; PR #67 permanece separado.
+- Se transfieren cinco PNG binarios originales/derivados, `docs/manifest.webmanifest` y ambos HTML, que son idénticos. Únicamente cinco líneas del `<head>` cambian en cada HTML, sin modificar CSS, JS, prompts, gestor de chats, formularios, copias ni funciones.
+- SHA-256 original aprobado: `45890808fada6590d90a925c06139d4ea860d1ff37423835f71dce801c75ab2e`; `apple-touch-icon.png` 180 × 180: `211438c00b140589752e2e154e0de52a2935537691febd45d672035ced0f77c4`.
+- La publicación en rama **no equivale** a validación del acceso web del proveedor externo. Comprobar HTTP 200, MIME, eventual caché y la prueba física en Safari/iPhone. No afirmar que ya se ve el icono B sin comprobarlo.
+- Reinstalar el acceso directo de pantalla de inicio desde Safari una vez confirmado el acceso; si sigue el icono antiguo, borrar solo el acceso directo anterior, no datos ni apps.
+- No se fusiona PR #67, no se modifica `main`, ni se altera ninguna otra aplicación.
