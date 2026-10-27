@@ -47,6 +47,16 @@ Inventario histórico: INVENTA tenía catálogo y ubicaciones, KONTROLA sus carg
 - Revisar si se requieren más de seis decimales de BC antes de activar.
 - Si la rama base avanza, revisar conflictos con ramas apiladas antes de integrar.
 
+
+## Verificación actual de Supabase (27/10/2026, exclusivamente SELECT)
+- Proyectos comprobados: INVENTA wlejxnpphysogrzcxjfh ACTIVE_HEALTHY; control-cargas-movil/PREPARA oevetnszmfxeukcncwji ACTIVE_HEALTHY; control-tanques-staging INACTIVE. Ninguna operación de modificación.
+- En INVENTA, la importación BC actual corresponde a COR_01_COR: 3.041 de 3.041 líneas esperadas, 1.853 artículos y 794 ubicaciones, estado committed, actualizada el 24/10/2026 a las 13:38 UTC. Es una instantánea: no garantiza vigencia al imprimir ni que el catálogo represente absolutamente todas las referencias de BC. No afirmar que existen importaciones equivalentes por cada otro almacén.
+- El esquema INVENTA mantiene bc_import_current como singleton global, no una importación activa independiente por almacén. El futuro backend debe garantizar importaciones completas y vigentes POR ALMACÉN antes de habilitar estadísticas. Una fila actual de COR_01_COR no puede respaldar COR_02_NAR u otros almacenes.
+- INVENTA utiliza profiles; PREPARA utiliza usuarios_app. Se confirmó que fixed_positions y locations de INVENTA no tienen columna de almacén. La seguridad compartida precisa una correspondencia explícita de identidades, roles y ámbitos.
+- RLS está activada para products, locations, fixed_positions, bc_import_batches, bc_import_current, bc_import_lines y profiles de INVENTA; esto no certifica que todas las políticas sean adecuadas para una aplicación PREPARA unificada.
+- Se verificó que la RPC kontrola_admin_posiciones_fijas NO existe actualmente en PREPARA. Toda activación real sigue bloqueada hasta revisión y autorización específica.
+- GitHub Actions de PR #76: ejecución 40520286960 SUCCESS con 300 pruebas JavaScript superadas, cero fallos, y pruebas SQL de control de cargas sobre PostgreSQL temporal correctas.
+
 ## Próximas acciones seguras
 1. Ejecutar pruebas CI de propuesta y corregir fallos.
 2. Comprobar impresión real y protección de rutas.
