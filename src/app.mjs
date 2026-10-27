@@ -317,7 +317,7 @@ function renderLoadList(){
     const palletsLabel=document.createElement("span");palletsLabel.className="load-pallets-label";palletsLabel.textContent="HUECOS PALÉS";
     const palletsValue=document.createElement("strong");palletsValue.className="load-pallets-value";
     palletsValue.textContent=formatearHuecosPalets(r.huecos_palets_grandes,r.huecos_palets_pequenos,r.huecos_palets_total,r.huecos_palets_europeos);
-    pallets.title="Huecos disponibles del camión: G = grandes, P = pequeños. No son palés ya preparados.";
+    pallets.title="Capacidad de huecos del camión: G = grandes, E = europeos, P = pequeños. No representa los palés de esta carga y requiere confirmación.";
     pallets.append(palletsLabel,palletsValue);vehicle.append(plate,pallets);
     const bundles=document.createElement("span");bundles.className="load-bundles";
     // Reutiliza el desglose por unidades de la hoja de preparación.
