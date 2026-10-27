@@ -1,6 +1,6 @@
 # VISURA PREPARA — cierre técnico PASO 1 (27/10/2026)
 
-**Estado:** integración de código en rama aislada, pendiente de superar CI de este HEAD. **No** implica aprobación de PASO 2, despliegue, migración ni activación de RPC empresariales.
+**Estado:** integración de código superó la CI completa en HEAD funcional `3bfbf21585706932bdbf1004a8a0e78dc987f573`; pendiente verificación final del HEAD documental. La PR #80 continúa en borrador, sin fusionar. **No** implica aprobación de PASO 2, despliegue, migración ni activación de RPC empresariales.
 
 ## Procedencia comprobada
 - Repositorio: `josegude-ux/KONTROLA`; rama predeterminada `main`.
@@ -35,3 +35,11 @@ No interpretar dato ausente como cero, ni G/E/P como equivalentes. Los valores G
 
 ## Siguiente paso técnico
 Ejecutar y verificar CI del HEAD definitivo en PR aislada; corregir fallos y documentar resultados. Si queda satisfactoria, solicitar revisión de integración a los responsables y planificar PASO 2 **sin considerarlo activado**.
+## Evidencia de la ejecución integrada, 27/10/2026
+- PR #80: https://github.com/josegude-ux/KONTROLA/pull/80, rama de cierre con objetivo exclusivo B01.
+- HEAD funcional validado: `3bfbf21585706932bdbf1004a8a0e78dc987f573`.
+- [Node 333/333, fallos 0; PG16 temporal, migrations=6, workflow/revisions/stats/concurrency/archive OK](https://github.com/josegude-ux/KONTROLA/actions/runs/40576592221): SUCCESS.
+- [RPC de posiciones fijas solo laboratorio PostgreSQL](https://github.com/josegude-ux/KONTROLA/actions/runs/40576592248): SUCCESS.
+- [Chromium responsive 6/6, PDF A4 multipágina y XLSX ZIP/XML](https://github.com/josegude-ux/KONTROLA/actions/runs/40576592079): SUCCESS.
+- La primera ejecución CI sobre `452580385f45a6a440b6c18dd0fdd2711ed46a22` encontró dos incompatibilidades: aserción antigua de navegación y falta del ID del selector E/P. Ambas fueron corregidas; no se omitieron tests.
+- Los resultados anteriores son válidos para el HEAD funcional indicado. Al actualizar documentación hay que verificar nuevamente CI del último commit, sin presentar el resultado anterior como si probara commits posteriores.
