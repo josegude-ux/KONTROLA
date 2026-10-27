@@ -142,8 +142,17 @@ def inspect_readonly_audit_bundle(
     if reviewer_permissions_recheck != reviewer_permissions:
         raise ValueError("Reviewer repository permissions changed during the audit")
 
-    # Check the PR again LAST, after the review/policy rechecks. These reads
-    # are non-atomic: a subsequent edit still invalidates the observation.
+    # CODEOWNERS may change independently of the PR's head SHA and branch
+    # policy. Re-observe its fixed paths and Git blob SHAs after reviewer
+    # rechecks. Even two matching reads are only non-atomic observations.
+    codeowners_recheck = observe_codeowners(
+        repository, target_branch, token, opener=opener
+    )
+    if codeowners_recheck != codeowners:
+        raise ValueError("CODEOWNERS metadata changed during the audit")
+
+    # Check the PR again LAST, after the review/policy/CODEOWNERS rechecks.
+    # These reads are non-atomic: subsequent edits remain possible.
     endpoint = "/repos/" + repository + "/pulls/" + str(pr_number)
     latest = _get_json(endpoint, token, opener)
     if not isinstance(latest, dict):
@@ -185,6 +194,7 @@ def inspect_readonly_audit_bundle(
         "same_target_policy_after_audit": True,
         "same_review_records_after_audit": True,
         "same_reviewer_repository_permissions_after_audit": True,
+        "same_codeowners_metadata_after_audit": True,
         "report_is_atomic": False,
         "repository_policy_verified": False,
         "execution_authorized": False,
