@@ -1102,3 +1102,23 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 **Protecciones:** no cambiar condiciones 01–23, ni un único preparador, palets informativos, picking BC, independencia de Preparación y Verificación. Bloque 02 fuera de alcance. No fusionar, desplegar, alterar registros empresariales ni aplicar SQL a Supabase.
 
 **Siguiente trabajo seguro:** preservar resultados de auditoría y elaborar una matriz de integración documental por archivo, sin combinar código. Una prueba real de ambas líneas juntas requiere autorización de una fase de integración separada y debe ejecutarse primero contra PostgreSQL de prueba, nunca datos reales. No asumir que el éxito verde de este preflight equivale a la aprobación de producción.
+
+---
+
+## 2026-10-27 — Bloque 01: comprobación SQL cruzada sin fusionar PR
+
+**Responsable:** 02 - VISURA PREPARA - Desarrollo Bloque 01. Modo reanudar en el mismo chat. Sin traspaso de responsabilidad ni autorización de despliegue.
+
+**Verificación previa:** repositorio `josegude-ux/KONTROLA`, rama original operativa `cursor/verificacion-fisica-cargas-8ba0` `042724a90b897c9c5d289c52cb36ed970bec9dde`. Los HEAD de PR #60 `18c46b0c742bae9321f08603da40dfd1e7d76323`, PR #61 `d66ecad37a13c3af6dafe2463236a1e2b874f77a`, PR #69 `13b5fbdac50b6e7a2ec4b97bbf2313b7bdbd9fcf` y PR #70 `7cd1d9c432428f823ac89296048deca932a68e97` estaban verificados al comenzar. Sin nuevas fusiones ni despliegues detectados en estas líneas.
+
+**Tarea implementada, sin tocar ramas de origen:** en `audit/visura-prepara-b01-preflight-cruces-20261027` (PR #70) se han añadido `tests/integration/preflight-cross-contract.sql`, `scripts/preflight-b01-cross-db.sh` y un segundo job PostgreSQL 16 temporal a `.github/workflows/visura-prepara-b01-preflight-ci.yml`. Ejercita las propuestas documentales y paralelas desde SHA inmóviles, sin efectuar merge ni modificar datos empresariales.
+
+**Incompatibilidad real encontrada:** ambas propuestas redefinen `public.kontrola_publicar_importacion(uuid)`. Si se aplica la SQL paralela de PR #60 después de la SQL de total BC de PR #69, se restaura la restricción antigua `actual_total = declared_total`, perdiendo la posibilidad de publicación documental BC auditada y el guard de Verificación iniciada. CI [40499729039](https://github.com/josegude-ux/KONTROLA/actions/runs/40499729039) falló reproduciendo el problema. Se implementó **solo en entorno efímero de pruebas** una secuencia que detecta la sobreescritura y reaplica exactamente la propuesta documental de PR #69 después de la paralela; `pg_get_functiondef` verifica presencia del contrato BC y del guard de Verificación. La SQL original de PR #60 y #69 permanece intacta.
+
+**Prueba adicional:** la ejecución [40499943882](https://github.com/josegude-ux/KONTROLA/actions/runs/40499943882) detectó una aserción incorrecta bajo RLS al consultar sesión de verificador desde el preparador. Se ajustó el **test**, no los permisos: la integridad inter-usuarios se valida mediante `reset role` exclusivamente en PostgreSQL de pruebas; ambas cuentas operativas siguen limitadas por RLS.
+
+**Éxito verificado:** GitHub Actions [40500100793](https://github.com/josegude-ux/KONTROLA/actions/runs/40500100793) concluyó con éxito en jobs de auditoría Git y contratos SQL cruzados. Regresiones documentales, flujo paralelo, carrera de verificadores y prueba nueva de cantidades BC/publicación protegida/sesiones de Preparación y Verificación independientes pasaron con datos ficticios. Ver detalle `docs/BLOQUE_01_CRUCE_SQL_PARALELO_DOCUMENTAL.md`.
+
+**Límites:** PR #60/#61/#69/#70 continúan separadas. El éxito no valida una aplicación UI integrada, navegador autenticado ni permisos reales del cliente. No se han modificado Supabase real, Business Central, datos empresariales, archivos de origen ni producción. El Bloque 02 permanece excluido.
+
+**Próxima tarea segura:** documentar la secuencia SQL contractual necesaria para futura integración y revisar las discrepancias de interfaz sin fusionar. Todo merge de PR, publicación real y pruebas con datos empresariales necesita autorización expresa.
