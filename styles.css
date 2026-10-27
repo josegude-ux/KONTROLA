@@ -348,3 +348,50 @@ footer{padding:18px;text-align:center;background:#fff;border-top:1px solid #e6e8
 .aisle-jump{border:0;background:transparent;color:#0b2647;padding:9px 12px;text-align:left;min-width:100%;font-size:13px;font-weight:760;cursor:pointer}
 .aisle-jump:hover,.aisle-jump:focus-visible{text-decoration:underline;background:#e7f2ed}
 @media(max-width:720px){.aisle-matrix-summary{grid-template-columns:repeat(2,minmax(0,1fr))}.aisle-matrix thead th,.aisle-matrix tbody td{padding-left:8px;padding-right:8px}}
+
+
+/* BLOQUE 01 — ADAPTACIÓN MULTIDISPOSITIVO (solo pantalla).
+   Se conservan las tarjetas, colores VISURA y los formatos A4/PDF impresos.
+   La anchura depende de la ventana, no del dispositivo detectado. */
+@media screen and (min-width:721px){
+  .container{
+    width:100%;max-width:1480px;
+    padding:clamp(24px,2.5vw,42px) clamp(22px,3vw,48px) 60px;
+  }
+  #homeView .inventa-inspired-home{width:100%;max-width:none;gap:clamp(16px,1.6vw,24px)}
+  #homeView .inventa-inspired-home .feature{width:100%}
+  .submenu-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+  .submenu-card{min-height:126px;padding:20px 22px;gap:20px}
+  .submenu-card b{font-size:20px}
+  .submenu-card small{font-size:14px}
+  .admin-tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+  .admin-tab{font-size:15px;min-height:50px;padding:12px 14px;text-align:center}
+  .history-filters{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .history-filters .history-search{grid-column:auto}
+  .view,.panel,.review-line,.revision-entry{min-width:0}
+}
+@media screen and (min-width:1100px){
+  #homeView .inventa-inspired-home{grid-template-columns:repeat(2,minmax(0,1fr))}
+  #homeView .inventa-inspired-home .feature{min-height:208px}
+  .admin-tabs{grid-template-columns:repeat(4,minmax(0,1fr))}
+  #loadsList,#reviewLoadsList,#historyList{
+    grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;
+  }
+  #loadsList .load-card,#reviewLoadsList .load-card,#historyList .load-card{min-width:0}
+}
+@media screen and (min-width:721px) and (max-width:1099px){
+  #homeView .inventa-inspired-home{grid-template-columns:minmax(0,1fr)}
+}
+@media screen and (min-width:721px) and (max-width:960px){
+  .review-line{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .review-line>b{grid-column:1/-1}
+}
+@media screen and (max-width:720px){
+  .container{width:100%;max-width:none;min-width:0;padding-inline:clamp(12px,4vw,18px)}
+  .view,.panel,.line,.toolbar{min-width:0;max-width:100%}
+  #homeView .inventa-inspired-home{width:100%;max-width:100%;grid-template-columns:minmax(0,1fr)}
+  .toolbar .search-wrap{flex-basis:100%;min-width:0}
+  .verification-line-head{flex-wrap:wrap}
+  .incident-row{grid-template-columns:minmax(0,1fr)}
+  .incident-row button{max-width:100%;width:100%}
+}
