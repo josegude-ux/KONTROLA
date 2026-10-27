@@ -1,0 +1,38 @@
+name: VISURA PREPARA — RPC de posiciones fijas (ensayo seguro)
+on:
+  push:
+    branches:
+      - integration/visura-prepara-b01-posiciones-fijas-20261027
+  pull_request:
+    branches:
+      - feat/visura-prepara-b01-correcciones-neto-cero-20261027
+permissions:
+  contents: read
+jobs:
+  rpc-solo-lectura:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16@sha256:9e2cf6287f25c3151f4c9421ccce2b17f3e60061c111a29165e0d2cdd9ff0a97
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      PGHOST: localhost
+      PGPORT: 5432
+      PGUSER: postgres
+      PGPASSWORD: postgres
+      PGDATABASE: postgres
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - name: Verificar solo en servicio PostgreSQL local descartable
+        run: |
+          test "$PGHOST" = localhost
+          psql -v ON_ERROR_STOP=1 -f tests/integration/fixed-positions-contract.sql | tee /tmp/fijos-rpc-ci.log
+          grep -q VISURA_FIJOS_RPC_SECURITY_OK /tmp/fijos-rpc-ci.log
