@@ -64,3 +64,7 @@ jobs:
         run: node --test tests/*.test.mjs
       - name: Migraciones, RLS y concurrencia
         run: npm run test:db
+      - name: Contrato SQL posiciones fijas (base efímera)
+        run: |
+          createdb kontrola_fixed_positions_contract
+          psql -v ON_ERROR_STOP=1 -d kontrola_fixed_positions_contract -f tests/integration/fixed-positions-contract.sql
