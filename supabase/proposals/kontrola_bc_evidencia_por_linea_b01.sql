@@ -103,7 +103,7 @@ begin
  if (p_carga->>'declared_total') is distinct from (v_row.carga_datos->>'declared_total') then
   raise exception 'No se puede sustituir el total documental original' using errcode='22023';end if;
  v_bc:=public.kontrola_total_bc_documentado(p_carga,p_correcciones);
- if not public.kontrola_bc_origen_preservado(p_carga,v_row.carga_datos) then
+ if v_bc and not public.kontrola_bc_origen_preservado(p_carga,v_row.carga_datos) then
   raise exception 'Las cantidades no conservan el origen del PDF' using errcode='22023';end if;
  v_has_errors:=exists(select 1 from jsonb_array_elements(p_hallazgos) h where h->>'severity'='error')
    or (
