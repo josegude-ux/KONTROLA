@@ -118,6 +118,14 @@ begin
   raise exception 'El PDF original no consta en el almacén privado' using errcode='22023';
  end if;
  if v_row.estado='pendiente_identificacion' then return v_row.estado; end if;
+ -- Un PDF ya identificado nunca puede regresar a provisional por un reintento
+ -- tardío de completar el archivo: la revisión válida prevalece.
+ if v_row.estado='identificada' then
+  raise exception 'El PDF provisional ya está identificado y no admite reprocesamiento' using errcode='22023';
+ end if;
+ if v_row.estado<>'reservada' then
+  raise exception 'Transición de provisional no autorizada' using errcode='22023';
+ end if;
  update public.kontrola_pdf_provisionales
  set estado='pendiente_identificacion',datos_extraidos=p_datos,motivo=left(p_motivo,1000),
    actualizado_por=v_actor,actualizado_en=now()

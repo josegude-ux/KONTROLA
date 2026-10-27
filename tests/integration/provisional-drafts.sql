@@ -87,4 +87,47 @@ select test.assert(public.kontrola_identificar_provisional_pdf(
 select test.assert((select count(*)=1 from public.kontrola_importaciones
  where documento_hash=repeat('4f36',16)),'el mismo PDF solo tiene una importación identificada');
 
+-- Regresión crítica: completar de nuevo una importación ya identificada NO
+-- puede regresar el documento a pendiente_identificacion ni borrar evidencia.
+do $$
+begin
+ perform public.kontrola_completar_provisional_pdf(
+  (select p.id from public.kontrola_pdf_provisionales p where p.documento_hash=repeat('4f36',16)),
+  '{"id":"sin-identificar","productos":[]}'::jsonb,
+  'Reintento obsoleto posterior a la identificación'
+ );
+ raise exception 'ASSERTION FAILED: se reabrió un PDF ya identificado';
+exception when sqlstate '22023' then null;
+end$$;
+select test.assert((
+ select p.estado='identificada' and p.importacion_id=:'identify_id'
+   and p.codigo_confirmado='LP26-90001'
+   and p.almacen_confirmado='COR_01_COR'
+   and p.evidencia_confirmacion='Comprobado en la ficha de BC por administración: LP26-90001'
+ from public.kontrola_pdf_provisionales p where p.id=:'prov_id'
+),'el reintento no modifica identidad ni evidencia confirmadas');
+select test.assert((
+ select i.estado='revision_requerida' and i.documento_ruta=:'prov_documento_ruta'
+ from public.kontrola_importaciones i where i.id=:'identify_id'
+),'el reintento tampoco cambia la revisión administrativa');
+select test.assert((
+ select count(*)=0 from public.kontrola_cargas where codigo='LP26-90001'
+),'la protección contra reintentos nunca publica una carga');
+
+-- Operario no puede forzar estados aunque conozca el UUID del provisional.
+select set_config('request.jwt.claim.sub','00000000-0000-0000-0000-000000000002',false);
+do $$
+begin
+ perform public.kontrola_completar_provisional_pdf(
+   (select p.id from public.kontrola_pdf_provisionales p where p.documento_hash=repeat('4f36',16)),
+   '{}'::jsonb,'Intento de modificar identidad por operario'
+ );
+ raise exception 'ASSERTION FAILED: operario pudo completar provisional';
+exception when insufficient_privilege then null;
+end$$;
+select set_config('request.jwt.claim.sub','00000000-0000-0000-0000-000000000001',false);
+select test.assert((select p.estado='identificada' and p.importacion_id=:'identify_id'
+  from public.kontrola_pdf_provisionales p where p.id=:'prov_id'),
+  'rechazo a operario mantiene la identidad y revisión intactas');
+
 select 'KONTROLA_PROVISIONALES_OK' as result;
