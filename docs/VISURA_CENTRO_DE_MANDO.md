@@ -1,5 +1,5 @@
 # VISURA — CENTRO DE MANDO
-**Versión:** V5.4 — 2026-10-26  
+**Versión:** V5.5 — 2026-10-27  
 **Objetivo:** conservar órdenes copiables de desarrollo y recuperación de contexto para VISURA.
 
 > Este archivo es una **copia maestra de instrucciones**, no un informe del estado actual del software. Antes de cualquier cambio hay que contrastar ramas, commits, PR y documentación con GitHub. No fusionar, desplegar ni borrar datos sin autorización. No se puede garantizar un proceso en segundo plano ni superar límites de Work.
@@ -185,11 +185,11 @@ En INTEGRACIÓN EN RAMA: la imagen aprobada y sus derivados necesarios están re
 En PRUEBA / SIMULACIÓN: se audita la viabilidad, se identifican rutas y alternativas, se detectan bloqueos y se entrega un plan ejecutable SIN modificar sistemas.
 ```
 
-## Menú actual — Accesos directos V5.4 (2026-10-26)
+## Menú actual — Accesos directos V5.5 (2026-10-27)
 
-**Nueve funciones**, sin duplicidad 01/03, y un gestor de chats compartido en la cabecera (no es una nueva orden). La función 08 permanece para órdenes, incidencias y consultas específicas; la nueva 09 recupera interrupciones de streaming. La nueva orden 01 reúne las tres formas de continuidad; se conserva 02 Preparar Work y las demás tareas de diseño, auditoría, integración y consulta. La interfaz muestra las funciones en una cuadrícula móvil, abre solo la elegida y ofrece «Volver al menú».
+**Diez funciones**, sin duplicidad 01/03, y un gestor de chats compartido en la cabecera (no es una nueva orden). La función 08 permanece para órdenes, incidencias y consultas específicas; la nueva 09 recupera interrupciones de streaming. La nueva orden 01 reúne las tres formas de continuidad; se conserva 02 Preparar Work y las demás tareas de diseño, auditoría, integración y consulta. La interfaz muestra las funciones en una cuadrícula móvil, abre solo la elegida y ofrece «Volver al menú».
 
-- Enlaces nuevos `#funcion-1` a `#funcion-9`. Enlaces históricos `#orden-1` a `#orden-8` compatibles con un mapeo explícito para no enviar a la función equivocada.
+- Enlaces nuevos `#funcion-1` a `#funcion-10`. Enlaces históricos `#orden-1` a `#orden-8` compatibles con un mapeo explícito para no enviar a la función equivocada.
 - Se mantiene botón «↻ Actualizar», cabecera y logo aprobado, selector de archivos de la integración, todos los prompts independientes y la protección de PRUEBA / SIMULACIÓN.
 - Las instrucciones antiguas 01 y 03 siguen consultables en el historial Git de esta rama, pero no se duplican en el menú.
 - Solo se editan `docs/index.html`, `docs/VISURA_ORDENES.html` y este documento maestro en `visura-panel`; no se autoriza modificar `main` o aplicaciones.
@@ -382,6 +382,138 @@ Continuar el desarrollo sin pérdida de trabajo, sin duplicaciones y sin reinici
 No te detengas salvo bloqueo real o necesidad imprescindible de autorización. Si una comprobación no es posible, documenta la limitación y continúa con la siguiente tarea independiente y segura.
 ```
 
+## 10. CONTINUIDAD SEGURA — ORDEN UNIVERSAL COMPLEMENTARIA (V5.5)
+
+**Decisión (27/10/2026):** nueva función justificada tras comparar con el catálogo vigente de nueve órdenes. La 01 reanuda o transfiere desarrollos; la 09 recupera exclusivamente una respuesta interrumpida de streaming. La 10 es una **instrucción complementaria universal y no destructiva** para continuar tareas ya autorizadas en CUALQUIER chat (programación, diseño, investigación, auditoría, documentación o coordinación), sin reactivar proyectos, crear encargos ni cambiar responsables.
+
+**Diseño:** seguir la estética de la captura naranja del aviso de streaming, con fondo crema, borde cálido redondeado, texto grande naranja y símbolo discreto de continuidad. **No reutilizar el texto «Streaming interrumpido»** en esta nueva función, ni modificar la imagen aprobada de la función 09. Diseño responsive por anchura de ventana: menú táctil compacto en móvil, tres columnas en tablet y cuatro en escritorio, aprovechando la pantalla sin estirar formularios en exceso.
+
+**Interacción:** la función 10 no necesita elegir chats ni archivos. Acciones «Copiar continuidad segura» y «Ver prompt»; al abrir el prompt se ofrece también «Copiar todo el prompt» al FINAL. Los dos botones de copia entregan la **misma cadena literal**, almacenada en la copia maestra de este documento y reproducida íntegramente en los dos HTML. No se hacen operaciones de GitHub, bases de datos o despliegues al pulsar. El panel no tiene acceso autónomo al historial de otros chats.
+
+**Ruta:** `#funcion-10`; mantener `#funcion-1` hasta `#funcion-9`, los enlaces históricos, Gestor de chats y exportación/importación de OneDrive.
+
+### Prompt maestro literal de la función 10
+
+```text
+ORDEN UNIVERSAL — CONTINUIDAD SEGURA Y PROTECCIÓN DEL TRABAJO EXISTENTE
+
+APLICACIÓN: CUALQUIER CHAT O PROYECTO
+TIPO: INSTRUCCIÓN COMPLEMENTARIA NO DESTRUCTIVA
+PRIORIDAD: RESPETAR EL ALCANCE, LAS DECISIONES Y LAS AUTORIZACIONES EXISTENTES
+
+1. REGLA PRINCIPAL
+
+Esta orden complementa las instrucciones vigentes del chat donde se utilice.
+
+NO sustituye su prompt maestro, NO cambia el proyecto, NO modifica las decisiones aprobadas y NO autoriza por sí misma cambios de código, archivos, repositorios, datos, permisos o despliegues.
+
+No reinicies trabajos. No repitas tareas completadas. No cambies el responsable del desarrollo.
+
+2. VERIFICAR EL CONTEXTO REAL
+
+Identifica primero:
+- Proyecto y función del chat.
+- Tarea actual y alcance autorizado.
+- Decisiones y restricciones existentes.
+- Trabajo realizado, pendiente y bloqueado.
+- Estado real de repositorios y documentación, solo cuando corresponda y exista acceso.
+
+No inventes información ni presupongas que otros chats han terminado tareas.
+
+Si no existe una tarea activa o autorizada, esta orden NO crea una nueva.
+
+REFUERZO 1: tras comprobar el contexto, continúa únicamente con el trabajo ya autorizado y seguro.
+
+3. CONTINUIDAD SEGÚN EL TIPO DE CHAT
+
+Si el chat está autorizado para programar, continúa implementando, probando, corrigiendo y documentando las tareas de su alcance sin pedir «sigue» después de cada hito.
+
+Si el chat está dedicado al diseño, continúa diseñando, sin programar por esta orden.
+
+Si está dedicado a auditoría, investigación, documentación, pruebas o coordinación, continúa exclusivamente esa actividad.
+
+No conviertas un chat de planificación en uno de programación.
+
+REFUERZO 2: cada fase completada debe dar paso a la siguiente tarea autorizada, sin ampliar el alcance.
+
+4. PROTECCIÓN DEL TRABAJO EXISTENTE
+
+No sobrescribas modificaciones ajenas.
+No elimines funciones existentes sin autorización.
+No alteres requisitos aprobados.
+No rehagas trabajo verificado.
+No cambies de rama o repositorio de forma insegura.
+No fusiones, despliegues ni modifiques producción sin permiso expreso.
+
+Esta orden NO exige cambios inmediatos ni afecta por sí misma al estado del proyecto.
+
+5. CRITERIO DE DISEÑO ADAPTABLE
+
+Cuando el trabajo autorizado incluya desarrollar o mejorar una interfaz, comprobar que el diseño responda al ancho real de la ventana y a la orientación.
+
+En escritorio, aprovechar la anchura disponible, con menús legibles y contenido distribuido adecuadamente.
+
+En tablet, adaptar navegación y distribución.
+
+En móvil, mantener controles táctiles y presentación compacta.
+
+Conservar la identidad visual y las funcionalidades existentes.
+
+Este criterio NO autoriza rediseñar aplicaciones ajenas al alcance vigente. Si su aplicación requiere cambios todavía no aprobados, documentarlos como propuesta, sin ejecutarlos.
+
+6. PRUEBAS Y CALIDAD
+
+Cuando corresponda al trabajo actual, comprobar los resultados y las posibles regresiones.
+
+No declarar realizadas pruebas que no se hayan ejecutado.
+
+REFUERZO 3: después de cada prueba o revisión satisfactoria, continuar con la siguiente tarea segura del alcance autorizado. No detenerse únicamente para pedir confirmación.
+
+7. BLOQUEOS Y CONFLICTOS
+
+Si una tarea presenta un bloqueo, documentarlo y buscar otra tarea independiente y autorizada.
+
+No resolver conflictos inventando requisitos ni sobrescribiendo trabajo de otros responsables.
+
+REFUERZO 4: un bloqueo parcial no obliga a detener toda la actividad. Continuar únicamente cuando exista trabajo alternativo seguro.
+
+8. CONTINUIDAD Y RECUPERACIÓN
+
+Cuando corresponda, actualizar la documentación de continuidad, indicando trabajo realizado, pruebas, pendientes, bloqueos y siguiente tarea.
+
+Si hay repositorio, registrar rama y commits reales verificados.
+
+Si la sesión se interrumpe, dejar instrucciones precisas para reanudar sin repetir el trabajo.
+
+No prometer ejecución en segundo plano cuando el entorno no esté disponible.
+
+9. COMPROBACIÓN FINAL OBLIGATORIA
+
+Antes de finalizar, preguntar internamente:
+
+«¿Queda alguna tarea del alcance actual, ya autorizada y técnicamente segura, que pueda ejecutar ahora?»
+
+Si SÍ, continuar.
+
+Si NO, informar del estado real y del motivo.
+
+REFUERZO 5: NO ESPERAR «SIGUE» ENTRE TAREAS AUTORIZADAS. NO INICIAR TRABAJOS NUEVOS FUERA DEL ALCANCE. NO ALTERAR LO EXISTENTE POR EL SIMPLE HECHO DE RECIBIR ESTA ORDEN.
+
+10. ORDEN FINAL
+
+CONSERVAR EL TRABAJO EXISTENTE.
+RESPETAR LAS DECISIONES DEL CHAT.
+VERIFICAR ANTES DE ACTUAR.
+CONTINUAR SOLO CON ACTIVIDADES AUTORIZADAS.
+PROBAR Y DOCUMENTAR CUANDO CORRESPONDA.
+NO REINICIAR NI DUPLICAR.
+NO FUSIONAR NI DESPLEGAR SIN AUTORIZACIÓN.
+
+ESTA ORDEN ES UNIVERSAL, COMPLEMENTARIA Y NO DESTRUCTIVA.
+
+FIN DE LA ORDEN UNIVERSAL.
+```
+
 ## Regla permanente 0 — Comprobar duplicados ANTES de crear un prompt
 
 Antes de redactar, guardar, proponer o añadir un prompt/botón al Centro de mando:
@@ -391,7 +523,7 @@ Antes de redactar, guardar, proponer o añadir un prompt/botón al Centro de man
 4. Probar el generador con al menos dos opciones diferentes y con opciones vacías; verificar que cambia correctamente origen/destino y que no mezcla chats ni ejecuta acciones desde el panel.
 5. Mantener las dos copias HTML, el documento maestro y la numeración sincronizados. No tocar `main`, no fusionar ni desplegar aplicaciones sin autorización.
 
-**Separación de funciones actual:** 01 Continuar desarrollo (tres modos); 02 Preparar Work; 03 Continuar imágenes; 04 Auditar solapamientos; 05 Crear imágenes; 06 Integrar imagen; 07 Consultar estado del chat en solo lectura; 08 Comunicar una orden, incidencia o consulta concreta a un chat; 09 Recuperar una respuesta de desarrollo interrumpida por streaming en el mismo chat. Antes de crear otro botón, verificar solapamientos. Son funciones relacionadas pero no duplicadas.
+**Separación de funciones actual:** 01 Continuar desarrollo (tres modos); 02 Preparar Work; 03 Continuar imágenes; 04 Auditar solapamientos; 05 Crear imágenes; 06 Integrar imagen; 07 Consultar estado del chat en solo lectura; 08 Comunicar una orden, incidencia o consulta concreta a un chat; 09 Recuperar una respuesta de desarrollo interrumpida por streaming en el mismo chat; 10 Reforzar la continuidad de tareas ya autorizadas con protección no destructiva universal. Antes de crear otro botón, verificar solapamientos. Son funciones relacionadas pero no duplicadas.
 
 ## Reglas comunes
 1. Consultar primero el estado verificado en GitHub, **sin tratar la documentación antigua de main como último estado**.
