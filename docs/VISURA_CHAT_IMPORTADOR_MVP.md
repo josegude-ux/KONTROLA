@@ -23,3 +23,7 @@
 3. Mejoras de rendimiento para exportaciones enormes y descompresión ZIP local sin red, sujetas a otra iteración.
 4. Opcional: asociación guiada de registros manuales previos sin ID con IDs de exportación, **con confirmación**.
 5. Revisar integración/publicación únicamente con autorización específica posterior; no modificar `main`, `visura-panel`, PR #67 o datos de otras aplicaciones.
+
+## Salvaguarda del alojamiento compartido — pendiente dominio exclusivo
+
+**Importador deshabilitado deliberadamente en `rawcdn.githack.com` y `raw.githack.com`:** ambos son proveedores de páginas de terceros que comparten su origen de navegador entre distintos repositorios. El almacenamiento `localStorage` es por origen y, en estas condiciones, no se considera adecuado para títulos/IDs privados. La interfaz muestra el motivo y no permite seleccionar archivos. La activación para datos reales exige antes un dominio/origen exclusivo controlado por VISURA y revisión de privacidad. Esta medida no afecta al gestor anterior ni al icono del iPhone. Esta rama sigue sin publicar.

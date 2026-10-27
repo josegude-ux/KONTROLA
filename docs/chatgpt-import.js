@@ -127,6 +127,14 @@
     const count = section.querySelector("#chatgpt-import-count");
     const apply = section.querySelector("#chatgpt-import-apply");
     let pending = [], chosen = new Set(), invalid = 0;
+    // GitHack sirve muchos repositorios bajo el mismo origen. LocalStorage de un origen
+    // compartido no es un almacén adecuado para títulos/IDs de conversaciones privadas.
+    const sharedHost = typeof location !== "undefined" &&
+      ["rawcdn.githack.com", "raw.githack.com"].includes(location.hostname);
+    if (sharedHost) {
+      selectFile.disabled = true;
+      status.textContent = "Protección de privacidad: en GitHack compartido se desactiva la importación de conversaciones. Necesita una dirección exclusiva para VISURA antes de procesar datos privados.";
+    }
     function discard() {
       pending = []; chosen.clear(); invalid = 0; selectFile.value = ""; search.value = "";
       review.hidden = true; list.replaceChildren();
