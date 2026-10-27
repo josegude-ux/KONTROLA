@@ -12,6 +12,16 @@ export function parseServiceWorker(source){
  if(!Array.isArray(assets)||!assets.every(x=>typeof x==="string"))throw Error("Assets PWA mal definidos");
  return {cache:match[1],assets};
 }
+export function classifyBuildAssets(missing,buildSource,pagesWorkflow){
+ const buildReady=pagesWorkflow.includes("npm run build:vendor")
+   &&pagesWorkflow.includes("cp -R src assets vendor dist/");
+ const generated=[],absent=[];
+ for(const path of missing){
+  if(buildReady&&buildSource.includes('outfile:"'+path+'"'))generated.push(path);
+  else absent.push(path);
+ }
+ return {generated,absent};
+}
 export function comparePwa(a,b){
  const sameCache=a.cache===b.cache;
  const sameVersion=a.version===b.version;
@@ -31,9 +41,9 @@ export function report(snapshots){
   "",
   "**NO INTEGRADO: solo lectura de Git. No se actualizó ninguna PWA ni se publicó SW.**",
   "",
-  "| Rama | version.json | Nombre caché SW | Assets precargados | Recursos no encontrados |",
-  "|---|---|---|---:|---:|",
-  ...rows.map(([lane,v])=>"| "+lane+" | "+v.version+" | "+v.cache+" | "+v.assets.length+" | "+v.missing.length+" |"),
+  "| Rama | version.json | Nombre caché SW | Assets precargados | Generados durante compilación | Ausentes sin generación conocida |",
+  "|---|---|---|---:|---:|---:|",
+  ...rows.map(([lane,v])=>"| "+lane+" | "+v.version+" | "+v.cache+" | "+v.assets.length+" | "+v.generated.length+" | "+v.missing.length+" |"),
   "",
   "## Posibles diferencias de caché entre ramas",
   "",
@@ -51,7 +61,8 @@ export function report(snapshots){
   "- Sin merge, sin despliegue, sin BC/Supabase real. Bloque 02 fuera del alcance."
  ];
  for(const [lane,v] of rows){
-  if(v.missing.length)lines.push("**Recursos de "+lane+" no presentes en Git:** "+v.missing.join(", "));
+  if(v.generated.length)lines.push("**Recursos configurados para generarse en build de "+lane+":** "+v.generated.join(", ")+". No están versionados, pero el workflow Pages incluye build:vendor antes de copiar vendor. Este inventario no sustituye probar la compilación.");
+  if(v.missing.length)lines.push("**Recursos de "+lane+" sin archivo ni generación de build reconocida:** "+v.missing.join(", "));
  }
  return {text:lines.join("\n")+"\n",checks};
 }
@@ -73,7 +84,10 @@ export function run(){
    try{git("cat-file","-e",sha+":"+path);}
    catch{missing.push(path);}
   }
-  snapshots[lane]={...info,version,blobs,missing};
+  const buildSource=git("show",sha+":scripts/build-vendor.mjs");
+  const pagesWorkflow=git("show",sha+":.github/workflows/pages.yml");
+  const classified=classifyBuildAssets(missing,buildSource,pagesWorkflow);
+  snapshots[lane]={...info,version,blobs,missing:classified.absent,generated:classified.generated};
  }
  const result=report(snapshots);
  mkdirSync("artifacts",{recursive:true});
