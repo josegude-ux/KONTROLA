@@ -43,6 +43,23 @@ jobs:
         run: |
           node --test tests/preflight-b01-pwa.test.mjs
           node scripts/preflight-b01-pwa.mjs
+      - name: Comprobar compilación PWA responsive en directorio temporal (sin publicar)
+        run: |
+          tmp="$(mktemp -d "$RUNNER_TEMP/visura-responsive-build.XXXXXXXX")"
+          git archive d66ecad37a13c3af6dafe2463236a1e2b874f77a | tar -x -C "$tmp"
+          (
+            cd "$tmp"
+            npm ci
+            npm run build:vendor
+            test -s vendor/pdf-lib.min.mjs
+            test -s vendor/supabase.mjs
+            mkdir -p dist
+            cp index.html styles.css manifest.webmanifest sw.js version.json dist/
+            cp -R src assets vendor dist/
+            test -s dist/vendor/pdf-lib.min.mjs
+            echo "KONTROLA_B01_PWA_BUILD_OK: pdf-lib generado y copiado a dist de CI; NO desplegado."
+          )
+          rm -rf "$tmp"
       - name: Adjuntar informe read-only
         if: always()
         uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08 # v4
