@@ -1,0 +1,41 @@
+name: VISURA PREPARA B01 · Auditoría reintentos (aislado)
+on:
+  push:
+    branches:
+      - feat/visura-prepara-b01-auditoria-reintentos-20261027
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      PGHOST: localhost
+      PGPORT: 5432
+      PGUSER: postgres
+      PGPASSWORD: postgres
+      KONTROLA_TEST_REINTENTOS: '1'
+    services:
+      postgres:
+        image: postgres:16@sha256:9e2cf6287f25c3151f4c9421ccce2b17f3e60061c111a29165e0d2cdd9ff0a97
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Instalar dependencias y ejecutar tests JS
+        run: |
+          npm ci
+          npm run check
+      - name: Probar propuesta de auditoría sobre PostgreSQL 16 temporal
+        run: npm run test:db
