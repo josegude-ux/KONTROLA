@@ -57,6 +57,18 @@ Inventario histórico: INVENTA tenía catálogo y ubicaciones, KONTROLA sus carg
 - Se verificó que la RPC kontrola_admin_posiciones_fijas NO existe actualmente en PREPARA. Toda activación real sigue bloqueada hasta revisión y autorización específica.
 - GitHub Actions de PR #76: ejecución 40520286960 SUCCESS con 300 pruebas JavaScript superadas, cero fallos, y pruebas SQL de control de cargas sobre PostgreSQL temporal correctas.
 
+## Control de calidad y continuidad (27/10/2026, revisión adicional)
+
+- Se comprobó la PR #76 en borrador contra `cursor/verificacion-fisica-cargas-8ba0`, sin fusión y sin tocar `main`.
+- El motor y la interfaz incorporan validación por almacén, cobertura de ubicaciones y tratamiento explícito de importaciones antiguas, además de stock negativo, cero y lotes. `src/fixed-position-print.mjs` construye el informe A4 apaisado multipágina.
+- La propuesta `supabase/proposals/visura_posiciones_fijas_central_rpc.sql` permanece **sin aplicar**. Requiere fuente compartida, catálogo y ubicaciones por almacén, perfiles/roles compatibles y autorización separada.
+- El ensayo SQL se ejecuta en PostgreSQL temporal por el flujo específico `.github/workflows/visura-prepara-posiciones-fijas-ci.yml`. El CI general de PREPARA queda sin duplicación de esa prueba.
+- `tests/fixed-position-visual.html` usa datos ficticios y el módulo real de interfaz. El flujo `.github/workflows/visura-prepara-posiciones-visual-ci.yml` prueba anchuras desktop/tablet/móvil, filtrado, cambio de almacén y genera un PDF A4 multipágina de prueba; **no** supone despliegue ni prueba de dispositivos físicos.
+- En el commit `8fac9b7587e470bdd23a59ae32cac4e2638d94ac`, las tres validaciones publicadas están en **SUCCESS**: regresiones y SQL de cargas (run 40526295487), RPC aislada (run 40526295478), responsive/impresión (run 40526295576).
+- No se ha aplicado ninguna migración, creado cuentas, unificado bases, desplegado PWA ni enviado datos a BC. No declarar el informe disponible en operaciones reales.
+
+**Siguiente acción que requiere autorización y coordinación:** aprobar arquitectura de origen central, atribución única de ubicaciones/posiciones por almacén, mapeo de identidades/permisos, ensayos finales con datos reales autorizados y plan de reversión. Hasta entonces la RPC no existe en el Supabase operativo de PREPARA y su pestaña debe permanecer sin datos empresariales.
+
 ## Próximas acciones seguras
 1. Ejecutar pruebas CI de propuesta y corregir fallos.
 2. Comprobar impresión real y protección de rutas.
