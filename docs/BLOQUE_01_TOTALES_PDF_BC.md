@@ -30,3 +30,10 @@ El usuario aprobó poder corregir cantidades en VISURA después de contrastarlas
 - Los documentos identificados pero ya iniciados conservan el bloqueo de cambios materiales existente. No se desarrolla el recuento físico del Bloque 02.
 
 **Próxima tarea:** comprobar CI del HEAD; corregir cualquier fallo; preparar PR borrador; realizar auditoría de compatibilidad de las PR derivadas antes de proponer integración, siempre sin fusionar.
+
+
+## Protección adicional frente a Verificación iniciada
+Al revisar el contrato de publicación se detectó que la protección heredada solo comprobaba `kontrola_preparaciones`. Como los flujos aprobados permiten iniciar Verificación **antes o después** de Preparación, la propuesta comprueba ambas tablas antes de sustituir cualquier documento de una carga ya publicada. Un inicio de Verificación sin preparación previa basta para bloquear la sustitución material.
+
+La regresión `tests/integration/bc-total-difference.sql` crea una carga ficticia publicada, inicia únicamente su Verificación en la base temporal, intenta aprobar/publicar otra revisión del mismo LP y comprueba que la publicación se rechaza (SQLSTATE 42501), dejando intacto documento, hash y revisión anterior. No se usa ninguna carga real.
+
