@@ -169,7 +169,7 @@ select public.kontrola_completar_importacion(
 select test.assert(public.kontrola_corregir_importacion(
  :'solo2_id',test.revision_payload('LP26-94002'),'[]'::jsonb,'[]'::jsonb,true
 )='aprobada','revisión de propuesta no sustituye original por sí misma');
-do $
+do $exclusive_guard$
 declare blocked boolean:=false;
 begin
  begin
@@ -182,7 +182,7 @@ begin
  if not blocked then
   raise exception 'ASSERTION FAILED: Verificación sin Preparación no protegió publicación';
  end if;
-end$;
+end$exclusive_guard$;
 reset role;
 select test.assert((select revision=1 and documento_hash=repeat('6f12',16)
  from public.kontrola_cargas where codigo='LP26-94002'),
