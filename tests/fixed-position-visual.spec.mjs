@@ -77,3 +77,31 @@ test("PDF real A4: informe multipágina, paginación y seguridad del documento",
   expect(pdf.getPageCount()).toBeGreaterThanOrEqual(4);
   writeFileSync("artifacts/fijos-multipagina.pdf",bytes);
 });
+
+test("XLSX descargado es ZIP OOXML válido y legible en Excel",async({page})=>{
+  await page.goto(url);
+  await expect(page.locator("html")).toHaveAttribute("data-visual-fixture-ready","yes");
+  const [download]=await Promise.all([
+    page.waitForEvent("download"),
+    page.locator("#fixedXlsx").click()
+  ]);
+  expect(download.suggestedFilename()).toMatch(/VISURA_PREPARA_fijas_COR_01_COR_.*\.xlsx$/);
+  const file=await download.path();
+  const {spawnSync}=await import("node:child_process");
+  const verification=[
+    "import sys,zipfile,xml.etree.ElementTree as ET",
+    "z=zipfile.ZipFile(sys.argv[1])",
+    "assert z.testzip() is None",
+    "names=set(z.namelist())",
+    "assert 'xl/worksheets/sheet2.xml' in names",
+    "for name in names:",
+    "  if name.endswith('.xml') or name.endswith('.rels'): ET.fromstring(z.read(name))",
+    "sheet=ET.fromstring(z.read('xl/worksheets/sheet2.xml'))",
+    "ns={'x':'http://schemas.openxmlformats.org/spreadsheetml/2006/main'}",
+    "assert len(sheet.findall('.//x:sheetData/x:row',ns))==4",
+    "assert b'PRD003' in z.read('xl/worksheets/sheet2.xml')",
+    "assert not sheet.findall('.//x:f',ns)"
+  ].join("\n");
+  const result=spawnSync("python3",["-c",verification,file],{encoding:"utf8"});
+  expect(result.status,result.stderr).toBe(0);
+});
