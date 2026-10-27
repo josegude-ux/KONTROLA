@@ -92,5 +92,5 @@ test("la UI habilita E/P solo en desglose, limpia inputs y protege preparaciones
   assert.match(app,/recoverTruckCapacityFromPdf\(load\)/);
   assert.match(app,/if\(result\.estado!=="viable"\)/);
   assert.match(app,/if\(assessment\(\)\.estado!=="viable"\)/);
-  assert.match(app,/adminFixedPositions|fixedPosition|posicionesFijas/i);
+  assert.match(read("src/admin.mjs"),/configureAdminFixedPositions|fixedPositions/);
 });
