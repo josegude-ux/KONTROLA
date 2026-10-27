@@ -77,6 +77,32 @@ export function analyzeDocument(parsed={}){
   if(parsed.refs==null)findings.push(finding(
     "missing_reference_total","error","No se pudo contrastar el número total de referencias del PDF."
   ));
+  // Cada cambio numérico debe tener una corrección con responsable y prueba,
+  // incluso si dos líneas compensan el total y nadie indica contraste BC.
+  const quantityRecords=Array.isArray(parsed.corrections)?parsed.corrections:[];
+  const untracedQuantity=(Array.isArray(parsed.products)?parsed.products:[]).some((product,index)=>{
+    if(product?.pdfOriginal?.qty==null)return false;
+    const before=Number(product.pdfOriginal.qty),after=Number(product.qty);
+    if(!Number.isFinite(before)||!Number.isFinite(after)||before===after)return false;
+    return !quantityRecords.some(c=>Number(c?.line)===index+1&&c?.field==="qty"
+      &&["lectura_pdf","dato_pdf_bc"].includes(c?.tipo)
+      &&Number(c?.after)===after
+      &&String(c?.justificacion||"").trim().length>=15&&!!c?.by&&!!c?.at);
+  });
+  if(untracedQuantity)findings.push(finding(
+    "quantity_change_unaudited","error",
+    "Hay cantidades modificadas sin registro de corrección y justificación por línea.",
+    null,"Revisar el historial de correcciones"
+  ));
+  const bcQuantityCorrections=Array.isArray(parsed.corrections)
+    &&parsed.corrections.some(c=>c?.field==="qty"&&c?.tipo==="dato_pdf_bc");
+  if(bcQuantityCorrections&&!hasDocumentedBCQuantityOverride(parsed)){
+    findings.push(finding(
+      "quantity_bc_evidence_missing","error",
+      "Hay cantidades contrastadas con Business Central sin evidencia válida en todas las líneas modificadas.",
+      null,"Revisar justificación, línea, cantidad final y origen PDF"
+    ));
+  }
   if(parsed.declaredTotal!=null&&Math.abs(Number(parsed.declaredTotal)-Number(parsed.actualTotal))>0.000001){
     const audited=hasDocumentedBCQuantityOverride(parsed);
     findings.push(finding(

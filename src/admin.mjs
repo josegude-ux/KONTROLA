@@ -9,6 +9,7 @@ import {buildPreparationReport} from "./report.mjs";
 import {generarPdfHojas,extraerHojasDeInforme,nombrePdfInforme} from "./print-pdf.mjs";
 import {revisarSustitucion} from "./import-policy.mjs";
 import {configureRevisionHistory} from "./admin-revisions.mjs";
+import {configureAdminFixedPositions} from "./admin-fixed-positions.mjs";
 
 const $=id=>document.getElementById(id);
 const fmt=value=>value==null?"—":Number(value).toLocaleString("es-ES",{maximumFractionDigits:3});
@@ -43,6 +44,8 @@ export function createAdminController({client,getUser,bucket,global,errorText,on
   const revisionControl=configureRevisionHistory({client,getUser,bucket,errorText});
   const operatorStats=configurarEstadisticasOperarios({client,getUser,errorText,getWarehouse:()=>document.getElementById("adminWarehouse").value});
   const printBatch=configurarLoteImpresion({client,getUser,errorText,getWarehouse:()=>document.getElementById("adminWarehouse").value});
+  const fixedPositions=configureAdminFixedPositions({client,getUser,errorText});
+  fixedPositions.mount();
   let busy=false,draft=null;
   let archiveGeneration=0;
   const setStatus=(message="",level="")=>{
@@ -695,7 +698,8 @@ export function createAdminController({client,getUser,bucket,global,errorText,on
     ()=>{$("revisionCode").focus();},
     ()=>{},
     ()=>refreshSummary(),
-    ()=>Promise.all([refreshArchivedLoads(),refreshOldLoads()])
+    ()=>Promise.all([refreshArchivedLoads(),refreshOldLoads()]),
+    ()=>fixedPositions.refresh()
   ];
   for(const button of document.querySelectorAll("[data-admin-tab]"))button.addEventListener("click",async()=>{
     const index=Number(button.dataset.adminTab);
@@ -775,7 +779,7 @@ export function createAdminController({client,getUser,bucket,global,errorText,on
     $("archiveCode").value="";
     $("archiveStatus").textContent="";
     $("archivedLoadsList").replaceChildren();$("oldLoadsList").replaceChildren();
-    revisionControl.clear();operatorStats.clear();printBatch.clear();
+    revisionControl.clear();operatorStats.clear();printBatch.clear();fixedPositions.clear();
     for(const id of ["documentReview","attentionList","adminSummary","adminActivity",
       "incidentList","reviewReadiness","reportPaper"]){
       const element=$(id);if(element)element.replaceChildren();
