@@ -240,7 +240,8 @@ grant execute on function public.kontrola_completar_provisional_pdf(uuid,jsonb,t
 -- No se publica una carga: solo se transfiere la identidad confirmada
 -- a la importación documental normal, aún pendiente de revisión administrativa.
 create or replace function public.kontrola_identificar_provisional_pdf(
- p_id uuid,p_codigo text,p_almacen text,p_evidencia text
+ p_id uuid,p_codigo text,p_almacen text,p_evidencia text,
+ p_carga jsonb,p_hallazgos jsonb,p_correcciones jsonb
 )
 returns uuid
 language plpgsql security definer set search_path=''
@@ -257,6 +258,12 @@ begin
   or p_almacen is null or p_almacen not in ('COR_01_COR','COR_02_NAR')
   or p_evidencia is null or length(trim(p_evidencia))<15 then
   raise exception 'La identificación exige LP, almacén y evidencia contrastada con BC' using errcode='22023';
+ end if;
+ if jsonb_typeof(p_carga)<>'object' or jsonb_typeof(p_carga->'productos')<>'array'
+   or jsonb_array_length(p_carga->'productos')=0
+   or p_carga->>'codigo'<>p_codigo or p_carga->>'almacen'<>p_almacen
+   or jsonb_typeof(p_hallazgos)<>'array' or jsonb_typeof(p_correcciones)<>'array' then
+  raise exception 'La revisión documental no contiene una carga coherente con la identidad' using errcode='22023';
  end if;
  select p.* into v_draft from public.kontrola_pdf_provisionales p
  where p.id=p_id for update;
@@ -276,11 +283,11 @@ begin
  end if;
  insert into public.kontrola_importaciones(
    codigo,documento_hash,documento_ruta,archivo_nombre,archivo_tamano,
-   almacen_detectado,creado_por,actualizado_por
+   almacen_detectado,estado,carga_datos,hallazgos,correcciones,creado_por,actualizado_por
  ) values(
    p_codigo,v_draft.documento_hash,v_draft.documento_ruta,
    v_draft.archivo_nombre,v_draft.archivo_tamano,p_almacen,
-   v_actor,v_actor
+   'revision_requerida',p_carga,p_hallazgos,p_correcciones,v_actor,v_actor
  ) on conflict do nothing returning id into v_importacion;
  if v_importacion is null then
   raise exception 'El documento ya está registrado o existe conflicto de identidad' using errcode='22023';
@@ -300,5 +307,5 @@ begin
  return v_importacion;
 end;
 $$;
-revoke all on function public.kontrola_identificar_provisional_pdf(uuid,text,text,text) from public,anon;
+revoke all on function public.kontrola_identificar_provisional_pdf(uuid,text,text,text,jsonb,jsonb,jsonb) from public,anon;
 grant execute on function public.kontrola_identificar_provisional_pdf(uuid,text,text,text) to authenticated;
