@@ -50,4 +50,41 @@ begin
  raise exception 'ASSERTION FAILED: operario reservó PDF provisional';
 exception when insufficient_privilege then null;
 end$$;
+-- Convertir a documento en revisión, nunca a carga publicada.
+select set_config('request.jwt.claim.sub','00000000-0000-0000-0000-000000000001',false);
+do $
+begin
+ perform public.kontrola_identificar_provisional_pdf(
+  (select id from public.kontrola_pdf_provisionales where documento_hash=repeat('4f36',16)),
+  'LP26-90001','COR_01_COR','corto',
+  test.revision_payload('LP26-90001'),'[]'::jsonb,'[]'::jsonb
+ );
+ raise exception 'ASSERTION FAILED: se permitió identificar sin evidencia suficiente';
+exception when sqlstate '22023' then null;
+end$;
+
+select public.kontrola_identificar_provisional_pdf(
+ :'prov_id','LP26-90001','COR_01_COR',
+ 'Comprobado en la ficha de BC por administración: LP26-90001',
+ test.revision_payload('LP26-90001'),'[]'::jsonb,'[]'::jsonb
+) as id \gset identify_
+select test.assert((select codigo='LP26-90001' and estado='revision_requerida'
+ and documento_ruta=:'prov_documento_ruta' from public.kontrola_importaciones
+ where id=:'identify_id'),'promoción atómica crea solamente la revisión administrativa');
+select test.assert((select estado='identificada' and importacion_id=:'identify_id'
+ and codigo_confirmado='LP26-90001' and almacen_confirmado='COR_01_COR'
+ from public.kontrola_pdf_provisionales where id=:'prov_id'),'evidencia e identidad confirmada se conservan');
+select test.assert((select count(*)=0 from public.kontrola_cargas
+ where codigo='LP26-90001'),'no publicar una carga al identificar el documento');
+select test.assert((select count(*)=1 from public.kontrola_importacion_eventos
+ where importacion_id=:'identify_id' and tipo='provisional_identificado'
+ and actor_id=auth.uid()),'el contraste se audita con actor');
+select test.assert(public.kontrola_identificar_provisional_pdf(
+ :'prov_id','LP26-90001','COR_01_COR',
+ 'Confirmación repetida del mismo registro ya identificado',
+ test.revision_payload('LP26-90001'),'[]'::jsonb,'[]'::jsonb
+)=:'identify_id','repetir identificación validada no crea una segunda importación');
+select test.assert((select count(*)=1 from public.kontrola_importaciones
+ where documento_hash=repeat('4f36',16)),'el mismo PDF solo tiene una importación identificada');
+
 select 'KONTROLA_PROVISIONALES_OK' as result;
