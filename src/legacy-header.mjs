@@ -16,7 +16,6 @@ export function cargaHuecosPendientes(load){
 }
 export function cabeceraSinMetadatos(load){
   return !present(load?.observaciones)&&
-    !present(load?.huecos_palets_grandes)&&
     !positive(load?.huecos_palets_pequenos)&&
     !positive(load?.huecos_palets_europeos)&&!positive(load?.huecos_palets_grandes)&&
     !positive(load?.huecos_palets_total);
