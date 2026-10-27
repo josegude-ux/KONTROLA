@@ -60,12 +60,15 @@ def _stable_check_observations(report):
             raise ValueError("Invalid check run rows")
         try:
             rows = tuple(sorted(
-                (item["name"], item["app_id"], item["status"], item["conclusion"])
-                for item in rows
-            , key=lambda entry: (
-                entry[0], -1 if entry[1] is None else entry[1],
-                entry[2], "" if entry[3] is None else entry[3],
-            )))
+                (
+                    (item["name"], item["app_id"], item["status"], item["conclusion"])
+                    for item in rows
+                ),
+                key=lambda entry: (
+                    entry[0], -1 if entry[1] is None else entry[1],
+                    entry[2], "" if entry[3] is None else entry[3],
+                ),
+            ))
         except (TypeError, KeyError):
             raise ValueError("Invalid check run record") from None
     return (
