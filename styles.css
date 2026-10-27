@@ -367,3 +367,26 @@ footer{padding:18px;text-align:center;background:#fff;border-top:1px solid #e6e8
   .provisional-identity-form{grid-template-columns:minmax(0,1fr)}
   .provisional-identity-form label:nth-child(3){grid-column:auto}
 }
+
+/* Bloque 01 · Correcciones administrativas de cantidades, solo pantalla.
+   Listado legible en ordenador y adaptación real a tablets/móviles. */
+.quantity-review{margin-top:20px;min-width:0;display:grid;gap:12px}
+.quantity-review>h4{margin:0;font-size:1.15rem}
+.quantity-review>.muted,.quantity-review>.hint{margin:0}
+.quantity-review-row{min-width:0;border:1px solid #cad8e4;border-radius:12px;background:#fff;overflow:hidden}
+.quantity-review-row summary{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:14px;cursor:pointer;padding:14px 16px;list-style:inside}
+.quantity-review-row summary span{min-width:0;overflow-wrap:anywhere}
+.quantity-review-row summary strong{font-size:.95rem;color:#0b2647;text-align:right}
+.quantity-review-row.quantity-corrected{border-left:5px solid #cf8a24;background:#fffaf0}
+.quantity-review-row.quantity-corrected summary strong{color:#9c5513}
+.quantity-correction-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;padding:14px 16px;border-top:1px solid #e7ecf1;min-width:0}
+.quantity-correction-form label{min-width:0;margin:0}
+.quantity-correction-form input,.quantity-correction-form select,.quantity-correction-form textarea{width:100%;min-width:0;display:block;box-sizing:border-box;margin-top:8px;padding:10px 12px;min-height:45px;border:1px solid #cad8e4;border-radius:10px;color:#0b2647;background:#fff;font:inherit}
+.quantity-correction-form label:nth-child(3),.quantity-correction-form button{grid-column:1/-1}
+.quantity-correction-form button{min-height:46px}
+@media screen and (max-width:720px){
+  .quantity-review-row summary{grid-template-columns:minmax(0,1fr);gap:6px}
+  .quantity-review-row summary strong{text-align:left}
+  .quantity-correction-form{grid-template-columns:minmax(0,1fr)}
+  .quantity-correction-form label:nth-child(3),.quantity-correction-form button{grid-column:1}
+}
