@@ -5,16 +5,21 @@ const validDocumentPath=(code,path)=>
   new RegExp("^documentos/"+String(code)+"/[a-f0-9]{64}\\.pdf$","i").test(String(path||""));
 
 const present=value=>value!==null&&value!==undefined&&String(value).trim()!=="";
+const positive=value=>present(value)&&Number.isInteger(Number(value))&&Number(value)>0;
 
 export function cargaHuecosPendientes(load){
-  return !present(load?.huecos_palets_grandes)&&!present(load?.huecos_palets_pequenos)&&
-    !present(load?.huecos_palets_total)&&validDocumentPath(load?.codigo,load?.documento_ruta);
+  // En BC el campo "Huecos plts. camión" puede ser 0 aunque Camión indique 8G 4E.
+  // Sin formatos positivos, un 0 obliga a releer el original antes de darlo por cierto.
+  return !positive(load?.huecos_palets_grandes)&&!positive(load?.huecos_palets_pequenos)&&
+    !positive(load?.huecos_palets_europeos)&&!positive(load?.huecos_palets_total)&&
+    validDocumentPath(load?.codigo,load?.documento_ruta);
 }
 export function cabeceraSinMetadatos(load){
   return !present(load?.observaciones)&&
     !present(load?.huecos_palets_grandes)&&
-    !present(load?.huecos_palets_pequenos)&&
-    !present(load?.huecos_palets_total);
+    !positive(load?.huecos_palets_pequenos)&&
+    !positive(load?.huecos_palets_europeos)&&!positive(load?.huecos_palets_grandes)&&
+    !positive(load?.huecos_palets_total);
 }
 
 export function cargasCabeceraPendiente(loads=[],search="",limit=5){
@@ -40,6 +45,7 @@ export function cabeceraLeida(load,parsed,warehouse){
     observaciones:observations||null,
     huecos_palets_grandes:numeric(parsed.palletsLarge),
     huecos_palets_pequenos:numeric(parsed.palletsSmall),
+    huecos_palets_europeos:numeric(parsed.palletsEuropean),
     huecos_palets_total:numeric(parsed.palletsTotal)
   };
 }
