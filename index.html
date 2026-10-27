@@ -117,7 +117,10 @@
           <select id="truckPreviousChoice"><option value="">Selecciona una respuesta</option><option value="no">No</option><option value="si">Sí, lleva cargas anteriores</option></select>
         </label>
         <label>Capacidad expresada en
-          <select id="truckCapacityMode"><option value="total">Huecos totales</option><option value="desglose">Huecos grandes (G) y pequeños (P)</option></select>
+          <select id="truckCapacityMode"><option value="total">Huecos totales</option><option value="desglose">Huecos por formato (G/E o G/P)</option></select>
+        </label>
+        <label id="truckSecondKindRow" hidden>Segundo formato de palé
+          <select id="truckSecondKind"><option value="E">Europeo (E)</option><option value="P">Pequeño (P)</option></select>
         </label>
         <div id="truckFieldsTotal" class="truck-grid">
           <label>Huecos totales del camión<input id="truckCapacityTotal" inputmode="numeric" type="number" min="0" max="999" step="1" placeholder="Capacidad total"></label>
@@ -126,13 +129,13 @@
         </div>
         <div id="truckFieldsBySize" class="truck-grid" hidden>
           <label>Huecos grandes (G) del camión<input id="truckCapacityG" inputmode="numeric" type="number" min="0" max="999" step="1" placeholder="Capacidad G"></label>
-          <label>Huecos pequeños (P) del camión<input id="truckCapacityP" inputmode="numeric" type="number" min="0" max="999" step="1" placeholder="Capacidad P"></label>
+          <label><span id="truckCapacityPLabel">Huecos pequeños (P) del camión</span><input id="truckCapacityP" inputmode="numeric" type="number" min="0" max="999" step="1" placeholder="Capacidad P"></label>
           <div id="truckPreviousSizeRow" class="truck-grid-span">
             <label>Grandes ocupados antes<input id="truckPreviousG" inputmode="numeric" type="number" min="0" max="999" step="1" placeholder="Palés anteriores G"></label>
-            <label>Pequeños ocupados antes<input id="truckPreviousP" inputmode="numeric" type="number" min="0" max="999" step="1" placeholder="Palés anteriores P"></label>
+            <label><span id="truckPreviousPLabel">Pequeños ocupados antes</span><input id="truckPreviousP" inputmode="numeric" type="number" min="0" max="999" step="1" placeholder="Palés anteriores P"></label>
           </div>
           <label>Grandes necesarios ahora<input id="truckCurrentG" inputmode="numeric" type="number" min="0" max="999" step="1" placeholder="Palés actuales G"></label>
-          <label>Pequeños necesarios ahora<input id="truckCurrentP" inputmode="numeric" type="number" min="0" max="999" step="1" placeholder="Palés actuales P"></label>
+          <label><span id="truckCurrentPLabel">Pequeños necesarios ahora</span><input id="truckCurrentP" inputmode="numeric" type="number" min="0" max="999" step="1" placeholder="Palés actuales P"></label>
         </div>
         <p class="hint">Solo se comprueban huecos: no se certifican peso, distribución ni seguridad del camión. Los datos manuales se mantienen durante esta sesión y no se guardan en Supabase.</p>
         <div id="truckCapacityResult" class="truck-result incompleto" role="status" aria-live="polite">Introduce cantidades para calcular.</div>
