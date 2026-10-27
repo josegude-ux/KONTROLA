@@ -61,7 +61,7 @@ begin
   select value as item,ordinality as num
   from jsonb_array_elements(p_nueva->'productos') with ordinality
  loop
-  v_prev:=p_guardada->'productos'->(v_r.num-1);
+  v_prev:=p_guardada->'productos'->(v_r.num::integer-1);
   v_old_qty:=v_prev->>'qty';
   v_prev_original:=v_prev#>>'{pdfOriginal,qty}';
   v_original:=v_r.item#>>'{pdfOriginal,qty}';
