@@ -1080,3 +1080,25 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 **Pendiente y límites:** pruebas manuales con roles reales y PDF de empresa en entorno autorizado, revisión de seguridad antes de una migración definitiva, orden de integración de PR encadenadas. No se ha aplicado SQL a Supabase real, ni fusionado ni desplegado. La documentación del usuario de BC se contrasta manualmente, no mediante API.
 
 **Siguiente tarea exacta:** verificar CI final y registrar PR en borrador; después auditar coexistencia entre PR #60 (flujos paralelos) y la cadena de PR #52/#62–69 antes de cualquier integración, especialmente condiciones de reemplazo material y el enlace a documentos; no fusionar sin autorización.
+
+---
+
+## 2026-10-27 — Bloque 01: preflight de compatibilidad no destructivo entre cadenas activas
+
+**Chat responsable:** VISURA PREPARA / desarrollo Bloque 01, con orden universal de continuidad no destructiva. No se han cambiado autorizaciones ni responsables.
+
+**Trabajo verificado, SIN fusionar:** PR #60 (`18c46b0c742bae9321f08603da40dfd1e7d76323`), PR #61 (`d66ecad37a13c3af6dafe2463236a1e2b874f77a`) y PR #69 (`13b5fbdac50b6e7a2ec4b97bbf2313b7bdbd9fcf`), todas en borrador y divergentes desde un ancestro compartido `e453c6e9cd04b7e92daea54bb95bcc53c2fb5c16`. La rama operativa `cursor/verificacion-fisica-cargas-8ba0` permanece en `042724a90b897c9c5d289c52cb36ed970bec9dde`; no se ha tocado.
+
+**Rama de auditoría creada desde el HEAD exacto de PR #69:** `audit/visura-prepara-b01-preflight-cruces-20261027`. No modifica el código funcional ni ninguna PR de origen.
+
+**Preflight programado:** `scripts/preflight-b01.mjs` y `tests/preflight-b01.test.mjs` leen Git `rev-parse/show/diff/merge-base` desde SHA fijados, sin ejecutar fusiones ni escrituras remotas, y generan Markdown/JSON en un ejecutor efímero. CI `.github/workflows/visura-prepara-b01-preflight-ci.yml`: Node y auditoría de ramas sin desplegar nada.
+
+**Resultado reproducible:** [GitHub Actions 40491929041](https://github.com/josegude-ux/KONTROLA/actions/runs/40491929041) **SUCCESS**, [40492045485](https://github.com/josegude-ux/KONTROLA/actions/runs/40492045485) **SUCCESS** tras añadir documentación. Las diferencias entre PR #60 y #69 son 17 archivos que ambas modifican, y entre PR #61 y #69 otros 17 (pueden coincidir en nombres; no sumar como 34 archivos únicos). Los 9 contratos fuente verificados estaban presentes, pero hay 3 vacíos de integración comprobados: en PR #69 falta el módulo de flujos paralelos y el CSS de escritorio ancho, y en PR #61 faltan los formularios de cantidades. Por tanto **NO INTEGRADO / NO LISTO PARA DESPLIEGUE**.
+
+**Archivos de solapamiento relevantes:** `index.html`, `src/app.mjs`, `src/admin.mjs`, `src/core.mjs`, `styles.css`, `tests/integration/run.sh`, `docs/CONTINUIDAD.md`, `package.json`, `sw.js`, entre otros. La CI es una inspección; no acredita convivencia real ni reglas SQL conjuntas.
+
+**Detalle:** `docs/BLOQUE_01_PREFLIGHT_NO_DESTRUCTIVO.md`. Informes de GitHub Actions en artefacto `visura-prepara-preflight-no-integrado`, con retención de siete días, y salida legible en logs.
+
+**Protecciones:** no cambiar condiciones 01–23, ni un único preparador, palets informativos, picking BC, independencia de Preparación y Verificación. Bloque 02 fuera de alcance. No fusionar, desplegar, alterar registros empresariales ni aplicar SQL a Supabase.
+
+**Siguiente trabajo seguro:** preservar resultados de auditoría y elaborar una matriz de integración documental por archivo, sin combinar código. Una prueba real de ambas líneas juntas requiere autorización de una fase de integración separada y debe ejecutarse primero contra PostgreSQL de prueba, nunca datos reales. No asumir que el éxito verde de este preflight equivale a la aprobación de producción.
