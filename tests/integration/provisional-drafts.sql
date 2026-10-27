@@ -4,18 +4,18 @@ set role authenticated;
 select set_config('request.jwt.claim.sub','00000000-0000-0000-0000-000000000001',false);
 
 select * from public.kontrola_reservar_provisional_pdf(
- repeat('d',64),'sin-codigo-confirmado.pdf',2000
+ repeat('4f36',16),'sin-codigo-confirmado.pdf',2000
 ) \gset prov_
 select test.assert(:'prov_repetida'='f','primer provisional debe reservarse');
-select test.assert(:'prov_documento_ruta'='provisionales/'||repeat('d',64)||'.pdf','ruta identificada solo por hash');
-select test.assert((select count(*)=0 from public.kontrola_importaciones where documento_hash=repeat('d',64)),'no crear importación con LP inventado');
-select test.assert((select count(*)=0 from public.kontrola_cargas where documento_hash=repeat('d',64)),'un provisional no es carga publicada');
+select test.assert(:'prov_documento_ruta'='provisionales/'||repeat('4f36',16)||'.pdf','ruta identificada solo por hash');
+select test.assert((select count(*)=0 from public.kontrola_importaciones where documento_hash=repeat('4f36',16)),'no crear importación con LP inventado');
+select test.assert((select count(*)=0 from public.kontrola_cargas where documento_hash=repeat('4f36',16)),'un provisional no es carga publicada');
 
 -- No puede completarse hasta conservar realmente el original en Storage.
 do $$
 begin
  perform public.kontrola_completar_provisional_pdf(
-  (select p.id from public.kontrola_pdf_provisionales p where p.documento_hash=repeat('d',64)),
+  (select p.id from public.kontrola_pdf_provisionales p where p.documento_hash=repeat('4f36',16)),
   '{}'::jsonb,'Código LP no legible'
  );
  raise exception 'ASSERTION FAILED: se completó provisional sin original';
@@ -32,10 +32,10 @@ select test.assert((select estado='pendiente_identificacion' and creado_por=auth
  from public.kontrola_pdf_provisionales where id=:'prov_id'),'estado y autor se preservan');
 
 select * from public.kontrola_reservar_provisional_pdf(
- repeat('d',64),'renombrado.pdf',2000
+ repeat('4f36',16),'renombrado.pdf',2000
 ) \gset again_
 select test.assert(:'again_repetida'='t' and :'again_id'=:'prov_id','el mismo contenido reutiliza el provisional');
-select test.assert((select count(*)=1 from public.kontrola_pdf_provisionales where documento_hash=repeat('d',64)),'no duplicar el borrador');
+select test.assert((select count(*)=1 from public.kontrola_pdf_provisionales where documento_hash=repeat('4f36',16)),'no duplicar el borrador');
 
 -- Un operario no ve metadatos ni descarga el PDF provisional.
 select set_config('request.jwt.claim.sub','00000000-0000-0000-0000-000000000002',false);
