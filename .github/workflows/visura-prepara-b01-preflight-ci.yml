@@ -90,7 +90,8 @@ jobs:
           git -c http.extraheader="" fetch --no-tags origin \
             "+refs/heads/feat/visura-prepara-integracion-pr49-pr58-20261026:refs/remotes/origin/feat/visura-prepara-integracion-pr49-pr58-20261026" \
             "+refs/heads/feat/visura-prepara-b01-responsive-20261027:refs/remotes/origin/feat/visura-prepara-b01-responsive-20261027" \
-            "+refs/heads/feat/visura-prepara-b01-totales-bc-auditados-20261027:refs/remotes/origin/feat/visura-prepara-b01-totales-bc-auditados-20261027"
+            "+refs/heads/feat/visura-prepara-b01-totales-bc-auditados-20261027:refs/remotes/origin/feat/visura-prepara-b01-totales-bc-auditados-20261027" \
+            "+refs/heads/feat/visura-prepara-b01-evidencia-por-linea-20261027:refs/remotes/origin/feat/visura-prepara-b01-evidencia-por-linea-20261027"
       - name: Asegurar SHAs de ambas líneas
         run: node scripts/preflight-b01.mjs
       - name: Ejecutar TODAS las pruebas documentales en BD local ficticia
