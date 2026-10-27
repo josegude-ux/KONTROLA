@@ -114,4 +114,20 @@ select test.assert((
  select count(*)=0 from public.kontrola_cargas where codigo='LP26-90001'
 ),'la protección contra reintentos nunca publica una carga');
 
+-- Operario no puede forzar estados aunque conozca el UUID del provisional.
+select set_config('request.jwt.claim.sub','00000000-0000-0000-0000-000000000002',false);
+do $$
+begin
+ perform public.kontrola_completar_provisional_pdf(
+   (select p.id from public.kontrola_pdf_provisionales p where p.documento_hash=repeat('4f36',16)),
+   '{}'::jsonb,'Intento de modificar identidad por operario'
+ );
+ raise exception 'ASSERTION FAILED: operario pudo completar provisional';
+exception when insufficient_privilege then null;
+end$$;
+select set_config('request.jwt.claim.sub','00000000-0000-0000-0000-000000000001',false);
+select test.assert((select p.estado='identificada' and p.importacion_id=:'identify_id'
+  from public.kontrola_pdf_provisionales p where p.id=:'prov_id'),
+  'rechazo a operario mantiene la identidad y revisión intactas');
+
 select 'KONTROLA_PROVISIONALES_OK' as result;
