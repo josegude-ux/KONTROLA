@@ -297,7 +297,7 @@ test("la lectura de PDF antiguos es voluntaria y no modifica Supabase ni relojes
 test("los PDF leídos se muestran solo durante la sesión y se mantienen al refrescar",()=>{
  assert.match(app,/legacyHeaderCache\.set\(load\.documento_ruta,extras\)/);
  assert.match(app,/const cached=legacyHeaderCache\.get\(load\.documento_ruta\)/);
- assert.match(app,/cached&&cabeceraSinMetadatos\(enriched\)/);
+ assert.match(app,/cached&&cargaHuecosPendientes\(enriched\)/);
  assert.match(app,/legacyHeaderCache\.clear\(\)/);
  assert.match(app,/id\.textContent=r\.codigo\+\(observaciones\?" - "\+observaciones:""\)/);
 });
