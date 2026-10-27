@@ -5,16 +5,18 @@ const validDocumentPath=(code,path)=>
   new RegExp("^documentos/"+String(code)+"/[a-f0-9]{64}\\.pdf$","i").test(String(path||""));
 
 const present=value=>value!==null&&value!==undefined&&String(value).trim()!=="";
+const positive=value=>present(value)&&Number.isInteger(Number(value))&&Number(value)>0;
 
 export function cargaHuecosPendientes(load){
-  return !present(load?.huecos_palets_grandes)&&!present(load?.huecos_palets_pequenos)&&!present(load?.huecos_palets_europeos)&&
-    !present(load?.huecos_palets_total)&&validDocumentPath(load?.codigo,load?.documento_ruta);
+  // Un cero genérico en BC no descarta un código de capacidad G/E o G/P.
+  return !positive(load?.huecos_palets_grandes)&&!positive(load?.huecos_palets_pequenos)&&
+    !positive(load?.huecos_palets_europeos)&&!positive(load?.huecos_palets_total)&&
+    validDocumentPath(load?.codigo,load?.documento_ruta);
 }
 export function cabeceraSinMetadatos(load){
   return !present(load?.observaciones)&&
-    !present(load?.huecos_palets_grandes)&&
-    !present(load?.huecos_palets_pequenos)&&!present(load?.huecos_palets_europeos)&&
-    !present(load?.huecos_palets_total);
+    !positive(load?.huecos_palets_grandes)&&!positive(load?.huecos_palets_pequenos)&&
+    !positive(load?.huecos_palets_europeos)&&!positive(load?.huecos_palets_total);
 }
 
 export function cargasCabeceraPendiente(loads=[],search="",limit=5){

@@ -13,9 +13,12 @@ export function capacidadDeCarga(carga={}){
   const p=count(carga.huecos_palets_pequenos);
   const e=count(carga.huecos_palets_europeos);
   const total=count(carga.huecos_palets_total);
-  return {grandes:g,pequenos:p,europeos:e,total,segundoTipo:e!==null?"E":"P",
-    modo:g!==null||p!==null||e!==null?"desglose":total!==null?"total":"sin_datos",
-    fuente:g!==null||p!==null||e!==null||total!==null?"PDF o revisión":"pendiente de confirmación"};
+  // Un cero aislado no acredita capacidad ni selecciona el segundo formato.
+  const desgloseConCapacidad=[g,p,e].some(v=>v!==null&&v>0);
+  const totalConCapacidad=total!==null&&total>0;
+  return {grandes:g,pequenos:p,europeos:e,total,segundoTipo:e!==null&&e>0?"E":"P",
+    modo:desgloseConCapacidad?"desglose":totalConCapacidad?"total":"sin_datos",
+    fuente:desgloseConCapacidad||totalConCapacidad?"PDF o revisión":"pendiente de confirmación"};
 }
 
 export function evaluarHuecosCamion({modo,previas,segundoTipo="P",capacidadTotal,capacidadG,capacidadP,
@@ -28,7 +31,8 @@ export function evaluarHuecosCamion({modo,previas,segundoTipo="P",capacidadTotal
       {nombre:segundoTipo==="E"?"Europeos (E)":"Pequeños (P)",capacidad:capacidadP,anteriores:anterioresP,actual:actualP}]:
     [{nombre:"Huecos totales",capacidad:capacidadTotal,anteriores:anterioresTotal,actual:actualTotal}];
   const filas=slots.map(item=>{
-    const capacidad=count(item.capacidad);
+    const rawCapacidad=count(item.capacidad);
+    const capacidad=rawCapacidad!==null&&rawCapacidad>0?rawCapacidad:null;
     const anteriores=previas==="no"?0:count(item.anteriores);
     const actual=count(item.actual);
     const disponibles=capacidad!==null&&anteriores!==null?capacidad-anteriores:null;
