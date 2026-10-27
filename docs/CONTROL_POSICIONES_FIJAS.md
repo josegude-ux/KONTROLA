@@ -76,3 +76,37 @@ Inventario histórico: INVENTA tenía catálogo y ubicaciones, KONTROLA sus carg
 4. Entregar PR borrador para revisión. NO fusionar ni desplegar.
 
 No reiniciar; no duplicar; no fusionar; no desplegar sin autorización.
+
+## Entrega verificada y límites de producción — 27/10/2026
+
+### Archivos nuevos y modificaciones
+- src/fixed-position-report.mjs: motor de clasificación por artículo, posición, lotes y almacén; decimales exactos hasta 6 posiciones; evaluación explícita de datos insuficientes y antigüedad; mapas para evitar coste cuadrático.
+- src/admin-fixed-positions.mjs y src/admin.mjs: pestaña de Administración, indicadores pulsables, filtros por almacén/referencia/pasillo/zona y existencia en reserva; tablas en escritorio, tarjetas móviles y exportación CSV sin límite por paginación.
+- src/fixed-position-print.mjs: informe imprimible A4 apaisado con categorías, cabecera, procedencia, filtros, recuentos de referencias y posiciones, numeración de páginas y observaciones.
+- supabase/proposals/visura_posiciones_fijas_central_rpc.sql: SQL de la futura función administrativa de SOLO LECTURA (security invoker). No se ha aplicado a ninguna base.
+- tests/fixed-position-report.test.mjs y tests/fixed-position-print.test.mjs: motor, fuente, ausencia de cero ficticio, CSV seguro, datos obsoletos e impresión >1000 filas.
+- tests/integration/fixed-positions-contract.sql y workflow visura-prepara-posiciones-fijas-ci.yml: ensayos de permiso por rol/almacén y verificación de importación en PostgreSQL 16 efímero.
+- tests/fixed-position-visual.html y tests/fixed-position-visual.spec.mjs y workflow visura-prepara-posiciones-visual-ci.yml: cinco ensayos Chromium en 1440/820/390 píxeles, filtrado, cambios de almacén y generación PDF real multipágina. Fuente FICTICIA.
+
+### Resultado probado
+- CI KONTROLA: 311 tests Node aprobados, 0 fallidos; migraciones, concurrencia y regresiones SQL anteriores PASS (GitHub Actions 40526295487, commit 8fac9b7587e470bdd23a59ae32cac4e2638d94ac).
+- RPC en base PG descartable: SUCCESS (GitHub Actions 40526295478).
+- Chromium visual: cinco casos superados y artefactos de capturas/archivo PDF multipágina (GitHub Actions 40526295576).
+- NO hay pruebas reales en Safari iPhone PWA ni aceptación con usuarios reales; Chromium no sustituye esas comprobaciones.
+- No se han aplicado migraciones ni escrituras de Supabase, ni cambios en Business Central, ni modificaciones de permisos o despliegues.
+
+### Condiciones de fuente central que NO se han activado
+La RPC futura necesita un proyecto central con identidad administrativa autorizada y privilegios POR ALMACÉN, catálogo y lotes BC importados manualmente, y fuentes oficiales de posiciones y ubicaciones inequívocamente identificadas por almacén. PREPARA e INVENTA tienen aún dos proyectos Supabase independientes.
+
+El SQL es deliberadamente una propuesta: hace referencia a relaciones futuras de visura_reporting y utiliza stocks y catálogo centrales. Debe existir una migración con correspondencia de usuarios, almacenes, RLS y vistas/relaciones probadas antes de cualquier instalación. No debe generarse una copia paralela de maestros sin aprobación.
+
+Los resultados definitivos exigen stockComplete, catalogComplete, positionsComplete y locationsComplete acreditados; archivo y fecha, y que el conjunto no esté obsoleto. Falta de línea BC o ubicación no validada = datos insuficientes, salvo contrato acreditado de ceros omitidos.
+
+### Pendientes que exigen autorización o un dispositivo real
+1. Arquitectura central, equivalencia de identidades y mapeo de posiciones fijas por almacén: aprobación previa con backups y reversión; ningún merge implícito de bases.
+2. Aplicación real de migraciones, RPC, grants y RLS con cuentas de prueba en ambos almacenes; requiere consentimiento específico.
+3. Integración de la PR con la pila Bloque 01, fusión y despliegue; prohibidos sin aprobación expresa y revisión de solapamientos.
+4. Validación física de Safari en iPhone/PWA, impresión y Guardar PDF.
+5. XLSX nativo no incluido por falta de infraestructura de exportación bloqueada. CSV con BOM es compatible con Excel y no necesita librerías ni costes adicionales.
+
+ESTADO: desarrollo aislado terminado y probado en simulación; sin desplegar ni conectar con datos empresariales reales. No afirmar funcionamiento productivo antes de completar las autorizaciones y las pruebas físicas.
