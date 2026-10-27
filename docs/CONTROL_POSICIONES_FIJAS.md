@@ -122,4 +122,18 @@ El alcance solicitaba exportar CSV **y XLSX**. Se ha añadido sin modificar depe
 - `tests/fixed-position-xlsx.test.mjs`: test de paquete ZIP, dos hojas, integridad de cantidades, prevención de fórmulas y >1.200 incidencias.
 - `tests/fixed-position-visual.spec.mjs`: descarga real en Chromium y validación del XLSX con zipfile y el parser XML de Python estándar; no implica aceptación en Excel de escritorio/iOS.
 
-La incorporación está en la misma PR #76 abierta en borrador. Solo cuenta como verificada cuando las ejecuciones CI de su último HEAD confirmen SUCCESS. Sigue prohibido fusionar, aplicar SQL o desplegar sin autorización específica.
+La incorporación está en la misma PR #76 abierta en borrador. Su último HEAD verificado `a724963d0886c11a1f57721c6a60a4752a81b76a` tiene las tres comprobaciones principales en SUCCESS (ver cierre abajo). Sigue prohibido fusionar, aplicar SQL o desplegar sin autorización específica.
+
+## Cierre de continuidad comprobado — 27/10/2026
+
+**Proyecto:** VISURA PREPARA / informe administrativo de posiciones fijas. **Responsable de este alcance:** PR #76 aislada sobre `josegude-ux/KONTROLA`, rama `feat/visura-prepara-admin-posiciones-fijas-20261027`, base `cursor/verificacion-fisica-cargas-8ba0` (SHA `042724a90b897c9c5d289c52cb36ed970bec9dde`). HEAD auditado: `a724963d0886c11a1f57721c6a60a4752a81b76a`. PR abierta, draft, no fusionada.
+
+**Evidencia del último HEAD, no de un commit anterior:**
+
+- `40553122943` — **SUCCESS**: **316 pruebas Node, 316 aprobadas y 0 fallidas**. El control SQL existente devuelve `KONTROLA_DATABASE_OK migrations=6 workflow=passed revisions=passed stats=passed concurrency=passed archive=passed`.
+- `40553123027` — **SUCCESS**: propuesta de seguridad de RPC comprobada en PostgreSQL 16 temporal; marcador `VISURA_FIJOS_RPC_SECURITY_OK`.
+- `40553123427` — **SUCCESS**: **6 pruebas Chromium aprobadas**, incluyendo vistas desktop/tablet/móvil, validación de filtros, ensayo de PDF A4 multipágina y descarga de XLSX con lectura de ZIP y XML.
+
+**Tratamiento de los bloqueos:** la fuente central autorizada, mapeo de identidades entre PREPARA/INVENTA, asignación inequívoca de posiciones y ubicaciones POR almacén y posterior despliegue **no están aprobados ni implantados**. Ninguna prueba del prototipo sustituye una verificación con roles, almacenes y datos reales autorizados. El servicio `kontrola_admin_posiciones_fijas` permanece como propuesta SQL, no RPC existente en Supabase operativo. La PWA no presenta cifras inventadas si la fuente no está activada.
+
+**Próxima tarea segura identificada:** durante la revisión de integración, comprobar estado actual de ramas/PR ajenas sin modificarlas y preparar correspondencias de migración *documentales*. Cualquier aplicación SQL real, integración de identidades, merge, publicación o prueba en usuarios reales requiere las autorizaciones independientes que ya constan. No se inician tareas nuevas mediante la orden universal.
