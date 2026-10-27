@@ -3,9 +3,10 @@ const $=id=>document.getElementById(id);
 const tags={sin_fija:"Sin posición fija",cero:"Fija con stock cero",negativo:"Fija con stock negativo",insuficientes:"Datos insuficientes"};
 const escape=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const element=(tag,value,cls="")=>{const el=document.createElement(tag);el.textContent=String(value??"");if(cls)el.className=cls;return el;};
-const labels=["Categoría","Artículo","Descripción","Ubicación fija","Pasillo","Zona","BC posición","BC total","BC otras","Unidad","Reposición"];
+const labels=["Categoría","Artículo","Descripción","Ubicación fija","Pasillo","Zona","BC posición","BC total","BC otras","Unidad","Reposición","Ubicaciones reales / lotes sumados"];
 const cells=r=>[tags[r.category],r.code,r.description,r.location||"SIN POSICIÓN FIJA",r.aisle,r.zone,
-  r.positionQuantity??"SIN DATOS",r.warehouseQuantity??"SIN DATOS",r.otherQuantity??"SIN DATOS",r.unit,r.replenishment?"Posible":"No"];
+  r.positionQuantity??"SIN DATOS",r.warehouseQuantity??"SIN DATOS",r.otherQuantity??"SIN DATOS",r.unit,r.replenishment?"Posible":"No",
+  (r.locations||[]).map(x=>x.location+": "+x.quantity).join(" · ")||"Sin líneas registradas"];
 const style=[
   "#adminSection9 .fixed-filters{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}",
   "#adminSection9 label{display:grid;gap:5px;min-width:0}",
@@ -113,8 +114,9 @@ export function configureAdminFixedPositions({client,getUser,errorText}){
   }
   function filtered(){
     if(!report)return [];
-    return filterFixedRows(report.rows,{category:active,search:$("fixedSearch").value,
+    const list=filterFixedRows(report.rows,{category:active==="positions"?"todos":active,search:$("fixedSearch").value,
       aisle:$("fixedAisle").value,zone:$("fixedZone").value,other:$("fixedOther").value,sort:$("fixedSort").value});
+    return active==="positions"?list.filter(item=>item.location!==null):list;
   }
   function render(){
     if(!report)return;
@@ -122,7 +124,7 @@ export function configureAdminFixedPositions({client,getUser,errorText}){
       days=importedAt?Math.max(0,Math.floor((Date.now()-new Date(importedAt).valueOf())/86400000)):null;
     $("fixedProvenance").textContent="Almacén: "+report.warehouse+" · Excel BC: "+(meta.sourceFile||"Sin archivo")+
       " · Importado: "+(importedAt||"Sin fecha")+" · Antigüedad: "+(days===null?"desconocida":days+" día(s)")+
-      " · Estado: "+(report.complete?"completo según fuente":"datos incompletos")+
+      " · Estado: "+(meta.stale===true?"exportación desactualizada":report.complete?"completo según fuente":"datos incompletos")+
       " · Generado: "+new Date().toLocaleString("es-ES");
     const metrics=[["sin_fija","Sin posición fija"],["cero","Stock fijo cero"],
       ["negativo","Stock fijo negativo"],["positions","Posiciones afectadas"],["insuficientes","Sin datos fiables"]];
@@ -131,12 +133,12 @@ export function configureAdminFixedPositions({client,getUser,errorText}){
       const value=type==="positions"?report.affectedPositions:report.byCategory[type].references;
       const button=element("button","");button.type="button";button.setAttribute("aria-pressed",String(active===type));
       button.append(element("strong",value),element("span",label));
-      button.addEventListener("click",()=>{active=type==="positions"?"todos":type;page=0;render();});summary.append(button);
+      button.addEventListener("click",()=>{active=type;page=0;render();});summary.append(button);
     }
     const rows=filtered(),pages=Math.max(1,Math.ceil(rows.length/pageSize));page=Math.min(page,pages-1);
     const visible=rows.slice(page*pageSize,(page+1)*pageSize);
     $("fixedCount").textContent=rows.length+" incidencias · "+new Set(rows.map(x=>x.code)).size+
-      " referencias únicas. La exportación incluye TODOS los registros filtrados.";
+      " referencias únicas · "+rows.filter(x=>x.location).length+" posiciones afectadas. La exportación incluye TODOS los registros filtrados.";
     $("fixedPage").textContent="Página "+(page+1)+" / "+pages;
     $("fixedPrev").disabled=page===0;$("fixedNext").disabled=page>=pages-1;
     const table=element("table"),head=element("thead"),hr=element("tr");
@@ -172,9 +174,9 @@ export function configureAdminFixedPositions({client,getUser,errorText}){
       "@media print{button{display:none}}</style></head><body><h1>VISURA · Control de posiciones fijas</h1>"+
       "<p>Almacén: "+escape(report.warehouse)+" · Origen Excel BC: "+escape(report.meta.sourceFile)+
       " · Importado: "+escape(report.meta.importedAt)+" · Generado: "+escape(new Date().toLocaleString("es-ES"))+
-      " · Estado: "+escape(report.complete?"completo declarado":"INCOMPLETO")+"</p>"+
+      " · Estado: "+escape(report.meta.stale===true?"DESACTUALIZADO":report.complete?"completo declarado":"INCOMPLETO")+"</p>"+
       "<p>Filtro: "+escape(active)+" · Registros: "+rows.length+" · Referencias: "+new Set(rows.map(r=>r.code)).size+
-      " · Posiciones afectadas (global): "+report.affectedPositions+"</p>"+
+      " · Posiciones afectadas: "+rows.filter(r=>r.location).length+"</p>"+
       "<table><thead><tr>"+labels.map(v=>"<th>"+escape(v)+"</th>").join("")+"</tr></thead><tbody>"+
       rows.map(r=>"<tr>"+cells(r).map(v=>"<td>"+escape(v)+"</td>").join("")+"</tr>").join("")+
       "</tbody></table><p>Observaciones: ____________________________________________________________</p>"+
