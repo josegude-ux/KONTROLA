@@ -43,7 +43,7 @@ export function classifyFixedPositions({warehouse,products=[],fixed=[],stock=[],
   if(meta.warehouse&&norm(meta.warehouse)!==selected)throw Error("Respuesta de otro almacén.");
   if(meta.authorized!==true)throw Error("La fuente no acredita autorización administrativa.");
   const catalogue=new Map(),assignments=new Map(),locationData=new Map(),perPlace=new Map(),
-    totals=new Map(),duplicateLots=new Map(),invalid=new Set(),allCodes=new Set();
+    totals=new Map(),placesByProduct=new Map(),duplicateLots=new Map(),invalid=new Set(),allCodes=new Set();
   let globalInvalid=false;
   for(const place of locations){
     if(place.warehouse&&norm(place.warehouse)!==selected)throw Error("Ubicación de otro almacén.");
@@ -86,18 +86,22 @@ export function classifyFixedPositions({warehouse,products=[],fixed=[],stock=[],
     }
     duplicateLots.set(lotKey,qty);
     const placeKey=key(code,loc);
-    perPlace.set(placeKey,(perPlace.get(placeKey)||0n)+qty);
+    const sum=(perPlace.get(placeKey)||0n)+qty;
+    perPlace.set(placeKey,sum);
+    if(!placesByProduct.has(code))placesByProduct.set(code,new Map());
+    placesByProduct.get(code).set(loc,sum);
     totals.set(code,(totals.get(code)||0n)+qty);
   }
   const full=meta.stockComplete===true&&meta.catalogComplete===true&&
-    meta.positionsComplete===true&&Boolean(meta.importedAt)&&Boolean(meta.sourceFile)&&!globalInvalid;
+    meta.positionsComplete===true&&Boolean(meta.importedAt)&&Boolean(meta.sourceFile)&&
+    meta.stale!==true&&!globalInvalid;
   const result=[];
   for(const code of [...allCodes].sort()){
     const article=catalogue.get(code)||{code,description:"",unit:""};
     const fixedLocs=[...(assignments.get(code)||[])].sort();
     const total=totals.has(code)?totals.get(code):null;
-    const presentPlaces=[...perPlace].filter(([k])=>JSON.parse(k)[0]===code)
-      .map(([k,q])=>({location:JSON.parse(k)[1],quantity:decimalText(q)}))
+    const presentPlaces=[...(placesByProduct.get(code)||new Map())]
+      .map(([location,quantity])=>({location,quantity:decimalText(quantity)}))
       .sort((a,b)=>a.location.localeCompare(b.location));
     const issue= !full||!catalogue.has(code)||!article.description||!article.unit||invalid.has(code);
     const totalText=decimalText(total);
@@ -162,9 +166,10 @@ export function filterFixedRows(rows,{category="todos",search="",aisle="",zone="
   });
   return filtered;
 }
-export function safeCsvCell(value){
+export function safeCsvCell(value,allowNumeric=false){
   let text=str(value);
-  if(/^[\s\uFEFF]*[=+\-@\t\r\n]/.test(text))text="'"+text;
+  if(/^[\s\uFEFF]*[=+\-@\t\r\n]/.test(text)&&
+     !(allowNumeric===true&&/^-?(?:\d{1,12})(?:\.\d{1,6})?$/.test(text)))text="'"+text;
   return '"'+text.replace(/"/g,'""')+'"';
 }
 export function fixedReportCsv(rows,{warehouse,sourceFile,importedAt,generatedAt,filters={}}){
@@ -177,6 +182,7 @@ export function fixedReportCsv(rows,{warehouse,sourceFile,importedAt,generatedAt
   const info=[["Informe","VISURA PREPARA · Control de posiciones fijas"],["Almacén",warehouse],
     ["Origen",sourceFile||"Sin exportación completa"],["Importado",importedAt||"Sin fecha"],
     ["Generado",generatedAt],["Filtros",JSON.stringify(filters)],["Registros",rows.length]];
-  const quoteRow=a=>a.map(safeCsvCell).join(";");
-  return "\uFEFF"+info.map(quoteRow).join("\r\n")+"\r\n\r\n"+[head,...data].map(quoteRow).join("\r\n")+"\r\n";
+  const quoteRow=(a,dataRow=false)=>a.map((v,i)=>safeCsvCell(v,dataRow&&[7,8,9].includes(i))).join(";");
+  return "\uFEFF"+info.map(a=>quoteRow(a)).join("\r\n")+"\r\n\r\n"+
+    [quoteRow(head),...data.map(a=>quoteRow(a,true))].join("\r\n")+"\r\n";
 }
