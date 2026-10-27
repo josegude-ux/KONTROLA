@@ -991,3 +991,22 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 - **Pruebas:** `tests/integration/import-attempt-audit.sql` y bandera de pruebas optativa `KONTROLA_TEST_REINTENTOS=1` en `tests/integration/run.sh`, solo en PostgreSQL efímero/local con guardia `kontrola_test`. Workflow aislado `.github/workflows/visura-prepara-b01-reintentos-ci.yml`. CI de código `41312e91ea79eda354612e9716f70a7dc130ed35`: [run 40482284968](https://github.com/josegude-ux/KONTROLA/actions/runs/40482284968) **SUCCESS**; volver a confirmar HEAD posterior a documentación.
 - **Importante:** los hash asociados a otro código LP siguen bloqueados (auditoría de rechazos necesita transacción separada); no confundir con borradores sin LP, aún pendientes. Ver `docs/BLOQUE_01_AUDITORIA_REINTENTOS.md`.
 - **Siguiente tarea:** verificar CI/PR sin fusionar, estudiar contrato seguro de borradores provisionales no identificados y continuar con tareas seguras independientes de Bloque 01 sin inventar Verificación física detallada.
+
+
+---
+
+## Bloque 01 — Provisionales sin código LP verificado (27/10/2026)
+**Rama:** `feat/visura-prepara-b01-borradores-provisionales-20261027`, derivada exactamente de commit `cac3294f7e0305b49bd3466643bcdfae15c6b0de` (PR #63). PR #62 importación por archivo es base; PR #61 responsive y PR #60 paralelismo se mantienen separadas. No fusionar/desplegar ni tocar datos reales.
+
+**Defecto comprobado:** el campo `kontrola_importaciones.codigo` exige un LP válido y su RPC rechaza cualquier documento no identificado, impidiendo conservarlo para revisión administrativa.
+
+**Implementación propuesta sin aplicación:** `supabase/proposals/kontrola_pdf_provisionales_b01.sql` propone una tabla privada separada por SHA-256 único y original protegido en Storage; solo Administración puede reservar y descargar PDF, completarlo como pendiente o identificarlo manualmente con LP, almacén y evidencia cotejada con BC. La promoción es atómica a una `kontrola_importaciones` en `revision_requerida`, **nunca a una carga publicada**, conservando hash/ruta y registrando correcciones/evidencia. `src/admin.mjs` y `index.html` muestran bandeja, descarga, campos de identificación y confirmación; `styles.css` adapta formulario a escritorio/tablet/móvil. Los PDF erróneos por corrupción siguen siendo errores, no borradores falsos. No se modifican las operaciones ni el Bloque 02.
+
+**Pruebas:** Node `tests/provisional-drafts.test.mjs`; SQL aislado `tests/integration/provisional-drafts.sql`; flag `KONTROLA_TEST_PROVISIONALES=1` sobre guardia `kontrola_test` y PGHOST local, CI `.github/workflows/visura-prepara-b01-provisional-ci.yml`. El primer ciclo de custodia y RLS sin promoción tuvo [CI SUCCESS 40483566089](https://github.com/josegude-ux/KONTROLA/actions/runs/40483566089); al incluir identificación se detectaron errores de composición SQL y de delimitadores en fixture, ya corregidos en commits posteriores. **Es obligatorio volver a comprobar el HEAD más reciente antes de dar la promoción por validada**.
+
+**Estado real:** trabajo guardado en GitHub, no instalado ni verificado con documentos de empresa o dispositivos reales. El original queda inalterado y solo Administración puede avanzar el estado.
+
+**Siguiente tarea exacta:** verificar Node/PostgreSQL del HEAD sin errores, corregir fallos reproducibles, revisar casos límite de promoción y, después, documentar la PR en borrador. No aplicar SQL a Supabase sin autorización. Detalle: `docs/BLOQUE_01_BORRADORES_PROVISIONALES.md`.
+
+
+**Ampliación visual del mismo hito:** `tests/provisional-layout.spec.mjs` verifica mediante Chromium un formulario administrativo visible a 390×844 (móvil), 768×1024 (tablet) y 1440×900 (ordenador), con contenido en columnas fluidas y sin desbordamiento horizontal. `.github/workflows/visura-prepara-b01-provisional-ci.yml` instala navegador temporal y adjunta capturas a GitHub Actions para revisión. Estas pruebas de diseño no equivalen a autenticación con datos reales. Confirmar resultado en el último commit antes de declarar completada la CI.

@@ -180,6 +180,11 @@
         <label>PDF de cargas de Business Central (hasta 20 archivos)<input type="file" accept=".pdf,application/pdf" id="pdfInput" multiple></label><p class="hint">Puedes seleccionar varios documentos. Se analizan uno a uno, quedan para revisión y nunca se publican automáticamente.</p>
         <button id="processPdf" type="button" class="primary">Importar y procesar</button>
         <div class="status" id="importStatus" role="status" aria-live="polite"></div><details id="importResultDetails" hidden><summary>Ver archivos con error</summary><div id="importResultList"></div></details>
+        <section id="provisionalPdfSection" class="panel" hidden aria-label="Borradores provisionales">
+          <h3>PDF pendientes de identificar</h3>
+          <p class="muted">Documentos originales conservados en almacenamiento privado. Solo Administración puede revisarlos; no son cargas publicadas y no permiten iniciar Preparación ni Verificación. Contrasta el código y el almacén con Business Central antes de realizar su revisión definitiva.</p>
+          <div id="provisionalPdfList" class="revision-list" aria-live="polite"></div>
+        </section>
         <div class="review-switch"><label for="reviewLoadSelect">Cambiar de carga pendiente</label><select id="reviewLoadSelect" aria-label="Seleccionar otra carga para revisar"><option value="">Seleccionar carga…</option></select><button id="reviewLoadRefresh" type="button" class="secondary">Actualizar</button></div><div id="reviewLoadMessage" class="muted" role="status"></div>
         <div id="documentReview" class="document-review">Procesa un PDF para iniciar la revisión.</div>
         <p id="reviewReadiness" class="status"></p>

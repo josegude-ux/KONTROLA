@@ -1,0 +1,58 @@
+name: VISURA PREPARA B01 · PDF provisionales (aislado)
+on:
+  push:
+    branches:
+      - feat/visura-prepara-b01-borradores-provisionales-20261027
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      PGHOST: localhost
+      PGPORT: 5432
+      PGUSER: postgres
+      PGPASSWORD: postgres
+      KONTROLA_TEST_REINTENTOS: '1'
+      KONTROLA_TEST_PROVISIONALES: '1'
+    services:
+      postgres:
+        image: postgres:16@sha256:9e2cf6287f25c3151f4c9421ccce2b17f3e60061c111a29165e0d2cdd9ff0a97
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Código de frontend y reglas de seguridad
+        run: |
+          npm ci
+          npm run check
+      - name: Propuestas SQL sobre base local efímera
+        run: npm run test:db
+      - name: Preparar prueba visual Chromium
+        run: |
+          npm install --no-save @playwright/test
+          npx playwright install --with-deps chromium
+      - name: Probar formulario adaptable sin cuenta ni datos reales
+        run: |
+          mkdir -p artifacts
+          npx playwright test tests/provisional-layout.spec.mjs --reporter=line --workers=1
+      - name: Conservar capturas para revisión visual
+        if: always()
+        uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08 # v4
+        with:
+          name: visura-prepara-b01-provisionales-responsive
+          path: artifacts/*.png
+          if-no-files-found: warn
+          retention-days: 7

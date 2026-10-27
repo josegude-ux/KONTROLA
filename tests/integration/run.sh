@@ -39,6 +39,9 @@ done
 if [[ "${KONTROLA_TEST_REINTENTOS:-}" == "1" ]]; then
   "${PSQL[@]}" -f supabase/proposals/kontrola_auditoria_reintentos_b01.sql >>/tmp/kontrola-migrations.log
 fi
+if [[ "${KONTROLA_TEST_PROVISIONALES:-}" == "1" ]]; then
+  "${PSQL[@]}" -f supabase/proposals/kontrola_pdf_provisionales_b01.sql >>/tmp/kontrola-migrations.log
+fi
 "${PSQL[@]}" -f tests/integration/workflow.sql >/tmp/kontrola-workflow.log
 "${PSQL[@]}" -f tests/integration/revisions.sql >/tmp/kontrola-revisions.log
 "${PSQL[@]}" -f tests/integration/operator-stats.sql >/tmp/kontrola-operator-stats.log
@@ -48,6 +51,10 @@ grep -q "KONTROLA_REVISION_OK" /tmp/kontrola-revisions.log
 if [[ "${KONTROLA_TEST_REINTENTOS:-}" == "1" ]]; then
   "${PSQL[@]}" -f tests/integration/import-attempt-audit.sql >/tmp/kontrola-auditoria-reintentos.log
   grep -q "KONTROLA_REINTENTOS_AUDITORIA_OK" /tmp/kontrola-auditoria-reintentos.log
+fi
+if [[ "${KONTROLA_TEST_PROVISIONALES:-}" == "1" ]]; then
+  "${PSQL[@]}" -f tests/integration/provisional-drafts.sql >/tmp/kontrola-provisionales.log
+  grep -q "KONTROLA_PROVISIONALES_OK" /tmp/kontrola-provisionales.log
 fi
 grep -q "KONTROLA_OPERATOR_STATS_OK" /tmp/kontrola-operator-stats.log
 # Propuesta de archivo: ejecutar SOLO en base aislada tras las pruebas principales.

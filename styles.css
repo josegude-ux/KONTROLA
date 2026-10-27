@@ -342,3 +342,28 @@ footer{padding:18px;text-align:center;background:#fff;border-top:1px solid #e6e8
 /* Imágenes tridimensionales de PREPARA en tarjetas de Control de Cargas */
 .submenu-3d{overflow:hidden;background:radial-gradient(circle at 40% 35%,#fff,#e5f2fa);padding:0;border:1px solid #d6e4ef}
 .submenu-3d img{width:100%;height:100%;object-fit:contain;display:block}
+
+
+/* Bloque 01: identificación administrativa de documentos provisionales.
+   Se adapta al ancho disponible; no afecta estilos de impresión o A4. */
+#provisionalPdfList .revision-entry{
+  display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:12px;
+}
+#provisionalPdfList .revision-entry>span{min-width:0;overflow-wrap:anywhere}
+.provisional-identity-form{
+  grid-column:1/-1;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:12px;align-items:end;border-top:1px solid #e4eaf0;padding-top:13px;min-width:0;
+}
+.provisional-identity-form label{margin:0;min-width:0}
+.provisional-identity-form select,.provisional-identity-form textarea{
+  width:100%;display:block;margin-top:8px;min-height:48px;border:1px solid #cad6df;
+  border-radius:11px;background:#fff;color:#0B2647;padding:10px 12px;font:inherit;
+}
+.provisional-identity-form label:nth-child(3){grid-column:1/-1}
+.provisional-identity-form button{grid-column:1/-1;min-height:48px}
+@media screen and (max-width:720px){
+  #provisionalPdfList .revision-entry{grid-template-columns:minmax(0,1fr)}
+  #provisionalPdfList .revision-entry>button{width:100%}
+  .provisional-identity-form{grid-template-columns:minmax(0,1fr)}
+  .provisional-identity-form label:nth-child(3){grid-column:auto}
+}
