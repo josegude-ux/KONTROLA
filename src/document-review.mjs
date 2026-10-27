@@ -97,7 +97,7 @@ export function applyValidatedQuantityCorrection(parsed,lineNumber,rawQuantity,d
     throw Error("Documenta el contraste manual con Business Central (15–2000 caracteres).");
   if(!userId)throw Error("La corrección necesita responsable identificado.");
   const normalized=String(rawQuantity??"").trim().replace(",",".");
-  if(!/^\\d+(?:\\.\\d{1,3})?$/.test(normalized))
+  if(!/^\d+(?:\.\d{1,3})?$/.test(normalized))
     throw Error("Cantidad no válida: indica un número no negativo con hasta tres decimales.");
   const quantity=Number(normalized);
   if(!Number.isFinite(quantity))throw Error("Cantidad operativa no válida.");
