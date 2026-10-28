@@ -76,6 +76,12 @@ jobs:
               else:
                   expected=pathlib.Path("docs",name).read_bytes()
               canon=re.sub(rb"\?_ship=[A-Za-z0-9_-]+",b"",actual)
+              if name.endswith(".webmanifest") and canon!=expected:
+                  # El proveedor solo añade cache busters a URLs del manifest y puede variar
+                  # su salto final de linea. Todas sus propiedades deben seguir siendo identicas.
+                  if json.loads(canon)==json.loads(expected):
+                      print("MANIFEST_SEMANTICAMENTE_IDENTICO",name)
+                      canon=expected
               if canon!=expected:
                   print("DIFF",name,"actual_sha",hashlib.sha256(actual).hexdigest(),
                         "normalized_sha",hashlib.sha256(canon).hexdigest(),
