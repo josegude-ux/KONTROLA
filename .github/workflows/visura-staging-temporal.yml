@@ -59,10 +59,19 @@ jobs:
           python3 - <<'PY'
           import json, os, pathlib
           p = pathlib.Path(os.environ["RUNNER_TEMP"]) / "netlify-staging.json"
-          result = json.loads(p.read_text())
+          import re
+          raw = p.read_text()
+          result = json.loads(raw)
           url = result.get("deploy_url") or result.get("url")
-          if not isinstance(url, str) or not url.startswith("https://") or not url.split("/")[2].endswith(".netlify.app"):
-              raise SystemExit("Respuesta de Netlify sin URL segura de staging")
+          # La respuesta de un despliegue anonimo puede tener estructura diferente.
+          # SOLO inspeccionamos y mostramos URLs con hostname netlify.app; JAMAS tokens.
+          candidates = re.findall(r"https://(?:[a-z0-9-]+\\.)*netlify\\.app", raw, flags=re.IGNORECASE)
+          if not isinstance(url, str) or not re.fullmatch(r"https://(?:[a-z0-9-]+\\.)*netlify\\.app/?", url):
+              url = candidates[0] if candidates else None
+          if not url:
+              print("CLAVES_PUBLICAS=" + repr(sorted(result.keys()) if isinstance(result, dict) else type(result).__name__))
+              raise SystemExit("Netlify no devolvio URL reconocible; no se divulgara la salida JSON completa")
+          url = url.rstrip("/")
           print("STAGING_URL="+url)
           with open(os.environ["GITHUB_OUTPUT"], "a") as f: f.write("url="+url+"\n")
           with open(os.environ["GITHUB_STEP_SUMMARY"], "a") as f:
