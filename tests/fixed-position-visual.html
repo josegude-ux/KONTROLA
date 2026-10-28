@@ -23,7 +23,12 @@ const data={
  warehouse:"COR_01_COR",
  meta:{warehouse:"COR_01_COR",authorized:true,truncated:false,
    stockComplete:true,catalogComplete:true,positionsComplete:true,locationsComplete:true,
-   absentStockIsZero:false,stale:false,sourceFile:"SIMULADO_COR1.xlsx",importedAt:new Date().toISOString()},
+   absentStockIsZero:false,stale:false,sourceFile:"SIMULADO_COR1.xlsx",
+   contractVersion:"visura-prepara-fixed-read-v1",importId:"fixture-lote-1",
+   stockRows:4,stockExpectedRows:4,
+   exportedAt:new Date(Date.now()-7200000).toISOString(),
+   importedAt:new Date(Date.now()-3600000).toISOString(),
+   publishedAt:new Date().toISOString()},
  products:[
   {code:"PRD001",description:"Producto A con reserva",unit:"UD"},
   {code:"PRD002",description:"Producto B sin posición fija",unit:"UD"},
