@@ -1,0 +1,61 @@
+name: VISURA - E2E staging ShipStatic web externo SIN produccion
+
+on:
+  push:
+    branches:
+      - validation/visura-shipstatic-20261028
+
+permissions:
+  contents: read
+
+jobs:
+  external-browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 16
+    env:
+      STAGING_URL: https://keen-mote-b5w3hwc.shipstatic.com
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Validar integridad en origen HTTPS y normalizar SOLO el cache buster de ShipStatic
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import os, pathlib, re, urllib.request, json, hashlib, difflib
+          from urllib.parse import urlparse
+          host=os.environ["STAGING_URL"]
+          assert urlparse(host).hostname.endswith(".shipstatic.com") and host.startswith("https://")
+          for name in ["index.html","VISURA_ORDENES.html","manifest.webmanifest",
+                       "visura-recovery.js","chatgpt-import.js","visura-recovery.css",
+                       "assets/icons/apple-touch-icon.png","assets/icons/icon-192.png","assets/icons/icon-512.png"]:
+              req=urllib.request.Request(host+"/"+name,headers={"User-Agent":"VISURA-staging-integrity-check/1.0"})
+              with urllib.request.urlopen(req,timeout=30) as resp:
+                  assert resp.status==200, (name,resp.status)
+                  actual=resp.read()
+                  content_type=resp.headers.get("Content-Type","")
+              if name.endswith(".html"):
+                  expected=pathlib.Path("docs",name).read_text().replace(
+                      "<head>",'<head>\n<meta name="robots" content="noindex,nofollow,noarchive">',1).encode()
+              else:
+                  expected=pathlib.Path("docs",name).read_bytes()
+              canon=re.sub(rb"\?_ship=[A-Za-z0-9_-]+",b"",actual)
+              if canon!=expected:
+                  print("DIFF",name,"actual_sha",hashlib.sha256(actual).hexdigest(),
+                        "normalized_sha",hashlib.sha256(canon).hexdigest(),
+                        "expected_sha",hashlib.sha256(expected).hexdigest())
+                  raise AssertionError("El proveedor altero contenido mas alla del parametro conocido de cache")
+              if name.endswith(".png"): assert "image/png" in content_type
+              if name.endswith(".js"): assert "javascript" in content_type
+              if name.endswith(".webmanifest"): assert json.loads(canon)["short_name"]=="VISURA MANDO"
+              if name.endswith(".html"):
+                  assert b"noindex" in actual and actual.count(b"<script")==3
+              print("INTACTO_TRAS_CACHE_BUSTER",name)
+          PY
+      - name: Instalar Chromium en runner efimero (sin credenciales)
+        run: |
+          python -m pip install playwright==1.56.0
+          python -m playwright install --with-deps chromium
+      - name: E2E real HTTPS - 11 funciones, copia, diagnóstico, privacidad y responsive
+        run: python docs/test-visura-shipstatic-live.py
