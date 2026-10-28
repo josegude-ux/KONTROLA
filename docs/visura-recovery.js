@@ -54,7 +54,7 @@
     for(const [type,reList] of RULES){
       for(const re of reList){let m=re.exec(text);if(!m)continue;
         const before=text.slice(Math.max(0,m.index-42),m.index);
-        if(/\b(?:no|sin|descartad[oa]|no existe|no hubo)\s+(?:se\s+)?(?:ha\s+)?(?:detectad[oa]\s+)?$/i.test(before))continue;
+        if(/\b(?:no(?:\s+(?:se\s+ha))?\s+(?:hay|existe|hubo|detectad[oa]|observad[oa]|presentad[oa])|sin|descartad[oa]|no)\s+(?:(?:ning[uú]n|un|una|el|la)\s+)?$/i.test(before))continue;
         out.push({type,phrase:bounded(m[0],130)});break;
       }
     }

@@ -12,6 +12,7 @@ test('F autorización',()=>assert.equal(typ('CAUSA: falta de autorización'),'F'
 test('G dependencia',()=>assert.equal(typ('CAUSA: falta archivo'),'G'));
 test('H cierre auténtico',()=>assert.equal(c.analyze('PROYECTO: VISURA\nCAUSA: trabajo completado; sin tareas pendientes').type,'H'));
 test('I desconocido',()=>assert.equal(c.analyze('PROYECTO: VISURA\nCAUSA: no se sabe por qué terminó.').type,'I'));
+test('Negación explícita no fabrica streaming',()=>assert.notEqual(c.analyze('PROYECTO: V\nCAUSA: no hay error de streaming').type,'B'));
 test('Contradicción señalada',()=>{const r=c.analyze(base+'CAUSA: falta de autorización. También existe merge conflict.');assert.ok(['E','F'].includes(r.type));assert.ok(r.competing.length>0)});
 test('Sin inventar observaciones',()=>{let r=c.analyze(base+'CAUSA: error de streaming');assert.match(r.certainty,/no verificada|según el texto|no comprobada/i)});
 test('Prompt por causa cambia',()=>assert.notEqual(c.recoveryPrompt(c.analyze(base+'CAUSA: error de streaming')),c.recoveryPrompt(c.analyze(base+'CAUSA: merge conflict'))));

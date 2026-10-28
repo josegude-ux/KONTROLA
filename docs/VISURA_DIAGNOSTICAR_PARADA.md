@@ -17,14 +17,21 @@ Base: `visura-panel` @ `e8b4b177ee172b50ba0a96ee8f1d8819ce53344e`. Existe trabaj
 - `docs/index.html`, `docs/VISURA_ORDENES.html`: dos HTML idénticos, nuevos accesos, artículo #funcion-11, enlace CSS/JS y routing 11.
 - `docs/visura-recovery.css`: estilo responsive aislado.
 - `docs/visura-recovery.js`: clasificación y UI.
-- `docs/test-recovery.js`: 20 pruebas unitarias sintéticas.
+- `docs/test-recovery.js`: 21 pruebas unitarias sintéticas.
 
 ## Pruebas realizadas
 - `node --check docs/visura-recovery.js`: correcto.
-- `node docs/test-recovery.js`: 20/20 pruebas sintéticas correctas, incluidos A–I, contradicciones, orden A–J, prompts distintos, input malicioso, verificación fallida/exitosa no confirmada y bucles.
+- `node docs/test-recovery.js`: 21/21 pruebas sintéticas correctas, incluidos A–I, contradicciones, orden A–J, prompts distintos, input malicioso, verificación fallida/exitosa no confirmada y bucles.
 - Validación estática en GitHub: HTML idénticos, IDs 01–11, icono B conservado y orden 10 presente.
 
 ## Pendientes y límites
 - Ejecutar y documentar pruebas **de interacción DOM real** en navegadores (desktop, móvil emulado), copiar contenido exacto, navegación y regresión del panel; verificar en Safari iPhone físico por separado.
 - El clasificador **no sustituye** un modelo de lenguaje conectado ni la revisión real de pruebas/logs; su certeza es orientativa. Citas/evidencias son **comunicadas**, no verificadas. Una respuesta no prueba recuperación.
 - PR en borrador sin merge. No publicar hasta revisión y autorización. Mantener separada la implementación de importación de chats de PR #73; resolver solapamientos antes de integrar.
+
+## Verificación adicional de interfaz — 2026-10-28
+
+- En banco de pruebas DOM con **Chromium headless** en tres viewports (390×844, 768×1024, 1440×900) se verificaron: abrir opción 11, generación de diagnóstico, copia exacta del texto completo, clasificación tipo B, construcción y copia exacta del prompt, introducir resultado fallido y mostrar bloqueo persistente. Sin errores JS de página ni desbordamiento horizontal en el banco de pruebas.
+- Se añadieron 1 prueba unitaria por negación explícita «no hay error de streaming», evitando ese falso positivo: **21/21 pruebas** sintéticas superadas con Node.js.
+- Limitaciones: el banco de pruebas contiene un armazón DOM local representativo; **no equivale a navegación del panel completo publicado**. No se verificó Safari/iPhone físico, ni todos los botones de las diez funciones antiguas con navegador real. La comparación estática asegura que su HTML y scripts permanecen intactos salvo navegación que incorpora la función 11.
+- La clasificación sigue siendo heurística conservadora, no un modelo de lenguaje que pueda confirmar causas por sí mismo.
