@@ -40,3 +40,12 @@ El código demuestra selección de operaciones diferentes y generación de parch
 Diseñar una frontera de ejecución real con usuario sin privilegios, sandbox contenedorizado sin red, montaje de sistema de archivos de solo lectura fuera del workspace, límites cgroup, y ejecución de tests verdaderamente no confiables. Incorporar una puerta de autorizaciones humana ligada a identidad, tarea, destino, HEAD y vigencia. Después, conectar un generador de parches más amplio y reutilizar auditores existentes para políticas y CI de GitHub.
 
 **Prohibido habilitar trabajo en KONTROLA/INVENTA productivos o por API del agente hasta que esas barreras se prueben. No merge, deploy, pago ni modificación de permisos.**
+
+## Validación real de GitHub Actions — PR #84
+
+Commit de código y documentación inicial comprobado: `7a57ec3bd57fc750e65fd3cf2c0cfa0e0bcd977d`.
+- [Code Review Gate #40634307748](https://github.com/josegude-ux/KONTROLA/actions/runs/40634307748): `completed/success` para ese SHA; **422/422 pruebas PASS**, incluidos los 25 tests nuevos de Fase 2. Se verificó también el bloqueo de API de pago.
+- [Queue Audit #40634307726](https://github.com/josegude-ux/KONTROLA/actions/runs/40634307726): `completed/success` para ese SHA.
+- CSV Pilot Tests: **NO EJECUTADO** en el SHA de esta PR (sin cambio de sus rutas disparadoras).
+- El commit de esta actualización final de documentación será diferente del SHA probado. No atribuirle los resultados anteriores sin verificación propia.
+- Los workflows de CI ejecutan únicamente fixtures de confianza; **no** prueban aislamiento frente a código hostil ni autorización humana autenticada.
