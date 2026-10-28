@@ -1,4 +1,5 @@
 import {classifyFixedPositions,filterFixedRows,fixedReportCsv} from "./fixed-position-report.mjs";
+import {assertPreparaFixedReadV1} from "./fixed-position-contract-v1.mjs";
 import {buildFixedPrintHtml} from "./fixed-position-print.mjs";
 import {buildFixedXlsx} from "./fixed-position-xlsx.mjs";
 const $=id=>document.getElementById(id);
@@ -98,7 +99,7 @@ export function configureAdminFixedPositions({client,getUser,errorText}){
       if(request!==serial||getUser()?.id!==userId||$("fixedWarehouse").value!==warehouse)return;
       if(!data||data.meta?.warehouse!==warehouse||data.meta?.truncated!==false)
         throw Error("La fuente no acredita almacén ni paginación completa.");
-      report=classifyFixedPositions({...data,warehouse});
+      report=classifyFixedPositions({...assertPreparaFixedReadV1(data,{warehouse}),warehouse});
       active="todos";page=0;
       for(const [id,field] of [["fixedAisle","aisle"],["fixedZone","zone"]]){
         $(id).replaceChildren();
@@ -124,10 +125,11 @@ export function configureAdminFixedPositions({client,getUser,errorText}){
   }
   function render(){
     if(!report)return;
-    const meta=report.meta,importedAt=meta.importedAt,
-      days=importedAt?Math.max(0,Math.floor((Date.now()-new Date(importedAt).valueOf())/86400000)):null;
+    const meta=report.meta,exportedAt=meta.exportedAt,importedAt=meta.importedAt,
+      days=exportedAt?Math.max(0,Math.floor((Date.now()-new Date(exportedAt).valueOf())/86400000)):null;
     $("fixedProvenance").textContent="Almacén: "+report.warehouse+" · Excel BC: "+(meta.sourceFile||"Sin archivo")+
-      " · Importado: "+(importedAt||"Sin fecha")+" · Antigüedad: "+(days===null?"desconocida":days+" día(s)")+
+      " · Exportado BC: "+(exportedAt||"Sin fecha")+" · Importado: "+(importedAt||"Sin fecha")+
+      " · Publicado: "+(meta.publishedAt||"Sin fecha")+" · Antigüedad BC: "+(days===null?"desconocida":days+" día(s)")+
       " · Estado: "+(meta.stale===true?"exportación desactualizada":report.complete?"completo según fuente":"datos incompletos")+
       " · Generado: "+new Date().toLocaleString("es-ES");
     const metrics=[["sin_fija","Sin posición fija"],["cero","Stock fijo cero"],
@@ -161,7 +163,8 @@ export function configureAdminFixedPositions({client,getUser,errorText}){
     if(!report||loading||!getUser()?.id)return;
     const generatedAt=new Date().toISOString();
     const csv=fixedReportCsv(filtered(),{warehouse:report.warehouse,sourceFile:report.meta.sourceFile,
-      importedAt:report.meta.importedAt,generatedAt,filters:{category:active,search:$("fixedSearch").value,
+      importedAt:report.meta.importedAt,exportedAt:report.meta.exportedAt,
+      publishedAt:report.meta.publishedAt,generatedAt,filters:{category:active,search:$("fixedSearch").value,
         aisle:$("fixedAisle").value,zone:$("fixedZone").value,other:$("fixedOther").value}});
     const url=URL.createObjectURL(new Blob([csv],{type:"text/csv;charset=utf-8"}));
     const link=element("a");link.href=url;link.download="VISURA_PREPARA_fijas_"+report.warehouse+"_"+generatedAt.slice(0,10)+".csv";
