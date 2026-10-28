@@ -1017,7 +1017,9 @@ function validateChat(item){
  if(!name||name.length>140||["OTRO","CHAT NUEVO"].includes(name)||/[\r\n<>]/.test(name))return null;
  const link=typeof item.link==="string"?item.link.trim():"";
  if(link.length>2048||(link&&!safeChatUrl(link)))return null;
- return{name,state:Object.prototype.hasOwnProperty.call(registryStates,item.state)?item.state:"sin_verificar",link:safeChatUrl(link)};
+ const conversationId=typeof item.conversationId==="string"&&/^[A-Za-z0-9_-]{16,128}$/.test(item.conversationId.trim())?item.conversationId.trim():"";
+ const sourceTitle=typeof item.sourceTitle==="string"?item.sourceTitle.trim().normalize("NFC").slice(0,512):"";
+ return{name,state:Object.prototype.hasOwnProperty.call(registryStates,item.state)?item.state:"sin_verificar",link:safeChatUrl(link),...(conversationId?{conversationId,sourceTitle:sourceTitle||name}:{})};
 }
 function managerNotice(msg){managerFeedback.textContent=msg;}
 function saveRegistry(items){
@@ -1110,6 +1112,9 @@ document.getElementById("manager-clear").addEventListener("click",cleanManagerEd
 document.getElementById("manager-save").addEventListener("click",()=>{
  const item=validateChat({name:managerName.value,state:managerState.value,link:managerLink.value});
  if(!item){managerNotice("Nombre no válido o enlace incorrecto. Usa una URL directa https://chatgpt.com/c/…");return;}
+ // Mantener el ID estable aunque el usuario edite el nombre o estado de la ficha.
+ const edited=registry.find(c=>normalizedName(c.name)===editingName);
+ if(edited?.conversationId){item.conversationId=edited.conversationId;item.sourceTitle=edited.sourceTitle||edited.name;}
  if(registry.some(c=>normalizedName(c.name)===normalizedName(item.name)&&normalizedName(c.name)!==editingName)){
   managerNotice("Ya existe ese nombre. Pulsa Editar en su ficha.");return;
  }
@@ -1149,7 +1154,12 @@ document.getElementById("manager-import-file").addEventListener("change",async e
   if(shared&&!window.confirm("¿Actualizar "+shared+" chats coincidentes con los datos de la copia? Los demás seguirán en la lista.")){
    managerNotice("Importación cancelada sin cambios.");return;
   }
-  const merged=registry.filter(c=>!keys.has(normalizedName(c.name))).concat(imported);
+  // Una copia VISURA antigua sin IDs no puede borrar IDs verificados de esta instalación.
+  const restored=imported.map(item=>{
+   const local=registry.find(c=>normalizedName(c.name)===normalizedName(item.name));
+   return local?.conversationId&&!item.conversationId?{...item,conversationId:local.conversationId,sourceTitle:local.sourceTitle||local.name}:item;
+  });
+  const merged=registry.filter(c=>!keys.has(normalizedName(c.name))).concat(restored);
   if(!saveRegistry(merged))return;
   cleanManagerEditor();renderChatManager();refreshAllChatSelectors();
   managerNotice("Importados "+imported.length+" chats. No se han eliminado otros registros.");
@@ -1202,4 +1212,5 @@ safeContinuityToggle.addEventListener("click",()=>{
 
 </script>
 <script src="./visura-recovery.js"></script>
+<script src="./chatgpt-import.js"></script>
 </body></html>

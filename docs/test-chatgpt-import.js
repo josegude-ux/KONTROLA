@@ -1,0 +1,16 @@
+const assert = require('node:assert/strict');
+const {extractMetadata,planImport} = require('./chatgpt-import.js');
+const A='aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', B='bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', C='cccccccc-cccc-cccc-cccc-cccccccccccc';
+function check(label,fn){fn();console.log('PASS',label)}
+check('No guarda mapping ni mensajes',()=>{let parsed=extractMetadata([{id:A,title:'03.1 - VISURA',create_time:1,mapping:{secret:'MENSAJE PRIVADO'}}]);assert.equal(parsed.chats.length,1);assert.deepEqual(Object.keys(parsed.chats[0]).sort(),['id','title','update']);assert.ok(!JSON.stringify(parsed).includes('MENSAJE PRIVADO'));});
+check('Renombrado según ID conserva estado/enlace',()=>{const old=[{name:'Nombre antiguo',sourceTitle:'Nombre antiguo',conversationId:A,state:'continuador',link:'https://chatgpt.com/c/'+A}];const p=planImport(old,[{id:A,title:'Nuevo nombre'}]);assert.equal(p.renamed,1);assert.equal(p.added,0);assert.equal(p.next[0].name,'Nuevo nombre');assert.equal(p.next[0].state,'continuador');assert.equal(p.next[0].link,old[0].link);assert.equal(old[0].name,'Nombre antiguo');});
+check('No relaciona ID por coincidencia de título legacy',()=>{const p=planImport([{name:'VISURA X',state:'activo',link:''}],[{id:A,title:'VISURA X'}]);assert.equal(p.added,1);assert.equal(p.next.length,2);assert.match(p.next[1].name,/\[aaaaaaaa\]/);});
+check('Conserva chats ausentes',()=>{const old=[{name:'A',conversationId:A,state:'activo',link:''},{name:'B',conversationId:B,state:'historico',link:''}];const p=planImport(old,[{id:A,title:'A renombrado'}]);assert.equal(p.next.length,2);assert.equal(p.next[1].name,'B');});
+check('Colisión de títulos entre IDs no fusiona',()=>{const p=planImport([],[{id:A,title:'VISURA Igual'},{id:B,title:'VISURA Igual'}]);assert.equal(p.next.length,2);assert.notEqual(p.next[0].name,p.next[1].name);assert.equal(p.next[0].sourceTitle,p.next[1].sourceTitle);});
+check('ID repetido en export escoge actualizado',()=>{const p=extractMetadata([{id:A,title:'Viejo',update_time:100},{id:A,title:'Nuevo',update_time:200}]);assert.equal(p.chats.length,1);assert.equal(p.chats[0].title,'Nuevo');});
+check('No duplica misma ID en import',()=>{const p=planImport([],[{id:A,title:'A'},{id:A,title:'A'}]);assert.equal(p.next.length,1);});
+check('JSON inválido no pasa parser',()=>{assert.throws(()=>extractMetadata({bad:'x'}),/Formato/);});
+check('Filtra registros sin título o ID seguro',()=>{const p=extractMetadata([{id:'x',title:'A'},{id:A,title:'<script>alert</script>'},{id:B,title:'VISURA ✓'}]);assert.equal(p.chats.length,1);assert.equal(p.invalid,2);});
+check('Superar capacidad aborta antes de guardar',()=>{const existing=Array.from({length:300},(_,i)=>({name:'Manual '+i,state:'activo',link:''}));assert.throws(()=>planImport(existing,[{id:C,title:'VISURA'}]),/máximo de 300/);});
+check('Estructura alternativa export conversations',()=>{const p=extractMetadata({conversations:[{conversation_id:A,title:'VISURA'}]});assert.equal(p.chats[0].id,A);});
+console.log('11 pruebas unitarias correctas');
