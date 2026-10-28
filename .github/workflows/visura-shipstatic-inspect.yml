@@ -1,0 +1,50 @@
+name: VISURA - inspeccion lectura sola de hosting ShipStatic
+
+on:
+  push:
+    branches:
+      - validation/visura-shipstatic-20261028
+
+permissions:
+  contents: read
+
+jobs:
+  review-external-host:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verificar si el alojamiento transforma scripts e iconos
+        shell: bash
+        env:
+          URL: https://keen-mote-b5w3hwc.shipstatic.com
+        run: |
+          python3 - <<'PY'
+          import os, urllib.request, urllib.error, difflib, hashlib
+          from pathlib import Path
+          base=os.environ["URL"]
+          for p in ["index.html","VISURA_ORDENES.html","visura-recovery.js","chatgpt-import.js","visura-recovery.css","manifest.webmanifest","assets/icons/apple-touch-icon.png","assets/icons/icon-192.png","robots.txt"]:
+            try:
+              with urllib.request.urlopen(base+"/"+p,timeout=20) as res:
+                data=res.read()
+                code=res.status
+                ct=res.headers.get("content-type")
+                final_url=res.url
+              print(f"RESOURCE {p}: HTTP={code} type={ct} bytes={len(data)} url={final_url} sha256={hashlib.sha256(data).hexdigest()}")
+              if p in ["index.html","VISURA_ORDENES.html"]:
+                source=Path("docs")/p
+                s=source.read_text().replace("<head>",'<head>\n<meta name="robots" content="noindex,nofollow,noarchive">',1)
+                expected=s.encode("utf-8")
+                print(f"EXPECTED sha256={hashlib.sha256(expected).hexdigest()} same={expected==data}")
+                if expected != data:
+                  got=data.decode("utf-8",errors="replace")
+                  lines=list(difflib.unified_diff(s.splitlines(),got.splitlines(),fromfile="expected",tofile="served",n=2))
+                  print("DIFF_PUBLIC_FIRST_LINES", "\n".join(lines[:30])[:1700])
+                  print("SCRIPT_TAGS", got.count("<script"))
+              elif p != "robots.txt":
+                src=Path("docs")/p
+                expect=src.read_bytes()
+                print("SOURCE_SAME",expect==data)
+            except Exception as exc:
+              print(f"RESOURCE {p}: ERROR {type(exc).__name__} {str(exc)[:230]}")
+          PY
