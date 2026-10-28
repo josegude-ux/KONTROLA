@@ -56,12 +56,12 @@ export function assertPreparaFixedReadV1(payload,{warehouse}={}){
   "Fecha de exportación BC, importación o publicación no acreditada");
  if(allDates)requireThat(exportedAt<=importedAt&&importedAt<=publishedAt,
   "Orden de fechas BC/exportación/importación/publicación incoherente");
- const products=new Map(),locations=new Set(),fixed=new Set(),lots=new Set();
+ const products=new Map(),productCodes=new Set(),locations=new Set(),fixed=new Set(),lots=new Set();
  for(const item of payload.products){
   requireThat(item&&typeof item.code==="string"&&item.code.trim()&&
    typeof item.description==="string"&&item.description.trim()&&
    typeof item.unit==="string"&&item.unit.trim(),"Artículo maestro inválido");
-  unique(products,item.code,"artículo");
+  unique(productCodes,item.code,"artículo");
   products.set(item.code,item.unit);
  }
  for(const item of payload.locations){
