@@ -41,3 +41,12 @@ Archivos que cambian respecto de PR #81: `docs/index.html`, `docs/VISURA_ORDENES
 ## Próxima tarea independiente
 
 Preparar pruebas e2e del HTML combinado y un alojamiento exclusivo seguro sujeto a autorización expresa antes de cualquier publicación. Posteriormente revisar resolución de PR #73/#81 para evitar integraciones dobles. No fusionar ni desplegar por esta instrucción de continuidad.
+
+## Comprobaciones conjuntas realizadas el 28 de octubre de 2026
+
+- Se reejecutaron las 21 pruebas Node del módulo de diagnóstico y las 11 del importador desde los archivos auténticos de sus desarrollos; **32/32 pasan**. Ambos módulos superan `node --check`.
+- Banco de pruebas de interacción en Chromium con un DOM representativo (no el HTML completo publicado), en 390×844, 768×1024 y 1440×900. En cada tamaño: se cargaron **ambos módulos conjuntamente**; se importó un `conversations.json` sintético con campo `mapping`, se seleccionó una conversación VISURA, se confirmó y se comprobó el registro (ID/título sin mensajes); después se ejecutó función 11, clasificación B, copia exacta de diagnóstico y prompt y verificación de bloqueo persistente. **3/3 viewports sin errores JS ni desbordamiento horizontal.**
+- Añadido `docs/test-integracion-centro.js` para ejecutar tras checkout con Node. Verifica sincronización de ambos HTML, 11 IDs, navegación, icono, scripts, API de ambos módulos y separación de metadatos.
+- **No se ha ejecutado `test-integracion-centro.js` todavía sobre un checkout local completo**: el test requiere los HTML completos disponibles como archivos locales. La comparación estructural se efectuó directamente sobre los contenidos obtenidos de GitHub y se confirmó que la composición reproduce fielmente los cambios exclusivos del PR #73.
+- Por privacidad, en GitHack sigue bloqueada la importación de datos personales, incluso si se abriera esta rama de pruebas. El usuario no debe utilizar exportaciones reales allí.
+- Pendiente: prueba e2e **del HTML completo combinado** y prueba Safari/iPhone real, además de validar archivos exportados oficiales sin subir historiales privados. No interpretar estas pruebas sintéticas como aprobación de publicación.

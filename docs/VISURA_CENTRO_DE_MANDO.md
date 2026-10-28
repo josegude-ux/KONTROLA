@@ -561,3 +561,12 @@ Antes de redactar, guardar, proponer o añadir un prompt/botón al Centro de man
 - La publicación en rama **no equivale** a validación del acceso web del proveedor externo. Comprobar HTTP 200, MIME, eventual caché y la prueba física en Safari/iPhone. No afirmar que ya se ve el icono B sin comprobarlo.
 - Reinstalar el acceso directo de pantalla de inicio desde Safari una vez confirmado el acceso; si sigue el icono antiguo, borrar solo el acceso directo anterior, no datos ni apps.
 - No se fusiona PR #67, no se modifica `main`, ni se altera ninguna otra aplicación.
+
+
+## Continuidad — diagnóstico y catálogo en rama de integración (2026-10-28)
+
+- El turno anterior finalizó normalmente tras PR #81; no se observó causa técnica de parada. El siguiente hito era integrar PR #73 y #81 sin duplicar sus cambios.
+- Rama conjunta aislada `feat/visura-centro-integracion-diagnostico-chats-20261028`, parte de PR #81 y absorbe selectivamente las modificaciones del gestor de PR #73. El documento detallado es `docs/VISURA_INTEGRACION_DIAGNOSTICO_CHATS.md`; pruebas: `docs/test-integracion-centro.js`.
+- Las funciones 01–11, icono B y manifiesto se conservan. Dos HTML idénticos. Módulo de diagnóstico A–I con cuatro pasos y módulo de importación por ID de exportaciones ChatGPT coexisten sin rediseñar.
+- 21+11 pruebas Node con datos sintéticos superadas. Banco de interfaz representativo: 3 tamaños aprobados. **Pendiente probar HTML completo, Safari real, exportación autorizada y alojamiento exclusivo**.
+- El importador privado está desactivado en GitHack compartido. No fusionar esta rama junto con PR #73/#81 sin conciliar; no modificar `visura-panel`, `main`, otras aplicaciones ni publicar sin autorización expresa.
