@@ -31,7 +31,8 @@ function readZip(bytes){
   assert.equal(view.getUint32(eocd+16,true),off);
   return files;
 }
-const meta={sourceFile:"BC_ORIGEN.xlsx",importedAt:"2026-10-27T12:00:00Z",stale:false};
+const meta={sourceFile:"BC_ORIGEN.xlsx",exportedAt:"2026-10-27T08:00:00Z",
+  importedAt:"2026-10-27T12:00:00Z",publishedAt:"2026-10-27T12:30:00Z",stale:false};
 const report={warehouse:"COR_01_COR",meta,complete:true};
 const row={category:"negativo",code:"PRD001",description:"Artículo sin riesgo",
   warehouse:"COR_01_COR",location:"P01",aisle:"P",zone:"Z1",
@@ -45,7 +46,9 @@ test("XLSX estándar con dos hojas y metadatos",()=>{
   const summary=file.get("xl/worksheets/sheet1.xml");
   const details=file.get("xl/worksheets/sheet2.xml");
   assert.match(summary,/BC_ORIGEN\.xlsx/);
+  assert.match(summary,/2026-10-27T08:00:00Z/);
   assert.match(summary,/2026-10-27T12:00:00Z/);
+  assert.match(summary,/2026-10-27T12:30:00Z/);
   assert.match(details,/Artíc[u]?lo sin riesgo/);
   assert.match(details,/<c r="H2"><v>-2\.5<\/v><\/c>/);
   assert.match(details,/<c r="I2"><v>8<\/v><\/c>/);
