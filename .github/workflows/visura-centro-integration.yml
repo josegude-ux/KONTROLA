@@ -1,0 +1,44 @@
+name: VISURA Centro de Mando - PR82 full checkout validation
+
+on:
+  push:
+    branches:
+      - feat/visura-centro-integracion-diagnostico-chats-20261028
+  pull_request:
+    branches:
+      - visura-panel
+    paths:
+      - 'docs/**'
+      - '.github/workflows/visura-centro-integration.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  full-checkout:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Node syntax
+        run: |
+          node --check docs/visura-recovery.js
+          node --check docs/chatgpt-import.js
+          node --check docs/test-integracion-centro.js
+      - name: Tests on real checkout
+        run: |
+          node docs/test-recovery.js
+          node docs/test-chatgpt-import.js
+          node docs/test-integracion-centro.js
+      - name: Install isolated Chromium test tooling
+        run: |
+          python -m pip install playwright==1.56.0
+          python -m playwright install --with-deps chromium
+      - name: Full application Chromium end-to-end
+        run: python docs/test-centro-e2e.py
