@@ -5,7 +5,8 @@ import {buildFixedPrintHtml} from "../src/fixed-position-print.mjs";
 
 const meta={authorized:true,warehouse:"COR_01_COR",stockComplete:true,catalogComplete:true,
   positionsComplete:true,locationsComplete:true,absentStockIsZero:false,sourceFile:"BC-completo.xlsx",
-  importedAt:"2026-10-27T10:00:00Z",truncated:false,stale:false};
+  importedAt:"2026-10-27T10:00:00Z",exportedAt:"2026-10-27T08:00:00Z",
+  publishedAt:"2026-10-27T11:00:00Z",truncated:false,stale:false};
 const products=[{code:"A1",description:"Artículo <script>alert(1)</script>",unit:"UD"},
   {code:"B2",description:"Segundo artículo",unit:"UD"}];
 const fixed=[{product_code:"A1",location_code:"A01-P01"},
@@ -19,7 +20,9 @@ test("A4 apaisado con resumen, categorías, fuente, fechas y observaciones",()=>
   const html=buildFixedPrintHtml({report,rows:report.rows,filters:{category:"todos"},generatedAt:"2026-10-27T16:00:00Z"});
   assert.match(html,/@page\{size:A4 landscape/);
   assert.match(html,/BC-completo\.xlsx/);
+  assert.match(html,/2026-10-27T08:00:00Z/);
   assert.match(html,/2026-10-27T10:00:00Z/);
+  assert.match(html,/2026-10-27T11:00:00Z/);
   assert.match(html,/Control de posiciones fijas/);
   assert.match(html,/Posiciones fijas con stock cero/);
   assert.match(html,/Posiciones fijas con stock negativo/);
