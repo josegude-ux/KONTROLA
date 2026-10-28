@@ -48,3 +48,12 @@ Código nuevo: `tests/test_visura_auto_dev_phase3_security.py`, con casos positi
 3. Integrar con AUTO-DEV solamente después de comprobar la autenticidad de supervisor y aislamiento, con un único punto de decisión y rechazo por defecto. Nunca convertir `signature_verified` ni un indicador JSON en permiso directo de ejecución.
 
 **Sin merge, deploy, secretos, IA de pago ni permisos de escritura nuevos.**
+
+## CI de código confirmada (SHA inicial de PR #85)
+
+- Commit con código y pruebas: `9582614e7bbf5a81af4e78036da894dbef59b1a0`.
+- [Code Review Gate run 40637754319](https://github.com/josegude-ux/KONTROLA/actions/runs/40637754319): `completed/success`, **455/455 tests** en GitHub Actions; firma Ed25519 de fixture y aislamiento denegatorio incluidos. `compileall` y prohibición de API de pago completados correctamente.
+- [Queue Audit run 40637754305](https://github.com/josegude-ux/KONTROLA/actions/runs/40637754305): `completed/success`.
+- **El commit que añade esta nota es únicamente documental**; los resultados anteriores aplican al SHA de código indicado, no al futuro HEAD documental.
+- Riesgo adicional: el nonce de concesión todavía no se consume de forma atómica en ningún registro de autorización. La detección de replay y de revocación entre la lectura y la acción corresponde al supervisor externo aún no implementado.
+- El CLI OpenSSL debe suministrarse por una imagen de ejecución de confianza, con versión y procedencia verificadas; su existencia en CI no basta para acreditar seguridad del host.
