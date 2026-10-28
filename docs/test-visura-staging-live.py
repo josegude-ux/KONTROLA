@@ -21,7 +21,11 @@ with sync_playwright() as p:
           });
         }""")
         response = page.goto(URL + "/index.html", wait_until="load", timeout=30000)
-        assert response is not None and response.status == 200
+        if response is None or response.status != 200:
+            print("HTTP_BROWSER_STATUS", response.status if response else None, "URL", page.url)
+            print("PAGINA_TITULO", page.title())
+            print("PAGINA_FRAGMENTO", page.locator("body").inner_text(timeout=5000)[:450])
+            raise AssertionError("El alojamiento no responde con HTML 200 a Chromium")
         expect(page.locator("#command-menu")).to_be_visible()
         assert page.locator('link[rel="apple-touch-icon"]').count() == 1
         assert page.locator('link[rel="manifest"]').count() == 1
