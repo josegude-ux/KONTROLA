@@ -1,0 +1,86 @@
+name: VISURA Centro PR82 — ensayo Cloudflare anonimo (60 min)
+
+on:
+  push:
+    branches:
+      - staging/visura-centro-pr82-anon-20261028
+
+permissions:
+  contents: read
+
+jobs:
+  static-preview:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      CI: "true"
+      WRANGLER_SEND_METRICS: "false"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Preparar 14 recursos estaticos exactos desde PR82 (sin historial)
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p staging/assets/icons
+          for file in index.html VISURA_ORDENES.html visura-recovery.js visura-recovery.css chatgpt-import.js manifest.webmanifest; do
+            cp "docs/$file" "staging/$file"
+          done
+          for file in apple-touch-icon.png favicon-32x32.png icon-192.png icon-512.png visura-centro-mando-logo-64.png; do
+            cp "docs/assets/icons/$file" "staging/assets/icons/$file"
+          done
+          cp docs/assets/logo-visura-centro-mando.svg staging/assets/logo-visura-centro-mando.svg
+          cp docs/assets/streaming-aviso-original.webp staging/assets/streaming-aviso-original.webp
+          cat > staging/_headers <<'EOF'
+          /*
+            X-Robots-Tag: noindex, nofollow, noarchive
+            X-Content-Type-Options: nosniff
+            Referrer-Policy: no-referrer
+            Permissions-Policy: geolocation=(), camera=(), microphone=()
+            Cache-Control: no-store
+            Content-Security-Policy: default-src 'self'; connect-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; object-src 'none'; frame-src 'none'; frame-ancestors 'none'; base-uri 'self'; form-action 'none'; manifest-src 'self'
+          EOF
+          test "$(find staging -type f | wc -l)" -eq 14
+          cmp -s staging/index.html staging/VISURA_ORDENES.html
+          grep -q 'canUseImportAtLocation' staging/chatgpt-import.js
+          grep -q 'Importación privada desactivada' staging/chatgpt-import.js
+          test ! -e staging/conversations.json
+          test ! -e staging/.env
+          echo "Contenido aislado: 14 ficheros publicos, sin datos personales"
+      - name: Publicar temporalmente con Wrangler sin cuenta OAuth o tokens
+        id: deploy
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm exec --yes --package=wrangler@latest -- wrangler deploy ./staging --name visura-centro-pr82-ensayo --temporary --compatibility-date 2026-10-28 > "$RUNNER_TEMP/cloudflare-preview.log"
+          python3 - <<'PY'
+          import os, pathlib, re
+          raw = (pathlib.Path(os.environ["RUNNER_TEMP"]) / "cloudflare-preview.log").read_text()
+          urls = re.findall(r"https://[a-z0-9.-]+\.workers\.dev", raw, flags=re.IGNORECASE)
+          if not urls:
+              raise SystemExit("No se encontro URL workers.dev. No se divulga la salida original, que puede incluir enlace de reclamo.")
+          url = urls[0]
+          print("STAGING_URL="+url)
+          with open(os.environ["GITHUB_OUTPUT"], "a") as f: f.write("url="+url+"\n")
+          with open(os.environ["GITHUB_STEP_SUMMARY"], "a") as f:
+              f.write("## VISURA PR82 — ensayo temporal externo\n\n")
+              f.write("**URL:** "+url+"\n\n")
+              f.write("Expira automaticamente si no se reclama a Cloudflare (~60 minutos). **NO datos reales**. Importador privado deshabilitado.\n\n")
+              f.write("Basado en PR82: f09ea5602a6c7e7b767735d7da575ccedea5ea3a. Sin cambiar produccion.\n")
+          PY
+      - name: Smoke real de la URL HTTPS temporal y los recursos
+        shell: bash
+        env:
+          STAGING_URL: ${{ steps.deploy.outputs.url }}
+        run: |
+          set -euo pipefail
+          for file in index.html VISURA_ORDENES.html visura-recovery.js visura-recovery.css chatgpt-import.js manifest.webmanifest assets/icons/apple-touch-icon.png assets/icons/favicon-32x32.png assets/icons/icon-192.png assets/icons/icon-512.png assets/streaming-aviso-original.webp; do
+            curl --retry 8 --retry-all-errors --retry-delay 3 -fsSL "$STAGING_URL/$file" -o "$RUNNER_TEMP/fetch.tmp"
+            cmp -s "$RUNNER_TEMP/fetch.tmp" "staging/$file"
+            echo "200 y contenido identico: $file"
+          done
+          curl -fsSI "$STAGING_URL/assets/icons/apple-touch-icon.png" | grep -iq '^content-type: image/png'
+          curl -fsSI "$STAGING_URL/index.html" | grep -iq '^x-robots-tag: noindex'
+          echo "VALIDACION HOST HTTPS: recursos y politica noindex correctos"
