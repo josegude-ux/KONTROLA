@@ -13,6 +13,8 @@ for(const s of sizes){
     await page.goto(url);
     await expect(page.locator("html")).toHaveAttribute("data-visual-fixture-ready","yes");
     await expect(page.locator("#fixedCount")).toContainText("3 incidencias");
+    await expect(page.locator("#fixedProvenance")).toContainText("Exportado BC:");
+    await expect(page.locator("#fixedProvenance")).toContainText("Antigüedad BC:");
     const layout=await page.evaluate(()=>{
       const grid=getComputedStyle(document.querySelector(".fixed-filters")).gridTemplateColumns.trim().split(/\s+/);
       const metrics=getComputedStyle(document.querySelector(".fixed-metrics")).gridTemplateColumns.trim().split(/\s+/);
