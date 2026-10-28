@@ -568,5 +568,13 @@ Antes de redactar, guardar, proponer o añadir un prompt/botón al Centro de man
 - El turno anterior finalizó normalmente tras PR #81; no se observó causa técnica de parada. El siguiente hito era integrar PR #73 y #81 sin duplicar sus cambios.
 - Rama conjunta aislada `feat/visura-centro-integracion-diagnostico-chats-20261028`, parte de PR #81 y absorbe selectivamente las modificaciones del gestor de PR #73. El documento detallado es `docs/VISURA_INTEGRACION_DIAGNOSTICO_CHATS.md`; pruebas: `docs/test-integracion-centro.js`.
 - Las funciones 01–11, icono B y manifiesto se conservan. Dos HTML idénticos. Módulo de diagnóstico A–I con cuatro pasos y módulo de importación por ID de exportaciones ChatGPT coexisten sin rediseñar.
-- 21+11 pruebas Node con datos sintéticos superadas. Banco de interfaz representativo: 3 tamaños aprobados. **Pendiente probar HTML completo, Safari real, exportación autorizada y alojamiento exclusivo**.
+- 21+11 pruebas Node y `test-integracion-centro.js` superados **en checkout completo**. Chromium E2E sobre `docs/index.html` real: **3/3** viewports (390×844, 768×1024, 1440×900), incluyendo importación/renombrado sintéticos, 4 fases, copia exacta y regresión de función 01. Evidencia: GitHub Actions #40612355107 (conclusión `success`). **Aún pendientes Safari físico, exportación autorizada y alojamiento exclusivo**.
 - El importador privado está desactivado en GitHack compartido. No fusionar esta rama junto con PR #73/#81 sin conciliar; no modificar `visura-panel`, `main`, otras aplicaciones ni publicar sin autorización expresa.
+
+
+## Verificación integral de PR #82 — GitHub Actions (2026-10-28)
+
+- Commit validado `09d9087bcbd4e5af4292fc4b2652dec848c2d473`: ejecución [#40612355107](https://github.com/josegude-ux/KONTROLA/actions/runs/40612355107) concluida correctamente.
+- Test estático `docs/test-integracion-centro.js` ejecutado sobre checkout completo; 21 pruebas diagnóstico + 11 del importador superadas, sintaxis correcta.
+- E2E Chromium del **HTML completo combinado** superada en tres tamaños, navegando funciones 01 y 11, generando/copiando prompt íntegro, importando y renombrando chats ficticios y comprobando privacidad del registro; sin errores JS ni scroll horizontal. Test `docs/test-centro-e2e.py` y workflow `.github/workflows/visura-centro-integration.yml`.
+- Confirmado: `visura-panel` y `main` no se han modificado. PR #82 continúa en borrador sin fusionar. Safari/iPhone real, alojamiento exclusivo y exportación real autorizada pendientes; no probar datos privados en GitHack compartido ni publicar sin autorización.
