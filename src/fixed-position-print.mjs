@@ -37,7 +37,9 @@ export function buildFixedPrintHtml({report,rows,filters={},generatedAt=new Date
     const header="<header><h1>VISURA · Control de posiciones fijas</h1>"+
       "<p><b>Almacén:</b> "+esc(report.warehouse)+
       " · <b>Excel BC:</b> "+esc(report.meta.sourceFile||"No consta")+
+      " · <b>Exportación BC:</b> "+esc(report.meta.exportedAt||"Sin fecha")+
       " · <b>Importación:</b> "+esc(report.meta.importedAt||"Sin fecha")+
+      " · <b>Publicación:</b> "+esc(report.meta.publishedAt||"Sin fecha")+
       " · <b>Generación:</b> "+esc(generatedAt)+"</p>"+
       "<p><b>Estado:</b> "+esc(report.meta.stale===true?"DESACTUALIZADO":report.complete?"Validado según origen":"DATOS INSUFICIENTES")+
       " · <b>Filtros:</b> "+esc(Object.entries(filters).filter(([,v])=>v!==""&&v!==null).map(([k,v])=>k+"="+v).join(" · ")||"Todos")+"</p>"+
