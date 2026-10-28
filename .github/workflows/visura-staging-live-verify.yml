@@ -1,0 +1,27 @@
+name: VISURA — validar staging HTTPS real (sin publicar)
+
+on:
+  push:
+    branches:
+      - validation/visura-staging-live-20261028
+
+permissions:
+  contents: read
+
+jobs:
+  real-host-browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 16
+    env:
+      STAGING_URL: https://visura-centro-pr82-ensayo.thrilling-mice.workers.dev
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Instalar Chromium aislado en runner
+        run: |
+          python -m pip install playwright==1.56.0
+          python -m playwright install --with-deps chromium
+      - name: E2E live staging 11 funciones, privacidad y copias en 3 tamaños
+        run: python docs/test-visura-staging-live.py
