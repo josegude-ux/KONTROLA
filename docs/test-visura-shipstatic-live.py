@@ -13,13 +13,13 @@ with sync_playwright() as p:
         page = browser.new_page(viewport={"width": width, "height": height}, ignore_https_errors=False)
         errors = []
         page.on("pageerror", lambda error: errors.append(str(error)))
-        page.add_init_script("""() => {
+        page.add_init_script("""(() => {
           window.__copied=[];
           Object.defineProperty(navigator, 'clipboard', {
             configurable: true,
             value: { writeText: async txt => { window.__copied.push(txt); } }
           });
-        }""")
+        })()""")
         response = page.goto(URL + "/index.html", wait_until="load", timeout=30000)
         if response is None or response.status != 200:
             print("HTTP_BROWSER_STATUS", response.status if response else None, "URL", page.url)
