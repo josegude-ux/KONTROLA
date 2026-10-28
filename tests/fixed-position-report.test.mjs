@@ -4,7 +4,7 @@ import {classifyFixedPositions,filterFixedRows,fixedReportCsv,safeCsvCell,FIXED_
 
 const meta={authorized:true,warehouse:"COR_01_COR",stockComplete:true,catalogComplete:true,
   positionsComplete:true,locationsComplete:true,absentStockIsZero:false,sourceFile:"BC-demo.xlsx",
-  importedAt:"2026-10-27T10:00:00Z",truncated:false};
+  importedAt:"2026-10-27T10:00:00Z",truncated:false,stale:false};
 const p=(code="PRD001",unit="UD")=>({code,description:"Artículo "+code,unit});
 const f=(loc="A01-P01",code="PRD001")=>({product_code:code,location_code:loc});
 const s=(loc,quantity,lot="L1",code="PRD001")=>({product_code:code,location_code:loc,lot,quantity,unit:"UD"});
