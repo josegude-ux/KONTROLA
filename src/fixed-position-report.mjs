@@ -96,7 +96,7 @@ export function classifyFixedPositions({warehouse,products=[],fixed=[],stock=[],
   const full=meta.stockComplete===true&&meta.catalogComplete===true&&
     meta.positionsComplete===true&&meta.locationsComplete===true&&
     Boolean(meta.importedAt)&&Boolean(meta.sourceFile)&&
-    meta.stale!==true&&!globalInvalid;
+    meta.stale===false&&meta.truncated===false&&!globalInvalid;
   const result=[];
   for(const code of [...allCodes].sort()){
     const article=catalogue.get(code)||{code,description:"",unit:""};
@@ -174,7 +174,7 @@ export function safeCsvCell(value,allowNumeric=false){
      !(allowNumeric===true&&/^-?(?:\d{1,12})(?:\.\d{1,6})?$/.test(text)))text="'"+text;
   return '"'+text.replace(/"/g,'""')+'"';
 }
-export function fixedReportCsv(rows,{warehouse,sourceFile,importedAt,generatedAt,filters={}}){
+export function fixedReportCsv(rows,{warehouse,sourceFile,exportedAt,importedAt,publishedAt,generatedAt,filters={}}){
   const head=["Categoría","Artículo","Descripción","Almacén","Ubicación fija","Pasillo","Zona",
     "Stock posición fija","Stock total almacén","Stock otras ubicaciones","Unidad",
     "Posible reposición","Fecha importación","Origen BC","Observación"];
@@ -182,7 +182,9 @@ export function fixedReportCsv(rows,{warehouse,sourceFile,importedAt,generatedAt
     r.aisle,r.zone,r.positionQuantity??"SIN DATOS",r.warehouseQuantity??"SIN DATOS",
     r.otherQuantity??"SIN DATOS",r.unit,r.replenishment?"Sí":"No",r.importedAt,r.source,r.reason]);
   const info=[["Informe","VISURA PREPARA · Control de posiciones fijas"],["Almacén",warehouse],
-    ["Origen",sourceFile||"Sin exportación completa"],["Importado",importedAt||"Sin fecha"],
+    ["Origen",sourceFile||"Sin exportación completa"],
+    ["Exportado BC",exportedAt||"Sin fecha"],["Importado",importedAt||"Sin fecha"],
+    ["Publicado",publishedAt||"Sin fecha"],
     ["Generado",generatedAt],["Filtros",JSON.stringify(filters)],["Registros",rows.length]];
   const quoteRow=(a,dataRow=false)=>a.map((v,i)=>safeCsvCell(v,dataRow&&[7,8,9].includes(i))).join(";");
   return "\uFEFF"+info.map(a=>quoteRow(a)).join("\r\n")+"\r\n\r\n"+
