@@ -5,7 +5,7 @@ import {buildFixedPrintHtml} from "../src/fixed-position-print.mjs";
 
 const meta={authorized:true,warehouse:"COR_01_COR",stockComplete:true,catalogComplete:true,
   positionsComplete:true,locationsComplete:true,absentStockIsZero:false,sourceFile:"BC-completo.xlsx",
-  importedAt:"2026-10-27T10:00:00Z",truncated:false};
+  importedAt:"2026-10-27T10:00:00Z",truncated:false,stale:false};
 const products=[{code:"A1",description:"Artículo <script>alert(1)</script>",unit:"UD"},
   {code:"B2",description:"Segundo artículo",unit:"UD"}];
 const fixed=[{product_code:"A1",location_code:"A01-P01"},
