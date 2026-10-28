@@ -1,0 +1,91 @@
+name: VISURA PR82 - ensayo externo temporal ShipStatic sin cuenta
+
+on:
+  push:
+    branches:
+      - staging/visura-pr82-shipstatic-20261028
+
+permissions:
+  contents: read
+
+jobs:
+  test-external:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    env:
+      CI: "true"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Preparar paquete PUBLICO exclusivamente sintetico
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p staging/assets/icons
+          for file in index.html VISURA_ORDENES.html visura-recovery.js visura-recovery.css chatgpt-import.js manifest.webmanifest; do
+            cp "docs/$file" "staging/$file"
+          done
+          for file in apple-touch-icon.png favicon-32x32.png icon-192.png icon-512.png visura-centro-mando-logo-64.png; do
+            cp "docs/assets/icons/$file" "staging/assets/icons/$file"
+          done
+          cp docs/assets/logo-visura-centro-mando.svg staging/assets/logo-visura-centro-mando.svg
+          cp docs/assets/streaming-aviso-original.webp staging/assets/streaming-aviso-original.webp
+          printf 'User-agent: *\nDisallow: /\n' > staging/robots.txt
+          python3 - <<'PY'
+          from pathlib import Path
+          for html in ["index.html", "VISURA_ORDENES.html"]:
+              path = Path("staging") / html
+              source = path.read_text()
+              assert source.count("<head>") == 1
+              path.write_text(source.replace("<head>", '<head>\n<meta name="robots" content="noindex,nofollow,noarchive">', 1))
+          PY
+          test "$(find staging -type f | wc -l)" -eq 14
+          cmp -s staging/index.html staging/VISURA_ORDENES.html
+          grep -q 'canUseImportAtLocation' staging/chatgpt-import.js
+          grep -q 'Importación privada desactivada' staging/chatgpt-import.js
+          test ! -e staging/conversations.json
+          test ! -e staging/.env
+          echo '14 archivos de staging; solo noindex agregado al HTML.'
+      - name: Publicar ensayo anonimo gratuito 3 dias sin token
+        id: deploy
+        shell: bash
+        run: |
+          set -euo pipefail
+          npx -y @shipstatic/ship ./staging --json > "$RUNNER_TEMP/ship-deploy.json" 2>"$RUNNER_TEMP/ship-stderr.txt" || { echo 'El servicio devolvio un error; no se muestran respuestas ni enlaces privados.'; exit 1; }
+          python3 - <<'PY'
+          import json, os, pathlib, re
+          from urllib.parse import urlparse
+          p = pathlib.Path(os.environ["RUNNER_TEMP"]) / "ship-deploy.json"
+          raw = p.read_text()
+          result = json.loads(raw)
+          url = result.get("url")
+          parts = urlparse(url or "")
+          if parts.scheme != "https" or not re.fullmatch(r"[a-z0-9-]+\.shipstatic\.com", parts.hostname or ""):
+              print("Alojamiento no entrego URL ShipStatic valida. Se omite la respuesta para no publicar enlace de reclamo.")
+              raise SystemExit(1)
+          print("STAGING_URL="+url)
+          with open(os.environ["GITHUB_OUTPUT"], "a") as f:
+              f.write("url="+url+"\n")
+          with open(os.environ["GITHUB_STEP_SUMMARY"], "a") as f:
+              f.write("## VISURA 03.1 - Staging publico temporal (SOLO datos sinteticos)\n\n")
+              f.write("**URL de ensayo:** "+url+"\n\n")
+              f.write("Caduca en 3 dias si no se reclama. IMPORTACION PRIVADA BLOQUEADA en cualquier dominio publico.\n")
+              f.write("PR #82 codigo: f09ea5602a6c7e7b767735d7da575ccedea5ea3a. No modifica main ni visura-panel.\n")
+          PY
+      - name: Smoke test externo sin eludir filtros
+        shell: bash
+        env:
+          STAGING_URL: ${{ steps.deploy.outputs.url }}
+        run: |
+          set -euo pipefail
+          for f in VISURA_ORDENES.html visura-recovery.js visura-recovery.css chatgpt-import.js manifest.webmanifest assets/icons/apple-touch-icon.png assets/icons/icon-192.png assets/icons/icon-512.png assets/streaming-aviso-original.webp robots.txt; do
+            curl --retry 4 --retry-all-errors --retry-delay 2 -fsSL "$STAGING_URL/$f" -o "$RUNNER_TEMP/visura-resource"
+            cmp "staging/$f" "$RUNNER_TEMP/visura-resource"
+            echo "LIVE OK: $f"
+          done
+          curl --retry 4 --retry-all-errors --retry-delay 2 -fsSL "$STAGING_URL/index.html" -o "$RUNNER_TEMP/visura-resource"
+          cmp "staging/index.html" "$RUNNER_TEMP/visura-resource"
+          curl -fsSI "$STAGING_URL/assets/icons/apple-touch-icon.png" | grep -iq 'content-type: image/png'
+          echo 'STAGING HTTP: recursos iguales a PR82 (meta noindex agregado); icono B disponible'
