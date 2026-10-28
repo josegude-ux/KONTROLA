@@ -19,6 +19,41 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+      - name: Preparar paquete ZIP verificado sin datos personales
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import zipfile,hashlib
+          files=["index.html","VISURA_ORDENES.html","visura-recovery.js","visura-recovery.css",
+                 "chatgpt-import.js","manifest.webmanifest",
+                 "assets/icons/VISURA_CENTRO_DE_MANDO_ICONO_ORIGINAL.png",
+                 "assets/icons/apple-touch-icon.png","assets/icons/favicon-32x32.png",
+                 "assets/icons/icon-192.png","assets/icons/icon-512.png",
+                 "assets/icons/visura-centro-mando-logo-64.png",
+                 "assets/logo-visura-centro-mando.svg","assets/streaming-aviso-original.webp"]
+          with zipfile.ZipFile("VISURA_PR82_PAQUETE_SAFARI.zip","w",zipfile.ZIP_DEFLATED) as z:
+            manifest=[]
+            for name in files:
+              source=Path("docs")/name
+              content=source.read_bytes()
+              z.writestr("VISURA_PR82/"+name,content)
+              manifest.append(hashlib.sha256(content).hexdigest()+"  "+name)
+            instructions=("VISURA PR82 — paquete de prueba. Base: f09ea5602a6c7e7b767735d7da575ccedea5ea3a.\\n"
+              "No contiene datos personales. Importacion de chats privados BLOQUEADA en dominios publicos.\\n"
+              "Estructura identica a codigo origen. Para prueba web, servir carpeta via HTTP local en un equipo propio;\\n"
+              "abrir el HTML con vista previa de Archivos en iPhone NO garantiza ejecutar JavaScript ni icono PWA.\\n"
+              "Prueba de iPhone recomendada: usar una URL HTTPS verificada y solo datos ficticios.\\n")
+            z.writestr("VISURA_PR82/LEEME_PRUEBAS.txt",instructions)
+            z.writestr("VISURA_PR82/SHA256.txt","\\n".join(manifest)+"\\n")
+          assert zipfile.ZipFile("VISURA_PR82_PAQUETE_SAFARI.zip").testzip() is None
+          print("Paquete ZIP sin secretos, 14 recursos originales, checksums SHA256.")
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: VISURA-PR82-Safari-paquete-estatico
+          path: VISURA_PR82_PAQUETE_SAFARI.zip
+          retention-days: 7
       - name: Validar integridad en origen HTTPS y normalizar SOLO el cache buster de ShipStatic
         shell: bash
         run: |
@@ -45,6 +80,9 @@ jobs:
                   print("DIFF",name,"actual_sha",hashlib.sha256(actual).hexdigest(),
                         "normalized_sha",hashlib.sha256(canon).hexdigest(),
                         "expected_sha",hashlib.sha256(expected).hexdigest())
+                  if name.endswith(".webmanifest"):
+                      print("MANIFEST_ORIGINAL",expected.decode("utf-8")[:850])
+                      print("MANIFEST_HOST",actual.decode("utf-8")[:850])
                   raise AssertionError("El proveedor altero contenido mas alla del parametro conocido de cache")
               if name.endswith(".png"): assert "image/png" in content_type
               if name.endswith(".js"): assert "javascript" in content_type
