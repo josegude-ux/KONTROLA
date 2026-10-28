@@ -61,3 +61,10 @@ Preparar pruebas e2e del HTML combinado y un alojamiento exclusivo seguro sujeto
 - Scripts de prueba añadidos a PR #82: `.github/workflows/visura-centro-integration.yml` y `docs/test-centro-e2e.py`. Las pruebas se disparan desde la rama aislada y no afectan producción.
 - **Limitaciones:** Chromium con viewport iPhone ≠ Safari/iPhone físico. Las peticiones HTTP fueron locales de CI: no son una certificación del servidor público ni de GitHack. La exportación real de ChatGPT y la publicación permanecen sin probar/no autorizadas. La importación continúa desactivada en GitHack compartido.
 - **No fusionar ni publicar**: conservar PR #82 como candidato único, sin fusionar PR #73 y #81 por separado.
+
+
+## Auditoría final de alojamiento (2026-10-28)
+
+- Ver `docs/VISURA_PREPARACION_PUBLICACION_SEGURA.md` en esta rama. Se detectó una protección insuficiente: el importador bloqueaba solo GitHack, pero un alojamiento público nuevo no aprobado quedaría habilitado. **Se ha cambiado a bloqueo por defecto en TODOS los dominios públicos**, manteniendo loopback solo para tests sintéticos. Se incorporan pruebas en CI (`docs/test-import-origin.js`).
+- El dominio `josegude-ux.github.io` comparte origen entre rutas de proyecto; requiere hostname dedicado (p. ej., subdominio propio verificado) o un hostname de proyecto de un proveedor Pages con origen exclusivo, y permiso de creación/publicación separado.
+- El gesto de añadir a la pantalla de inicio requiere prueba en Safari físico; no se ha publicado nada ni se ha activado la importación privada.

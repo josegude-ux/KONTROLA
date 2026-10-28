@@ -578,3 +578,10 @@ Antes de redactar, guardar, proponer o añadir un prompt/botón al Centro de man
 - Test estático `docs/test-integracion-centro.js` ejecutado sobre checkout completo; 21 pruebas diagnóstico + 11 del importador superadas, sintaxis correcta.
 - E2E Chromium del **HTML completo combinado** superada en tres tamaños, navegando funciones 01 y 11, generando/copiando prompt íntegro, importando y renombrando chats ficticios y comprobando privacidad del registro; sin errores JS ni scroll horizontal. Test `docs/test-centro-e2e.py` y workflow `.github/workflows/visura-centro-integration.yml`.
 - Confirmado: `visura-panel` y `main` no se han modificado. PR #82 continúa en borrador sin fusionar. Safari/iPhone real, alojamiento exclusivo y exportación real autorizada pendientes; no probar datos privados en GitHack compartido ni publicar sin autorización.
+
+
+## Auditoría final de alojamiento (2026-10-28)
+
+- Ver `docs/VISURA_PREPARACION_PUBLICACION_SEGURA.md` en esta rama. Se detectó una protección insuficiente: el importador bloqueaba solo GitHack, pero un alojamiento público nuevo no aprobado quedaría habilitado. **Se ha cambiado a bloqueo por defecto en TODOS los dominios públicos**, manteniendo loopback solo para tests sintéticos. Se incorporan pruebas en CI (`docs/test-import-origin.js`).
+- El dominio `josegude-ux.github.io` comparte origen entre rutas de proyecto; requiere hostname dedicado (p. ej., subdominio propio verificado) o un hostname de proyecto de un proveedor Pages con origen exclusivo, y permiso de creación/publicación separado.
+- El gesto de añadir a la pantalla de inicio requiere prueba en Safari físico; no se ha publicado nada ni se ha activado la importación privada.

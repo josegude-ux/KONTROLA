@@ -35,6 +35,7 @@ jobs:
         run: |
           node docs/test-recovery.js
           node docs/test-chatgpt-import.js
+          node docs/test-import-origin.js
           node docs/test-integracion-centro.js
       - name: Install isolated Chromium test tooling
         run: |

@@ -88,8 +88,18 @@
     }
     return {next,added,renamed,same,collisions,selected:requested.size};
   }
+  // Seguro por defecto: un hostname publico solo se habilita despues de aprobar
+  // un origen HTTPS exclusivo y probar las restricciones de privacidad.
+  // Loopback es exclusivamente para pruebas locales con datos sinteticos.
+  function canUseImportAtLocation(loc) {
+    if (!loc || typeof loc !== "object") return false;
+    const host = typeof loc.hostname === "string" ? loc.hostname.toLowerCase() : "";
+    const scheme = typeof loc.protocol === "string" ? loc.protocol : "";
+    return ["http:", "https:"].includes(scheme) &&
+      ["localhost", "127.0.0.1", "[::1]", "::1"].includes(host);
+  }
   // Testable helpers, exported in Node only; not registered on window.
-  if (typeof module !== "undefined" && module.exports) module.exports = {extractMetadata,planImport,availableName};
+  if (typeof module !== "undefined" && module.exports) module.exports = {extractMetadata,planImport,availableName,canUseImportAtLocation};
   if (typeof document === "undefined") return;
 
   function setupUI() {
@@ -127,13 +137,11 @@
     const count = section.querySelector("#chatgpt-import-count");
     const apply = section.querySelector("#chatgpt-import-apply");
     let pending = [], chosen = new Set(), invalid = 0;
-    // GitHack sirve muchos repositorios bajo el mismo origen. LocalStorage de un origen
-    // compartido no es un almacén adecuado para títulos/IDs de conversaciones privadas.
-    const sharedHost = typeof location !== "undefined" &&
-      ["rawcdn.githack.com", "raw.githack.com"].includes(location.hostname);
-    if (sharedHost) {
+    // No confiar en un listado de dominios prohibidos; todo alojamiento publico
+    // queda deshabilitado por defecto hasta aprobar un origen HTTPS exclusivo.
+    if (!canUseImportAtLocation(typeof location === "undefined" ? null : location)) {
       selectFile.disabled = true;
-      status.textContent = "Protección de privacidad: en GitHack compartido se desactiva la importación de conversaciones. Necesita una dirección exclusiva para VISURA antes de procesar datos privados.";
+      status.textContent = "Importación privada desactivada en este dominio: hace falta aprobar un origen HTTPS exclusivo de VISURA. No cargues exportaciones personales aquí. El entorno local solo admite pruebas con datos ficticios.";
     }
     function discard() {
       pending = []; chosen.clear(); invalid = 0; selectFile.value = ""; search.value = "";
