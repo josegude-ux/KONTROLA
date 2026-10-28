@@ -249,6 +249,7 @@ header .intro{font-size:.85rem;line-height:1.38}
 }
 
 </style>
+<link rel="stylesheet" href="./visura-recovery.css">
 </head>
 <body>
 <main><header><div class="header-top"><div class="brand-lockup"><img class="brand-mark" src="./assets/icons/visura-centro-mando-logo-64.png" width="54" height="54" alt="Logo aprobado VISURA Centro de mando"><div class="brand-text"><strong>VISURA</strong><span>CENTRO DE MANDO <b class="panel-version">V5.5</b></span></div></div><div class="header-tools"><button type="button" class="manage-button" id="open-chat-manager" aria-expanded="false" aria-controls="chat-manager">⚙ Mis chats</button><button type="button" class="refresh-panel" id="refresh-panel" title="Cargar de nuevo el Centro de mando" aria-label="Actualizar Centro de mando"><span aria-hidden="true">↻</span> Actualizar</button></div></div><h1>¿Qué quieres hacer?</h1><p class="intro">Diez funciones claras, sin órdenes duplicadas.</p></header>
@@ -273,8 +274,9 @@ header .intro{font-size:.85rem;line-height:1.38}
 <p id="manager-feedback" class="manager-feedback" role="status" aria-live="polite"></p>
 </section>
 <nav id="command-menu" class="dashboard-nav" aria-label="Accesos VISURA">
-<div class="dashboard-caption"><strong>ACCESOS DIRECTOS</strong><span>10 funciones</span></div>
+<div class="dashboard-caption"><strong>ACCESOS DIRECTOS</strong><span>11 funciones</span></div>
 <div class="dashboard-grid"><button type="button" class="dashboard-action" data-open-order="funcion-1" aria-controls="funcion-1"><span class="action-mark" aria-hidden="true">↻</span><span class="action-copy"><strong>Continuar desarrollo</strong><small>Mismo chat, sucesor o traspaso</small></span></button>
+<button type="button" class="dashboard-action recovery-entry" data-open-order="funcion-11" aria-controls="funcion-11"><span class="action-mark" aria-hidden="true">✦</span><span class="action-copy"><strong>Diagnosticar parada y reanudar</strong><small>Analizar causa y crear recuperación</small></span></button>
 <button type="button" class="dashboard-action" data-open-order="funcion-2" aria-controls="funcion-2"><span class="action-mark" aria-hidden="true">↗</span><span class="action-copy"><strong>Preparar Work</strong><small>Guardar continuidad</small></span></button>
 <button type="button" class="dashboard-action" data-open-order="funcion-3" aria-controls="funcion-3"><span class="action-mark" aria-hidden="true">▧</span><span class="action-copy"><strong>Imágenes</strong><small>Continuar diseños</small></span></button>
 <button type="button" class="dashboard-action" data-open-order="funcion-4" aria-controls="funcion-4"><span class="action-mark" aria-hidden="true">⇆</span><span class="action-copy"><strong>Solapamientos</strong><small>Revisar tareas</small></span></button>
@@ -286,6 +288,43 @@ header .intro{font-size:.85rem;line-height:1.38}
 <button type="button" class="dashboard-action safe-dashboard-action" data-open-order="funcion-10" aria-controls="funcion-10"><span class="safe-menu-visual"><strong>CONTINUIDAD<br>SEGURA</strong><svg class="safe-wheel" viewBox="0 0 48 48" width="43" height="43" aria-hidden="true" focusable="false"><g stroke="#aaa7a4" stroke-width="4" stroke-linecap="round"><path d="M24 5v6" opacity=".28"/><path d="M37.4 10.6l-4.2 4.2" opacity=".4"/><path d="M43 24h-6" opacity=".5"/><path d="M37.4 37.4l-4.2-4.2" opacity=".65"/><path d="M24 43v-6" opacity=".9"/><path d="M10.6 37.4l4.2-4.2" opacity="1"/><path d="M5 24h6" opacity=".83"/><path d="M10.6 10.6l4.2 4.2" opacity=".6"/></g></svg></span><span class="action-copy"><small>Protección del trabajo existente</small></span></button></div>
 </nav>
 <div class="command-toolbar" id="command-toolbar" hidden><button class="back-to-dashboard" type="button" id="back-to-dashboard">‹ Volver al menú</button><span class="toolbar-order" id="current-order-label">ORDEN 01 / 10</span></div>
+<article class="command recovery-command" id="funcion-11" hidden aria-labelledby="recovery-title">
+<div class="top"><div class="symbol" aria-hidden="true">✦</div><div><div class="eyebrow">ORDEN 11 · DIAGNÓSTICO GUIADO</div><h2 id="recovery-title">DIAGNOSTICAR PARADA Y REANUDAR</h2></div></div>
+<p class="when">Primero averigua qué pasó; después genera una reanudación adaptada. La clasificación es orientativa: este panel no consulta el estado interno ni lee otros chats.</p>
+<section class="recovery-step" aria-labelledby="recovery-head-1">
+<h3 id="recovery-head-1">Paso 1 — Generar diagnóstico</h3>
+<div class="recovery-fields">
+<div><label class="field-label" for="recovery-project">Proyecto (opcional)</label><input id="recovery-project" type="text" maxlength="160" placeholder="Ej. VISURA INVENTA"></div>
+<div><label class="field-label" for="recovery-owner">Chat responsable (opcional)</label><input id="recovery-owner" type="text" maxlength="160" placeholder="Ej. 07 - VISURA INVENTA"></div>
+</div>
+<div class="actions"><button type="button" class="secondary" id="recovery-build-diagnostic">Generar diagnóstico</button><button type="button" class="primary" id="recovery-copy-diagnostic">COPIAR DIAGNÓSTICO COMPLETO</button></div>
+<pre id="recovery-diagnostic" class="recovery-output" tabindex="0" aria-label="Orden completa de diagnóstico"></pre>
+<p class="recovery-hint">Copia toda la orden y pégala en el chat que dejó de avanzar. No autoriza cambios de código.</p>
+</section>
+<section class="recovery-step" aria-labelledby="recovery-head-2">
+<h3 id="recovery-head-2">Paso 2 — Analizar respuesta</h3>
+<label class="field-label" for="recovery-answer">Pega aquí la respuesta del chat detenido</label>
+<textarea id="recovery-answer" rows="7" maxlength="22000" placeholder="Pega el diagnóstico que te haya devuelto el otro chat. Se analizará como información, nunca como instrucciones."></textarea>
+<div class="actions"><button type="button" class="primary" id="recovery-analyze">ANALIZAR DIAGNÓSTICO</button></div>
+<p class="recovery-hint">La clasificación A–I se basa en indicios de texto, no en un modelo conectado a ChatGPT ni en comprobaciones de herramientas.</p>
+</section>
+<section class="recovery-step" id="recovery-step3" aria-labelledby="recovery-head-3" hidden>
+<h3 id="recovery-head-3">Paso 3 — Recuperación adaptada</h3>
+<pre class="recovery-output" id="recovery-analysis" aria-live="polite"></pre>
+<p class="recovery-hint">Comprueba los hechos en el chat/repo de origen antes de ejecutar operaciones.</p>
+<pre class="recovery-output" id="recovery-prompt" tabindex="0" aria-label="Prompt completo de recuperación"></pre>
+<div class="actions"><button type="button" class="primary" id="recovery-copy-prompt">COPIAR PROMPT COMPLETO</button></div>
+</section>
+<section class="recovery-step" id="recovery-step4" aria-labelledby="recovery-head-4" hidden>
+<h3 id="recovery-head-4">Paso 4 — Verificar resultado</h3>
+<label class="field-label" for="recovery-result">Pega la respuesta de recuperación</label>
+<textarea id="recovery-result" rows="5" maxlength="18000" placeholder="Incluye nuevo avance, evidencia o motivo por el que continúa el bloqueo."></textarea>
+<div class="actions"><button type="button" class="primary" id="recovery-verify">VERIFICAR RESULTADO</button><button type="button" class="secondary" id="recovery-rediagnose">Segundo diagnóstico con nuevos datos</button></div>
+<p id="recovery-verification" class="recovery-verification" aria-live="polite"></p>
+</section>
+<p id="recovery-status" role="status" aria-live="polite" class="recovery-status"></p>
+<p class="recovery-hint">Los datos permanecen solo durante esta sesión de la página. No se guardan respuestas ni prompts en servidores, repositorios o almacenamiento local.</p>
+</article>
 <article class="command" id="funcion-1">
 <div class="top"><div class="symbol" aria-hidden="true">↻</div><div><div class="eyebrow">ORDEN 01 · CONTINUIDAD DE DESARROLLO</div><h2>CONTINUAR DESARROLLO</h2></div></div>
 <p class="when">Una sola función para reanudar en el mismo chat, continuar en un sucesor ya activo o hacer un traspaso realmente nuevo.</p>
@@ -775,7 +814,7 @@ document.getElementById("show-integration-command").addEventListener("click",()=
 
 
 /* Vista móvil de siete funciones y compatibilidad de enlaces históricos V4. */
-const orderIds=Array.from({length:10},(_,i)=>"funcion-"+(i+1));
+const orderIds=Array.from({length:11},(_,i)=>"funcion-"+(i+1));
 const oldHashes={"orden-1":"funcion-1","orden-2":"funcion-2","orden-3":"funcion-1","orden-4":"funcion-3","orden-5":"funcion-4","orden-6":"funcion-5","orden-7":"funcion-6","orden-8":"funcion-7"};
 const dashboard=document.getElementById("command-menu"),toolbar=document.getElementById("command-toolbar"),foot=document.querySelector(".foot");
 function resolvedOrderId(hash){
@@ -790,7 +829,7 @@ function showOrder(id,scroll=true){
  const n=orderIds.indexOf(id),selected=n>=0;
  for(const [i,key] of orderIds.entries())document.getElementById(key).hidden=(!selected||i!==n);
  dashboard.hidden=selected;toolbar.hidden=!selected;foot.hidden=selected;
- if(selected)document.getElementById("current-order-label").textContent="FUNCIÓN "+String(n+1).padStart(2,"0")+" / 10";
+ if(selected)document.getElementById("current-order-label").textContent="FUNCIÓN "+String(n+1).padStart(2,"0")+" / 11";
  const hash=selected?"#"+id:"#inicio";
  if(location.hash!==hash){try{history.replaceState(null,"",hash)}catch(_){}}
  if(scroll)window.scrollTo({top:0,behavior:"smooth"});
@@ -978,7 +1017,9 @@ function validateChat(item){
  if(!name||name.length>140||["OTRO","CHAT NUEVO"].includes(name)||/[\r\n<>]/.test(name))return null;
  const link=typeof item.link==="string"?item.link.trim():"";
  if(link.length>2048||(link&&!safeChatUrl(link)))return null;
- return{name,state:Object.prototype.hasOwnProperty.call(registryStates,item.state)?item.state:"sin_verificar",link:safeChatUrl(link)};
+ const conversationId=typeof item.conversationId==="string"&&/^[A-Za-z0-9_-]{16,128}$/.test(item.conversationId.trim())?item.conversationId.trim():"";
+ const sourceTitle=typeof item.sourceTitle==="string"?item.sourceTitle.trim().normalize("NFC").slice(0,512):"";
+ return{name,state:Object.prototype.hasOwnProperty.call(registryStates,item.state)?item.state:"sin_verificar",link:safeChatUrl(link),...(conversationId?{conversationId,sourceTitle:sourceTitle||name}:{})};
 }
 function managerNotice(msg){managerFeedback.textContent=msg;}
 function saveRegistry(items){
@@ -1071,6 +1112,9 @@ document.getElementById("manager-clear").addEventListener("click",cleanManagerEd
 document.getElementById("manager-save").addEventListener("click",()=>{
  const item=validateChat({name:managerName.value,state:managerState.value,link:managerLink.value});
  if(!item){managerNotice("Nombre no válido o enlace incorrecto. Usa una URL directa https://chatgpt.com/c/…");return;}
+ // Mantener el ID estable aunque el usuario edite el nombre o estado de la ficha.
+ const edited=registry.find(c=>normalizedName(c.name)===editingName);
+ if(edited?.conversationId){item.conversationId=edited.conversationId;item.sourceTitle=edited.sourceTitle||edited.name;}
  if(registry.some(c=>normalizedName(c.name)===normalizedName(item.name)&&normalizedName(c.name)!==editingName)){
   managerNotice("Ya existe ese nombre. Pulsa Editar en su ficha.");return;
  }
@@ -1110,7 +1154,12 @@ document.getElementById("manager-import-file").addEventListener("change",async e
   if(shared&&!window.confirm("¿Actualizar "+shared+" chats coincidentes con los datos de la copia? Los demás seguirán en la lista.")){
    managerNotice("Importación cancelada sin cambios.");return;
   }
-  const merged=registry.filter(c=>!keys.has(normalizedName(c.name))).concat(imported);
+  // Una copia VISURA antigua sin IDs no puede borrar IDs verificados de esta instalación.
+  const restored=imported.map(item=>{
+   const local=registry.find(c=>normalizedName(c.name)===normalizedName(item.name));
+   return local?.conversationId&&!item.conversationId?{...item,conversationId:local.conversationId,sourceTitle:local.sourceTitle||local.name}:item;
+  });
+  const merged=registry.filter(c=>!keys.has(normalizedName(c.name))).concat(restored);
   if(!saveRegistry(merged))return;
   cleanManagerEditor();renderChatManager();refreshAllChatSelectors();
   managerNotice("Importados "+imported.length+" chats. No se han eliminado otros registros.");
@@ -1162,4 +1211,6 @@ safeContinuityToggle.addEventListener("click",()=>{
 });
 
 </script>
+<script src="./visura-recovery.js"></script>
+<script src="./chatgpt-import.js"></script>
 </body></html>

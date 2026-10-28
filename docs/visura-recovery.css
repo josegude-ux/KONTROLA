@@ -1,0 +1,14 @@
+/* VISURA — Función 11, adición aislada; sin alterar estilos de las funciones 01-10 */
+.recovery-entry .action-mark{background:#dce8ff;color:#234a85}
+.recovery-command{max-width:100%}
+.recovery-command [hidden]{display:none!important}
+.recovery-command .recovery-step{border-top:1px solid var(--border);padding:17px 0 9px;margin-top:12px}
+.recovery-command .recovery-step h3{font-size:1.08rem;margin:0 0 14px;color:var(--text)}
+.recovery-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.recovery-command input,.recovery-command textarea{display:block;width:100%;min-width:0;max-width:100%;font:inherit;font-size:16px;line-height:1.5;padding:12px;border:1px solid var(--border);border-radius:12px;background:var(--bg);color:var(--text)}
+.recovery-command textarea{resize:vertical}
+.recovery-command .recovery-output{max-height:320px;overflow:auto;white-space:pre-wrap;overflow-wrap:anywhere;font-size:.82rem;line-height:1.5;margin-top:12px}
+.recovery-command .recovery-hint{font-size:.83rem;color:var(--muted);margin-top:10px}
+.recovery-command .recovery-status,.recovery-command .recovery-verification{margin-top:12px;font-size:.88rem;font-weight:600;color:var(--text)}
+.recovery-command button:focus-visible,.recovery-command input:focus-visible,.recovery-command textarea:focus-visible{outline:3px solid #8ab7e0;outline-offset:3px}
+@media(max-width:640px){.recovery-fields{grid-template-columns:1fr}.recovery-command .actions{flex-direction:column}.recovery-command .actions button{width:100%}.recovery-command .recovery-output{max-height:260px}}
