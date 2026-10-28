@@ -65,8 +65,8 @@ jobs:
           url = result.get("deploy_url") or result.get("url")
           # La respuesta de un despliegue anonimo puede tener estructura diferente.
           # SOLO inspeccionamos y mostramos URLs con hostname netlify.app; JAMAS tokens.
-          candidates = re.findall(r"https://(?:[a-z0-9-]+\\.)*netlify\\.app", raw, flags=re.IGNORECASE)
-          if not isinstance(url, str) or not re.fullmatch(r"https://(?:[a-z0-9-]+\\.)*netlify\\.app/?", url):
+          candidates = re.findall(r"https://(?:[a-z0-9-]+\.)*netlify\.app", raw, flags=re.IGNORECASE)
+          if not isinstance(url, str) or not re.fullmatch(r"https://(?:[a-z0-9-]+\.)*netlify\.app/?", url):
               url = candidates[0] if candidates else None
           if not url:
               print("CLAVES_PUBLICAS=" + repr(sorted(result.keys()) if isinstance(result, dict) else type(result).__name__))
