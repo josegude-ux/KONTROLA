@@ -34,6 +34,8 @@ class CodeownersProbeTests(unittest.TestCase):
         self.assertEqual(result["lookup"], "file_observed")
         self.assertEqual(result["first_observed_path"], PATHS[0])
         self.assertTrue(result["unshadowed_candidate_observed"])
+        self.assertEqual(result["observations"][0]["blob_sha"], SHA)
+        self.assertIsNone(result["observations"][1]["blob_sha"])
         self.assertEqual(len(calls), 3)
         self.assertTrue(all(c.get_method() == "GET" for c in calls))
         self.assertTrue(all(c.full_url.startswith("https://api.github.com/repos/owner/repo/contents/")
@@ -45,6 +47,26 @@ class CodeownersProbeTests(unittest.TestCase):
                     "reviewer_eligibility_verified", "repository_policy_verified",
                     "execution_authorized", "merge_authorized", "deployment_authorized"):
             self.assertIs(result[key], False)
+
+    def test_content_version_change_is_visible_without_file_contents(self):
+        first, _ = opener_for({PATHS[0]: file_metadata(PATHS[0])})
+        second, _ = opener_for({
+            PATHS[0]: file_metadata(PATHS[0], sha="b" * 40)
+        })
+        a = observe_codeowners(REPO, "main", "dummy", first)
+        b = observe_codeowners(REPO, "main", "dummy", second)
+        self.assertNotEqual(a["observations"], b["observations"])
+        self.assertNotIn("dummy", json.dumps(a))
+        self.assertNotIn("content", json.dumps(a))
+        self.assertFalse(a["execution_authorized"])
+        self.assertFalse(b["effective_code_ownership_verified"])
+
+    def test_lower_priority_sha_is_recorded_but_not_applied_ownership(self):
+        opener, _ = opener_for({PATHS[1]: file_metadata(PATHS[1])})
+        evidence = observe_codeowners(REPO, "main", "dummy", opener)
+        self.assertEqual(evidence["observations"][1]["blob_sha"], SHA)
+        self.assertFalse(evidence["unshadowed_candidate_observed"])
+        self.assertFalse(evidence["reviewer_eligibility_verified"])
 
     def test_earlier_404_makes_lower_priority_file_ambiguous(self):
         opener, _ = opener_for({PATHS[1]: file_metadata(PATHS[1])})

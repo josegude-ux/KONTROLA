@@ -44,11 +44,19 @@ def observe_codeowners(repository, branch, token, opener=None):
                 first_observed_path = path
                 # Earlier 404/403 cannot prove a higher-priority file is absent.
                 unshadowed_candidate = all_preceding_visible
-            observations.append({"path": path, "lookup": "file_observed"})
+            # Compare Git blob identities, not merely file visibility. A
+            # CODEOWNERS edit can occur while a PR's head SHA stays constant.
+            # We never fetch, print or interpret CODEOWNERS file contents.
+            observations.append({
+                "path": path, "lookup": "file_observed",
+                "blob_sha": data["sha"].lower(),
+            })
         else:
             # Both 403 and 404 leave existence and precedence uncertain.
             all_preceding_visible = False
-            observations.append({"path": path, "lookup": status})
+            observations.append({
+                "path": path, "lookup": status, "blob_sha": None,
+            })
     return {
         "repository": repository,
         "branch": branch,
