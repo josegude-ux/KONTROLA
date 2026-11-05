@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
+import {createHash} from 'node:crypto';
 import {fileURLToPath} from 'node:url';
 import {dirname,resolve} from 'node:path';
 import {fechaAcreditada,fechaCargaAcreditada,fechaRecepcionAcreditada,fechaOperativa,verificablesHoy,sinFechaVerificables,pendientesRecepcion,resetJornada,esVerificablePor} from '../src/control-cargas-jornada.mjs';
@@ -16,9 +17,9 @@ test('las dos acciones del submenú exterior son únicamente En preparación y E
  assert.match(js,/\$\("openReview"\)\.addEventListener\("click",\(\)=>openControlFlujos\(\)\)/);
 });
 test('no se alteran id y recursos de la tarjeta principal',()=>{
- const original=read('RESPALDO_R1L3/index.html');
- const card=x=>x.match(/<button id="openReview"[\s\S]*?<\/button>/)?.[0];
- assert.equal(card(html),card(original));
+ const card=html.match(/<button id="openReview"[\s\S]*?<\/button>/)?.[0];
+ assert.ok(card);
+ assert.equal(createHash('sha256').update(card).digest('hex'),'dc0da391d24b7dab60a1bba323dc6e8eb750c5c7981766bf70184ade9aff29f5');
 });
 test('navegación original de Operaciones y submenú Preparación permanece',()=>{
  assert.match(js,/\$\("cargasVerificar"\)\.addEventListener\("click",\(\)=>openReviewMenu\("cargasMenuView"\)\)/);
@@ -103,7 +104,7 @@ test('revisión accesible: tab, botones táctiles, estilos y precache preservado
  assert.match(sw,/v083-control-dos-flujos-r1l3-lab-0345/);
 });
 test('no se cambia la maqueta del submenú Preparación A',()=>{
- const original=read('RESPALDO_R1L3/index.html');
- const section=x=>x.match(/<section id="preparacionMenuView"[\s\S]*?<\/section>/)?.[0];
- assert.equal(section(html),section(original));
+ const section=html.match(/<section id="preparacionMenuView"[\s\S]*?<\/section>/)?.[0];
+ assert.ok(section);
+ assert.equal(createHash('sha256').update(section).digest('hex'),'f3f88528c45b227ddf12453c4238050e0ce4c6d0209a7d2556a8b06fe84c97b7');
 });

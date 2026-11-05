@@ -67,6 +67,6 @@ test("la interfaz conserva las tres acciones, controles accesibles, mensajes y l
   assert.match(html,/cantidades son de la carga|cantidades son de la carga/i);
   assert.match(html,/no registra, confirma ni ejecuta movimientos/);
   assert.match(app,/articulosCargas=\[\];origenesMovimientos=\[\];articulosWarehouse=null;articulosSerial\+\+/);
-  assert.match(sw,/kontrola-integral-visura-v081-prepara-submenu-0345/);
+  assert.match(sw,/kontrola-integral-visura-v083-control-dos-flujos-r1l3-lab-0345/);
   assert.match(sw,/\.\/src\/prepara-consulta\.mjs/);
 });

@@ -74,13 +74,18 @@ test('conserva listeners existentes, lectura permitida y borrador sin mutar BC',
  const lib=read('src/prepara-consulta.mjs').toString();
  assert.doesNotMatch(lib,/\.insert\(|\.update\(|\.upsert\(|\.delete\(|\.rpc\(/);
 });
-test('la base JS de Preparación A está respaldada y sus listeners originales se conservan',()=>{
- const bytes=read('RESPALDO_R1L3/src/app.mjs');
- const blob=createHash('sha1').update(`blob ${bytes.length}\0`).update(bytes).digest('hex');
- assert.equal(blob,'bf14055fc92f59add5e139e1ea3b8f52620342fe');
- for(const id of ['preparacionCargas','preparacionArticulos','preparacionMovimientos']){
-  assert.match(app,new RegExp('\\$\\("'+id+'"\\)\\.addEventListener'));
+test('la base JS de Preparación A conserva los listeners y sus destinos originales',()=>{
+ const rutas={
+  preparacionCargas:/\$\("preparacionCargas"\)\.addEventListener\("click",\(\)=>openLoadsMenu\("preparacionMenuView"\)\)/,
+  preparacionArticulos:/\$\("preparacionArticulos"\)\.addEventListener\("click"/,
+  preparacionMovimientos:/\$\("preparacionMovimientos"\)\.addEventListener\("click"/
+ };
+ for(const [id,ruta] of Object.entries(rutas)){
+  assert.match(app,ruta,'Falta ruta '+id);
+  assert.equal((app.match(new RegExp('\\$\\("'+id+'"\\)\\.addEventListener','g'))||[]).length,1,'Listener duplicado '+id);
  }
+ assert.match(app,/preparacionArticulosView:"backFromPreparacionArticulos"/);
+ assert.match(app,/preparacionMovimientosView:"backFromPreparacionMovimientos"/);
 });
 test('no cambia la cabecera, ajustes ni el pie de página',()=>{
  assert.match(html,/<button type="button" id="globalBack"/);

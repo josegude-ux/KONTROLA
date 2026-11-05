@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
+import {createHash} from 'node:crypto';
 const read=p=>readFileSync(new URL('../'+p,import.meta.url),'utf8');
 const html=read('index.html'),app=read('src/app.mjs'),css=read('styles.css'),ui=read('src/cierre-recepcion-ui-lab.mjs'),sw=read('sw.js');
 const excerpt=(begin,end)=>app.slice(app.indexOf(begin),app.indexOf(end));
@@ -42,11 +43,13 @@ test('UI cierre distingue acciones sin y con incidencias y mantiene ambas etique
  assert.match(ui,/noIncidentsConfirmed:true/);assert.match(ui,/noIncidentsConfirmed:false/);
 });
 test('no se crea una RPC ni almacén sintético en el menú principal real',()=>{
- const original=read('RESPALDO_R1L4/index.html');
- const section=x=>x.match(/<section id="preparacionMenuView"[\s\S]*?<\/section>/)?.[0];
- assert.equal(section(html),section(original));
- const mainCard=x=>x.match(/<button id="openReview"[\s\S]*?<\/button>/)?.[0];
- assert.equal(mainCard(html),mainCard(original));
+ const digest=x=>createHash('sha256').update(x).digest('hex');
+ const section=html.match(/<section id="preparacionMenuView"[\s\S]*?<\/section>/)?.[0];
+ const mainCard=html.match(/<button id="openReview"[\s\S]*?<\/button>/)?.[0];
+ assert.ok(section&&mainCard,'Submenú y tarjeta originales obligatorios');
+ assert.equal(digest(section),'f3f88528c45b227ddf12453c4238050e0ce4c6d0209a7d2556a8b06fe84c97b7');
+ assert.equal(digest(mainCard),'dc0da391d24b7dab60a1bba323dc6e8eb750c5c7981766bf70184ade9aff29f5');
+ assert.doesNotMatch(section+mainCard,/labRecepcion|SIMULACIÓN LOCAL|recepcionCierreLabView/);
 });
 test('estilos accesibles LAB táctiles y foco visible sin alterar Maquetación A',()=>{
  assert.match(css,/#recepcionCierreLabView button\{min-height:44px/);

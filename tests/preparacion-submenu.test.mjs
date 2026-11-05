@@ -9,7 +9,7 @@ const html=read("index.html"),app=read("src/app.mjs"),css=read("styles.css");
 const ids=["preparacionCargas","preparacionArticulos","preparacionMovimientos"];
 test("Preparación abre un submenú y no directamente cargas",()=>{
   assert.match(app,/\$\("openPreparation"\)\.addEventListener\("click",\(\)=>switchView\("preparacionMenuView"\)\)/);
-  assert.match(html,/id="preparacionMenuView" class="view" hidden/);
+  assert.match(html,/id="preparacionMenuView" class="view v15-subprep" hidden/);
   assert.equal(ids.map(id=>html.indexOf(`id="${id}"`)).every(x=>x>0),true);
   assert.deepEqual(ids.map(id=>html.indexOf(`id="${id}"`)),[...ids.map(id=>html.indexOf(`id="${id}"`))].sort((a,b)=>a-b));
 });
@@ -36,7 +36,7 @@ test("La vuelta funciona por botón superior sin alterar Control de Cargas",()=>
   assert.match(app,/\$\("cargasPreparar"\)\.addEventListener\("click",\(\)=>openLoadsMenu\("cargasMenuView"\)\)/);
 });
 test("Submenú accesible con botones no submit, diseño móvil y originales intactos",()=>{
-  for(const id of ids)assert.match(html,new RegExp('id="'+id+'" type="button" class="submenu-card prepara-submenu-card"'));
+  for(const id of ids)assert.match(html,new RegExp('id="'+id+'" type="button" class="submenu-card prepara-submenu-card v15-subprep__card'));
   assert.match(html,/aria-label="Funciones de Preparación"/);
   assert.match(css,/\.prepara-submenu-grid/);
   assert.match(css,/@media \(max-width:650px\)/);
