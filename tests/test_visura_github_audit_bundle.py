@@ -390,7 +390,7 @@ class AuditBundleTests(unittest.TestCase):
             )
         self.assertEqual(result["head_check_runs"]["head_sha"], HEAD)
         self.assertFalse(result["head_check_runs"]["required_checks_verified"])
-        self.check_mock.assert_called_once()
+        self.assertEqual(self.check_mock.call_count, 2)
         self.assertEqual(self.check_mock.call_args.args[:3], (REPO, HEAD, "secret"))
 
     def test_missing_checks_cannot_authorize_bundle(self):
@@ -470,7 +470,7 @@ class AuditBundleTests(unittest.TestCase):
             result = inspect_readonly_audit_bundle(
                 REPO, 37, "main", "secret", opener=lambda *args: None
             )
-        self.legacy_mock.assert_called_once()
+        self.assertEqual(self.legacy_mock.call_count, 2)
         self.assertEqual(self.legacy_mock.call_args.args[:3], (REPO, HEAD, "secret"))
         self.legacy_comparison.assert_called_once()
         self.assertEqual(
@@ -829,6 +829,130 @@ class AuditBundleTests(unittest.TestCase):
         ):
             inspect_readonly_audit_bundle(REPO, 37, "main", "secret", opener=lambda *a: None)
         self.assertEqual(stages, ["permissions", "permissions", "final_pr"])
+
+    def test_check_conclusion_changes_without_sha_change_aborts(self):
+        initial = dict(self.check_mock.return_value)
+        changed = dict(initial, status_counts={"in_progress": 1},
+                       conclusion_counts={})
+        self.check_mock.side_effect = [initial, changed]
+        with patch(
+            "scripts.visura_github_audit_bundle.fetch_readonly_review_snapshot",
+            return_value=fixture_snapshot(),
+        ), patch(
+            "scripts.visura_github_audit_bundle.inspect_branch_policy",
+            return_value={"branch": "any"},
+        ), patch(
+            "scripts.visura_github_audit_bundle._get_json",
+        ) as final_pr:
+            with self.assertRaisesRegex(
+                ValueError, "Commit check observations changed during the audit"
+            ):
+                inspect_readonly_audit_bundle(
+                    REPO, 37, "main", "secret", opener=lambda *args: None
+                )
+            final_pr.assert_not_called()
+        self.assertEqual(self.check_mock.call_count, 2)
+
+    def test_legacy_status_failure_from_success_aborts(self):
+        original = dict(self.legacy_mock.return_value)
+        changed = dict(original, latest_state_counts={
+            "success": 0, "failure": 1, "pending": 0, "error": 0
+        })
+        self.legacy_mock.side_effect = [original, changed]
+        with patch(
+            "scripts.visura_github_audit_bundle.fetch_readonly_review_snapshot",
+            return_value=fixture_snapshot(),
+        ), patch(
+            "scripts.visura_github_audit_bundle.inspect_branch_policy",
+            return_value={"branch": "any"},
+        ), patch(
+            "scripts.visura_github_audit_bundle._get_json",
+        ) as final_pr:
+            with self.assertRaisesRegex(
+                ValueError, "Legacy commit statuses changed during the audit"
+            ):
+                inspect_readonly_audit_bundle(
+                    REPO, 37, "main", "secret", opener=lambda *args: None
+                )
+            final_pr.assert_not_called()
+        self.assertEqual(self.legacy_mock.call_count, 2)
+
+    def test_check_run_page_reordering_is_not_a_false_policy_change(self):
+        original = dict(self.check_mock.return_value)
+        original["observed_total"] = 2
+        original["status_counts"] = {"completed": 2}
+        original["conclusion_counts"] = {"success": 2}
+        original["named_checks_complete"] = True
+        original["named_check_runs"] = [
+            {"name": "lint", "app_id": 1, "status": "completed",
+             "conclusion": "success"},
+            {"name": "tests", "app_id": None, "status": "completed",
+             "conclusion": "success"},
+        ]
+        changed = dict(original, named_check_runs=list(
+            reversed(original["named_check_runs"])
+        ))
+        self.check_mock.side_effect = [original, changed]
+        with patch(
+            "scripts.visura_github_audit_bundle.fetch_readonly_review_snapshot",
+            return_value=fixture_snapshot(),
+        ), patch(
+            "scripts.visura_github_audit_bundle.inspect_branch_policy",
+            return_value={"branch": "any"},
+        ), patch(
+            "scripts.visura_github_audit_bundle._get_json",
+            return_value=fixture_pr(),
+        ):
+            result = inspect_readonly_audit_bundle(
+                REPO, 37, "main", "secret", opener=lambda *args: None
+            )
+        self.assertTrue(result["same_commit_checks_after_audit"])
+        self.assertTrue(result["same_legacy_statuses_after_audit"])
+        self.assertFalse(result["merge_authorized"])
+
+    def test_check_runs_becoming_inaccessible_aborts(self):
+        original = dict(self.check_mock.return_value)
+        denied = dict(original, lookup="inaccessible_or_not_found",
+                      observed_total=None, status_counts=None,
+                      conclusion_counts=None)
+        self.check_mock.side_effect = [original, denied]
+        with patch(
+            "scripts.visura_github_audit_bundle.fetch_readonly_review_snapshot",
+            return_value=fixture_snapshot(),
+        ), patch(
+            "scripts.visura_github_audit_bundle.inspect_branch_policy",
+            return_value={"branch": "any"},
+        ):
+            with self.assertRaisesRegex(
+                ValueError, "Commit check observations changed"
+            ):
+                inspect_readonly_audit_bundle(
+                    REPO, 37, "main", "secret", opener=lambda *args: None
+                )
+
+    def test_check_and_status_reads_bound_to_pr_sha(self):
+        with patch(
+            "scripts.visura_github_audit_bundle.fetch_readonly_review_snapshot",
+            return_value=fixture_snapshot(),
+        ), patch(
+            "scripts.visura_github_audit_bundle.inspect_branch_policy",
+            return_value={"branch": "any"},
+        ), patch(
+            "scripts.visura_github_audit_bundle._get_json",
+            return_value=fixture_pr(),
+        ):
+            result = inspect_readonly_audit_bundle(
+                REPO, 37, "main", "secret", opener=lambda *args: None
+            )
+        self.assertEqual(
+            [call.args[:3] for call in self.check_mock.call_args_list],
+            [(REPO, HEAD, "secret"), (REPO, HEAD, "secret")],
+        )
+        self.assertEqual(
+            [call.args[:3] for call in self.legacy_mock.call_args_list],
+            [(REPO, HEAD, "secret"), (REPO, HEAD, "secret")],
+        )
+        self.assertFalse(result["execution_authorized"])
 
     def test_pr_retargeting_during_policy_fetch_rejected(self):
         with patch(
