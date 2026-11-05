@@ -1,0 +1,47 @@
+name: VISURA AUTO-DEV - Queue Audit
+on:
+  push:
+    branches:
+      - chore/visura-auto-dev-guardrails
+    paths:
+      - .github/workflows/visura-auto-dev-queue-audit.yml
+      - scripts/visura_queue_audit.py
+      - tests/test_visura_queue_audit.py
+      - scripts/visura_budget_gate.py
+      - tests/test_visura_budget_gate.py
+      - scripts/visura_safety_smoke.py
+      - scripts/visura_budget_ledger.py
+      - tests/test_visura_budget_ledger.py
+  pull_request:
+    paths:
+      - .github/workflows/visura-auto-dev-queue-audit.yml
+      - scripts/visura_*.py
+      - tests/test_visura_*.py
+  workflow_dispatch:
+permissions:
+  contents: read
+  issues: read
+concurrency:
+  group: visura-auto-dev-queue-audit
+  cancel-in-progress: false
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout without persisted credentials
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Test input validation without network or AI
+        shell: bash
+        run: |
+          python3 -m compileall -q scripts/visura_budget_gate.py scripts/visura_budget_ledger.py scripts/visura_queue_audit.py tests/test_visura_budget_gate.py tests/test_visura_budget_ledger.py tests/test_visura_queue_audit.py
+          python3 -m unittest discover -s tests -p 'test_visura_*.py' -v
+          python3 scripts/visura_budget_gate.py
+          python3 -m scripts.visura_safety_smoke
+      - name: Audit approved pilot issue (read only)
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        shell: bash
+        run: python3 scripts/visura_queue_audit.py

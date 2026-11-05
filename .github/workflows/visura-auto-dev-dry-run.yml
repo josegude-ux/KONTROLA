@@ -1,0 +1,43 @@
+name: VISURA AUTO-DEV - Dry Run
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - chore/visura-auto-dev-guardrails
+    paths:
+      - .github/workflows/visura-auto-dev-dry-run.yml
+permissions:
+  contents: read
+concurrency:
+  group: visura-auto-dev-dry-run
+  cancel-in-progress: false
+jobs:
+  verify:
+    name: Safe cloud runner check
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Check continuity and security documentation
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f docs/CONTINUIDAD.md
+          test -f docs/VISURA_AUTO_DEV_SEGURIDAD.md
+          test -f docs/VISURA_AUTO_DEV_PLAN_10EUR.md
+          echo "VISURA cloud runner OK"
+          echo "No API key was accessed; no changes were written."
+      - name: Publish dry-run summary
+        shell: bash
+        run: |
+          {
+            echo "## VISURA AUTO-DEV dry-run"
+            echo "- GitHub hosted runner: OK"
+            echo "- OpenRouter API: NOT CALLED"
+            echo "- Repository permissions: read-only"
+            echo "- Database / deployment: NOT ACCESSED"
+            echo "- Agent: NOT INSTALLED"
+          } >> "$GITHUB_STEP_SUMMARY"
