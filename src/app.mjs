@@ -16,7 +16,7 @@ const $=id=>document.getElementById(id);
 let client=null,user=null,profile=null,loads=[],current=null,currentPreparation=null,groups=[],selectedAisle="TODOS",busy=false,opening=false;
 let reviewLoads=[],currentVerification=null,verificationLines=[];
 let warehouses=[],selectedWarehouse=localStorage.getItem("kontrola-warehouse")||"COR_01_COR",adminController=null;
-let loadsParent="homeView",reviewLoadsParent="homeView",loadsMode="preparacion",currentReadOnly=false,detailBackView="loadsView",historyRows=[],historyReady=false,adminParent="homeView",prepTimerId=null;
+let loadsParent="homeView",reviewLoadsParent="homeView",loadsMode="preparacion",currentReadOnly=false,detailBackView="loadsView",historyRows=[],historyReady=false,adminParent="homeView";
 let loadsRequestSerial=0,legacyHeaderBusy=false;
 const legacyHeaderCache=new Map();
 const truckCapacitySession=new Map();
@@ -38,14 +38,12 @@ function switchView(id,{force=false}={}){
   for(const element of document.querySelectorAll(".view"))visible(element,element.id===id);
   // El único botón visible de retorno se mantiene en la barra superior fija.
   $("globalBack").hidden=id==="homeView";
-  if(id!=="detailView")stopPreparationClock();
   global();
   window.scrollTo({top:0,behavior:"instant"});
   return true;
 }
 function loggedOut(message=""){
   user=null;profile=null;loads=[];historyRows=[];historyReady=false;current=null;currentPreparation=null;currentReadOnly=false;reviewLoads=[];currentVerification=null;verificationLines=[];
-  stopPreparationClock();
   loadsRequestSerial++;legacyHeaderCache.clear();legacyHeaderBusy=false;
   truckCapacitySession.clear();truckCapacityTouched=false;
   $("truckCapacityPanel").hidden=true;
@@ -488,34 +486,6 @@ $("globalBack").addEventListener("click",()=>{
   else if(view==="adminView")switchView(adminParent);
   else if(backButtons[view])$(backButtons[view]).click();
 });
-function stopPreparationClock(){
-  if(prepTimerId!==null){clearInterval(prepTimerId);prepTimerId=null;}
-}
-function formatPreparationDuration(start,end=Date.now()){
-  const began=new Date(start).getTime();
-  const ended=typeof end==="number"?end:new Date(end).getTime();
-  if(!Number.isFinite(began)||!Number.isFinite(ended))return "—";
-  const seconds=Math.max(0,Math.floor((ended-began)/1000));
-  const hours=String(Math.floor(seconds/3600)).padStart(2,"0");
-  const minutes=String(Math.floor(seconds%3600/60)).padStart(2,"0");
-  return hours+":"+minutes+":"+String(seconds%60).padStart(2,"0");
-}
-function renderPreparationClock(){
-  const clock=$("prepClock");
-  if(currentReadOnly||!current||!current.preparacion_inicio){clock.hidden=true;return;}
-  clock.hidden=false;
-  if(currentPreparation?.active)clock.textContent="Tiempo de preparación · "+formatPreparationDuration(current.preparacion_inicio);
-  else if(currentPreparation?.finalized&&current.preparacion_fin)
-    clock.textContent="Tiempo de preparación finalizado · "+formatPreparationDuration(current.preparacion_inicio,current.preparacion_fin);
-  else clock.hidden=true;
-}
-function startPreparationClock(){
-  stopPreparationClock();
-  renderPreparationClock();
-  if(currentPreparation?.active)prepTimerId=setInterval(()=>{
-    if(!document.hidden)renderPreparationClock();
-  },1000);
-}
 async function startCurrentPreparation(){
   if(busy||!current||currentReadOnly||currentPreparation?.active||currentPreparation?.finalized||current.estado==="cerrada")return;
   if(assessment().estado!=="viable"){
@@ -532,7 +502,7 @@ async function startCurrentPreparation(){
     if(user?.id!==requestUser||current?.codigo!==code)return;
     const result=Array.isArray(data)?data[0]:data;
     if(!result?.inicio)throw Error("El servidor no ha confirmado la hora de inicio.");
-    // Las cargas finalizadas no vuelven a abrirse ni crean relojes nuevos.
+    // Las cargas finalizadas no vuelven a abrirse ni activan procesos nuevos.
     if(current.preparacion_fin){
       currentPreparation={active:false,finalized:true};
       $("prepStatus").textContent="Esta preparación ya estaba finalizada.";
@@ -545,8 +515,7 @@ async function startCurrentPreparation(){
     current.estado=current.verificador_id?"verificacion_en_curso":"preparacion_en_curso";
     visible($("startPreparation"),false);visible($("finishPreparation"),true);
     $("prepStatus").className="info-bar";
-    $("prepStatus").textContent="Preparación activa. Inicio registrado por el servidor; el tiempo continúa al salir de esta pantalla.";
-    startPreparationClock();
+    $("prepStatus").textContent="Preparación activa. Inicio registrado por el servidor; puedes continuar cuando vuelvas a esta pantalla.";
     global("Preparación de "+code+" iniciada correctamente.","success");
     refreshOperatorDashboard().catch(()=>{});
   }catch(error){
@@ -656,7 +625,7 @@ $("truckCapacityStart").addEventListener("click",async()=>{
   if(currentReadOnly||!current||current.estado!=="publicada"||busy)return;
   const result=renderTruckAssessment();
   if(result.estado!=="viable"){
-    $("truckCapacityResult").textContent+="\nNo se inicia el reloj hasta verificar huecos suficientes.";
+    $("truckCapacityResult").textContent+="\nNo se inicia el proceso hasta comprobar los huecos disponibles.";
     return;
   }
   await startCurrentPreparation();
@@ -680,9 +649,9 @@ async function openLoad(code,{source=loads,returnTo="loadsView",readOnly=loadsMo
   $("detailSubtitle").textContent=[load.repartidor,load.ruta,load.almacen].filter(Boolean).join(" · ")||"Preparación por pasillos";
   const notice=$("prepStatus");
   notice.className="info-bar"+(currentPreparation.finalized?" complete":"");
-  notice.textContent=assignedToOther?"Carga asignada a otro preparador. Puedes consultar sin modificar el reloj."
+  notice.textContent=assignedToOther?"Carga asignada a otro preparador. Puedes consultar sin modificar la preparación."
     :currentReadOnly?"Solo lectura: consultar no inicia, finaliza ni cambia preparaciones."
-    :currentPreparation.active?"Preparación ya iniciada. Tiempo registrado en Supabase."
+    :currentPreparation.active?"Preparación ya iniciada. Estado registrado en el servidor."
     :currentPreparation.finalized?"Preparación finalizada; la consulta no cambia los horarios."
     :"Se registrará automáticamente el inicio al abrir esta carga.";
   visible($("startPreparation"),false);
@@ -697,10 +666,9 @@ async function openLoad(code,{source=loads,returnTo="loadsView",readOnly=loadsMo
   }
   renderAisles();
   if(!switchView("detailView"))return;
-  startPreparationClock();
   openTruckPanel(load);
   if(cargaHuecosPendientes(load))recoverTruckCapacityFromPdf(load).catch(()=>{});
-  // La carga publicada requiere evaluación de huecos antes de iniciar el reloj.
+  // La carga publicada requiere comprobar huecos antes de comenzar el proceso.
   if(!currentReadOnly&&!currentPreparation.active&&!currentPreparation.finalized&&load.estado==="publicada"){
     $("prepStatus").textContent="Confirma los huecos y las cargas anteriores para iniciar la preparación.";
   }
@@ -714,7 +682,7 @@ $("finishPreparation").addEventListener("click",async()=>{
     if(error)throw error;
     currentPreparation={active:false,finalized:true};current.preparacion_fin=new Date().toISOString();current.estado=estadoTrasPreparar(current);visible($("finishPreparation"),false);
     refreshLoads().catch(()=>{});
-    stopPreparationClock();renderPreparationClock();refreshOperatorDashboard().catch(()=>{});
+    refreshOperatorDashboard().catch(()=>{});
     $("prepStatus").className="info-bar complete";
     $("prepStatus").textContent="Sesión de preparación finalizada en VISURA. La verificación ha estado disponible desde que se publicó la carga.";
     global("Preparación finalizada con hora del servidor.","success");
@@ -1042,7 +1010,6 @@ window.addEventListener("online",()=>{
 document.addEventListener("visibilitychange",()=>{
   if(!document.hidden&&user){
     if(document.querySelector("#homeView:not([hidden])"))refreshOperatorDashboard().catch(()=>{});
-    if(currentPreparation?.active)renderPreparationClock();
   }
 });
 window.addEventListener("offline",()=>{renderConnection();global("Sin conexión. KONTROLA no confirmará operaciones hasta recuperar la red.","error");});

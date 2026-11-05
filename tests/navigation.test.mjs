@@ -173,17 +173,16 @@ test("KONTROLA usa cuatro imágenes 3D exclusivas, distintas y precargadas sin c
  assert.match(html,/id="openAdmin"[^>]*hidden/);
 });
 
-test("preparación recupera inicio automático con reloj del servidor y consulta sin mutaciones",()=>{
-  assert.match(html,/id="prepClock"[^>]*role="timer"/);
+test("preparación sin cronómetro visible y consulta sin mutaciones",()=>{
+  assert.doesNotMatch(html,/id="prepClock"/);
+  assert.doesNotMatch(app,/function (?:start|stop|render)PreparationClock\(/);
+  assert.doesNotMatch(app,/setInterval\(\(\)=>/);
   assert.match(app,/async function startCurrentPreparation\(\)/);
   assert.match(app,/p_request_id:crypto\.randomUUID\(\)/);
   assert.match(app,/if\(!currentReadOnly&&!currentPreparation\.active&&!currentPreparation\.finalized&&load\.estado==="publicada"\)/);
   assert.match(app,/await startCurrentPreparation\(\)/);
   assert.match(app,/\$\("truckCapacityStart"\)\.addEventListener/);
   assert.match(app,/currentReadOnly=readOnly\|\|assignedToOther/);
-  assert.match(app,/formatPreparationDuration\(current\.preparacion_inicio/);
-  assert.match(app,/setInterval\(\(\)=>/);
-  assert.match(app,/if\(id!=="detailView"\)stopPreparationClock\(\)/);
   assert.match(app,/function openLoadsMenu\(parent="homeView",mode="preparacion"\)/);
   assert.match(app,/openLoadsMenu\("cargasMenuView","consulta"\)/);
 });
