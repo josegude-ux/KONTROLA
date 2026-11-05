@@ -12,7 +12,7 @@ test("Precarga offline contiene todas las dependencias del informe y B01",()=>{
  const s=file("sw.js");
  for(const x of ["./src/admin-fixed-positions.mjs","./src/fixed-position-report.mjs","./src/fixed-position-print.mjs","./src/fixed-position-xlsx.mjs","./src/admin.mjs","./src/legacy-header.mjs","./src/app.mjs","./version.json"])
    assert.ok(s.includes('"'+x+'"'),"falta "+x);
- assert.ok(s.includes("kontrola-integral-visura-v073-fijas-integration"));
+ assert.ok(s.includes("kontrola-integral-visura-v074-fijas-ge-cierre"));
 });
 test("La base de datos central sigue siendo propuesta sin ejecución",()=>{
  const sql=file("supabase/proposals/visura_posiciones_fijas_central_rpc.sql");

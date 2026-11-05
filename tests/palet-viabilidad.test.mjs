@@ -52,7 +52,7 @@ test("cálculo sin escrituras y protección del inicio, con cache PWA",()=>{
  assert.match(app,/if\(assessment\(\)\.estado!=="viable"\)/);
  assert.match(app,/recoverTruckCapacityFromPdf\(load\)/);
  assert.match(sw,/src\/palet-viabilidad\.mjs/);
- assert.match(sw,/kontrola-integral-visura-v073/);
+ assert.match(sw,/kontrola-integral-visura-v074/);
 });
 
 test("camión G/E separa europeos de pequeños y calcula huecos sobrantes",()=>{
