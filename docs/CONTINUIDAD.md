@@ -1098,3 +1098,30 @@ Plan acordado y siguientes fases: [PLAN_NAVEGACION_MODULAR.md](PLAN_NAVEGACION_M
 **Límites:** rama propuesta/no aplicada; ni merge, ni despliegue, ni datos reales de empresa ni cambios en Business Central/Supabase. Conserva independencia de Preparación/Verificación; Bloque 02 no se toca.
 
 **Siguiente tarea segura:** comprobar CI del HEAD final y registrar PR en borrador, luego actualizar la auditoría de compatibilidad para que la futura integración respete el orden de las propuestas documentales reforzadas sin fusionarlas. La integración real de las líneas frontend sigue pendiente de autorización.
+
+---
+
+## 2026-10-27 — Bloque 01: continuidad efectiva tras pruebas de PR #72; cantidades de suma neta cero
+
+**Contexto:** en el mismo chat responsable `02 - VISURA PREPARA - Desarrollo Bloque 01`, el usuario insistió en que no se detenga el desarrollo seguro tras cada hito. Se reconsultaron ramas, SHAs, PR abiertos y las últimas ejecuciones #70/#72. Se respetaron los bloqueos de no merge, no despliegue y no datos reales.
+
+**Rama propia sucesora (sin merge):** `feat/visura-prepara-b01-correcciones-neto-cero-20261027`, desde `8cdab594088eba9960968df6d0be6352733c82ea` de PR #72.
+
+**Hallazgo:** dos cantidades modificadas pueden compensarse y mantener `actual_total=declared_total`, permitiendo intentar salvar una discrepancia BC incompleta; un caso adicional sin correcciones podía aprovechar la misma debilidad.
+
+**Implementado/propuesto:** `supabase/proposals/kontrola_bc_neto_cero_b01.sql` exige evidencias BC completas aunque las variaciones netas sumen cero. `supabase/proposals/kontrola_qty_sin_evento_b01.sql` exige evento de cantidad por línea con antes/después, actor actual, tipo y justificación, antes de persistir nuevos valores, para bloquear la aprobación en una segunda llamada. En `src/document-review.mjs` se notifican errores de BC incompleto y de cantidad no trazada aun sin diferencia total. El flujo de `lectura_pdf` con evidencia sigue operativo.
+
+**Pruebas:** `tests/quantity-zero-net.test.mjs`, `tests/integration/bc-zero-net.sql`, `tests/integration/quantity-audit-event.sql`; PostgreSQL 16 efímero en `.github/workflows/visura-prepara-b01-neto-cero-ci.yml`, con suites existentes PR #69/#72. [CI #40507926660](https://github.com/josegude-ux/KONTROLA/actions/runs/40507926660) SUCCESS para neto cero; [CI #40508675979](https://github.com/josegude-ux/KONTROLA/actions/runs/40508675979) FAILURE por llamada directa del test a helper interna sin GRANT (RLS/seguridad correcta); corregido con rol de diagnóstico exclusivamente en test. [CI #40508839934](https://github.com/josegude-ux/KONTROLA/actions/runs/40508839934) **SUCCESS** en suite completa; el valor original del PDF no se altera.
+
+**Documentación:** `docs/BLOQUE_01_CANTIDADES_NETO_CERO.md`.
+
+**Pendiente seguro:** registrar PR en borrador, confirmar CI de último HEAD y probar su coexistencia temporal con PR #60/#69/#72. El caso de altas/bajas de referencias sigue requiriendo auditoría porque el nuevo helper mantiene las funciones de revisión estructural ya existentes.
+
+**Límites:** no usar ni tocar Supabase productivo o BC, no fusionar PR, no desplegar, no modificar Bloque 02. La interfaz combinada y la integración de los 17 archivos coincidentes siguen pendientes de autorización separada.
+
+### 2026-10-27 — Cierre B01/PR #80: compatibilidad segura del hotfix 8G/4E
+- Continuidad verificada de `josegude-ux/KONTROLA`: rama predeterminada `main`; PR #79 fusionada exclusivamente en B01 `feat/visura-prepara-b01-correcciones-neto-cero-20261027`, SHA inicial `861dce15ea8dceba94e2f370fad8f0155c34e215`. PR #74 abierta y divergente; PR #75 y #76 abiertas en borrador. Se han revisado también PR #60/#61/#62/#63/#64/#65/#66/#68/#69/#70/#72.
+- Rama técnica aislada `integration/visura-prepara-b01-cierre-compatibilidad-20261027`, PR [#80](https://github.com/josegude-ux/KONTROLA/pull/80), sin merge ni despliegue. **No fusionar otra vez #76/#79 ni #74 íntegramente**.
+- Corrección precisa: relectura segura del original cuando hay cero heredado; prioridad del formato G/E/P explícito frente al cero sin acreditar; revisiones positivas prevalecen; el número de palés necesarios/anteriores debe confirmarse; sin viabilidad con capacidad cero. Selector E/P accesible según modo, sin mezcla entre formatos. Caché PWA aislada, sin publicar versión comercial.
+- Suite integrada en HEAD funcional `3bfbf21585706932bdbf1004a8a0e78dc987f573`: [333 tests Node + PostgreSQL temporal SUCCESS](https://github.com/josegude-ux/KONTROLA/actions/runs/40576592221); [RPC laboratorio SUCCESS](https://github.com/josegude-ux/KONTROLA/actions/runs/40576592248); [6 Chromium SUCCESS](https://github.com/josegude-ux/KONTROLA/actions/runs/40576592079). Dos fallos de la ejecución inicial ya corregidos y repetidos.
+- Documento específico: [VISURA_PREPARA_B01_CIERRE_PASO1_20261027.md](VISURA_PREPARA_B01_CIERRE_PASO1_20261027.md). Mantener actualizaciones de otros equipos, identidad y arquitectura central separados; no activar RPC en Supabase real, no modificar Business Central ni INVENTA, no desplegar. No se acredita PDF auténtico 8G4E ni Safari iOS físico. Tras la actualización documental comprobar el HEAD y repetir CI según corresponda.

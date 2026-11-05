@@ -63,7 +63,7 @@ test("La versión y el caché están preparados para instalar nuevas pantallas",
   assert.equal(JSON.parse(read("package-lock.json")).version,version);
   assert.ok(read("src/config.mjs").includes(`APP_VERSION="${version}"`));
   assert.ok(html.includes(`id="appVersion">${version}<`));
-  assert.match(read("sw.js"),/kontrola-integral-visura-v073/);
+  assert.match(read("sw.js"),/kontrola-integral-visura-v074/);
 });
 
 test("Las consultas descartan respuestas de sesiones o almacenes anteriores",()=>{
@@ -194,12 +194,12 @@ test("la preparación sitúa bultos totales sobre el peso con la misma jerarquí
   assert.match(css,/\.load-weight\{font-weight:800;font-size:16px/);
 });
 
-test("los huecos del camión aparecen junto a matrícula con G y P",()=>{
+test("los huecos del camión aparecen junto a matrícula distinguiendo G/E/P",()=>{
   const start=app.indexOf("function renderLoadList()");
   const end=app.indexOf("// Historial de lectura",start);
   const preparation=app.slice(start,end);
   assert.match(preparation,/vehicle\.append\(plate,pallets\)/);
-  assert.match(preparation,/palletsValue\.textContent=formatearHuecosPalets\(r\.huecos_palets_grandes,r\.huecos_palets_pequenos,r\.huecos_palets_total\)/);
+  // La etiqueta visible procede del origen validado, nunca de una proyección antigua de G/P.
   assert.match(preparation,/palletsValue\.textContent=textoHuecosConOrigen\(r\)/);
   assert.match(preparation,/HUECOS PALÉS/);
   assert.doesNotMatch(preparation,/palets_para_carga/);

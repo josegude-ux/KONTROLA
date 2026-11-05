@@ -21,12 +21,27 @@ const huecoValido=value=>value!==null&&value!==undefined&&/^(0|[1-9]\d{0,2})$/.t
 export function combinarHuecosConOrigen(load={},revision=null,pdfLeido=null){
  const result={...load};
  let origin="sin_dato";
+ // Un 0 genérico de la revisión no invalida el desglose explícito del PDF original.
+ // No sustituir una capacidad positiva que ya consta en la revisión vigente.
+ const positivo=v=>huecoValido(v)&&Number(v)>0;
+ const revisionPositiva=HUECOS_FIELDS.some(key=>positivo(revision?.[key]));
+ const pdfDesglosado=HUECOS_FIELDS.slice(0,3).some(key=>positivo(pdfLeido?.[key]));
+ const priorizarDesglosePdf=pdfDesglosado&&!revisionPositiva;
  for(const key of HUECOS_FIELDS){
-  if(huecoValido(revision?.[key])){
+  if(priorizarDesglosePdf){
+   result[key]=key==="huecos_palets_total"?null:
+     huecoValido(pdfLeido?.[key])?pdfLeido[key]:null;
+   if(huecoValido(result[key]))origin="pdf_leido";
+  }else if(huecoValido(revision?.[key])){
    result[key]=revision[key];origin="revision";
   }else if(huecoValido(pdfLeido?.[key])){
    result[key]=pdfLeido[key];if(origin!=="revision")origin="pdf_leido";
   }else result[key]=null;
+ }
+ // El total cero genérico no debe mezclarse con G/E/P positivos y reconocidos.
+ if(HUECOS_FIELDS.slice(0,3).some(key=>positivo(result[key]))&&
+    huecoValido(result.huecos_palets_total)&&Number(result.huecos_palets_total)===0){
+   result.huecos_palets_total=null;
  }
  const observation=revision?.observaciones??pdfLeido?.observaciones;
  if(observation!==undefined&&observation!==null)result.observaciones=observation;
@@ -36,8 +51,8 @@ export function combinarHuecosConOrigen(load={},revision=null,pdfLeido=null){
 export function textoHuecosConOrigen(load={}){
  if(!load.huecos_origen||load.huecos_origen==="sin_dato")return "Sin dato";
  const present=HUECOS_FIELDS.map(key=>load[key]).filter(huecoValido).map(Number);
- if(load.huecos_origen==="pdf_leido"&&present.length&&present.every(x=>x===0))
-  return "0 en PDF · confirmar";
+ if(present.length&&present.every(x=>x===0))
+  return load.huecos_origen==="pdf_leido"?"0 en PDF · confirmar":"0 sin acreditar · confirmar";
  return formatearHuecosPalets(load.huecos_palets_grandes,load.huecos_palets_pequenos,load.huecos_palets_total,load.huecos_palets_europeos);
 }
 
