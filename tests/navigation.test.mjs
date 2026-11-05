@@ -106,7 +106,7 @@ test("La versión y el caché están preparados para instalar nuevas pantallas",
   assert.equal(JSON.parse(read("package-lock.json")).version,version);
   assert.ok(read("src/config.mjs").includes(`APP_VERSION="${version}"`));
   assert.ok(html.includes(`id="appVersion">${version}<`));
-  assert.match(read("sw.js"),/kontrola-integral-visura-v078/);
+  assert.match(read("sw.js"),/kontrola-integral-visura-v080-maquetacion-a-0345/);
 });
 
 test("Las consultas descartan respuestas de sesiones o almacenes anteriores",()=>{
@@ -140,7 +140,8 @@ test("Mi actividad muestra solo contadores, sin listado de eventos con fecha y h
 });
 
 test("inicio visual inspirado en INVENTA conserva rutas, permisos y estados",()=>{
-  assert.match(html,/class="home-grid inventa-inspired-home"/);
+  assert.match(html,/class="home-grid inventa-inspired-home visura-a-grid"/);
+  assert.match(html,/id="homeView" class="view visura-maquetacion-a"/);
   for(const id of ["openPreparation","openReview","openCargas","openAdmin"]){
     assert.match(html,new RegExp('id="'+id+'"[^>]*class="feature'));
     assert.match(app,new RegExp('\\$\\("'+id+'"\\)\\.addEventListener'));
@@ -151,26 +152,33 @@ test("inicio visual inspirado en INVENTA conserva rutas, permisos y estados",()=
   assert.match(css,/inventa-inspired-home/);
 });
 
-test("KONTROLA usa cuatro imágenes 3D exclusivas, distintas y precargadas sin conexión",()=>{
- const names=["preparacion","verificacion","control-cargas","administracion"];
- const images=names.map(name=>{
-   const asset="assets/home/kontrola-"+name+"-3d.webp";
-   const official={preparacion:"preparacion",verificacion:"control-cargas","control-cargas":"operaciones",administracion:"administracion"}[name];
-   assert.match(html,new RegExp('src="\\./assets/home/visura-prepara-'+official+'-3d\\.webp"'));
-   assert.match(read("sw.js"),new RegExp('\\./assets/home/visura-prepara-'+official+'-3d\\.webp'));
-   const bytes=readFileSync(new URL("../"+asset,import.meta.url));
-   assert.ok(bytes.length>10000,asset+" debe tener contenido gráfico");
+test("Maquetación A usa cuatro fotos aprobadas, distintas y precargadas sin conexión",()=>{
+ const images={
+  openPreparation:"foto-preparacion-sin-texto.webp",
+  openReview:"foto-control-cargas-sin-texto.webp",
+  openCargas:"foto-operaciones-sin-texto.webp",
+  openAdmin:"foto-administracion-sin-texto.webp"
+ };
+ const cache=read("sw.js");
+ const paths=[];
+ for(const [id,file] of Object.entries(images)){
+   const card=html.match(new RegExp(`<button id="${id}"[\\s\\S]*?</button>`))?.[0];
+   assert.ok(card,`Falta tarjeta ${id}`);
+   const src=`./assets/maquetacion-a/${file}`;
+   assert.ok(card.includes(`background-image:url('${src}')`),`Foto incorrecta para ${id}`);
+   assert.match(card,/class="va-photo" aria-hidden="true"/);
+   assert.ok(cache.includes(JSON.stringify(src)),`Foto fuera de caché ${src}`);
+   const bytes=readFileSync(new URL("../"+src.slice(2),import.meta.url));
+   assert.ok(bytes.length>1000&&bytes.length<=2000000,`Tamaño inválido ${src}`);
    assert.equal(bytes.subarray(0,4).toString("ascii"),"RIFF");
    assert.equal(bytes.subarray(8,12).toString("ascii"),"WEBP");
-   return bytes.toString("base64");
- });
- assert.equal(new Set(images).size,4,"No repetir diseños entre tarjetas");
- assert.equal(html.includes("raw.githubusercontent.com/josegude-ux/INVENTA-"),false);
- assert.doesNotMatch(read("sw.js"),/ORIGINAL_INVENTA_IMAGES/);
- for(const id of ["openPreparation","openReview","openCargas","openAdmin"]){
-   assert.match(html,new RegExp('id="'+id+'"[^>]*class="feature'));
+   paths.push(src);
  }
+ assert.equal(new Set(paths).size,4,"No repetir fotografías entre tarjetas");
  assert.match(html,/id="openAdmin"[^>]*hidden/);
+ assert.equal(html.includes("raw.githubusercontent.com/josegude-ux/INVENTA-"),false);
+ assert.doesNotMatch(cache,/ORIGINAL_INVENTA_IMAGES/);
+ assert.ok(cache.includes('"./assets/maquetacion-a/visura-maquetacion-a-v1.css"'));
 });
 
 test("preparación recupera inicio automático con reloj del servidor y consulta sin mutaciones",()=>{
