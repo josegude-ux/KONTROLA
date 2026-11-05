@@ -1,0 +1,79 @@
+
+/* VISURA-15-MAQUETACION-A-GLOBAL-001 R1/L1. Scope: ONLY menu navigation cards.
+   Body, forms, data tables, operational controls, roles and event handlers unchanged. */
+#homeView.visura-maquetacion-a .visura-menu-b-brands,
+#homeView.visura-maquetacion-a .home-welcome{display:none!important}
+#homeView.visura-maquetacion-a{background:#fff;min-width:0}
+#homeView.visura-maquetacion-a .visura-a-grid{display:grid;grid-template-columns:minmax(0,1fr);max-width:900px;gap:13px;margin:0 auto 24px}
+#homeView.visura-maquetacion-a .visura-a-grid .feature:last-child:nth-child(odd){grid-column:auto}
+#homeView.visura-maquetacion-a .visura-visual-pendientes{display:grid;grid-template-columns:minmax(0,1fr);gap:13px;max-width:900px;margin:0 auto 24px}
+#homeView.visura-maquetacion-a .visura-a-grid .visura-a-card,
+#homeView.visura-maquetacion-a .visura-visual-pendientes .visura-a-card,
+#cargasMenuView .visura-a-submenu .visura-a-card{
+  position:relative;isolation:isolate;box-sizing:border-box;display:block;width:100%;max-width:100%;min-width:0;
+  min-height:172px;margin:0;padding:0;overflow:hidden;border:0;border-radius:22px;background:#09284c!important;
+  color:white;text-align:left;box-shadow:0 10px 22px #13283b22,0 2px 3px #0b26471c;
+  cursor:pointer;transition:transform .14s ease,box-shadow .14s ease
+}
+#homeView .visura-a-card.va-rojo,#cargasMenuView .visura-a-card.va-rojo{--va-start:#a00717}
+#homeView .visura-a-card.va-azul,#cargasMenuView .visura-a-card.va-azul{--va-start:#073b72}
+#homeView .visura-a-card.va-purpura,#cargasMenuView .visura-a-card.va-purpura{--va-start:#512b79}
+#homeView .visura-a-card.va-ambar,#cargasMenuView .visura-a-card.va-ambar{--va-start:#956000}
+#homeView .visura-a-card .va-photo,#cargasMenuView .visura-a-card .va-photo{
+  position:absolute;inset:0;display:block;background-size:cover;background-position:64% center;
+  filter:saturate(1.08) contrast(1.02);pointer-events:none;z-index:0
+}
+#homeView .visura-a-card .va-gradient,#cargasMenuView .visura-a-card .va-gradient{
+  position:absolute;inset:0;display:block;pointer-events:none;z-index:1;
+  background:linear-gradient(90deg,var(--va-start) 0%,var(--va-start) 27%,color-mix(in srgb,var(--va-start) 96%,transparent) 44%,color-mix(in srgb,var(--va-start) 78%,transparent) 62%,transparent 100%)
+}
+#homeView .visura-a-card .va-body,#cargasMenuView .visura-a-card .va-body{
+  position:relative;z-index:2;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;
+  gap:9px;width:62%;min-width:0;min-height:172px;padding:18px 14px 15px 20px;color:#fff
+}
+#homeView .visura-a-card .va-heading,#cargasMenuView .visura-a-card .va-heading{display:flex;align-items:center;gap:11px;min-width:0}
+#homeView .visura-a-card .va-icon,#cargasMenuView .visura-a-card .va-icon{
+  flex:none;display:grid;place-items:center;width:38px;height:38px;color:#fff;
+  filter:drop-shadow(0 2px 1px #0613248a) drop-shadow(0 5px 4px #0d274455)
+}
+#homeView .visura-a-card .va-icon svg,#cargasMenuView .visura-a-card .va-icon svg{width:38px;height:38px;stroke-width:1.8}
+#homeView .visura-a-card .va-icon-image img{width:44px;height:44px;border-radius:10px;object-fit:cover}
+#homeView .visura-a-card b,#cargasMenuView .visura-a-card b{display:block;color:white!important;font-size:clamp(22px,2.5vw,29px);font-weight:850;line-height:1.06;letter-spacing:-.4px;margin:0;text-shadow:0 1px 4px #031a3450}
+#homeView .visura-a-card small,#cargasMenuView .visura-a-card small{display:block;color:#fff!important;font-size:clamp(13px,1.7vw,16px);line-height:1.23;font-weight:460;margin:0;max-width:265px;text-shadow:0 1px 3px #07142544}
+#homeView .visura-a-card .va-arrow,#cargasMenuView .visura-a-card .va-arrow{
+  display:grid;place-items:center;flex:none;height:40px;width:40px;border:2px solid white;border-radius:50%;
+  font-size:25px;font-weight:700;line-height:1;color:white;box-shadow:0 2px 3px #041f295c
+}
+#homeView .visura-a-card:focus-visible,#cargasMenuView .visura-a-card:focus-visible{outline:4px solid #05a8ea;outline-offset:3px}
+#homeView .visura-a-card:active:not(:disabled),#cargasMenuView .visura-a-card:active:not(:disabled){transform:translateY(2px);box-shadow:0 5px 12px #13283b30}
+#homeView .visura-a-card:disabled,#cargasMenuView .visura-a-card:disabled{opacity:.72;cursor:not-allowed}
+#homeView .visura-a-card:disabled .va-photo{filter:saturate(.50)}
+#homeView .visura-a-card:disabled .va-arrow{font-size:15px}
+#cargasMenuView .visura-a-submenu{display:grid;grid-template-columns:minmax(0,1fr);gap:13px;max-width:900px;margin:16px auto 22px}
+#cargasMenuView .visura-a-submenu .visura-a-card{min-height:150px}
+#cargasMenuView .visura-a-submenu .visura-a-card .va-body{min-height:150px}
+@media(min-width:960px){
+ #homeView .visura-a-card .va-body,#cargasMenuView .visura-a-card .va-body{width:57%}
+ #homeView .visura-a-card .va-photo,#cargasMenuView .visura-a-card .va-photo{background-position:right 40%}
+}
+@media(max-width:600px){
+ #homeView.visura-maquetacion-a .visura-a-grid,#homeView.visura-maquetacion-a .visura-visual-pendientes,#cargasMenuView .visura-a-submenu{gap:12px}
+ #homeView.visura-maquetacion-a .visura-a-grid .visura-a-card,#homeView.visura-maquetacion-a .visura-visual-pendientes .visura-a-card,#cargasMenuView .visura-a-submenu .visura-a-card{min-height:164px;border-radius:19px}
+ #homeView .visura-a-card .va-body,#cargasMenuView .visura-a-card .va-body{min-height:164px;width:66%;padding:14px 6px 13px 17px;gap:9px}
+ #homeView .visura-a-card .va-heading,#cargasMenuView .visura-a-card .va-heading{gap:8px}
+ #homeView .visura-a-card .va-icon,#cargasMenuView .visura-a-card .va-icon{width:34px;height:34px}
+ #homeView .visura-a-card .va-icon svg,#cargasMenuView .visura-a-card .va-icon svg{width:34px;height:34px}
+ #homeView .visura-a-card b,#cargasMenuView .visura-a-card b{font-size:clamp(20px,5vw,24px)}
+ #homeView .visura-a-card small,#cargasMenuView .visura-a-card small{font-size:14px;line-height:1.22}
+ #homeView .visura-a-card .va-photo,#cargasMenuView .visura-a-card .va-photo{background-position:65% center}
+ #cargasMenuView .visura-a-submenu .visura-a-card .va-body{min-height:164px}
+}
+@media(max-width:360px){
+ #homeView .visura-a-card .va-body,#cargasMenuView .visura-a-card .va-body{width:74%;padding-left:12px}
+ #homeView .visura-a-card b,#cargasMenuView .visura-a-card b{font-size:19px}
+ #homeView .visura-a-card small,#cargasMenuView .visura-a-card small{font-size:12.5px}
+}
+@media(prefers-reduced-motion:reduce){#homeView .visura-a-card,#cargasMenuView .visura-a-card{transition:none}}
+
+/* Seguridad de ocultación: nunca convertir un botón hidden en visible con estilos. */
+#homeView .visura-a-card[hidden]{display:none!important}
