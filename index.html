@@ -28,6 +28,7 @@
 @page{size:A4 portrait;margin:10mm}@media print{.archive-cover{break-after:page;page-break-after:always;min-height:0}.report-batch-sheet{break-after:page;page-break-after:always}.report-batch-sheet:last-child{break-after:auto;page-break-after:auto}body>*:not(#reportView){display:none!important}#reportView{display:block!important;position:static!important}.report-controls,#reportPrintStatus{display:none!important}.preparation-report{font-size:10px}.preparation-report tr{break-inside:avoid}}
 </style>
 <link rel="stylesheet" href="./assets/maquetacion-a/visura-maquetacion-a-v1.css">
+<link rel="stylesheet" href="./assets/css/visura15-subpreparacion-a-r1l1.css">
 </head>
 <body>
 <section id="loginView" class="auth-view">
@@ -62,18 +63,20 @@
       </div>
       <section class="panel"><div class="line"><h2>Mi actividad</h2><select id="homeWarehouse" class="warehouse-select" aria-label="Almacén activo"></select></div><div id="operatorSummary" class="facts"></div><div class="home-summary-bottom"><p id="operatorSummaryStatus" class="status" role="status" aria-live="polite"></p><button id="refreshHomeSummary" type="button" class="secondary">Actualizar</button></div></section>
     </section>
-    <!-- PREPARA 15 · Submenú Preparación. La preparación original permanece en loadsView. -->
-    <section id="preparacionMenuView" class="view" hidden>
-      <div class="page-heading">
+    <!-- PREPARA 15 · Submenú REAL. Maquetación A R1/L1, ningún handler ni ID modificado. -->
+    <section id="preparacionMenuView" class="view v15-subprep" hidden>
+      <div class="page-heading v15-subprep__hero">
         <button type="button" data-back="home" class="back-button">← Volver al inicio</button>
-        <p class="eyebrow">VISURA PREPARA / PREPARACIÓN</p>
-        <h1>Preparación</h1>
-        <p class="muted">Elige una función. Las consultas no inician preparaciones ni generan movimientos.</p>
+        <div class="v15-subprep__hero-content">
+          <p class="eyebrow v15-subprep__eyebrow">VISURA PREPARA / PREPARACIÓN</p>
+          <h1 class="v15-subprep__heading">Preparación</h1>
+          <p class="muted v15-subprep__intro">Elige una función. Las consultas no inician preparaciones ni generan movimientos.</p>
+        </div>
       </div>
-      <div class="submenu-grid prepara-submenu-grid" aria-label="Funciones de Preparación">
-        <button id="preparacionCargas" type="button" class="submenu-card prepara-submenu-card"><span class="submenu-icon" aria-hidden="true">📦</span><span><b>1. Preparación de cargas</b><small>Accede a las cargas y al procedimiento de preparación existente.</small></span><span class="submenu-arrow" aria-hidden="true">›</span></button>
-        <button id="preparacionArticulos" type="button" class="submenu-card prepara-submenu-card"><span class="submenu-icon" aria-hidden="true">🔎</span><span><b>2. Consulta de artículos</b><small>Buscar artículos en las cargas publicadas de tu almacén.</small></span><span class="submenu-arrow" aria-hidden="true">›</span></button>
-        <button id="preparacionMovimientos" type="button" class="submenu-card prepara-submenu-card"><span class="submenu-icon" aria-hidden="true">↔️</span><span><b>3. Movimientos</b><small>Crear una vista previa local, sin registrar traslados.</small></span><span class="submenu-arrow" aria-hidden="true">›</span></button>
+      <div class="submenu-grid prepara-submenu-grid v15-subprep__cards" aria-label="Funciones de Preparación">
+        <button id="preparacionCargas" type="button" class="submenu-card prepara-submenu-card v15-subprep__card v15-subprep__card--cargas"><span class="submenu-icon v15-subprep__card-icon" aria-hidden="true"><svg viewBox="0 0 48 48" focusable="false" aria-hidden="true"><path d="M8 15 24 7l16 8v18L24 41 8 33Z M8 15l16 8 16-8 M24 23v18 M16 11l16 9"/></svg></span><span class="v15-subprep__card-copy"><b class="v15-subprep__card-title">1. Preparación de cargas</b><small class="v15-subprep__card-text">Accede a las cargas y al procedimiento de preparación existente.</small></span><span class="submenu-arrow v15-subprep__card-arrow" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false" aria-hidden="true"><path d="M4 12h15 M13 5l7 7-7 7"/></svg></span></button>
+        <button id="preparacionArticulos" type="button" class="submenu-card prepara-submenu-card v15-subprep__card v15-subprep__card--consulta"><span class="submenu-icon v15-subprep__card-icon" aria-hidden="true"><svg viewBox="0 0 48 48" focusable="false" aria-hidden="true"><circle cx="20" cy="20" r="13"/><path d="m30 30 13 13"/></svg></span><span class="v15-subprep__card-copy"><b class="v15-subprep__card-title">2. Consulta de artículos</b><small class="v15-subprep__card-text">Buscar artículos en las cargas publicadas de tu almacén.</small></span><span class="submenu-arrow v15-subprep__card-arrow" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false" aria-hidden="true"><path d="M4 12h15 M13 5l7 7-7 7"/></svg></span></button>
+        <button id="preparacionMovimientos" type="button" class="submenu-card prepara-submenu-card v15-subprep__card v15-subprep__card--movimientos"><span class="submenu-icon v15-subprep__card-icon" aria-hidden="true"><svg viewBox="0 0 48 48" focusable="false" aria-hidden="true"><rect x="4" y="8" width="40" height="32" rx="6"/><path d="M10 24h28 M17 17l-7 7 7 7 M31 17l7 7-7 7"/></svg></span><span class="v15-subprep__card-copy"><b class="v15-subprep__card-title">3. Movimientos</b><small class="v15-subprep__card-text">Crear una vista previa local, sin registrar traslados.</small></span><span class="submenu-arrow v15-subprep__card-arrow" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false" aria-hidden="true"><path d="M4 12h15 M13 5l7 7-7 7"/></svg></span></button>
       </div>
     </section>
     <section id="preparacionArticulosView" class="view" hidden>
@@ -113,6 +116,47 @@
         <p id="movimientosEstado" role="status" aria-live="polite" class="status"></p>
         <div id="movimientosResultado" class="prepara-preview" aria-live="polite"></div>
       </section>
+    </section>
+    <section id="controlCargasFlujosView" class="view" hidden>
+      <div class="page-heading">
+        <button id="backFromControlFlujos" type="button" class="back-button">← Volver</button>
+        <p class="eyebrow">VISURA PREPARA / CONTROL DE CARGAS</p>
+        <h1>Control de Cargas</h1>
+        <p class="muted">Elige el circuito según el momento de la carga. El control de recepción no modifica existencias.</p>
+      </div>
+      <div class="submenu-grid control-cargas-flujos" aria-label="Dos opciones de Control de Cargas">
+        <button id="controlEnPreparacion" type="button" class="submenu-card"><span class="submenu-icon" aria-hidden="true">📦</span><span><b>En preparación</b><small>Verificación física previa al reparto y cargas de hoy</small></span><span class="submenu-arrow" aria-hidden="true">›</span></button>
+        <button id="controlEnRecepcion" type="button" class="submenu-card"><span class="submenu-icon" aria-hidden="true">📋</span><span><b>En recepción</b><small>Consultar pendientes e incidencias al regreso, sin registros automáticos</small></span><span class="submenu-arrow" aria-hidden="true">›</span></button>
+      </div>
+    </section>
+    <section id="controlRecepcionView" class="view" hidden>
+      <div class="page-heading"><button id="backFromControlRecepcion" type="button" class="back-button">← Volver</button>
+        <p class="eyebrow">CONTROL DE CARGAS / REGRESO</p><h1>En recepción</h1>
+        <p class="muted">Pendientes de días anteriores incluidos. Consulta de solo lectura; no se ejecuta cierre de reparto ni se regulariza stock.</p></div>
+      <section class="panel"><div class="line"><h2>Cargas pendientes</h2><button id="reloadControlRecepcion" class="secondary" type="button">Actualizar</button></div>
+        <div id="recepcionStatus" class="status" role="status" aria-live="polite"></div>
+        <div class="actions"><button id="recepcionHistorial" class="secondary" type="button">Historial completo</button><button id="recepcionIncidenciasAdmin" class="secondary" type="button" hidden>Incidencias (administración)</button></div>
+      </section>
+      <div id="recepcionList" class="loads-list" aria-live="polite"></div>
+      <p class="hint">La fecha de recepción solo se muestra si existe acreditada. Las incidencias abiertas no se cierran automáticamente. Circuito específico de recepción/cierre: pendiente de integración verificada.</p>
+      <div id="labRecepcionBanner" class="lab-recepcion-banner" hidden>SIMULACIÓN LOCAL DE RECEPCIÓN — NO ES PRODUCCIÓN. <label>Perfil LAB <select id="labRecepcionActor"><option value="lab-almacen">Almacén sintético</option><option value="lab-supervisor">Supervisor sintético</option><option value="lab-lector">Solo lectura</option><option value="lab-ferrol">Almacén Ferrol</option></select></label> <label>Almacén LAB <select id="labRecepcionWarehouse"><option value="COR_01_COR">Coruña LAB</option><option value="COR_02_FER">Ferrol LAB</option></select></label></div>
+    </section>
+    <section id="recepcionCierreLabView" class="view" hidden aria-label="Cierre de recepción sintético">
+      <div class="page-heading"><button id="labVolverRecepcion" class="back-button" type="button">← Volver a recepción</button><p class="eyebrow">VISURA PREPARA / RECEPCIÓN LAB</p><h1 id="labCierreTitulo">Recepción sintética</h1><p class="muted">Cierre exclusivamente local sobre hojas ficticias; no se registra ningún retorno, movimiento o cambio de stock empresarial.</p></div>
+      <div class="lab-recepcion-banner">BANCO DE PRUEBAS · CARGAS Y PERMISOS SINTÉTICOS · SIN CONEXIÓN EMPRESARIAL</div>
+      <section class="panel"><h2>Hoja original acreditada en LAB</h2><p id="labCierreOrigen" class="muted"></p><div id="labCierreLineas" class="lab-cierre-lineas"></div><p id="labCierreEstado" role="status"></p><button id="labAbrir" type="button" class="primary">Iniciar ficha de recepción (LAB)</button></section>
+      <section id="labIncidenciaPanel" class="panel" hidden><h2>Registrar diferencia comunicada</h2><div class="lab-cierre-form">
+        <label>Tipo de diferencia<select id="labIncidenciaTipo"><option value="QUANTITY_DIFFERENCE">Cantidad diferente</option><option value="WRONG_REFERENCE">Referencia equivocada</option><option value="MISSING">Falta artículo</option><option value="UNLISTED">Artículo no previsto</option><option value="OTHER">Otra incidencia</option></select></label>
+        <label>Línea original<select id="labLineaOriginal"></select></label>
+        <label>Referencia efectivamente encontrada<input id="labIncidenciaSku" autocomplete="off" placeholder="Solo para referencia distinta/no prevista"></label>
+        <label>Cantidad encontrada<input id="labIncidenciaCantidad" inputmode="decimal" autocomplete="off" placeholder="Ej. 7"></label>
+        <label>Unidad declarada<input id="labIncidenciaUnidad" autocomplete="off" placeholder="Ej. CAJA"></label>
+        <label>Observaciones<input id="labIncidenciaNota" autocomplete="off"></label>
+      </div><button id="labAgregarIncidencia" type="button" class="secondary">Añadir incidencia OPEN (solo LAB)</button></section>
+      <section class="panel"><h2>Incidencias y cierre</h2><div id="labCierreIncidencias"></div><p id="labSoloLectura" class="muted"></p>
+        <div class="actions"><button id="labCerrarSinIncidencias" class="primary" type="button">Confirmar cierre SIN incidencias</button><button id="labCerrarConIncidencias" class="secondary" type="button">Cerrar CON incidencias OPEN</button></div>
+        <p id="labCierreStatus" class="status" role="status" aria-live="polite"></p>
+        <h3>Trazabilidad local</h3><pre id="labCierreHistorico" class="lab-auditoria"></pre></section>
     </section>
     <section id="cargasMenuView" class="view" hidden>
       <div class="page-heading">
@@ -205,9 +249,11 @@
       </section>
     </section>
     <section id="reviewLoadsView" class="view" hidden>
-      <div class="page-heading"><button type="button" id="backFromReviewLoads" class="back-button">← Volver</button><h1>Verificación física</h1><p class="muted">Aparecen cargas preparadas por otra persona, incluso si su reloj sigue abierto. Selecciona una para comprobarla línea por línea.</p></div>
+      <div class="page-heading"><button type="button" id="backFromReviewLoads" class="back-button">← Volver</button><h1>En preparación · Verificación física</h1><p class="muted">Solo cargas de hoy con fecha acreditada, preparadas por otra persona. El historial conserva jornadas anteriores.</p></div>
       <div id="reviewWarehouseTabs" class="warehouse-tabs" role="tablist" aria-label="Almacén"></div><p id="reviewWarehouseHint" class="active-warehouse-hint" role="status"></p>
       <div class="toolbar"><label class="search-wrap">Buscar carga<input id="reviewSearch" type="search" placeholder="Nº de carga, ruta, matrícula o repartidor"></label><button type="button" id="reloadReviewLoads" class="secondary">Actualizar</button></div>
+      <div class="actions control-jornada-actions"><button id="resetReviewDay" type="button" class="secondary">Iniciar jornada / Poner a cero</button><button id="reviewHistory" type="button" class="secondary">Historial de cargas anteriores</button></div>
+      <p id="reviewDayStatus" class="status" role="status" aria-live="polite"></p>
       <div id="reviewLoadsList" class="loads-list" aria-live="polite"></div>
     </section>
     <section id="reviewDetailView" class="view" hidden>

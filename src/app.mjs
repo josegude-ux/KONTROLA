@@ -1,4 +1,5 @@
 import {fechaAlmacen} from "./business-date.mjs";
+import {fechaOperativa,fechaCargaAcreditada,fechaRecepcionAcreditada,verificablesHoy,sinFechaVerificables,pendientesRecepcion,resetJornada} from "./control-cargas-jornada.mjs";
 import {articulosDeCargas,buscarArticulosDeCargas,ubicacionesEnCargas,validarVistaPreviaMovimiento} from "./prepara-consulta.mjs";
 import {filtrarArchivoLogico} from "./archive-view.mjs";
 import {SUPABASE_URL,SUPABASE_KEY,PDF_BUCKET,APP_VERSION} from "./config.mjs";
@@ -14,7 +15,10 @@ import {cargasCabeceraPendiente,cabeceraLeida,cabeceraSinMetadatos,cargaHuecosPe
 import {capacidadDeCarga,evaluarHuecosCamion} from "./palet-viabilidad.mjs";
 const $=id=>document.getElementById(id);
 let client=null,user=null,profile=null,loads=[],current=null,currentPreparation=null,groups=[],selectedAisle="TODOS",busy=false,opening=false;
-let reviewLoads=[],currentVerification=null,verificationLines=[];
+let reviewLoads=[],recepcionRows=[],jornadaFecha=fechaOperativa(),historyParent="cargasMenuView",currentVerification=null,verificationLines=[];
+// Modo estrictamente loopback: no conecta con servicios empresariales.
+const RECEPCION_LAB=(["localhost","127.0.0.1","[::1]"].includes(location.hostname)&&new URLSearchParams(location.search).get("visura15_recepcion_lab")==="1");
+let labRecepcionUi=null;
 let warehouses=[],selectedWarehouse=localStorage.getItem("kontrola-warehouse")||"COR_01_COR",adminController=null;
 let loadsParent="homeView",reviewLoadsParent="homeView",loadsMode="preparacion",currentReadOnly=false,detailBackView="loadsView",historyRows=[],historyReady=false,adminParent="homeView",prepTimerId=null;
 let loadsRequestSerial=0,legacyHeaderBusy=false;
@@ -45,7 +49,7 @@ function switchView(id,{force=false}={}){
   return true;
 }
 function loggedOut(message=""){
-  user=null;profile=null;loads=[];historyRows=[];historyReady=false;current=null;currentPreparation=null;currentReadOnly=false;reviewLoads=[];currentVerification=null;verificationLines=[];
+  user=null;profile=null;loads=[];historyRows=[];historyReady=false;current=null;currentPreparation=null;currentReadOnly=false;reviewLoads=[];recepcionRows=[];jornadaFecha=fechaOperativa();currentVerification=null;verificationLines=[];
   stopPreparationClock();
   loadsRequestSerial++;legacyHeaderCache.clear();legacyHeaderBusy=false;
   truckCapacitySession.clear();truckCapacityTouched=false;
@@ -61,7 +65,7 @@ function loggedOut(message=""){
   // datos anteriores de vistas ocultas y deshabilitar descargas del historial.
   for(const id of ["userName","profileName","profileRole","globalMessage",
     "operatorSummary","operatorSummaryStatus","operatorActivity","loadsList","reviewLoadsList",
-    "historyList","historySummary","historyStatusMessage","legacyHeaderStatus","productList",
+    "historyList","historySummary","historyStatusMessage","recepcionList","recepcionStatus","reviewDayStatus","legacyHeaderStatus","productList",
     "verificationLines","detailFacts","detailTitle","detailSubtitle",
     "articulosResultados","articulosEstado","movimientosEstado","movimientosResultado",
     "prepStatus","aisleTabs","truckCapacityResult","truckCapacitySource","reviewDetailTitle","reviewDetailSubtitle",
@@ -87,6 +91,7 @@ async function authorize(authUser){
   visible($("openAdmin"),ownProfile.rol==="administrador");
   visible($("cargasAdministrar"),ownProfile.rol==="administrador");
   visible($("cargasImportar"),ownProfile.rol==="administrador");
+  visible($("recepcionIncidenciasAdmin"),ownProfile.rol==="administrador");
   visible($("importLoadsShortcut"),ownProfile.rol==="administrador");
   visible($("loginView"),false);visible($("shell"),true);switchView("homeView");
   await loadWarehouses();
@@ -131,6 +136,7 @@ async function selectWarehouse(code,context="home"){
   renderWarehouseTabs("prepWarehouseTabs");renderWarehouseTabs("reviewWarehouseTabs");
   updateWarehouseLabels();
   if(context==="review")await refreshReviewLoads();
+  else if(context==="recepcion")await refreshControlRecepcion();
   else if(context==="preparation")await refreshLoads();
   else if(context==="history")await refreshHistory();
   if(["preparacionArticulosView","preparacionMovimientosView"].includes(document.querySelector("#shell .view:not([hidden])")?.id))await refrescarArticulosCargas();
@@ -173,6 +179,24 @@ async function refreshOperatorDashboard(){
     :"Mostrando datos de "+warehouseName+".";
 }
 async function initialize(){
+  if(RECEPCION_LAB){
+    // MODO AISLADO: omite Supabase, autenticación empresarial y todas las escrituras.
+    const {createRecepcionLabUI}=await import('./cierre-recepcion-ui-lab.mjs');
+    selectedWarehouse='COR_01_COR';
+    user={id:'USUARIO-LAB-SINTETICO'};profile={rol:'operario',nombre:'LAB sintético'};
+    warehouses=[{codigo:'COR_01_COR',nombre:'Coruña LAB'},{codigo:'COR_02_FER',nombre:'Ferrol LAB'}];
+    labRecepcionUi=createRecepcionLabUI({switchView,refreshRecepcion:refreshControlRecepcion,
+      setWarehouse:code=>{selectedWarehouse=code;}});
+    client={rpc:async(name,args)=>{
+      if(name!=='kontrola_panel_cargas')return {data:null,error:Error('RPC no disponible en LAB sintético')};
+      try{return {data:labRecepcionUi.rpcPanel(args?.p_almacen),error:null};}
+      catch(error){return {data:null,error};}
+    },auth:{signOut:async()=>({error:null})}};
+    $('userName').textContent='Cuenta LAB sintética';$('profileName').textContent='SIMULACIÓN LOCAL';$('profileRole').textContent='LAB';
+    visible($('loginView'),false);visible($('shell'),true);switchView('controlRecepcionView');
+    await refreshControlRecepcion();
+    return;
+  }
   status("authMessage","Conectando con el servidor…");
   try{
     const {createClient}=await import("../vendor/supabase.mjs");
@@ -455,11 +479,46 @@ function openLoadsMenu(parent="homeView",mode="preparacion"){
     :"Al abrir una carga publicada se comprobarán los huecos del camión antes de iniciar la preparación. Para consultar sin iniciar, utiliza Control de Cargas → Consultar cargas.";
   refreshLoads().catch(()=>{});
 }
+function openControlFlujos(){switchView("controlCargasFlujosView");}
 function openReviewMenu(parent="homeView"){
   if(!switchView("reviewLoadsView"))return;
   reviewLoadsParent=parent;
-  $("reviewSearch").value="";
+  const state=resetJornada();jornadaFecha=state.fecha;$("reviewSearch").value=state.busqueda;
   refreshReviewLoads().catch(()=>{});
+}
+function openControlRecepcion(){
+  if(!switchView("controlRecepcionView"))return;
+  refreshControlRecepcion().catch(()=>{});
+}
+function openHistoryFrom(parent){
+  historyParent=parent;
+  if(switchView("cargasHistoryView"))refreshHistory().catch(()=>{});
+}
+async function refreshControlRecepcion(){
+  if(!client||!user)return;
+  const warehouse=selectedWarehouse,userId=user.id;
+  $("recepcionStatus").textContent="Consultando pendientes del almacén autorizado…";
+  $("recepcionList").replaceChildren();recepcionRows=[];
+  const {data,error}=await client.rpc("kontrola_panel_cargas",{p_almacen:warehouse});
+  if(!validRequest(warehouse,userId))return;
+  if(error){$("recepcionStatus").textContent="No se pueden recuperar las cargas: "+errorText(error);return;}
+  recepcionRows=pendientesRecepcion(data||[],{almacen:warehouse});
+  const note=$("recepcionStatus");note.textContent=recepcionRows.length+" pendiente(s) consultables en "+warehouseLabel()+". "+(RECEPCION_LAB?"Cierre sintético habilitado, sin escrituras empresariales.":"No se ha registrado ninguna recepción.");
+  const list=$("recepcionList");list.replaceChildren();
+  if(!recepcionRows.length){const p=document.createElement("p");p.className="muted";p.textContent="No se han encontrado pendientes con los estados disponibles. El historial conserva el resto de cargas.";list.appendChild(p);return;}
+  for(const load of recepcionRows){
+    const b=document.createElement("button");b.type="button";b.className="load-card";
+    const text=document.createElement("span"),title=document.createElement("strong"),meta=document.createElement("span");
+    title.className="load-title";title.textContent=load.codigo;
+    meta.className="load-meta";
+    meta.textContent="Carga: "+(fechaCargaAcreditada(load)||"sin fecha acreditada")+
+      " · Recepción: "+(fechaRecepcionAcreditada(load)||"sin fecha acreditada")+
+      " · Estado: "+(load.estado||"no acreditado")+
+      " · Incidencias pendientes: "+Math.max(0,Number(load.incidencias_pendientes)||0);
+    text.append(title,meta);b.append(text);
+    b.addEventListener("click",()=>{if(RECEPCION_LAB)labRecepcionUi.open(load.codigo);else openLoad(load.codigo,{source:recepcionRows,returnTo:"controlRecepcionView",readOnly:true});});
+    list.appendChild(b);
+  }
 }
 async function openAdminMenu(parent="homeView"){
   if(profile?.rol!=="administrador"||!switchView("adminView"))return;
@@ -566,13 +625,25 @@ $("movimientosVistaPrevia").addEventListener("click",()=>{
 });
 $("backFromPreparacionArticulos").addEventListener("click",()=>switchView("preparacionMenuView"));
 $("backFromPreparacionMovimientos").addEventListener("click",()=>switchView("preparacionMenuView"));
-$("openReview").addEventListener("click",()=>openReviewMenu());
+$("openReview").addEventListener("click",()=>openControlFlujos());
+$("controlEnPreparacion").addEventListener("click",()=>openReviewMenu("controlCargasFlujosView"));
+$("controlEnRecepcion").addEventListener("click",()=>openControlRecepcion());
+$("backFromControlFlujos").addEventListener("click",()=>switchView("homeView"));
+$("backFromControlRecepcion").addEventListener("click",()=>switchView("controlCargasFlujosView"));
+$("resetReviewDay").addEventListener("click",()=>{
+  const state=resetJornada();jornadaFecha=state.fecha;$("reviewSearch").value=state.busqueda;
+  refreshReviewLoads().catch(()=>{});
+});
+$("reviewHistory").addEventListener("click",()=>openHistoryFrom("reviewLoadsView"));
+$("recepcionHistorial").addEventListener("click",()=>openHistoryFrom("controlRecepcionView"));
+$("reloadControlRecepcion").addEventListener("click",()=>refreshControlRecepcion().catch(()=>{}));
+$("recepcionIncidenciasAdmin").addEventListener("click",()=>{if(profile?.rol==="administrador")openAdminMenu("controlRecepcionView");});
 $("openCargas").addEventListener("click",()=>switchView("cargasMenuView"));
 $("cargasConsultar").addEventListener("click",()=>openLoadsMenu("cargasMenuView","consulta"));
 $("cargasPreparar").addEventListener("click",()=>openLoadsMenu("cargasMenuView"));
 $("cargasVerificar").addEventListener("click",()=>openReviewMenu("cargasMenuView"));
-$("cargasHistorial").addEventListener("click",()=>{if(switchView("cargasHistoryView"))refreshHistory().catch(()=>{});});
-$("backFromHistory").addEventListener("click",()=>switchView("cargasMenuView"));
+$("cargasHistorial").addEventListener("click",()=>openHistoryFrom("cargasMenuView"));
+$("backFromHistory").addEventListener("click",()=>switchView(historyParent));
 $("cargasAdministrar").addEventListener("click",()=>openAdminMenu("cargasMenuView"));
 $("cargasImportar").addEventListener("click",()=>openAdminMenu("cargasMenuView"));
 $("importLoadsShortcut").addEventListener("click",()=>openAdminMenu("loadsView"));
@@ -590,6 +661,9 @@ $("globalBack").addEventListener("click",()=>{
     preparacionArticulosView:"backFromPreparacionArticulos",
     preparacionMovimientosView:"backFromPreparacionMovimientos",
     cargasHistoryView:"backFromHistory",
+    controlCargasFlujosView:"backFromControlFlujos",
+    controlRecepcionView:"backFromControlRecepcion",
+    recepcionCierreLabView:"labVolverRecepcion",
     loadsView:"backFromLoads",
     detailView:"backToLoads",
     reviewLoadsView:"backFromReviewLoads",
@@ -933,8 +1007,15 @@ async function refreshReviewLoads(){
 function renderReviewLoads(){
   const target=$("reviewLoadsList");target.replaceChildren();
   const search=$("reviewSearch").value.trim().toLocaleLowerCase("es-ES");
-  const records=reviewLoads.filter(r=>[r.codigo,r.ruta,r.matricula,r.repartidor].some(v=>String(v||"").toLocaleLowerCase("es-ES").includes(search)));
-  if(!records.length){const p=document.createElement("p");p.className="muted";p.textContent=!reviewLoads.length?"No hay cargas verificables por este usuario en "+warehouseLabel()+". Selecciona otro almacén si corresponde.":"Ninguna carga verificable coincide con el filtro de búsqueda.";target.appendChild(p);return;}
+  const hoy=jornadaFecha;
+  const visibles=verificablesHoy(reviewLoads,{hoy,almacen:selectedWarehouse,userId:user?.id});
+  const sinFecha=sinFechaVerificables(reviewLoads,{almacen:selectedWarehouse,userId:user?.id});
+  const indicator=$("reviewDayStatus");
+  indicator.textContent="Jornada "+hoy+" · "+visibles.length+" carga(s) de hoy"+
+    (sinFecha.length?" · "+sinFecha.length+" sin fecha acreditada, fuera del recuento":"")+
+    ". Poner a cero solo reinicia el filtro, no borra cargas.";
+  const records=visibles.filter(r=>[r.codigo,r.ruta,r.matricula,r.repartidor].some(v=>String(v||"").toLocaleLowerCase("es-ES").includes(search)));
+  if(!records.length){const p=document.createElement("p");p.className="muted";p.textContent=!visibles.length?"0 cargas verificables de hoy en "+warehouseLabel()+". Consulta el historial para días anteriores.":"Ninguna carga verificable coincide con el filtro de búsqueda.";target.appendChild(p);return;}
   for(const load of records){
     const button=document.createElement("button");button.type="button";button.className="load-card";
     const left=document.createElement("span"),title=document.createElement("strong"),meta=document.createElement("span");
@@ -1153,5 +1234,5 @@ document.addEventListener("visibilitychange",()=>{
 });
 window.addEventListener("offline",()=>{renderConnection();global("Sin conexión. KONTROLA no confirmará operaciones hasta recuperar la red.","error");});
 renderConnection();
-if("serviceWorker" in navigator)navigator.serviceWorker.register("./sw.js",{updateViaCache:"none"}).catch(()=>{});
+if(!RECEPCION_LAB&&"serviceWorker" in navigator)navigator.serviceWorker.register("./sw.js",{updateViaCache:"none"}).catch(()=>{});
 initialize();

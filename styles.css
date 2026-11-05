@@ -375,3 +375,52 @@ footer{padding:18px;text-align:center;background:#fff;border-top:1px solid #e6e8
 .prepara-preview{background:#f5f9fe;border:1px solid #d2deec;border-radius:12px;padding:12px;white-space:pre-wrap;overflow-wrap:anywhere}
 .prepara-preview:empty{display:none}
 @media(max-width:650px){.prepara-search-line button,.prepara-form .actions button{width:100%}.prepara-resultado-lista{max-height:48vh}}
+
+/* VISURA-15-SUBMENU-PREPARACION-MAQUETACION-A-001 R1/L1 · Puente clases legacy → kit A. */
+#preparacionMenuView.v15-subprep .v15-subprep__cards{grid-template-columns:minmax(0,1fr);margin:0;max-width:none}
+#preparacionMenuView.v15-subprep .v15-subprep__card{border:0;box-shadow:0 9px 21px rgba(10,28,56,.11);background-color:var(--card-tone)}
+#preparacionMenuView.v15-subprep .v15-subprep__card-icon{background:transparent;border-radius:0;color:#fff}
+#preparacionMenuView.v15-subprep .v15-subprep__card-copy{flex:0 1 auto;min-width:0}
+#preparacionMenuView.v15-subprep .v15-subprep__card-title{color:#fff;font-size:clamp(20px,3vw,30px);margin:0}
+#preparacionMenuView.v15-subprep .v15-subprep__card-text{color:#fff;font-size:clamp(13px,1.8vw,19px);line-height:1.4}
+#preparacionMenuView.v15-subprep .v15-subprep__card-arrow{color:#fff;opacity:1;font-size:inherit;margin-left:0}
+#preparacionMenuView.v15-subprep .v15-subprep__hero .v15-subprep__eyebrow{color:#fff}
+#preparacionMenuView.v15-subprep .v15-subprep__hero .v15-subprep__intro{color:#fff}
+#preparacionMenuView.v15-subprep .v15-subprep__card:focus-visible{outline:4px solid #edbc3d;outline-offset:4px}
+@media(max-width:560px){#preparacionMenuView.v15-subprep .v15-subprep__card{padding:15px 13px;min-height:194px}}
+@media(max-width:355px){#preparacionMenuView.v15-subprep .v15-subprep__card{padding:12px 9px;min-height:208px}}
+
+/* VISURA 15 · R1/L3 · Control de Cargas dos flujos: estilos acotados */
+#controlCargasFlujosView .control-cargas-flujos{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,290px),1fr));gap:16px;max-width:950px}
+#controlCargasFlujosView .submenu-card{min-width:0;min-height:125px;text-align:left}
+#controlCargasFlujosView .submenu-card:focus-visible,#controlRecepcionView button:focus-visible{outline:3px solid #f5bd3d;outline-offset:4px}
+#controlRecepcionView .load-card{width:100%;text-align:left;overflow-wrap:anywhere}
+#controlRecepcionView .load-card .load-meta{display:block;white-space:normal;overflow-wrap:anywhere}
+.control-jornada-actions{display:flex;flex-wrap:wrap;gap:9px;margin:8px 0}
+.control-jornada-actions button{min-height:44px}
+#reviewDayStatus{font-weight:650;overflow-wrap:anywhere}
+@media(max-width:500px){#controlCargasFlujosView .control-cargas-flujos{grid-template-columns:minmax(0,1fr)}.control-jornada-actions button{width:100%}}
+
+/* VISURA 15 R1/L4 · recepción sintética, solo LAB y sin modificar las otras vistas. */
+.lab-recepcion-banner{border:2px solid #8d4c00;background:#fff4d9;color:#573100;border-radius:12px;padding:14px;font-weight:800;margin:12px 0}
+.lab-recepcion-banner label{display:block;font-weight:650;margin:12px 0 0}
+.lab-recepcion-banner select{max-width:100%;width:auto;margin-top:4px}
+#recepcionCierreLabView .panel{margin-bottom:16px}
+#recepcionCierreLabView .lab-cierre-form{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:12px;margin:16px 0}
+#recepcionCierreLabView label{display:block;font-weight:700}
+#recepcionCierreLabView input,#recepcionCierreLabView select{width:100%;min-width:0;box-sizing:border-box;margin-top:5px}
+#recepcionCierreLabView .lab-cierre-linea,#recepcionCierreLabView .lab-issue{border:1px solid #cad5e2;padding:10px;border-radius:10px;margin:6px 0;overflow-wrap:anywhere}
+#recepcionCierreLabView .lab-auditoria{white-space:pre-wrap;word-break:break-word;background:#f2f5fa;border-radius:10px;padding:10px;font-size:12px;max-height:200px;overflow:auto}
+#recepcionCierreLabView button{min-height:44px;max-width:100%}
+#recepcionCierreLabView button:focus-visible,#labRecepcionBanner select:focus-visible{outline:3px solid #f5bd3d;outline-offset:3px}
+
+/* VISURA PREPARA R1/L5 - informe aislado LAB. No altera Maquetación A ni otros módulos. */
+#labInformePanel{border:1px solid #7698b8;border-radius:14px;background:#eef5fc;color:#112942;margin-top:16px}
+#labInformePanel .lab-informe-resumen{line-height:1.55;font-weight:650;overflow-wrap:anywhere}
+#labInformePanel button{min-height:44px;max-width:100%;white-space:normal;text-align:center}
+#labInformePanel button:focus-visible{outline:3px solid #d94a3e;outline-offset:3px}
+
+/* R1/L6 — expediente LAB solo en detalle de recepción, sin tocar estilos de producción. */
+#labExpedientePanel{border:1px solid #7698b8;border-radius:14px;background:#eef5fc;color:#112942;margin:16px 0}
+#labExpedientePanel button{min-height:44px;max-width:100%;white-space:normal;overflow-wrap:anywhere}
+#labExpedientePanel button:focus-visible{outline:3px solid #d94a3e;outline-offset:3px}

@@ -41,7 +41,7 @@ test("acciones de las cuatro tarjetas siguen conectadas a controladores original
   const app = readFileSync(resolve(root, "src/app.mjs"), "utf8");
   const bindings = [
     ["openPreparation", 'switchView("preparacionMenuView")'],
-    ["openReview", "openReviewMenu()"],
+    ["openReview", "openControlFlujos()"],
     ["openCargas", 'switchView("cargasMenuView")'],
     ["openAdmin", 'openAdminMenu("homeView")']
   ];
@@ -114,7 +114,7 @@ test("las cuatro imagenes oficiales son WEBP validos y optimizados", () => {
 });
 
 test("la caché PWA usa Maquetación A sin eliminar recursos empresariales", () => {
-  assert.match(sw, /kontrola-integral-visura-v081-prepara-submenu-0345/);
+  assert.match(sw, /kontrola-integral-visura-v083-control-dos-flujos-r1l3-lab-0345/);
   assert.match(sw, /\.\/src\/app\.mjs/);
   assert.match(sw, /\.\/vendor\/pdf-lib\.min\.mjs/);
   assert.match(sw, /\.\/assets\/maquetacion-a\/visura-maquetacion-a-v1\.css/);

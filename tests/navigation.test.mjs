@@ -106,7 +106,7 @@ test("La versión y el caché están preparados para instalar nuevas pantallas",
   assert.equal(JSON.parse(read("package-lock.json")).version,version);
   assert.ok(read("src/config.mjs").includes(`APP_VERSION="${version}"`));
   assert.ok(html.includes(`id="appVersion">${version}<`));
-  assert.match(read("sw.js"),/kontrola-integral-visura-v081-prepara-submenu-0345/);
+  assert.match(read("sw.js"),/kontrola-integral-visura-v083-control-dos-flujos-r1l3-lab-0345/);
 });
 
 test("Las consultas descartan respuestas de sesiones o almacenes anteriores",()=>{
@@ -220,10 +220,10 @@ test("almacenes visibles y filtros claros",()=>{
  for(const id of ["loadsWarehouseHint","reviewWarehouseHint"])assert.match(html,new RegExp('id="'+id+'"'));
  assert.match(app,/function updateWarehouseLabels/);
  assert.match(app,/No hay cargas publicadas en /);
- assert.match(app,/No hay cargas verificables por este usuario en /);
+ assert.match(app,/0 cargas verificables de hoy en /);
  assert.match(html,/Al abrir una carga publicada se comprobarán los huecos/);
  assert.match(app,/\$\("loadSearch"\)\.value=""/);
- assert.match(app,/\$\("reviewSearch"\)\.value=""/);
+ assert.match(app,/\$\("reviewSearch"\)\.value=state\.busqueda/);
 });
 
 test("preparación muestra la matrícula destacada y el cálculo desglosado existente",()=>{
