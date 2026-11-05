@@ -1,0 +1,17 @@
+{
+  "name": "KONTROLA · MOVENTA",
+  "short_name": "KONTROLA",
+  "description": "Preparación y consulta de cargas",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#FFFAF6",
+  "theme_color": "#0B2647",
+  "icons": [
+    {
+      "src": "./assets/kontrola.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
