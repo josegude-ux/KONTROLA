@@ -1,4 +1,5 @@
 import {fechaAlmacen} from "./business-date.mjs";
+import {articulosDeCargas,buscarArticulosDeCargas,ubicacionesEnCargas,validarVistaPreviaMovimiento} from "./prepara-consulta.mjs";
 import {filtrarArchivoLogico} from "./archive-view.mjs";
 import {SUPABASE_URL,SUPABASE_KEY,PDF_BUCKET,APP_VERSION} from "./config.mjs";
 import {agruparPasillos,ordenarCargas,formatearHuecosPalets} from "./logic.mjs";
@@ -17,6 +18,7 @@ let reviewLoads=[],currentVerification=null,verificationLines=[];
 let warehouses=[],selectedWarehouse=localStorage.getItem("kontrola-warehouse")||"COR_01_COR",adminController=null;
 let loadsParent="homeView",reviewLoadsParent="homeView",loadsMode="preparacion",currentReadOnly=false,detailBackView="loadsView",historyRows=[],historyReady=false,adminParent="homeView",prepTimerId=null;
 let loadsRequestSerial=0,legacyHeaderBusy=false;
+let articulosCargas=[],origenesMovimientos=[],articulosWarehouse=null,articulosSerial=0;
 const legacyHeaderCache=new Map();
 const truckCapacitySession=new Map();
 let truckCapacityTouched=false;
@@ -47,6 +49,10 @@ function loggedOut(message=""){
   stopPreparationClock();
   loadsRequestSerial++;legacyHeaderCache.clear();legacyHeaderBusy=false;
   truckCapacitySession.clear();truckCapacityTouched=false;
+  articulosCargas=[];origenesMovimientos=[];articulosWarehouse=null;articulosSerial++;
+  // La consulta y los borradores son de sesión: nunca mostrar datos a otro operario.
+  for(const id of ["articulosBuscar","movimientoDestino","movimientoCantidad"])$(id).value="";
+  $("movimientoOrigenArticulo").replaceChildren();
   $("truckCapacityPanel").hidden=true;
   $("readLegacyHeaders").disabled=false;
   $("globalBack").hidden=true;
@@ -57,6 +63,7 @@ function loggedOut(message=""){
     "operatorSummary","operatorSummaryStatus","operatorActivity","loadsList","reviewLoadsList",
     "historyList","historySummary","historyStatusMessage","legacyHeaderStatus","productList",
     "verificationLines","detailFacts","detailTitle","detailSubtitle",
+    "articulosResultados","articulosEstado","movimientosEstado","movimientosResultado",
     "prepStatus","aisleTabs","truckCapacityResult","truckCapacitySource","reviewDetailTitle","reviewDetailSubtitle",
     "reviewStatus","reviewProgress","reportTitle","reportPaper","settingsStatus"]){
     const node=$(id);if(node)node.replaceChildren();
@@ -117,12 +124,16 @@ function renderWarehouseTabs(id){
 }
 async function selectWarehouse(code,context="home"){
   selectedWarehouse=code;localStorage.setItem("kontrola-warehouse",code);
+  articulosCargas=[];origenesMovimientos=[];articulosWarehouse=null;articulosSerial++;
+  $("articulosResultados").replaceChildren();$("movimientosResultado").replaceChildren();$("movimientoOrigenArticulo").replaceChildren();
+  $("articulosBuscar").value="";$("movimientoDestino").value="";$("movimientoCantidad").value="";
   $("homeWarehouse").value=code;$("adminWarehouse").value=code;$("historyWarehouse").value=code;
   renderWarehouseTabs("prepWarehouseTabs");renderWarehouseTabs("reviewWarehouseTabs");
   updateWarehouseLabels();
   if(context==="review")await refreshReviewLoads();
   else if(context==="preparation")await refreshLoads();
   else if(context==="history")await refreshHistory();
+  if(["preparacionArticulosView","preparacionMovimientosView"].includes(document.querySelector("#shell .view:not([hidden])")?.id))await refrescarArticulosCargas();
   await refreshOperatorDashboard().catch(()=>{});
 }
 async function refreshOperatorDashboard(){
@@ -455,7 +466,106 @@ async function openAdminMenu(parent="homeView"){
   adminParent=parent;
   await adminController.open().catch(error=>global(errorText(error),"error"));
 }
-$("openPreparation").addEventListener("click",()=>openLoadsMenu());
+$("openPreparation").addEventListener("click",()=>switchView("preparacionMenuView"));
+$("preparacionCargas").addEventListener("click",()=>openLoadsMenu("preparacionMenuView"));
+// Única fuente nueva: reutiliza exclusivamente la lectura ya autorizada por PREPARA.
+// No consulta stock BC y no llama a RPC/tabla de mutación.
+async function refrescarArticulosCargas(){
+  if(!client||!user)return;
+  const serial=++articulosSerial,warehouse=selectedWarehouse,userId=user.id;
+  articulosCargas=[];origenesMovimientos=[];articulosWarehouse=null;
+  $("articulosResultados").replaceChildren();$("movimientosResultado").replaceChildren();
+  $("articulosEstado").textContent="Consultando artículos de las cargas de "+warehouseLabel()+"…";
+  $("movimientosEstado").textContent="Consultando orígenes de las cargas…";
+  try{
+    const [panel,archivo]=await Promise.all([
+      client.rpc("kontrola_panel_cargas_v2",{p_almacen:warehouse}),
+      client.rpc("kontrola_codigos_archivados",{p_almacen:warehouse})
+    ]);
+    if(!validRequest(warehouse,userId)||serial!==articulosSerial)return;
+    if(panel.error||archivo.error)throw panel.error||archivo.error;
+    const archived=new Set((archivo.data||[]).map(r=>r.codigo));
+    const permitted=filtrarArchivoLogico((panel.data||[]).map(r=>({...r,archivado:archived.has(r.codigo)})),{vista:"activas"});
+    articulosCargas=articulosDeCargas(permitted,warehouse);
+    origenesMovimientos=ubicacionesEnCargas(articulosCargas);
+    articulosWarehouse=warehouse;
+    $("articulosEstado").textContent=articulosCargas.length+" líneas de artículos en cargas visibles de "+warehouseLabel()+". No representan stock.";
+    $("movimientosEstado").textContent=origenesMovimientos.length+" referencias/ubicaciones consultables. Los movimientos no se ejecutan.";
+    renderConsultaArticulos();renderOrigenesMovimiento();
+  }catch(error){
+    if(!validRequest(warehouse,userId)||serial!==articulosSerial)return;
+    articulosCargas=[];origenesMovimientos=[];articulosWarehouse=null;
+    $("articulosEstado").textContent="No se pudo consultar artículos: "+errorText(error);
+    $("movimientosEstado").textContent="No se pudieron cargar orígenes: "+errorText(error);
+    renderOrigenesMovimiento();
+  }
+}
+function renderConsultaArticulos(){
+  const list=$("articulosResultados");list.replaceChildren();
+  const query=$("articulosBuscar").value.trim();
+  if(query.length<2)return;
+  if(articulosWarehouse!==selectedWarehouse)return;
+  const records=buscarArticulosDeCargas(articulosCargas,query,80);
+  const summary=document.createElement("p");summary.className="muted";
+  summary.textContent=records.length+" coincidencia(s)"+(records.length===80?" (máximo 80 por búsqueda)":"")+". Cantidades de carga, NO existencias.";
+  list.appendChild(summary);
+  for(const r of records){
+    const div=document.createElement("article");div.className="prepara-resultado";
+    const title=document.createElement("strong");title.textContent=r.sku+" · "+(r.descripcion||"Sin descripción");
+    const place=document.createElement("span");place.textContent="Ubicación en carga: "+(r.ubicacion||"No indicada");
+    const meta=document.createElement("span");meta.className="muted";
+    meta.textContent="Carga "+(r.carga||"—")+" · Cantidad en carga: "+(r.cantidadCarga===null?"No disponible":fmt(r.cantidadCarga))+" "+r.unidad;
+    div.append(title,place,meta);list.appendChild(div);
+  }
+}
+function renderOrigenesMovimiento(){
+  const selector=$("movimientoOrigenArticulo"),prev=selector.value;selector.replaceChildren();
+  const placeholder=document.createElement("option");placeholder.value="";placeholder.textContent="Seleccionar referencia y ubicación";selector.appendChild(placeholder);
+  for(const r of origenesMovimientos.slice(0,1000)){
+    const option=document.createElement("option");option.value=r.key;
+    option.textContent=r.sku+" · "+r.ubicacion+" · "+r.descripcion;
+    selector.appendChild(option);
+  }
+  if(origenesMovimientos.some(r=>r.key===prev))selector.value=prev;
+}
+$("preparacionArticulos").addEventListener("click",()=>{
+  if(switchView("preparacionArticulosView")){
+    $("articulosBuscar").value="";renderConsultaArticulos();
+    if(articulosWarehouse!==selectedWarehouse)refrescarArticulosCargas();
+  }
+});
+$("preparacionMovimientos").addEventListener("click",()=>{
+  if(switchView("preparacionMovimientosView")){
+    $("movimientoOrigenArticulo").value="";$("movimientoDestino").value="";$("movimientoCantidad").value="";
+    $("movimientosResultado").replaceChildren();
+    if(articulosWarehouse!==selectedWarehouse)refrescarArticulosCargas();
+  }
+});
+$("articulosBuscar").addEventListener("input",renderConsultaArticulos);
+$("articulosActualizar").addEventListener("click",()=>refrescarArticulosCargas());
+$("movimientosConsultarOrigenes").addEventListener("click",()=>refrescarArticulosCargas());
+for(const id of ["movimientoOrigenArticulo","movimientoDestino","movimientoCantidad"]){
+  $(id).addEventListener("input",()=>$("movimientosResultado").replaceChildren());
+}
+$("movimientosVistaPrevia").addEventListener("click",()=>{
+  const panel=$("movimientosResultado");panel.replaceChildren();
+  if(articulosWarehouse!==selectedWarehouse){
+    $("movimientosEstado").textContent="No hay artículos consultables para el almacén actual. Actualiza orígenes.";return;
+  }
+  const result=validarVistaPreviaMovimiento({
+    origenKey:$("movimientoOrigenArticulo").value,
+    destino:$("movimientoDestino").value,
+    cantidad:$("movimientoCantidad").value
+  },origenesMovimientos);
+  if(!result.ok){$("movimientosEstado").textContent=result.errores.join(" ");return;}
+  const p=result.propuesta;
+  $("movimientosEstado").textContent="Borrador validado localmente. No se han comprobado existencias ni enviado órdenes.";
+  panel.textContent="VISTA PREVIA · NO EJECUTADA\nReferencia: "+p.referencia+"\nDescripción: "+p.descripcion+
+    "\nOrigen: "+p.origen+"\nDestino: "+p.destino+"\nCantidad propuesta: "+fmt(p.cantidad)+
+    "\n"+p.advertencia;
+});
+$("backFromPreparacionArticulos").addEventListener("click",()=>switchView("preparacionMenuView"));
+$("backFromPreparacionMovimientos").addEventListener("click",()=>switchView("preparacionMenuView"));
 $("openReview").addEventListener("click",()=>openReviewMenu());
 $("openCargas").addEventListener("click",()=>switchView("cargasMenuView"));
 $("cargasConsultar").addEventListener("click",()=>openLoadsMenu("cargasMenuView","consulta"));
@@ -477,13 +587,15 @@ $("backToReviewLoads").addEventListener("click",()=>switchView("reviewLoadsView"
 $("globalBack").addEventListener("click",()=>{
   const view=document.querySelector("#shell .view:not([hidden])")?.id;
   const backButtons={
+    preparacionArticulosView:"backFromPreparacionArticulos",
+    preparacionMovimientosView:"backFromPreparacionMovimientos",
     cargasHistoryView:"backFromHistory",
     loadsView:"backFromLoads",
     detailView:"backToLoads",
     reviewLoadsView:"backFromReviewLoads",
     reviewDetailView:"backToReviewLoads"
   };
-  if(view==="cargasMenuView"||view==="settingsView")switchView("homeView");
+  if(view==="preparacionMenuView"||view==="cargasMenuView"||view==="settingsView")switchView("homeView");
   else if(view==="adminView")switchView(adminParent);
   else if(backButtons[view])$(backButtons[view]).click();
 });

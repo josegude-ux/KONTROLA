@@ -40,7 +40,7 @@ test("el menú conserva las cuatro acciones distintas", () => {
 test("acciones de las cuatro tarjetas siguen conectadas a controladores originales", () => {
   const app = readFileSync(resolve(root, "src/app.mjs"), "utf8");
   const bindings = [
-    ["openPreparation", "openLoadsMenu()"],
+    ["openPreparation", 'switchView("preparacionMenuView")'],
     ["openReview", "openReviewMenu()"],
     ["openCargas", 'switchView("cargasMenuView")'],
     ["openAdmin", 'openAdminMenu("homeView")']
@@ -50,6 +50,8 @@ test("acciones de las cuatro tarjetas siguen conectadas a controladores original
     const re = new RegExp('\\$\\("'+id+'"\\)\\.addEventListener\\("click",[\\s\\S]{0,140}?'+escaped);
     assert.match(app, re, `No se encuentra el manejador original para ${id}`);
   }
+  // La nueva tarjeta principal lleva al submenú; la opción 1 reutiliza el motor anterior.
+  assert.match(app, /\$\("preparacionCargas"\)\.addEventListener\("click",\(\)=>openLoadsMenu\("preparacionMenuView"\)\)/);
 });
 
 test("administración permanece oculta por defecto hasta autorizar su visibilidad", () => {
@@ -112,7 +114,7 @@ test("las cuatro imagenes oficiales son WEBP validos y optimizados", () => {
 });
 
 test("la caché PWA usa Maquetación A sin eliminar recursos empresariales", () => {
-  assert.match(sw, /kontrola-integral-visura-v080-maquetacion-a-0345/);
+  assert.match(sw, /kontrola-integral-visura-v081-prepara-submenu-0345/);
   assert.match(sw, /\.\/src\/app\.mjs/);
   assert.match(sw, /\.\/vendor\/pdf-lib\.min\.mjs/);
   assert.match(sw, /\.\/assets\/maquetacion-a\/visura-maquetacion-a-v1\.css/);

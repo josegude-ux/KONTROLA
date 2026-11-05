@@ -348,3 +348,30 @@ footer{padding:18px;text-align:center;background:#fff;border-top:1px solid #e6e8
 .aisle-jump{border:0;background:transparent;color:#0b2647;padding:9px 12px;text-align:left;min-width:100%;font-size:13px;font-weight:760;cursor:pointer}
 .aisle-jump:hover,.aisle-jump:focus-visible{text-decoration:underline;background:#e7f2ed}
 @media(max-width:720px){.aisle-matrix-summary{grid-template-columns:repeat(2,minmax(0,1fr))}.aisle-matrix thead th,.aisle-matrix tbody td{padding-left:8px;padding-right:8px}}
+
+/* VISURA-15-PREPARACION-SUBMENU-001 R1/L1 · Solo submenú de Preparación. */
+.prepara-submenu-grid{grid-template-columns:minmax(0,1fr);max-width:830px;margin-inline:auto}
+.prepara-submenu-card{min-height:108px;border-left:5px solid #d52835}
+.prepara-submenu-card:nth-child(2){border-left-color:#1167b1}
+.prepara-submenu-card:nth-child(3){border-left-color:#7a51aa}
+.prepara-submenu-card span:nth-child(2){flex:1;min-width:0}
+.prepara-submenu-card .submenu-icon{background:#f4f7fb}
+.prepara-submenu-card .submenu-arrow{font-size:29px;opacity:.75}
+.prepara-integration-info{max-width:830px;margin-inline:auto}
+.prepara-integration-info h2{margin-bottom:10px}
+@media (max-width:650px){.prepara-submenu-grid{grid-template-columns:minmax(0,1fr);gap:11px}.prepara-submenu-card{min-height:102px;padding:14px;gap:12px}.prepara-submenu-card b{font-size:17px}.prepara-submenu-card .submenu-icon{width:49px;height:49px;font-size:25px}}
+
+/* PREPARA R1/L2 · Paneles de consulta y vista previa, sólo entorno LAB. */
+.prepara-search-line{display:flex;align-items:flex-end;gap:12px;flex-wrap:wrap;margin:16px 0}
+.prepara-search-line .search-wrap{flex:1 1 250px;min-width:0}
+.prepara-search-line .search-wrap input{width:100%;min-width:0}
+.prepara-resultado-lista{display:grid;gap:9px;max-height:58vh;overflow:auto}
+.prepara-resultado{border:1px solid #ccd8e5;border-radius:12px;padding:12px;display:grid;gap:4px;background:#f8fbff;overflow-wrap:anywhere}
+.prepara-resultado strong{color:#0b2647}.prepara-resultado .muted{font-size:.9rem}
+.prepara-form{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px;margin-top:16px}
+.prepara-form label{display:grid;gap:7px;font-weight:650;min-width:0}
+.prepara-form select,.prepara-form input{box-sizing:border-box;width:100%;min-width:0}
+.prepara-form .actions{grid-column:1/-1;display:flex;gap:10px;flex-wrap:wrap}
+.prepara-preview{background:#f5f9fe;border:1px solid #d2deec;border-radius:12px;padding:12px;white-space:pre-wrap;overflow-wrap:anywhere}
+.prepara-preview:empty{display:none}
+@media(max-width:650px){.prepara-search-line button,.prepara-form .actions button{width:100%}.prepara-resultado-lista{max-height:48vh}}

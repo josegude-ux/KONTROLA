@@ -62,6 +62,58 @@
       </div>
       <section class="panel"><div class="line"><h2>Mi actividad</h2><select id="homeWarehouse" class="warehouse-select" aria-label="Almacén activo"></select></div><div id="operatorSummary" class="facts"></div><div class="home-summary-bottom"><p id="operatorSummaryStatus" class="status" role="status" aria-live="polite"></p><button id="refreshHomeSummary" type="button" class="secondary">Actualizar</button></div></section>
     </section>
+    <!-- PREPARA 15 · Submenú Preparación. La preparación original permanece en loadsView. -->
+    <section id="preparacionMenuView" class="view" hidden>
+      <div class="page-heading">
+        <button type="button" data-back="home" class="back-button">← Volver al inicio</button>
+        <p class="eyebrow">VISURA PREPARA / PREPARACIÓN</p>
+        <h1>Preparación</h1>
+        <p class="muted">Elige una función. Las consultas no inician preparaciones ni generan movimientos.</p>
+      </div>
+      <div class="submenu-grid prepara-submenu-grid" aria-label="Funciones de Preparación">
+        <button id="preparacionCargas" type="button" class="submenu-card prepara-submenu-card"><span class="submenu-icon" aria-hidden="true">📦</span><span><b>1. Preparación de cargas</b><small>Accede a las cargas y al procedimiento de preparación existente.</small></span><span class="submenu-arrow" aria-hidden="true">›</span></button>
+        <button id="preparacionArticulos" type="button" class="submenu-card prepara-submenu-card"><span class="submenu-icon" aria-hidden="true">🔎</span><span><b>2. Consulta de artículos</b><small>Buscar artículos en las cargas publicadas de tu almacén.</small></span><span class="submenu-arrow" aria-hidden="true">›</span></button>
+        <button id="preparacionMovimientos" type="button" class="submenu-card prepara-submenu-card"><span class="submenu-icon" aria-hidden="true">↔️</span><span><b>3. Movimientos</b><small>Crear una vista previa local, sin registrar traslados.</small></span><span class="submenu-arrow" aria-hidden="true">›</span></button>
+      </div>
+    </section>
+    <section id="preparacionArticulosView" class="view" hidden>
+      <div class="page-heading">
+        <button id="backFromPreparacionArticulos" type="button" class="back-button">← Volver a Preparación</button>
+        <p class="eyebrow">VISURA PREPARA / PREPARACIÓN</p>
+        <h1>Consulta de artículos</h1>
+      </div>
+      <section class="panel prepara-integration-info" aria-label="Consulta de artículos presentes en cargas">
+        <h2>Artículos de las cargas visibles</h2>
+        <p>Buscar referencias, descripciones y ubicaciones que figuran en las cargas publicadas del almacén autorizado. <strong>Las cantidades son de la carga, nunca existencias.</strong></p>
+        <p class="muted">No se muestran existencias inventadas ni se modifica Business Central, INVENTA o Supabase. No es el catálogo completo de BC.</p>
+        <div class="prepara-search-line">
+          <label class="search-wrap" for="articulosBuscar">Buscar (mínimo 2 caracteres)<input type="search" id="articulosBuscar" autocomplete="off" maxlength="120" placeholder="Referencia, descripción, ubicación o carga"></label>
+          <button id="articulosActualizar" type="button" class="secondary">Actualizar</button>
+        </div>
+        <p id="articulosEstado" role="status" aria-live="polite" class="status"></p>
+        <div id="articulosResultados" class="prepara-resultado-lista" aria-live="polite"></div>
+      </section>
+    </section>
+    <section id="preparacionMovimientosView" class="view" hidden>
+      <div class="page-heading">
+        <button id="backFromPreparacionMovimientos" type="button" class="back-button">← Volver a Preparación</button>
+        <p class="eyebrow">VISURA PREPARA / PREPARACIÓN</p>
+        <h1>Movimientos</h1>
+      </div>
+      <section class="panel prepara-integration-info" aria-label="Borrador local de movimientos">
+        <h2>Vista previa de traslado</h2>
+        <p>Prepara y comprueba un borrador local a partir de artículos que aparecen en cargas visibles. <strong>No hay consulta de stock ni conexión de movimientos con Business Central.</strong></p>
+        <p class="muted">Esta pantalla no registra, confirma ni ejecuta movimientos de almacén. La cantidad de una carga no representa existencias disponibles.</p>
+        <div class="prepara-form">
+          <label for="movimientoOrigenArticulo">Referencia y ubicación de origen<select id="movimientoOrigenArticulo" class="warehouse-select"><option value="">Consultar artículos para seleccionar origen</option></select></label>
+          <label for="movimientoDestino">Ubicación de destino<input id="movimientoDestino" type="text" maxlength="60" autocomplete="off" placeholder="Ej. A02-P05"></label>
+          <label for="movimientoCantidad">Cantidad propuesta<input id="movimientoCantidad" type="text" inputmode="decimal" maxlength="12" autocomplete="off" placeholder="Ej. 3"></label>
+          <div class="actions"><button id="movimientosConsultarOrigenes" type="button" class="secondary">Actualizar orígenes</button><button id="movimientosVistaPrevia" type="button" class="primary">Previsualizar (sin registrar)</button></div>
+        </div>
+        <p id="movimientosEstado" role="status" aria-live="polite" class="status"></p>
+        <div id="movimientosResultado" class="prepara-preview" aria-live="polite"></div>
+      </section>
+    </section>
     <section id="cargasMenuView" class="view" hidden>
       <div class="page-heading">
         <button type="button" data-back="home" class="back-button">← Volver al inicio</button>
