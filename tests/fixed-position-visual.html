@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Ensayo visual aislado · VISURA PREPARA · Posiciones fijas</title>
+<link rel="stylesheet" href="../styles.css">
+<style>
+body{padding:20px;background:#edf2f8;color:#15344e}
+#adminView{width:100%;max-width:none;margin:auto}
+#adminView .admin-tabs{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:14px}
+#adminView #adminSection9{max-width:none;width:100%;box-sizing:border-box}
+#adminWarehouse{width:auto;max-width:300px;margin-bottom:12px}
+@media(max-width:650px){body{padding:10px}}
+</style></head><body>
+<div id="adminView">
+ <header><h1>Administración · VISURA PREPARA</h1><p>Vista de pruebas con datos ficticios. Sin conexión a Supabase.</p></header>
+ <nav class="admin-tabs" aria-label="Funciones de Administración"></nav>
+ <label style="display:block">Almacenes permitidos
+ <select id="adminWarehouse"><option value="COR_01_COR">A Coruña</option><option value="COR_02_NAR">Narón</option></select></label>
+</div>
+<script type="module">
+import {configureAdminFixedPositions} from "../src/admin-fixed-positions.mjs";
+const data={
+ warehouse:"COR_01_COR",
+ meta:{warehouse:"COR_01_COR",authorized:true,truncated:false,
+   stockComplete:true,catalogComplete:true,positionsComplete:true,locationsComplete:true,
+   absentStockIsZero:false,stale:false,sourceFile:"SIMULADO_COR1.xlsx",
+   contractVersion:"visura-prepara-fixed-read-v1",importId:"fixture-lote-1",
+   stockRows:4,stockExpectedRows:4,
+   exportedAt:new Date(Date.now()-7200000).toISOString(),
+   importedAt:new Date(Date.now()-3600000).toISOString(),
+   publishedAt:new Date().toISOString()},
+ products:[
+  {code:"PRD001",description:"Producto A con reserva",unit:"UD"},
+  {code:"PRD002",description:"Producto B sin posición fija",unit:"UD"},
+  {code:"PRD003",description:"Producto C con incidencia negativa",unit:"UD"}
+ ],
+ fixed:[
+  {warehouse:"COR_01_COR",product_code:"PRD001",location_code:"A01-P01"},
+  {warehouse:"COR_01_COR",product_code:"PRD003",location_code:"B01-P01"}
+ ],
+ locations:[
+  {warehouse:"COR_01_COR",code:"A01-P01",aisle:"A01",zone:"PICKING"},
+  {warehouse:"COR_01_COR",code:"B01-P01",aisle:"B01",zone:"PICKING"},
+  {warehouse:"COR_01_COR",code:"R01-P01",aisle:"R01",zone:"RESERVA"}
+ ],
+ stock:[
+  {warehouse:"COR_01_COR",product_code:"PRD001",location_code:"A01-P01",lot:"L1",quantity:"0",unit:"UD"},
+  {warehouse:"COR_01_COR",product_code:"PRD001",location_code:"R01-P01",lot:"L1",quantity:"25",unit:"UD"},
+  {warehouse:"COR_01_COR",product_code:"PRD002",location_code:"R01-P01",lot:"L2",quantity:"5",unit:"UD"},
+  {warehouse:"COR_01_COR",product_code:"PRD003",location_code:"B01-P01",lot:"L1",quantity:"-3",unit:"UD"}
+ ]
+};
+const ctrl=configureAdminFixedPositions({
+ client:{rpc:async(_name,{p_almacen})=>p_almacen==="COR_01_COR"?
+   {data,error:null}:{data:null,error:{message:"Sin importación verificada para Narón"}}},
+ getUser:()=>({id:"00000000-0000-0000-0000-000000000001"}),
+ errorText:error=>error?.message||String(error)
+});
+ctrl.mount();
+const section=document.getElementById("adminSection9");section.hidden=false;
+await ctrl.refresh();
+document.documentElement.dataset.visualFixtureReady="yes";
+</script>
+</body></html>
