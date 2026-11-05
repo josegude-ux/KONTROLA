@@ -1,0 +1,60 @@
+name: Publicar KONTROLA de pruebas (GitHub Pages)
+
+on:
+  push:
+    branches:
+      - cursor/verificacion-fisica-cargas-8ba0
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: kontrola-pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Obtener la rama de desarrollo
+        uses: actions/checkout@v4
+      - name: Preparar Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Instalar dependencias
+        run: npm ci
+      - name: Comprobar código y pruebas
+        run: npm run check
+      - name: Comprobar dependencias de navegador
+        run: |
+          npm run build:vendor
+          git diff --exit-code -- vendor
+      - name: Preparar solo los archivos públicos de la aplicación
+        run: |
+          mkdir -p dist
+          cp index.html styles.css manifest.webmanifest sw.js version.json dist/
+          cp -R src assets vendor dist/
+          touch dist/.nojekyll
+          test -f dist/index.html
+          test -f dist/src/app.mjs
+          test -f dist/vendor/supabase.mjs
+      - name: Subir aplicación estática
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Publicar en GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

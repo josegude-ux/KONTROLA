@@ -11,47 +11,152 @@ const numericQty = raw => {
 };
 const isQty = text => /^\d+(?:[,.]\d+)?$/.test(String(text).trim());
 const validQty = val => typeof val==='number' && Number.isFinite(val) && val>=0;
-export function parseDocumentPages(pages, fileName='Documento.pdf') {
+export const normalizeWarehouseCode=raw=>{
+ const cleaned=String(raw||'').toUpperCase().trim().replace(/[\s-]+/g,'_').replace(/_+/g,'_');
+ return cleaned.replace(/^COR_1_/,'COR_01_').replace(/^COR_2_/,'COR_02_')||null;
+};
+const KNOWN_WAREHOUSES=new Set(['COR_01_COR','COR_02_NAR']);
+// Convención de archivo: F19711.pdf es una carga con destino Ferrol, que puede
+// contener mercancía de COR1 y COR2. El prefijo NUNCA autoriza preparar COR2.
+// C19711.pdf también se procesa exclusivamente desde COR1; la letra no integra el LP.
+export function identificarPdfPorAlmacen(fileName=""){
+ const match=/^([CF])(\d{4,6})\.pdf$/i.exec(String(fileName).trim());
+ if(!match)return null;
+ return {number:match[2],warehouse:match[1].toUpperCase()==="F"?"COR_02_NAR":"COR_01_COR"};
+}
+// Extraer solo las observaciones de la cabecera (nunca las del detalle de mercancía).
+export function leerObservacionesCabecera(pages=[]){
+ const nextField=/\b(?:Almac[eé]n|Fecha\s*carga|Cam[ií][oó]n|Matr[ií]cula|Ruta|Repartidor|Peso\s*carga|Huecos\s*(?:plts?\.?|palets?)|N[º°o.]?\s*(?:visitas|copias)|Total\s*referencias)\s*:/i;
+ for(const page of pages){
+  const items=(page.items||[]).filter(item=>String(item.text||"").trim()&&Number.isFinite(item.y)&&Number.isFinite(item.x))
+   .sort((a,b)=>a.y-b.y||a.x-b.x);
+  const goods=items.find(item=>/M\s*E\s*R\s*C\s*A\s*N\s*C\s*[IÍ]\s*A/i.test(item.text));
+  const total=items.find(item=>/Total\s*referencias\s*prod/i.test(item.text));
+  const limit=goods?.y??total?.y??Infinity;
+  const rows=[];
+  for(const item of items.filter(item=>item.y<limit-1)){
+   const last=rows[rows.length-1];
+   if(last&&Math.abs(last.y-item.y)<=3)last.items.push(item);
+   else rows.push({y:item.y,items:[item]});
+  }
+  for(let i=0;i<rows.length;i++){
+   const row=rows[i];
+   const line=row.items.map(item=>item.text.trim()).join(" ").replace(/\s+/g," ").trim();
+   const match=/\bObservaciones?\s*:?\s*/i.exec(line);
+   if(!match)continue;
+   const chunks=[];
+   const immediate=line.slice(match.index+match[0].length).split(nextField)[0].trim();
+   if(immediate)chunks.push(immediate);
+   // Las observaciones pueden estar en la línea siguiente en los PDF de BC.
+   for(let j=i+1;j<rows.length&&j<=i+2;j++){
+    if(rows[j].y-rows[j-1].y>22)break;
+    const value=rows[j].items.map(item=>item.text.trim()).join(" ").replace(/\s+/g," ").trim();
+    if(!value||nextField.test(value)||/\b(?:Observaciones?|M\s*E\s*R\s*C\s*A\s*N\s*C\s*[IÍ]\s*A)\b/i.test(value))break;
+    if(rows[j].items[0].x<row.items[0].x-15)break;
+    chunks.push(value.split(nextField)[0].trim());
+    if(nextField.test(value))break;
+   }
+   const observation=chunks.join(" ").replace(/\s+/g," ").trim();
+   return observation||null;
+  }
+ }
+ return null;
+}
+
+export function parseDocumentPages(pages, fileName='Documento.pdf', options={}) {
  // Business Central puede incluir varios almacenes dentro del MISMO LP.
- // La preparación de Coruña corresponde exclusivamente a COR_01_COR.
  const warehouseOf=page=>{
   const line=page.items.map(it=>it.text||'').join(' ');
-  const hit=line.match(/Almac[eé]n\s*:\s*(COR[\s_-]*0?\d{1,2}[\s_-]*[A-Z]{2,})/i);
-  if(!hit)return null;
-  const cleaned=hit[1].toUpperCase().replace(/[\s-]+/g,'_').replace(/_+/g,'_');
-  return cleaned.replace(/^COR_1_/,'COR_01_').replace(/^COR_2_/,'COR_02_');
+  const values=[...line.matchAll(/Almac[eé]n\s*:\s*([A-Z]{2,8}[\s_-]*0?\d{1,3}[\s_-]*[A-Z0-9]{2,12})/gi)]
+    .map(hit=>normalizeWarehouseCode(hit[1]));
+  const distinct=[...new Set(values)];
+  // Una página con dos almacenes mezclados no puede imprimirse de forma segura.
+  if(distinct.length>1)throw Error("El PDF contiene COR1 y COR2 en la misma página; no se puede separar con seguridad. Revisa el original.");
+  return distinct[0]||null;
  };
  const identified=pages.map(warehouseOf);
  const warehouses=[...new Set(identified.filter(Boolean))];
- const mixedWarehouse=warehouses.length>1;
- if(warehouses.length&&!warehouses.includes('COR_01_COR'))throw new Error('El PDF no contiene el bloque de mercancía COR_01_COR');
- if(warehouses.length){
+ const requestedWarehouse=normalizeWarehouseCode(options.warehouse);
+ const fileIdentity=identificarPdfPorAlmacen(fileName);
+ // La letra F señala el destino de la carga, NO un almacén que debamos preparar.
+ // Con nombres F/C el preparado predeterminado es siempre COR1; COR2 solo se
+ // puede extraer explícitamente para una hoja de detalle, nunca publicar como carga.
+ const warehouse=requestedWarehouse||(fileIdentity?"COR_01_COR":(warehouses.length===1?warehouses[0]:null));
+ // 'Mixto' es bloqueante SOLO si no se ha separado un almacén concreto.
+ // availableWarehouses conserva el hecho de que el PDF original contiene ambos.
+ const mixedWarehouse=warehouses.length>1&&!warehouse;
+ const warehouseWarnings=[];
+ if(requestedWarehouse&&warehouses.length&&!warehouses.includes(requestedWarehouse))
+  throw Error("El almacén seleccionado "+requestedWarehouse+" no aparece en el PDF.");
+ if(warehouses.length>1&&warehouse)warehouseWarnings.push(
+  "El original contiene varios almacenes: se han seleccionado únicamente las páginas de "+warehouse+"; no se imprimirán líneas de los demás.");
+ if(mixedWarehouse&&!warehouse)warehouseWarnings.push('El documento contiene varios almacenes; debe seleccionarse uno antes de revisar');
+ if(!warehouses.length)warehouseWarnings.push(fileIdentity
+  ?'El PDF no indica almacén en su cabecera; se propone '+fileIdentity.warehouse+' por su nombre y requiere revisión administrativa'
+  :'El documento no indica un almacén reconocible; queda pendiente de clasificar');
+ if(warehouse&&!KNOWN_WAREHOUSES.has(warehouse))warehouseWarnings.push('Almacén '+warehouse+' pendiente de clasificar');
+ if(warehouses.length&&warehouse){
   let active=null;
   pages=pages.filter((page,index)=>{
    if(identified[index])active=identified[index];
-   return active==='COR_01_COR';
+   return active===warehouse;
   });
+ }else if(mixedWarehouse){
+  pages=[];
  }
+ if(warehouse&&warehouses.length&&!pages.length)
+  throw Error("El PDF no contiene páginas del almacén "+warehouse+"; COR2 no puede sustituir la preparación COR1.");
+ const pageNumbers=pages.map(p=>p.number);
  const every=pages.flatMap(p=>p.items.map(it=>({...it,page:p.number})));
  const textAll=every.map(i=>i.text).join(' ').replace(/\s+/g,' ');
  const extract=(regexp,source=textAll)=>source.match(regexp)?.[1]??null;
- let id=extract(/\b(LP\s*\d{2}\s*[-–]\s*\d{4,6})\b/i);
+ // El texto de PDF.js puede fragmentar LP, año, guion y número.
+ let id=extract(/\b(LP\s*\d{2}\s*[-–_ ]\s*\d{4,6})\b/i);
  if(!id)id=(fileName.match(/LP\d{2}[-_ ]\d{4,6}/i)||[])[0];
- id=(id||fileName.replace(/\.pdf$/i,'')).replace(/\s+/g,'').replace('_','-');
+ if(id)id=id.toUpperCase().replace(/\s+/g,'').replace(/[-–_]/g,'-');
+ const dateMatch=textAll.match(/Fecha\s*carga\s*:?\s*(\d{2}\/\d{2}\/(\d{4}|\d{2}))/i);
+ const year=dateMatch?.[2]?.slice(-2)||null;
+ if(fileIdentity&&id&&id.split("-")[1]!==fileIdentity.number)
+  throw Error("El nombre "+fileName+" indica la carga "+fileIdentity.number+", pero dentro del PDF aparece "+id+".");
+ if(fileIdentity&&id&&year&&id.slice(2,4)!==year)
+  throw Error("El código "+id+" no coincide con el año de Fecha carga del documento.");
+ // Usar F/C solo cuando el año está acreditado por la fecha documental;
+ // no inventar el año desde la hora del dispositivo.
+ if(!id&&fileIdentity&&!year)
+  throw Error("El archivo "+fileName+" utiliza la nomenclatura F/C, pero no se pudo verificar el año en «Fecha carga» dentro del PDF. No se ha importado: comprueba la fecha del documento.");
+ if(!id&&fileIdentity&&year)id="LP"+year+"-"+fileIdentity.number;
+ // Los PDF de BC se descargan a veces como 19663.pdf. Reconstruir LP
+ // únicamente si la fecha de carga explícita determina el año y el
+ // documento contiene la misma numeración de carga.
+ if(!id&&/^\d{4,6}\.pdf$/i.test(fileName)){
+   const number=fileName.replace(/\.pdf$/i,'');
+   const numberInDocument=new RegExp('(?:N[º°o.]?\\s*(?:carga|documento)|N[uú]mero\\s*(?:carga|documento)|Carga)\\s*:?\\s*'+number+'\\b','i').test(textAll);
+   if(year&&numberInDocument)id='LP'+year+'-'+number;
+ }
+ id=id||fileName.replace(/\.pdf$/i,'');
  const weight=numeric(extract(/Peso\s*carga\s*:?\s*([\d.]+,\d+|\d+(?:\.\d+)?)/i));
  const refs=numeric(extract(/Total\s*referencias\s*prod\.?\s*:?\s*(\d+)/i));
+ // «TOTAL» del bloque MERCANCÍA de BC: bultos, no referencias ni devoluciones.
+ // La lectura por coordenadas de declaredTotal excluye CONTROL ENVASES y PALETS.
  const visits=numeric(extract(/N[º°o.]?\s*visitas\s*:?\s*(\d+)/i));
  const driver=(extract(/Repartidor\s*:\s*(.{1,65}?)(?=N[º°o.]?\s*copias|N[º°o.]?\s*visitas|Peso\s*carga|Almac[eé]n|$)/i)||'').trim();
  const plate=extract(/Matr[ií]cula\s*:?\s*([A-Z0-9-]{5,12})/i)||extract(/Cami[oó]n\s*:\s*CR(\d{4}[A-Z]{3})/i)||'';
  // Leer «6G 4» como grandes/pequeños y «8G» sin inventar pequeños.
  const truckLine=extract(/Cami[oó]n\s*:\s*(.{1,120}?)(?=\s*Matr[ií]cula\s*:|\s*Huecos\s*plts\.?\s*cami[oó]n\s*:|\s*Almac[eé]n\s*:|$)/i)||'';
- const palletMatch=truckLine.match(/(?:^|[\s-])(\d{1,2})\s*G(?:\s*[-\/]?\s*(\d{1,2})\s*P?)?(?=\s|$|[-\/])/i);
+ // Cuando consta el campo explícito "Huecos plts. camión", tiene prioridad
+ // sobre cualquier código de capacidad presente junto al nombre del camión.
+ const huecosLine=extract(/Huecos\s*(?:plts?\.?|palets?)\s*(?:del?\s*)?cami[oó]n\s*:\s*(.{1,90}?)(?=\s*(?:Matr[ií]cula|Almac[eé]n|Ruta|Repartidor|Fecha\s*carga|Observaciones?)\s*:|$)/i)||"";
+ const palletMatch=(huecosLine||truckLine).match(/(?:^|[\s-])(\d{1,2})\s*G(?:\s*[-\/]?\s*(\d{1,2})\s*P?)?(?=\s|$|[-\/])/i);
  const palletsLarge=palletMatch?Number(palletMatch[1]):null;
  const palletsSmall=palletMatch&&palletMatch[2]!=null?Number(palletMatch[2]):null;
+ // Un número sin G/P solo expresa el total de huecos: no adivinar formatos.
+ const plainSlots=!palletMatch&&huecosLine.match(/^\s*(\d{1,3})(?=\s|$)/);
+ const palletsTotal=plainSlots?Number(plainSlots[1]):null;
+ const observations=leerObservacionesCabecera(pages);
  const date=extract(/Fecha\s*carga\s*:\s*(\d{2}\/\d{2}\/\d{2,4})/i);
  const route=(extract(/Ruta\s*:\s*(.{1,60}?)(?=\s+(?:Repartidor|Matr[ií]cula|Cami[oó]n|Fecha|Peso|Almac[eé]n|N[º°o.]?\s*(?:copias|visitas))\s*:|$)/i)||'').trim();
  let merchandise=false,declaredTotal=null;
- const products=[],warnings=[];
+ const products=[],warnings=[...warehouseWarnings];
  for(const page of pages){
   const items=page.items.filter(it=>it.text&&it.text.trim()).sort((a,b)=>a.y-b.y||a.x-b.x);
   const goodsTitle=items.find(it=>/M\s*E\s*R\s*C\s*A\s*N\s*C\s*[IÍ]\s*A/i.test(it.text));
@@ -70,9 +175,14 @@ export function parseDocumentPages(pages, fileName='Documento.pdf') {
    const hit=i.text.match(/\bPRD\d{7}\b/i);
    if(!hit)continue;
    // Ubicación estandar y variante impresa K109-3 (pertenece al pasillo K).
-   const locPattern=/\b([A-Z]\d{2}-P\d{2}|[A-Z]\d{3}-\d|ZFRIO)\b/i;
-   const prev=zone.filter(p=>p.x<i.x+3&&Math.abs(p.y-i.y)<8).map(p=>p.text).join(' ');
-   const loc=(i.text.match(locPattern)||[])[0]||(prev.match(locPattern)||[])[0]||'';
+   // PDF.js puede separar una ubicación en varios fragmentos de texto.
+   // Buscar solo en la misma fila y a la izquierda del SKU evita copiar
+   // ubicaciones de productos vecinos.
+   const locPattern=/\b([A-Z]\d{2,3}\s*-\s*P?\d{1,3}|ZFRIO)\b/i;
+   const prev=zone.filter(p=>p.x<=i.x+3&&Math.abs(p.y-i.y)<8)
+     .sort((a,b)=>a.x-b.x).map(p=>p.text).join(' ');
+   const loc=((i.text.match(locPattern)||[])[0]||(prev.match(locPattern)||[])[0]||'')
+     .toUpperCase().replace(/\s+/g,'');
    rows.push({sku:hit[0].toUpperCase(),location:loc.toUpperCase(),y:i.y});
   }
   rows.sort((a,b)=>a.y-b.y);
@@ -99,7 +209,8 @@ export function parseDocumentPages(pages, fileName='Documento.pdf') {
    else if(/^PALETS?$/.test(rawUnit))unit='PALET';
    else if(/^KGS?$|^KILOS?$|^KILOGRAMOS?$/.test(rawUnit))unit='KG';
    const description=cells.filter(i=>i.x>page.width*.18&&i.x<page.width*.67).sort((a,b)=>a.y-b.y||a.x-b.x).map(i=>i.text.trim()).filter(Boolean).join(' ').replace(/\s+/g,' ');
-   const product={...r,qty,unit,description};
+   const sourceContext=cells.sort((a,b)=>a.x-b.x||a.y-b.y).map(i=>i.text.trim()).filter(Boolean).join(' ');
+   const product={...r,qty,unit,description,sourceContext};
    if(!validQty(qty)||(qty>0&&!unit))warnings.push('Cantidad o unidad sin reconocer en '+r.sku);
    products.push(product);
   }
@@ -109,7 +220,7 @@ export function parseDocumentPages(pages, fileName='Documento.pdf') {
    merchandise=false;
   }else if(controlLabel||palletsLabel){merchandise=false}
  }
- if(warehouses.length&&!pages.length)warnings.push('El PDF no contiene mercancía de COR_01_COR');
+
  const sum=products.reduce((a,p)=>a+Number(p.qty||0),0);
  const countOK=refs!==null&&refs===products.length;
  const amountOK=declaredTotal===null?null:Math.abs(declaredTotal-sum)<0.000001;
@@ -117,7 +228,7 @@ export function parseDocumentPages(pages, fileName='Documento.pdf') {
  if(amountOK===false)warnings.push('Suma detectada: '+sum.toFixed(3)+' / declarada: '+declaredTotal);
  if(declaredTotal===null)warnings.push('No se pudo contrastar el total del PDF');
  const verified=countOK&&amountOK===true&&warnings.length===0;
- return {id,weight,refs,visits,driver,plate,palletsLarge,palletsSmall,date,route,source:fileName,products,declaredTotal,actualTotal:sum,verified,warnings,warehouse:warehouses.length?'COR_01_COR':null,mixedWarehouse,availableWarehouses:warehouses};
+ return {id,weight,refs,bultos:declaredTotal,visits,driver,plate,palletsLarge,palletsSmall,palletsTotal,observations,date,route,source:fileName,products,declaredTotal,actualTotal:sum,verified,warnings,warehouse,warehouseKnown:KNOWN_WAREHOUSES.has(warehouse),mixedWarehouse,availableWarehouses:warehouses,pageNumbers};
 }
 export function summarize(products){
  const units={},aisles={},unlocated=[];

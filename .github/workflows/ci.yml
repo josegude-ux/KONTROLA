@@ -1,23 +1,66 @@
 name: Verificar KONTROLA
 on:
   push:
-    branches: [desarrollo/fase-1-operario]
+    branches: [desarrollo/fase-1-operario, cursor/verificacion-fisica-cargas-8ba0]
   pull_request:
-    branches: [main]
+    branches: [main, desarrollo/fase-1-operario, cursor/verificacion-fisica-cargas-8ba0]
 permissions:
   contents: read
 jobs:
   test:
     runs-on: ubuntu-latest
+    env:
+      PGHOST: localhost
+      PGPORT: 5432
+      PGUSER: postgres
+      PGPASSWORD: postgres
+    services:
+      postgres:
+        image: postgres:16@sha256:9e2cf6287f25c3151f4c9421ccce2b17f3e60061c111a29165e0d2cdd9ff0a97
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: '22'
+          cache: npm
+      - name: Instalar dependencias bloqueadas
+        run: npm ci
+      - name: Verificar dependencias de navegador
+        run: npm run build:vendor && git diff --exit-code -- vendor
       - name: Comprobar sintaxis
         run: |
           node --check src/app.mjs
           node --check src/core.mjs
           node --check src/logic.mjs
+          node --check src/history.mjs
+          node --check src/revision-diff.mjs
+          node --check src/admin-revisions.mjs
+          node --check src/business-date.mjs
+          node --check src/import-batch.mjs
+          node --check src/admin-stats.mjs
+          node --check src/legacy-audit.mjs
+          node --check src/admin-legacy.mjs
+          node --check src/legacy-reconcile.mjs
+          node --check src/admin-reconcile.mjs
+          node --check src/legacy-originals.mjs
+          node --check src/admin-originals.mjs
+          node --check src/admin-print-batch.mjs
+          node --check src/archive-snapshot.mjs
+          node --check src/verification.mjs
+          node --check src/document-review.mjs
+          node --check src/report.mjs
+          node --check src/admin.mjs
+          node --check src/pdf.mjs
       - name: Pruebas de regresión
         run: node --test tests/*.test.mjs
+      - name: Migraciones, RLS y concurrencia
+        run: npm run test:db

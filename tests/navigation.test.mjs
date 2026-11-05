@@ -1,0 +1,303 @@
+import test from "node:test";
+import assert from "node:assert/strict";
+import {readFileSync} from "node:fs";
+
+const read=path=>readFileSync(new URL("../"+path,import.meta.url),"utf8");
+const html=read("index.html");
+const app=read("src/app.mjs");
+const css=read("styles.css");
+
+test("Control de Cargas aparece como submenú navegable sin duplicar operaciones",()=>{
+  assert.match(html,/id="openCargas"[^>]*>/);
+  assert.match(html,/id="cargasMenuView"[^>]*hidden/);
+  for(const id of ["cargasConsultar","cargasPreparar","cargasVerificar","cargasHistorial","cargasAdministrar"]){
+    assert.match(html,new RegExp('id="'+id+'"'));
+    assert.ok(app.includes('$("'+id+'").addEventListener'),"Falta el manejador "+id);
+  }
+  assert.match(app,/openLoadsMenu\("cargasMenuView","consulta"\)/);
+  assert.match(app,/openReviewMenu\("cargasMenuView"\)/);
+  assert.match(css,/\.submenu-grid\{/);
+});
+
+test("importación accesible desde cargas solo para administración y sin borrar pendientes",()=>{
+  const admin=read("src/admin.mjs");
+  for(const id of ["cargasImportar","importLoadsShortcut"]){
+    assert.match(html,new RegExp('id="'+id+'"[^>]*hidden'));
+    assert.ok(app.includes('visible($("'+id+'"),ownProfile.rol==="administrador");'));
+  }
+  assert.ok(app.includes('$("cargasImportar").addEventListener("click",()=>openAdminMenu("cargasMenuView"));'));
+  assert.ok(app.includes('$("importLoadsShortcut").addEventListener("click",()=>openAdminMenu("loadsView"));'));
+  assert.ok(app.includes('if(profile?.rol!=="administrador"||!switchView("adminView"))return;'));
+  assert.ok(admin.includes('await Promise.all([refreshReviewSelector(),refreshPendingPublish()]);'));
+  assert.doesNotMatch(admin,/\$\("reviewLoadSelect"\)\.replaceChildren\(\);\$\("reviewLoadMessage"\)\.textContent="";/);
+});
+
+test("PDF mixto: administración reprocesa solo el almacén elegido sin copiar líneas previas",()=>{
+  const source=read("src/admin.mjs");
+  assert.match(source,/async function reprocessReviewWarehouse\(target\)/);
+  assert.match(source,/parsePdfFile\(original,\{warehouse:target\}\)/);
+  assert.match(source,/next\.id!==previous\.id\|\|next\.warehouse!==target\|\|next\.mixedWarehouse/);
+  assert.doesNotMatch(source,/products:draft\.parsed\.products/);
+  assert.doesNotMatch(source,/actualTotal:draft\.parsed\.actualTotal/);
+  assert.match(source,/Reprocesar SOLO COR1/);
+  assert.match(source,/El PDF original sigue intacto/);
+  assert.match(source,/Guardar revisión para actualizar la carga pendiente/);
+});
+
+test("importación F/C prepara COR1, impresión original COR1 y hoja COR2 independiente",()=>{
+ const admin=read("src/admin.mjs");
+ const core=read("src/core.mjs");
+ const vendor=read("scripts/build-vendor.mjs");
+ for(const id of ["printCor1Pack","previewCor2Detail","warehousePrintActions"])
+   assert.match(html,new RegExp('id="'+id+'"'));
+ assert.match(admin,/parsePdfFile\(file,\{warehouse:"COR_01_COR"\}\)/);
+ assert.match(admin,/if\(draft\.parsed\.warehouse!=="COR_01_COR"\)return setStatus\("No se puede publicar COR2/);
+ assert.match(admin,/numeroPaginasCor1:parsed\.pageNumbers/);
+ assert.match(admin,/unirPaginasCor1YDetalle/);
+ assert.match(admin,/buildPreparationReport\(asPayload\(parsed\),\{informativoCor2:true\}\)/);
+ assert.match(admin,/draft\.state!=="publicada"\|\|!isCor1/);
+ assert.match(read("sw.js"),/\.\/vendor\/pdf-lib\.min\.mjs/);
+ assert.match(read("sw.js"),/\.\/src\/mixed-print\.mjs/);
+ assert.match(vendor,/outfile:"vendor\/pdf-lib\.min\.mjs"/);
+ assert.match(core,/fileIdentity\?"COR_01_COR"/);
+});
+
+test("la matriz y el A4 v1.3 son acciones COR1 sin sustituir la hoja detallada",()=>{
+  const admin=read("src/admin.mjs");
+  const css=read("styles.css");
+  for(const id of ["aisleMatrixSummary","aisleMatrixTable","downloadCompactA4","saveCompactA4Admin"])
+    assert.match(html,new RegExp('id="'+id+'"'));
+  assert.match(app,/renderAisleMatrix\(products\)/);
+  assert.match(app,/crearMatrizPasillos\(products\)/);
+  assert.match(app,/crearListadoPasillosA4\(current\)/);
+  assert.match(admin,/crearListadoPasillosA4\(asPayload\(draft\.parsed\)\)/);
+  assert.match(admin,/saveCompactA4Admin"\)\.disabled=busy\|\|!draft\|\|draft\.state!=="publicada"\|\|!isCor1/);
+  assert.match(css,/\.aisle-matrix-scroll/);
+  assert.match(read("sw.js"),/\.\/src\/aisle-matrix\.mjs/);
+  assert.match(html,/id="viewPreparationSheet"/);
+  assert.match(html,/id="previewCor2Detail"/);
+});
+
+test("Tanques permanece totalmente oculto y sin acciones activas",()=>{
+  assert.doesNotMatch(html,/tanques/i);
+  assert.doesNotMatch(app,/openTanques|cargasTanques/i);
+});
+
+test("La administración se muestra únicamente a perfiles autorizados",()=>{
+  assert.match(html,/id="cargasAdministrar"[^>]*hidden/);
+  assert.match(app,/visible\(\$\("cargasAdministrar"\),ownProfile\.rol==="administrador"\)/);
+  assert.match(app,/if\(profile\?\.rol!=="administrador"/);
+});
+
+test("La navegación conserva los accesos previos y los regresos al submenú",()=>{
+  for(const id of ["openPreparation","openReview","openAdmin","openSettings","backFromLoads","backFromReviewLoads"]){
+    assert.match(html,new RegExp('id="'+id+'"'));
+  }
+  assert.match(app,/switchView\(loadsParent\)/);
+  assert.match(app,/switchView\(reviewLoadsParent\)/);
+  assert.match(app,/currentReadOnly\|\|currentPreparation\?\.active/);
+  assert.match(html,/id="cargasHistoryView"[^>]*hidden/);
+});
+
+test("La versión y el caché están preparados para instalar nuevas pantallas",()=>{
+  const version=JSON.parse(read("version.json")).version;
+  assert.equal(version,"0.3.45");
+  assert.equal(JSON.parse(read("package.json")).version,version);
+  assert.equal(JSON.parse(read("package-lock.json")).version,version);
+  assert.ok(read("src/config.mjs").includes(`APP_VERSION="${version}"`));
+  assert.ok(html.includes(`id="appVersion">${version}<`));
+  assert.match(read("sw.js"),/kontrola-integral-visura-v078/);
+});
+
+test("Las consultas descartan respuestas de sesiones o almacenes anteriores",()=>{
+  assert.match(app,/const validRequest=\(warehouse,userId\)=>selectedWarehouse===warehouse&&user\?\.id===userId/);
+  for(const marker of ["async function refreshLoads()","async function refreshReviewLoads()","async function refreshOperatorDashboard()"]){
+    const start=app.indexOf(marker);
+    assert.ok(start>=0,"Falta función "+marker);
+    assert.match(app.slice(start,start+1200),/if\(!validRequest\(warehouse,userId\)\)return;/);
+  }
+});
+
+test("El historial exporta CSV e imprime solo registros filtrados",()=>{
+  for(const id of ["historyDownload","historyPrint"]){
+    assert.match(html,new RegExp('id="'+id+'"[^>]*disabled'));
+    assert.ok(app.includes('$("'+id+'").addEventListener'),"Sin controlador "+id);
+  }
+  assert.match(app,/csvHistorial\(records,selectedWarehouse\)/);
+  assert.match(app,/htmlResumenHistorial\(records,/);
+  assert.match(read("sw.js"),/\.\/src\/history\.mjs/);
+});
+
+test("Mi actividad muestra solo contadores, sin listado de eventos con fecha y hora",()=>{
+ assert.match(html,/id="operatorSummary"/);
+ assert.doesNotMatch(html,/id="operatorActivity"/);
+ const start=app.indexOf("async function refreshOperatorDashboard()");
+ const end=app.indexOf("async function initialize()",start);
+ assert.ok(start>=0&&end>start);
+ const dashboard=app.slice(start,end);
+ assert.match(dashboard,/kontrola_resumen_zona/);
+ assert.doesNotMatch(dashboard,/kontrola_actividad|creado_en|toLocaleString/);
+});
+
+test("inicio visual inspirado en INVENTA conserva rutas, permisos y estados",()=>{
+  assert.match(html,/class="home-grid inventa-inspired-home"/);
+  for(const id of ["openPreparation","openReview","openCargas","openAdmin"]){
+    assert.match(html,new RegExp('id="'+id+'"[^>]*class="feature'));
+    assert.match(app,new RegExp('\\$\\("'+id+'"\\)\\.addEventListener'));
+  }
+  assert.match(html,/id="openAdmin"[^>]*hidden/);
+  assert.match(html,/id="operatorSummary"/);
+  assert.match(html,/id="homeWarehouse"/);
+  assert.match(css,/inventa-inspired-home/);
+});
+
+test("KONTROLA usa cuatro imágenes 3D exclusivas, distintas y precargadas sin conexión",()=>{
+ const names=["preparacion","verificacion","control-cargas","administracion"];
+ const images=names.map(name=>{
+   const asset="assets/home/kontrola-"+name+"-3d.webp";
+   const official={preparacion:"preparacion",verificacion:"control-cargas","control-cargas":"operaciones",administracion:"administracion"}[name];
+   assert.match(html,new RegExp('src="\\./assets/home/visura-prepara-'+official+'-3d\\.webp"'));
+   assert.match(read("sw.js"),new RegExp('\\./assets/home/visura-prepara-'+official+'-3d\\.webp'));
+   const bytes=readFileSync(new URL("../"+asset,import.meta.url));
+   assert.ok(bytes.length>10000,asset+" debe tener contenido gráfico");
+   assert.equal(bytes.subarray(0,4).toString("ascii"),"RIFF");
+   assert.equal(bytes.subarray(8,12).toString("ascii"),"WEBP");
+   return bytes.toString("base64");
+ });
+ assert.equal(new Set(images).size,4,"No repetir diseños entre tarjetas");
+ assert.equal(html.includes("raw.githubusercontent.com/josegude-ux/INVENTA-"),false);
+ assert.doesNotMatch(read("sw.js"),/ORIGINAL_INVENTA_IMAGES/);
+ for(const id of ["openPreparation","openReview","openCargas","openAdmin"]){
+   assert.match(html,new RegExp('id="'+id+'"[^>]*class="feature'));
+ }
+ assert.match(html,/id="openAdmin"[^>]*hidden/);
+});
+
+test("preparación recupera inicio automático con reloj del servidor y consulta sin mutaciones",()=>{
+  assert.match(html,/id="prepClock"[^>]*role="timer"/);
+  assert.match(app,/async function startCurrentPreparation\(\)/);
+  assert.match(app,/p_request_id:crypto\.randomUUID\(\)/);
+  assert.match(app,/if\(!currentReadOnly&&!currentPreparation\.active&&!currentPreparation\.finalized&&load\.estado==="publicada"\)/);
+  assert.match(app,/await startCurrentPreparation\(\)/);
+  assert.match(app,/\$\("truckCapacityStart"\)\.addEventListener/);
+  assert.match(app,/currentReadOnly=readOnly\|\|assignedToOther/);
+  assert.match(app,/formatPreparationDuration\(current\.preparacion_inicio/);
+  assert.match(app,/setInterval\(\(\)=>/);
+  assert.match(app,/if\(id!=="detailView"\)stopPreparationClock\(\)/);
+  assert.match(app,/function openLoadsMenu\(parent="homeView",mode="preparacion"\)/);
+  assert.match(app,/openLoadsMenu\("cargasMenuView","consulta"\)/);
+});
+test("Volver fijo arriba a la izquierda es común a todas las vistas operativas",()=>{
+  assert.match(html,/id="globalBack"[^>]*hidden/);
+  assert.match(css,/#shell \.topbar \.topbar-back/);
+  assert.match(css,/#shell \.view \.page-heading>\.back-button\{display:none\}/);
+  assert.match(css,/\.report-view \.report-controls\{position:sticky/);
+  for(const id of ["cargasHistoryView","loadsView","detailView","reviewLoadsView","reviewDetailView"]){
+    assert.match(app,new RegExp(id+':"back'));
+  }
+  assert.match(app,/view==="adminView"\)switchView\(adminParent\)/);
+  assert.match(app,/\$\("globalBack"\)\.hidden=id==="homeView"/);
+});
+test("las cargas nunca se indican como borradas cuando falla el resumen o se cambia de almacén",()=>{
+  assert.match(html,/id="operatorSummaryStatus"/);
+  assert.match(html,/id="homeWarehouse"/);
+  assert.match(html,/id="refreshHomeSummary"/);
+  assert.match(app,/No se han podido consultar las cargas de/);
+  assert.match(app,/Los datos del servidor no se han borrado/);
+  assert.match(app,/mostrar cero no significa que los datos se hayan eliminado/);
+  assert.match(app,/warehouses\.find\(item=>item\.codigo===warehouse\)/);
+});
+
+test("almacenes visibles y filtros claros",()=>{
+ for(const id of ["loadsWarehouseHint","reviewWarehouseHint"])assert.match(html,new RegExp('id="'+id+'"'));
+ assert.match(app,/function updateWarehouseLabels/);
+ assert.match(app,/No hay cargas publicadas en /);
+ assert.match(app,/No hay cargas verificables por este usuario en /);
+ assert.match(html,/Al abrir una carga publicada se comprobarán los huecos/);
+ assert.match(app,/\$\("loadSearch"\)\.value=""/);
+ assert.match(app,/\$\("reviewSearch"\)\.value=""/);
+});
+
+test("preparación muestra la matrícula destacada y el cálculo desglosado existente",()=>{
+  assert.match(app,/desglosarBultos\(r\.productos\)/);
+  assert.match(app,/Bultos desglosados:/);
+  assert.match(app,/Sin desglose disponible/);
+  assert.doesNotMatch(app,/bundles\.textContent="Bultos: "/);
+  assert.match(app,/plateValue\.textContent=r\.matricula/);
+  assert.match(css,/\.load-plate-label\{/);
+  assert.match(css,/\.load-plate-value\{/);
+});
+
+test("la preparación sitúa bultos totales sobre el peso con la misma jerarquía visual",()=>{
+  const start=app.indexOf("function renderLoadList()");
+  const end=app.indexOf("// Historial de lectura",start);
+  const preparation=app.slice(start,end);
+  assert.match(preparation,/totalBultosDelDesglose\(breakdown\)/);
+  assert.match(preparation,/total\.textContent=totalBultos===null\?"— bultos"/);
+  assert.ok(preparation.indexOf("summary.append(total,weight)")>0);
+  assert.match(css,/#loadsList \.load-card-summary\{/);
+  assert.match(css,/#loadsList \.load-bundles-total\{font-weight:800;font-size:16px/);
+  assert.match(css,/\.load-weight\{font-weight:800;font-size:16px/);
+});
+
+test("los huecos del camión aparecen junto a matrícula con G y P",()=>{
+  const start=app.indexOf("function renderLoadList()");
+  const end=app.indexOf("// Historial de lectura",start);
+  const preparation=app.slice(start,end);
+  assert.match(preparation,/vehicle\.append\(plate,pallets\)/);
+  assert.match(preparation,/palletsValue\.textContent=formatearHuecosPalets\(r\.huecos_palets_grandes,r\.huecos_palets_pequenos,r\.huecos_palets_total\)/);
+  assert.match(preparation,/HUECOS PALÉS/);
+  assert.doesNotMatch(preparation,/palets_para_carga/);
+  assert.match(css,/#loadsList \.load-vehicle\{/);
+  assert.match(css,/#loadsList \.load-pallets\{/);
+});
+
+test("la lista usa la cabecera de la revisión vigente del mismo almacén",()=>{
+  const refresh=app.slice(app.indexOf("async function refreshLoads()"),app.indexOf("function renderLoadList()"));
+  assert.match(refresh,/\.from\("kontrola_carga_revisiones"\)/);
+  assert.match(refresh,/\.eq\("vigente",true\)\.eq\("almacen",warehouse\)/);
+  assert.match(refresh,/if\(!validRequest\(warehouse,userId\)\)return/);
+  assert.match(refresh,/observaciones:carga_datos->>observaciones/);
+  assert.match(refresh,/huecos_palets_grandes:carga_datos->>huecos_palets_grandes/);
+  const list=app.slice(app.indexOf("function renderLoadList()"),app.indexOf("// Historial de lectura"));
+  assert.match(list,/id\.textContent=r\.codigo\+\(observaciones\?" - "\+observaciones:""\)/);
+  assert.match(list,/r\.observaciones/);
+  assert.doesNotMatch(list,/innerHTML/);
+});
+
+test("la importación conserva las observaciones y los huecos del PDF sin migraciones",()=>{
+  const admin=read("src/admin.mjs");
+  assert.match(admin,/observaciones:parsed\.observations\?\.trim\(\)\|\|null/);
+  assert.match(admin,/huecos_palets_grandes:parsed\.palletsLarge/);
+  assert.match(admin,/huecos_palets_pequenos:parsed\.palletsSmall/);
+  assert.match(admin,/observations:payload\.observaciones/);
+  assert.match(read("src/core.mjs"),/leerObservacionesCabecera\(pages\)/);
+});
+
+
+test("la lectura de PDF antiguos es voluntaria y no modifica Supabase ni relojes",()=>{
+ const pdf=read("src/legacy-header.mjs");
+ assert.match(html,/id="readLegacyHeaders"/);
+ assert.match(html,/id="legacyHeaderStatus"/);
+ assert.match(app,/\$\("readLegacyHeaders"\)\.addEventListener\("click"/);
+ assert.match(app,/client\.storage\.from\(PDF_BUCKET\)\.download\(load\.documento_ruta\)/);
+ assert.match(app,/await parsePdfFile\(original,\{warehouse\}\)/);
+ assert.match(app,/cargasCabeceraPendiente\(/);
+ assert.match(app,/legacyHeaderCache\.clear\(\)/);
+ assert.match(app,/serial!==loadsRequestSerial/);
+ assert.match(app,/if\(!validRequest\(warehouse,userId\)\|\|serial!==loadsRequestSerial\)return/);
+ assert.match(app,/statusElement\.textContent="Leyendo cabecera "/);
+ for(const mutation of [".insert(", ".upsert(", ".update(", ".delete(", ".rpc("])assert.ok(!pdf.includes(mutation),"Prohibida escritura en helper: "+mutation);
+ const start=app.indexOf("async function leerCabecerasAntiguas()");
+ const end=app.indexOf("function renderLoadList()",start);
+ const legacy=app.slice(start,end);
+ for(const mutation of [".insert(", ".upsert(", ".update(", ".delete(", ".rpc(", "startCurrentPreparation(", "openLoad("])assert.ok(!legacy.includes(mutation),"Prohibida escritura en lectura PDF: "+mutation);
+});
+
+test("los PDF leídos se muestran solo durante la sesión y se mantienen al refrescar",()=>{
+ assert.match(app,/legacyHeaderCache\.set\(load\.documento_ruta,extras\)/);
+ assert.match(app,/const cached=legacyHeaderCache\.get\(load\.documento_ruta\)/);
+ assert.match(app,/cached&&cabeceraSinMetadatos\(enriched\)/);
+ assert.match(app,/legacyHeaderCache\.clear\(\)/);
+ assert.match(app,/id\.textContent=r\.codigo\+\(observaciones\?" - "\+observaciones:""\)/);
+});

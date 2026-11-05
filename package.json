@@ -1,11 +1,21 @@
 {
   "name": "kontrola",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.3.45",
   "type": "module",
-  "description": "KONTROLA · fase 1 preparación",
+  "description": "KONTROLA · operación integral de preparación y verificación de cargas",
   "scripts": {
+    "build:vendor": "node scripts/build-vendor.mjs",
     "test": "node --test tests/*.test.mjs",
-    "check": "node --check src/app.mjs && node --test tests/*.test.mjs"
+    "test:db": "tests/integration/run.sh",
+    "check": "node --check src/*.mjs && node --test tests/*.test.mjs"
+  },
+  "devDependencies": {
+    "esbuild": "0.28.2",
+    "pdf-lib": "^1.17.1",
+    "pdfjs-dist": "^6.4.299"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "2.118.0"
   }
 }
