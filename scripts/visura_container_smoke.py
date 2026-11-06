@@ -104,10 +104,7 @@ def cleanup_container(name):
         pass
     try:
         remaining = _run(
-            [
-                "docker", "container", "ls", "--all", "--filter",
-                "name=^" + name + "$", "--format={{.Names}}",
-            ],
+            ["docker", "container", "ls", "--all", "--format={{.Names}}"],
             timeout=10,
         )
     except Exception:
@@ -115,9 +112,11 @@ def cleanup_container(name):
     if remaining.returncode != 0 or not isinstance(remaining.stdout, str):
         return "unverifiable"
     names = remaining.stdout.splitlines()
-    if not names:
+    matches = [container_name for container_name in names
+               if container_name in (name, "/" + name)]
+    if not matches:
         return "confirmed"
-    if names == [name]:
+    if len(matches) == 1:
         return "failed"
     return "unverifiable"
 

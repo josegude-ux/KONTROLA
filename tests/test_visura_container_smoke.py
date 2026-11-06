@@ -129,15 +129,20 @@ class SmokePolicyTests(unittest.TestCase):
         self.assertEqual(cleanup_args[:3], ["docker", "rm", "-f"])
         self.assertRegex(cleanup_args[3], r"^visura-container-smoke-[a-f0-9]{32}$")
         self.assertEqual(verify_args[:3], ["docker", "container", "ls"])
-        self.assertEqual(verify_args[-1], "--format={{.Names}}")
+        self.assertEqual(verify_args[3:], ["--all", "--format={{.Names}}"])
+        self.assertNotIn("--filter", verify_args)
 
     @patch.object(m.shutil, "which", return_value="/usr/bin/docker")
     @patch.object(m, "_run")
     def test_timeout_cleanup_failed_or_unverifiable(self, mocked_run, _which):
         cases = (
             (
-                subprocess.CompletedProcess([], 0, stdout=NAME + "\n", stderr=""),
+                subprocess.CompletedProcess([], 0, stdout="/" + NAME + "\n", stderr=""),
                 "failed",
+            ),
+            (
+                subprocess.CompletedProcess([], 1, stdout="", stderr="daemon unavailable"),
+                "unverifiable",
             ),
             (subprocess.TimeoutExpired("docker container ls", 10), "unverifiable"),
         )
