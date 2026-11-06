@@ -5,6 +5,7 @@ service. It never grants code execution, GitHub writes, merge or deployment.
 The caller must authenticate humans, signed grants, policies and environment
 outside the agent and keep this SQLite DB on persistent trusted storage.
 """
+from contextlib import closing
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 import re
@@ -46,7 +47,7 @@ def consume_nonce(db_path, *, key_id, nonce, grant_digest, now, expires_at):
         raise ValueError("Supervisor database must be an absolute, non-symlink file")
     if not path.parent.is_dir() or path.parent.is_symlink():
         raise ValueError("Supervisor database parent must be a trusted directory")
-    with sqlite3.connect(str(path), timeout=5, isolation_level=None) as conn:
+    with closing(sqlite3.connect(str(path), timeout=5, isolation_level=None)) as conn:
         conn.execute("PRAGMA busy_timeout=5000")
         conn.execute(
             "CREATE TABLE IF NOT EXISTS consumed_grants ("
