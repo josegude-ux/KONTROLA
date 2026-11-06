@@ -1,0 +1,22 @@
+name: VISURA AUTO-DEV - Safe Executor Preflight
+on:
+  pull_request:
+    paths:
+      - scripts/visura_executor_preflight.py
+      - tests/test_visura_executor_preflight.py
+      - .github/workflows/visura-auto-dev-executor-preflight.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Compile pilot modules
+        run: python3 -m compileall -q scripts/visura_task_spec.py scripts/visura_executor_preflight.py tests/test_visura_executor_preflight.py
+      - name: Test safe preflight
+        run: python3 -m unittest discover -s tests -p 'test_visura_executor_preflight.py' -v
