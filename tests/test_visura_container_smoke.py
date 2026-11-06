@@ -55,6 +55,12 @@ class DockerCommandTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             m.docker_args(IMAGE_ID, self.workspace, "production")
 
+    def test_cleanup_rejects_non_ephemeral_names(self):
+        with patch.object(m, "_run") as mocked_run:
+            with self.assertRaises(ValueError):
+                m.cleanup_container("production; echo unsafe")
+        mocked_run.assert_not_called()
+
 
 class SmokePolicyTests(unittest.TestCase):
     def test_probe_does_not_authorize_untrusted_code(self):
@@ -100,6 +106,76 @@ class SmokePolicyTests(unittest.TestCase):
         ]
         with self.assertRaisesRegex(RuntimeError, "observation"):
             m.run_smoke_pilot()
+
+    @patch.object(m.shutil, "which", return_value="/usr/bin/docker")
+    @patch.object(m, "_run")
+    def test_timeout_cleanup_confirmed_by_absence_check(self, mocked_run, _which):
+        mocked_run.side_effect = [
+            subprocess.CompletedProcess([], 0, stdout="", stderr=""),
+            subprocess.CompletedProcess([], 0, stdout=IMAGE_ID + "\n", stderr=""),
+            subprocess.TimeoutExpired("docker run", m.TIMEOUT_SECONDS),
+            subprocess.CompletedProcess([], 1, stdout="", stderr="already removed"),
+            subprocess.CompletedProcess([], 0, stdout="", stderr=""),
+        ]
+        with patch.object(m.uuid, "uuid4") as mocked_uuid:
+            mocked_uuid.return_value.hex = "b" * 32
+            with self.assertRaisesRegex(
+                RuntimeError, "timeout; container cleanup confirmed"
+            ):
+                m.run_smoke_pilot()
+        self.assertEqual(mocked_run.call_count, 5)
+        cleanup_args = mocked_run.call_args_list[3].args[0]
+        verify_args = mocked_run.call_args_list[4].args[0]
+        self.assertEqual(cleanup_args[:3], ["docker", "rm", "-f"])
+        self.assertRegex(cleanup_args[3], r"^visura-container-smoke-[a-f0-9]{32}$")
+        self.assertEqual(verify_args[:3], ["docker", "container", "ls"])
+        self.assertEqual(verify_args[-1], "--format={{.Names}}")
+
+    @patch.object(m.shutil, "which", return_value="/usr/bin/docker")
+    @patch.object(m, "_run")
+    def test_timeout_cleanup_failed_or_unverifiable(self, mocked_run, _which):
+        cases = (
+            (
+                subprocess.CompletedProcess([], 0, stdout=NAME + "\n", stderr=""),
+                "failed",
+            ),
+            (subprocess.TimeoutExpired("docker container ls", 10), "unverifiable"),
+        )
+        for verification, expected_status in cases:
+            with self.subTest(expected_status=expected_status):
+                mocked_run.reset_mock()
+                mocked_run.side_effect = [
+                    subprocess.CompletedProcess([], 0, stdout="", stderr=""),
+                    subprocess.CompletedProcess([], 0, stdout=IMAGE_ID + "\n", stderr=""),
+                    subprocess.TimeoutExpired("docker run", m.TIMEOUT_SECONDS),
+                    subprocess.CompletedProcess([], 0, stdout="", stderr=""),
+                    verification,
+                ]
+                with patch.object(m.uuid, "uuid4") as mocked_uuid:
+                    mocked_uuid.return_value.hex = "b" * 32
+                    with self.assertRaisesRegex(
+                        RuntimeError, "timeout; container cleanup " + expected_status
+                    ):
+                        m.run_smoke_pilot()
+
+    @patch.object(m.shutil, "which", return_value="/usr/bin/docker")
+    @patch.object(m, "_run")
+    def test_nonzero_run_attempts_and_verifies_cleanup(self, mocked_run, _which):
+        mocked_run.side_effect = [
+            subprocess.CompletedProcess([], 0, stdout="", stderr=""),
+            subprocess.CompletedProcess([], 0, stdout=IMAGE_ID + "\n", stderr=""),
+            subprocess.CompletedProcess([], 2, stdout="probe output", stderr="run error"),
+            subprocess.CompletedProcess([], 0, stdout="", stderr=""),
+            subprocess.CompletedProcess([], 0, stdout="", stderr=""),
+        ]
+        with patch.object(m.uuid, "uuid4") as mocked_uuid:
+            mocked_uuid.return_value.hex = "b" * 32
+            with self.assertRaisesRegex(
+                RuntimeError, "Container smoke failed; container cleanup confirmed"
+            ) as raised:
+                m.run_smoke_pilot()
+        self.assertIn("run error", str(raised.exception))
+        self.assertEqual(mocked_run.call_count, 5)
 
 
 if __name__ == "__main__":
