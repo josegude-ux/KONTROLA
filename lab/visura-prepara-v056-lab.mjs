@@ -15,6 +15,27 @@ if(typeof Map.prototype.getOrInsertComputed!=="function"){
     }
   });
 }
+// PDF.js 6.4 usa "for await" sobre ReadableStream. WebKit antiguos no
+// exponen Symbol.asyncIterator; añadir solo si no existe, sin cambiar el lector.
+if(typeof ReadableStream!=="undefined"&&
+   typeof ReadableStream.prototype[Symbol.asyncIterator]!=="function"){
+  Object.defineProperty(ReadableStream.prototype,Symbol.asyncIterator,{
+    configurable:true,
+    value:async function*(){
+      const reader=this.getReader();
+      try{
+        while(true){
+          const result=await reader.read();
+          if(result.done)return;
+          yield result.value;
+        }
+      }finally{
+        try{await reader.cancel()}catch{}
+        reader.releaseLock();
+      }
+    }
+  });
+}
 const $=id=>document.getElementById(id);
 let rows=[],selected=new Set(),generation=0,objectUrls=[];
 let pdfModulePromise;
