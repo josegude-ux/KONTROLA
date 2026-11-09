@@ -28,6 +28,8 @@ jobs:
           node --check src/batch-selection-v056.mjs
           node --check src/admin-print-batch.mjs
           node --check tests/batch-selection-v056.test.mjs
+          node --check lab/visura-prepara-v056-lab.mjs
+          node --check src/mercancia-v056.mjs
       - name: Regresion seleccion v0.5.6 y lote administrativo
         run: node --test tests/batch-selection-v056.test.mjs tests/admin-print-batch.test.mjs
       - name: Regresion existente completa (sin servidor)
