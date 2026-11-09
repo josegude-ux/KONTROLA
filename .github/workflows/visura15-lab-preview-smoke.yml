@@ -1,4 +1,4 @@
-name: VISURA 15 LAB PR95 · Smoke remoto solo lectura
+name: VISURA 15 LAB PR95 · Control de acceso preview privado
 on:
   push:
     branches:
@@ -9,7 +9,7 @@ on:
 permissions:
   contents: read
 jobs:
-  preview-static:
+  verificar-acceso-privado:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -31,6 +31,18 @@ jobs:
           for(const [path,needles] of pages){
             const url=new URL(path,base);
             const response=await fetch(url,{redirect:'follow',signal:AbortSignal.timeout(20000)});
+            if(response.status===401||response.status===403){
+              console.log('PREVIEW PRIVADO: HTTP '+response.status+'; no se ejecutan comprobaciones E2E sin sesión.');
+              const fs=await import('node:fs/promises');
+              if(process.env.GITHUB_STEP_SUMMARY){
+                await fs.appendFile(process.env.GITHUB_STEP_SUMMARY,
+                  '## LAB PREPARA PR95: acceso restringido\n\n'+
+                  '- URL sin credenciales: **HTTP '+response.status+'**.\n'+
+                  '- **NO E2E**: el acceso privado impide verificar la web desde runner externo.\n'+
+                  '- Pendiente: pruebas de usuario autenticado en escritorio y Safari iPhone.\n');
+              }
+              process.exit(0);
+            }
             if(!response.ok)throw Error(path+' HTTP '+response.status);
             const body=await response.text();
             for(const needle of needles)assert.ok(body.includes(needle),path+' missing '+needle);
