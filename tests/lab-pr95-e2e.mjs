@@ -116,6 +116,15 @@ async function runContext(browser,kind){
     ?await browser.newContext({...devices["iPhone 13 Pro Max"],browserName,serviceWorkers:"block",acceptDownloads:true})
     :await browser.newContext({viewport:{width:1280,height:800},serviceWorkers:"block",acceptDownloads:true});
   const page=await ctx.newPage();
+  if(browserName==="webkit"){
+    await page.route("**/lab/visura-prepara-v056-lab.mjs",async route=>{
+      const original=await route.fetch(),body=await original.text();
+      const updated=body.replace('catch(error){errors.push(file.name+": "+error.message);}',
+        'catch(error){console.error("PDF_ERROR_STACK",error.stack);errors.push(file.name+": "+error.message);}');
+      await route.fulfill({response:original,body:updated});
+    });
+    page.on("console",msg=>{if(msg.type()==="error")console.log("WEBKIT_BROWSER_CONSOLE",msg.text())});
+  }
   page.on("pageerror",error=>errors.push(kind+": "+error.message));
   page.on("request",r=>{if(/^https?:/.test(r.url())&&!r.url().startsWith(BASE))errors.push("petición externa "+r.url())});
   await page.addInitScript(()=>{window.__testPrintCount=0;window.print=()=>{window.__testPrintCount++}});
