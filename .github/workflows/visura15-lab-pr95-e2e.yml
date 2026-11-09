@@ -5,6 +5,10 @@ on:
       - lab/visura15-paridad-control-cargas-v056-20261109
     paths:
       - tests/lab-pr95-e2e.mjs
+      - lab/visura-prepara-v056-lab.mjs
+      - lab/visura-prepara-v056.html
+      - src/mercancia-v056.mjs
+      - src/batch-selection-v056.mjs
       - .github/workflows/visura15-lab-pr95-e2e.yml
   workflow_dispatch:
 permissions:
