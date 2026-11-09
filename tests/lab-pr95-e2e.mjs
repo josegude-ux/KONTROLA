@@ -90,6 +90,7 @@ async function checkDocument(page,spec){
   check(spec.filename+" código exacto",await page.locator(".load b").first().textContent()===spec.code);
   await page.locator("#selectAll").click();
   check(spec.filename+" habilita vista previa",await page.locator("#prepare").isEnabled());
+  const printBeforePreview=await page.evaluate(()=>window.__testPrintCount||0);
   await page.locator("#prepare").click();
   await page.waitForFunction(()=>document.querySelector("#preview")?.classList.contains("show")||
     (document.querySelector("#status")?.textContent||"").includes("Impresión cancelada"),null,{timeout:30000});
@@ -102,7 +103,7 @@ async function checkDocument(page,spec){
   const name=spec.warehouse==="COR_01_COR"?"coruna":"ferrol";
   await page.screenshot({path:join(output,name+"-"+(page.viewportSize()?.width||0)+".png"),fullPage:true});
   const previous=await page.evaluate(()=>window.__testPrintCount||0);
-  check(spec.filename+" vista previa no imprime sola",previous===0);
+  check(spec.filename+" vista previa no imprime sola",previous===printBeforePreview);
   await page.locator("#print").click();
   check(spec.filename+" impresión solo tras clic",await page.evaluate(()=>window.__testPrintCount)===previous+1);
   await page.locator("#closePreview").click();
