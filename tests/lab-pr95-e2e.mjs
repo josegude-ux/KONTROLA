@@ -85,6 +85,7 @@ async function checkDocument(page,spec){
     return s.includes("PDF verificados")||s.includes("Rechazados:")||s.includes("No es un PDF");
   },null,{timeout:20000});
   const s=await page.locator("#status").textContent();
+  console.log("E2E_DEBUG_IMPORT",browserName,s);
   check(spec.filename+" importado y verificado",s.includes("1 PDF verificados")&&!s.includes("Rechazados:"));
   check(spec.filename+" única carga del almacén",await page.locator("#total").textContent()==="1");
   check(spec.filename+" código exacto",await page.locator(".load b").first().textContent()===spec.code);
@@ -94,6 +95,7 @@ async function checkDocument(page,spec){
   await page.locator("#prepare").click();
   await page.waitForFunction(()=>document.querySelector("#preview")?.classList.contains("show")||
     (document.querySelector("#status")?.textContent||"").includes("Impresión cancelada"),null,{timeout:30000});
+  console.log("E2E_DEBUG_PREVIEW",browserName,await page.locator("#status").textContent(),await page.locator("#preview").getAttribute("class"));
   check(spec.filename+" vista previa visible",await page.locator("#preview").evaluate(x=>x.classList.contains("show")));
   check(spec.filename+" original + resumen A4",await page.locator("#sheets .lab-sheet").count()===2);
   check(spec.filename+" original renderizado a PNG",await page.locator("#sheets .lab-sheet img").evaluate(x=>x.complete&&x.naturalWidth>0));
