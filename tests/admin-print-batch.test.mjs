@@ -21,7 +21,8 @@ test("la impresión selecciona cargas autorizadas del almacén sin alterar docum
  assert.match(code,/client\.rpc\("kontrola_panel_cargas_impresion",\{p_almacen:warehouse\}\)/);
  assert.match(code,/getWarehouse\(\)!==warehouse/);
  assert.match(code,/getUser\(\)\?\.id!==session/);
- assert.match(code,/selected\.size>=MAX_HOJAS_ARCHIVO/);
+ assert.match(code,/evaluarLoteImpresion\(selected,MAX_HOJAS_ARCHIVO\)/);
+ assert.match(code,/chosen\.length>MAX_HOJAS_ARCHIVO/);
  assert.match(code,/buildPreparationReport\(row\)/);
  assert.doesNotMatch(code,/\.upload\(|\.insert\(|\.update\(|client\.from\(|createSignedUrl/);
  assert.match(html,/id="batchPrintPanel"/);
