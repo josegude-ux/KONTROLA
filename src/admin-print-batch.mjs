@@ -1,4 +1,5 @@
 import {buildPreparationReport} from "./report.mjs";
+import {filtrarFilasImpresion,seleccionarTodasImpresion,marcarVisiblesImpresion,conciliarSeleccionImpresion,evaluarLoteImpresion} from "./batch-selection-v056.mjs";
 import {comprobarLoteActualizado} from "./archive-snapshot.mjs";
 import {fechaAlmacen} from "./business-date.mjs";
 import {nombreSugeridoArchivo,portadaLoteArchivo,MAX_HOJAS_ARCHIVO} from "./archive-period.mjs";
@@ -7,12 +8,13 @@ import {nombreSugeridoArchivo,portadaLoteArchivo,MAX_HOJAS_ARCHIVO} from "./arch
 // No incluye los PDF originales ni publica/actualiza documentos.
 const $=id=>document.getElementById(id);
 export function configurarLoteImpresion({client,getUser,getWarehouse,errorText}){
-  let rows=[],allRows=[],selected=new Set(),currentWarehouse="",currentSession=null,seq=0,nextGroupStart=0,previewing=false,printCounts=new Map(),reprintMode=false;
+  let rows=[],allRows=[],selected=new Set(),currentWarehouse="",currentSession=null,seq=0,nextGroupStart=0,previewing=false,printCounts=new Map(),reprintMode=false,searchTerm="";
   const status=$("batchPrintStatus"),list=$("batchPrintList"),button=$("batchPrintOpen");
   function reset(){
-    rows=[];allRows=[];selected.clear();printCounts.clear();reprintMode=false;$("batchPrintReprint").checked=false;nextGroupStart=0;list.replaceChildren();button.disabled=true;
+    rows=[];allRows=[];selected.clear();printCounts.clear();reprintMode=false;searchTerm="";$("batchPrintSearch").value="";$("batchPrintReprint").checked=false;nextGroupStart=0;list.replaceChildren();button.disabled=true;
     $("batchArchiveName").textContent="";
     $("batchPrintSelectVisible").hidden=true;
+    for(const id of ["batchPrintSelectAll","batchPrintMarkVisible","batchPrintClear"])$(id).hidden=true;
     $("batchPrintOpen").hidden=true;
     $("batchPrintReprint").closest("label").hidden=true;
   }
@@ -27,32 +29,33 @@ export function configurarLoteImpresion({client,getUser,getWarehouse,errorText})
       rows=[];selected.clear();button.disabled=true;
       status.textContent=error.message;return;
     }
-    selected=new Set([...selected].filter(id=>rows.some(row=>row.codigo===id)));
-    button.disabled=selected.size===0;
+    selected=conciliarSeleccionImpresion(selected,rows);
+    const visibleRows=filtrarFilasImpresion(rows,searchTerm);
+    const estado=evaluarLoteImpresion(selected,MAX_HOJAS_ARCHIVO);
+    button.disabled=!estado.puedePreparar;
+    button.textContent="Preparar impresión de hojas seleccionadas ("+estado.cantidad+")";
     $("batchArchiveName").textContent=!rows.length
       ?""
-      :!selected.size?"Selecciona las cargas para ver el nombre recomendado del PDF."
-      :"Nombre sugerido para guardar el PDF: "+nombreSugeridoArchivo(
-        currentWarehouse,today,today,today,[...selected]
-      );
+      :!estado.cantidad?"Selecciona las cargas para ver el nombre recomendado del PDF."
+      :estado.superaLimite
+        ?"Seleccionadas "+estado.cantidad+" cargas. El servidor permite "+MAX_HOJAS_ARCHIVO+
+          " por lote: usa «Siguiente grupo» o desmarca hasta el límite. No se imprimirá un lote incompleto."
+        :"Nombre sugerido para guardar el PDF: "+nombreSugeridoArchivo(
+          currentWarehouse,today,today,today,[...selected]
+        );
+    for(const id of ["batchPrintSelectAll","batchPrintMarkVisible","batchPrintClear"])$(id).hidden=rows.length===0;
     $("batchPrintSelectVisible").hidden=rows.length===0;
     $("batchPrintOpen").hidden=rows.length===0;
     $("batchPrintReprint").closest("label").hidden=!allRows.some(row=>publicadaHoy(row,today)&&(printCounts.get(row.codigo)||0)>0);
-    for(const load of rows){
+    for(const load of visibleRows){
       const label=document.createElement("label");label.className="batch-print-row";
       const check=document.createElement("input");check.type="checkbox";
       check.checked=selected.has(load.codigo);
       check.addEventListener("change",()=>{
-        if(check.checked&&selected.size>=MAX_HOJAS_ARCHIVO){
-          check.checked=false;status.textContent="Puedes imprimir como máximo "+MAX_HOJAS_ARCHIVO+" hojas por lote.";return;
-        }
         if(check.checked)selected.add(load.codigo);else selected.delete(load.codigo);
-        button.disabled=selected.size===0;
-        $("batchArchiveName").textContent=selected.size
-          ?"Nombre sugerido para guardar el PDF: "+nombreSugeridoArchivo(
-            currentWarehouse,fechaAlmacen(),fechaAlmacen(),fechaAlmacen(),[...selected])
-          :"Selecciona las cargas para ver el nombre recomendado del PDF.";
-        status.textContent=selected.size+" hoja(s) seleccionada(s) de "+rows.length+".";
+        render();
+        status.textContent=selected.size+" seleccionada(s) de "+rows.length+
+          (selected.size>MAX_HOJAS_ARCHIVO?" · Máximo "+MAX_HOJAS_ARCHIVO+" por lote; usa «Siguiente grupo».":"")+".";
       });
       const info=document.createElement("span");
       const heading=document.createElement("b");heading.textContent=load.codigo||"Carga sin código";
@@ -128,20 +131,40 @@ export function configurarLoteImpresion({client,getUser,getWarehouse,errorText})
         " Pulsa Actualizar y selecciona de nuevo las cargas.";
     }finally{
       previewing=false;
-      if(request===seq)button.disabled=selected.size===0;
+      if(request===seq)button.disabled=!evaluarLoteImpresion(selected,MAX_HOJAS_ARCHIVO).puedePreparar;
     }
   }
   $("batchPrintRefresh").addEventListener("click",refresh);
   $("batchPrintReprint").addEventListener("change",event=>{reprintMode=event.target.checked;selected.clear();nextGroupStart=0;render();status.textContent=reprintMode?"Reimpresión: elige cargas ya generadas.":"Impresión normal: solo cargas sin generar.";});
+  $("batchPrintSearch").addEventListener("input",event=>{
+    searchTerm=event.target.value;nextGroupStart=0;render();
+    status.textContent=filtrarFilasImpresion(rows,searchTerm).length+" carga(s) visibles; "+selected.size+
+      " seleccionada(s) en total. La búsqueda no desmarca cargas ocultas.";
+  });
+  $("batchPrintSelectAll").addEventListener("click",()=>{
+    selected=seleccionarTodasImpresion(rows);render();
+    status.textContent=selected.size+" cargas seleccionadas del almacén. "+
+      (selected.size>MAX_HOJAS_ARCHIVO?"Para imprimir, elige grupos de hasta "+MAX_HOJAS_ARCHIVO+
+       " o desmarca las sobrantes. No se trunca la selección.":"Puedes preparar el lote.");
+  });
+  $("batchPrintMarkVisible").addEventListener("click",()=>{
+    selected=marcarVisiblesImpresion(selected,filtrarFilasImpresion(rows,searchTerm));render();
+    status.textContent=selected.size+" cargas seleccionadas, incluidas las marcadas previamente fuera del filtro."+
+      (selected.size>MAX_HOJAS_ARCHIVO?" Usa «Siguiente grupo» para imprimir en bloques de hasta "+MAX_HOJAS_ARCHIVO+".":"");
+  });
+  $("batchPrintClear").addEventListener("click",()=>{
+    selected.clear();render();status.textContent="Selección desmarcada. No se han modificado las cargas.";
+  });
   $("batchPrintSelectVisible").addEventListener("click",()=>{
-    if(!rows.length){status.textContent="No hay hojas visibles para seleccionar.";return;}
-    // Cada pulsación avanza al siguiente grupo. No se considera archivado.
-    if(nextGroupStart>=rows.length)nextGroupStart=0;
+    const visibles=filtrarFilasImpresion(rows,searchTerm);
+    if(!visibles.length){status.textContent="No hay hojas visibles para seleccionar.";return;}
+    // Cada pulsación avanza al siguiente grupo del filtro. No se considera archivado.
+    if(nextGroupStart>=visibles.length)nextGroupStart=0;
     const start=nextGroupStart;
-    selected=new Set(rows.slice(start,start+MAX_HOJAS_ARCHIVO).map(row=>row.codigo));
-    nextGroupStart=Math.min(rows.length,start+MAX_HOJAS_ARCHIVO);
+    selected=seleccionarTodasImpresion(visibles.slice(start,start+MAX_HOJAS_ARCHIVO));
+    nextGroupStart=Math.min(visibles.length,start+MAX_HOJAS_ARCHIVO);
     render();
-    const totalGroups=Math.ceil(rows.length/MAX_HOJAS_ARCHIVO);
+    const totalGroups=Math.ceil(visibles.length/MAX_HOJAS_ARCHIVO);
     const group=Math.floor(start/MAX_HOJAS_ARCHIVO)+1;
     status.textContent="Grupo "+group+" de "+totalGroups+": "+selected.size+
       " hoja(s) seleccionada(s). Genera y guarda este PDF antes de pasar al siguiente grupo.";
