@@ -2,6 +2,19 @@
 import {parseDocumentPages,summarize} from "../src/core.mjs";
 import {planificarRecortesMercancia,validarParidadDocumento} from "../src/mercancia-v056.mjs";
 import {filtrarFilasImpresion,seleccionarTodasImpresion,marcarVisiblesImpresion,conciliarSeleccionImpresion} from "../src/batch-selection-v056.mjs";
+// PDF.js 6.4.x usa Map#getOrInsertComputed, todavia ausente en algunos motores.
+// Polyfill minimo SOLO para esta pagina LAB; no modifica el bundle PDF.js ni datos.
+if(typeof Map.prototype.getOrInsertComputed!=="function"){
+  Object.defineProperty(Map.prototype,"getOrInsertComputed",{
+    configurable:true,writable:true,
+    value:function(key,compute){
+      if(this.has(key))return this.get(key);
+      const value=compute(key);
+      this.set(key,value);
+      return value;
+    }
+  });
+}
 const $=id=>document.getElementById(id);
 let rows=[],selected=new Set(),generation=0,objectUrls=[];
 let pdfModulePromise;
