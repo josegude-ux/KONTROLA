@@ -39,3 +39,10 @@ test("no se cierra con líneas pendientes",()=>{
  const l=load();const r=markLine(newReview(l),l,0,"ok");
  assert.throws(()=>closeReview(r,l));
 });
+
+test("cantidad cero sin unidad sigue siendo verificable como en PRUEBA_3",()=>{
+ const l=load();l.products[0]={...l.products[0],qty:0,unit:""};
+ assert.equal(verificationAllowed(l),true);
+ const r=markLine(newReview(l),l,0,"ok");
+ assert.equal(r.lines[0].status,"ok");
+});
