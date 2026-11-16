@@ -9,9 +9,11 @@ test("PRUEBA_3 reemplaza el panel y conserva las seis funciones anteriores",()=>
  for(const id of ["prueba3Frame","prueba3Fullscreen","cargasFlujosLegacy","cargasConsultar","cargasPreparar","cargasVerificar","cargasHistorial","cargasImportar","cargasAdministrar"])
    assert.ok(html.includes('id="'+id+'"'),id);
 });
-test("La navegación inicial abre PRUEBA_3; se conserva En recepción",()=>{
+test("PRUEBA_3 se abre desde Preparación y Control de Cargas usa checklist",()=>{
  const app=read("src/app.mjs");
- assert.ok(app.includes('$("openReview").addEventListener("click",()=>{void openPrueba3Cargas();});'));
+ assert.ok(app.includes('$("openReview").addEventListener("click",()=>{void openChecklist();});'));
+ assert.ok(app.includes('$("preparacionPrueba3").addEventListener("click",()=>{void openPrueba3Cargas();});'));
+ assert.ok(read("index.html").includes('id="controlChecklistRoot"'));
  assert.ok(app.includes('$("openCargas").addEventListener("click",()=>{void openPrueba3Cargas();});'));
  assert.ok(app.includes('$("cargasFlujosLegacy").addEventListener("click",()=>openControlFlujos());'));
  assert.ok(app.includes('function openControlRecepcion()'));
