@@ -138,16 +138,20 @@ export function createChecklistUI(root,scope,storage=localStorage){
     previousPending.set(group.key,group.pending);
     if(FEATURES.groups&&filter==="pending"&&group.pending===0)continue;
     if(FEATURES.groups&&filter==="incident"&&group.incidents===0)continue;
-    const collapsed=FEATURES.groups&&(
+    // La cabecera solo aporta valor cuando hay dos o más artículos VISIBLES en este filtro.
+    const visibleItems=group.items.filter(({index})=>filter==="all"||statusOf(review,index)===filter);
+    if(!visibleItems.length)continue;
+    const showHeader=FEATURES.groups&&visibleItems.length>=2;
+    const collapsed=showHeader&&(
      manuallyCollapsed.has(group.key)||
      (!manuallyExpanded.has(group.key)&&filter==="all"&&group.pending===0)
     );
-    const header=FEATURES.groups
+    const header=showHeader
      ?'<button type="button" class="cc-aisle-head" data-group="'+esc(group.key)+'" aria-expanded="'+(!collapsed)+'">'+
        '<span>'+esc(group.key)+' · '+group.pending+' '+(group.pending===1?'pendiente':'pendientes')+'</span><span class="cc-chevron" aria-hidden="true">'+(collapsed?"▸":"▾")+'</span></button>'
      :"";
-    const rows=collapsed?"":group.items.map(({product,index})=>buildRow(load,review,product,index,allowed)).join("");
-    if(FEATURES.groups||rows)sections.push('<section class="cc-aisle">'+header+rows+'</section>');
+    const rows=collapsed?"":visibleItems.map(({product,index})=>buildRow(load,review,product,index,allowed)).join("");
+    sections.push('<section class="cc-aisle">'+header+rows+'</section>');
    }
    const filters=[["all","Todas"],["pending","Pendientes"],["incident","Incidencias"]].map(([value,label])=>
     '<button type="button" class="cc-filter'+(filter===value?" active":"")+'" data-filter="'+value+'" aria-pressed="'+(filter===value)+'">'+label+'</button>').join("");
