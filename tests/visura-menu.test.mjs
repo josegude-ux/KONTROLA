@@ -41,8 +41,8 @@ test("acciones de las cuatro tarjetas siguen conectadas a controladores original
   const app = readFileSync(resolve(root, "src/app.mjs"), "utf8");
   const bindings = [
     ["openPreparation", 'switchView("preparacionMenuView")'],
-    ["openReview", "openControlFlujos()"],
-    ["openCargas", 'switchView("cargasMenuView")'],
+    ["openReview", "openPrueba3Cargas()"],
+    ["openCargas", "openPrueba3Cargas()"],
     ["openAdmin", 'openAdminMenu("homeView")']
   ];
   for (const [id, handler] of bindings) {
@@ -50,7 +50,7 @@ test("acciones de las cuatro tarjetas siguen conectadas a controladores original
     const re = new RegExp('\\$\\("'+id+'"\\)\\.addEventListener\\("click",[\\s\\S]{0,140}?'+escaped);
     assert.match(app, re, `No se encuentra el manejador original para ${id}`);
   }
-  // La nueva tarjeta principal lleva al submenú; la opción 1 reutiliza el motor anterior.
+  // PRUEBA_3 abre el panel principal; Preparación y circuitos anteriores conservan rutas.
   assert.match(app, /\$\("preparacionCargas"\)\.addEventListener\("click",\(\)=>openLoadsMenu\("preparacionMenuView"\)\)/);
 });
 

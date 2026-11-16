@@ -376,6 +376,16 @@ footer{padding:18px;text-align:center;background:#fff;border-top:1px solid #e6e8
 .prepara-preview:empty{display:none}
 @media(max-width:650px){.prepara-search-line button,.prepara-form .actions button{width:100%}.prepara-resultado-lista{max-height:48vh}}
 
+/* VISURA PREPARA · panel PRUEBA_3 */
+#cargasMenuView .prueba3-host{border:1px solid #dfe5ef;background:#f2f5f9;border-radius:17px;overflow:hidden;min-width:0}
+#cargasMenuView .prueba3-tools{display:flex;gap:12px;flex-wrap:wrap;justify-content:space-between;align-items:center;padding:10px 14px;background:#fff;color:#1a4261;font-weight:800;font-size:12px}
+#cargasMenuView .prueba3-tools button{min-height:40px}
+#cargasMenuView .prueba3-host iframe{display:block;width:100%;min-height:650px;height:calc(100dvh - 240px);max-height:1150px;border:0;background:#f2f5f9}
+#cargasMenuView .prueba3-legacy{margin-top:19px;border-top:1px solid #dce5ee;padding-top:13px}
+#cargasMenuView .prueba3-legacy>summary{cursor:pointer;color:#46647d;font-size:13px;font-weight:700}
+#cargasMenuView .prueba3-legacy .submenu-grid{margin-top:16px}
+@media(max-width:720px){#cargasMenuView .prueba3-host iframe{height:calc(100dvh - 190px);min-height:620px}#cargasMenuView .prueba3-tools{padding:8px 11px}}
+
 /* VISURA-15-SUBMENU-PREPARACION-MAQUETACION-A-001 R1/L1 · Puente clases legacy → kit A. */
 #preparacionMenuView.v15-subprep .v15-subprep__cards{grid-template-columns:minmax(0,1fr);margin:0;max-width:none}
 #preparacionMenuView.v15-subprep .v15-subprep__card{border:0;box-shadow:0 9px 21px rgba(10,28,56,.11);background-color:var(--card-tone)}
@@ -425,12 +435,3 @@ footer{padding:18px;text-align:center;background:#fff;border-top:1px solid #e6e8
 #labExpedientePanel button{min-height:44px;max-width:100%;white-space:normal;overflow-wrap:anywhere}
 #labExpedientePanel button:focus-visible{outline:3px solid #d94a3e;outline-offset:3px}
 
-/* VISURA PREPARA · panel PRUEBA_3 */
-#cargasMenuView .prueba3-host{border:1px solid #dfe5ef;background:#f2f5f9;border-radius:17px;overflow:hidden;min-width:0}
-#cargasMenuView .prueba3-tools{display:flex;gap:12px;flex-wrap:wrap;justify-content:space-between;align-items:center;padding:10px 14px;background:#fff;color:#1a4261;font-weight:800;font-size:12px}
-#cargasMenuView .prueba3-tools button{min-height:40px}
-#cargasMenuView .prueba3-host iframe{display:block;width:100%;min-height:650px;height:calc(100dvh - 240px);max-height:1150px;border:0;background:#f2f5f9}
-#cargasMenuView .prueba3-legacy{margin-top:19px;border-top:1px solid #dce5ee;padding-top:13px}
-#cargasMenuView .prueba3-legacy>summary{cursor:pointer;color:#46647d;font-size:13px;font-weight:700}
-#cargasMenuView .prueba3-legacy .submenu-grid{margin-top:16px}
-@media(max-width:720px){#cargasMenuView .prueba3-host iframe{height:calc(100dvh - 190px);min-height:620px}#cargasMenuView .prueba3-tools{padding:8px 11px}}

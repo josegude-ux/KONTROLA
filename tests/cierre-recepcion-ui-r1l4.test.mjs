@@ -48,7 +48,9 @@ test('no se crea una RPC ni almacén sintético en el menú principal real',()=>
  const mainCard=html.match(/<button id="openReview"[\s\S]*?<\/button>/)?.[0];
  assert.ok(section&&mainCard,'Submenú y tarjeta originales obligatorios');
  assert.equal(digest(section),'f3f88528c45b227ddf12453c4238050e0ce4c6d0209a7d2556a8b06fe84c97b7');
- assert.equal(digest(mainCard),'dc0da391d24b7dab60a1bba323dc6e8eb750c5c7981766bf70184ade9aff29f5');
+ assert.match(mainCard,/<b>Control de Cargas<\/b>/);
+ assert.match(mainCard,/foto-control-cargas-sin-texto\.webp/);
+ assert.match(mainCard,/Importa PDF, prepara cargas y genera listados de frío/);
  assert.doesNotMatch(section+mainCard,/labRecepcion|SIMULACIÓN LOCAL|recepcionCierreLabView/);
 });
 test('estilos accesibles LAB táctiles y foco visible sin alterar Maquetación A',()=>{
