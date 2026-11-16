@@ -658,7 +658,10 @@ async function openChecklist(){
 }
 $("openReview").addEventListener("click",()=>{void openChecklist();});
 $("preparacionPrueba3").addEventListener("click",()=>{void openPrueba3Cargas();});
-$("backFromChecklist").addEventListener("click",()=>switchView("homeView"));
+$("backFromChecklist").addEventListener("click",()=>{
+  if(checklistUi?.back?.())return;
+  switchView("homeView");
+});
 $("openCargas").addEventListener("click",()=>{void openPrueba3Cargas();});
 $("cargasFlujosLegacy").addEventListener("click",()=>openControlFlujos());
 $("prueba3Fullscreen").addEventListener("click",()=>{

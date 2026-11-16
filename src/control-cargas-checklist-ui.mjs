@@ -212,7 +212,10 @@ export function createChecklistUI(root,scope,storage=localStorage){
   }catch(error){set('<p role="alert" class="status error">No se pudieron leer las hojas: '+esc(error.message)+'</p>');}
  }
  render();
- return {refresh:render,clear:()=>{
+ return {refresh:render,back:()=>{
+  if(disposed||!selected)return false;
+  selected=null;resetDisplay();render();return true;
+ },clear:()=>{
   disposed=true;resetDisplay();resizeObserver?.disconnect();root.classList.remove("cc-active");
   root.style.removeProperty("--cc-sticky-top");selected=null;root.replaceChildren();
  }};
