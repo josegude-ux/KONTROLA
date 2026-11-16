@@ -156,14 +156,14 @@ export function createChecklistUI(root,scope,storage=localStorage){
    const toast=FEATURES.pending&&undo?.loadId===load.id
     ?'<div class="cc-toast" role="status"><span>✓ Artículo comprobado</span><button type="button" data-undo>Deshacer</button></div>'
     :"";
-   set('<div class="cc-heading"><button type="button" id="ccBack" class="back-button">← Todas las cargas</button><strong>'+esc(load.id)+'</strong></div>'+
+   set('<div class="cc-heading"><strong>'+esc(load.id)+'</strong></div>'+
     (warning?'<p role="alert" class="status error">'+esc(warning)+'</p>':"")+
     (review.closedAt?'<p class="status">Revisión cerrada: '+esc(review.closedAt)+'</p>':"")+
     toolbar+'<div class="cc-groups" id="ccLines">'+sections.join("")+'</div>'+
     (!allowed||review.closedAt?"":'<button id="ccClose" class="primary" type="button" '+(summary.pending?"disabled":"")+'>Cerrar revisión</button>')+
     '<p id="ccMessage" role="status" class="status"></p>'+toast);
    updateStickyOffset();
-   root.querySelector("#ccBack").onclick=()=>{selected=null;resetDisplay();render();};
+   
    root.querySelectorAll("[data-filter]").forEach(button=>button.onclick=()=>{
     filter=button.dataset.filter;manuallyCollapsed.clear();manuallyExpanded.clear();render();
    });
