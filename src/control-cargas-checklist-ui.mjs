@@ -1,7 +1,7 @@
 import {readLoads,getReview,saveReview,markLine,reviewSummary,closeReview,verificationAllowed} from "./control-cargas-checklist.mjs";
 
 // Solo presentación: no se altera el contrato local ni el formato de las revisiones.
-const FEATURES=Object.freeze({compact:true,tap:false,pending:false,groups:false,sticky:false});
+const FEATURES=Object.freeze({compact:true,tap:true,pending:false,groups:false,sticky:false});
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const statusOf=(review,index)=>review.lines[index]?.status||"pending";
 const aisleOf=product=>{
