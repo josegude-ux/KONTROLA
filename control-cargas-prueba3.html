@@ -137,6 +137,29 @@
 .cold-report .qty{text-align:right}.cold-report .note{font-size:10px;color:#555}
 @page cold{size:A4 landscape;margin:10mm}
 @media print{.cold-report{page:cold;break-before:page;margin:0;padding:0;min-height:0}.cold-report *{print-color-adjust:exact;-webkit-print-color-adjust:exact}.cold-report tr{break-inside:avoid}.cold-report thead{display:table-header-group}.cold-report td{font-size:9px}.cold-report .date{margin-bottom:12px}}
+
+/* A5: listados Coruña — mismo estilo en la pantalla y dentro del iframe aislado. */
+.lst-page{background:#fff;color:#111;font:11px Arial,sans-serif;padding:14px 18px;margin:0 0 14px;break-after:page;page-break-after:always}
+.lst-page:last-child{break-after:auto;page-break-after:auto}
+.lst-page h1{text-align:center;font-size:18px;margin:0 0 4px;color:#111}
+.lst-date{text-align:center;font-weight:bold;font-size:13px;margin-bottom:14px}
+.lst-band{background:#d9d9d9;font-weight:bold;padding:7px 6px;margin:12px 0 0}
+.lst-band.sum{margin-top:16px}
+.lst-empty{padding:7px 6px;font-size:10px;color:#555}
+.lst-table{width:100%;border-collapse:collapse;table-layout:fixed;margin:0}
+.lst-table th,.lst-table td{border:1px solid #bbb;padding:6px 5px;font-size:10px;overflow-wrap:anywhere}
+.lst-table th{background:#d6e3ee;text-align:left}
+.lst-table.dark th{background:#555;color:#fff;font-weight:normal}
+.lst-table tbody tr:nth-child(odd){background:#f3f3f3}
+.lst-table .c{text-align:center}.lst-table .n{text-align:right}
+.lst-sum{background:#d9d9d9;font-weight:bold;padding:7px 6px;margin-top:12px}
+@media print{
+ .lst-page{margin:0;padding:0;break-after:page;page-break-after:always}
+ .lst-page:last-child{break-after:auto;page-break-after:auto}
+ .lst-page *{print-color-adjust:exact!important;-webkit-print-color-adjust:exact!important}
+ .lst-table tr{break-inside:avoid;page-break-inside:avoid}
+ .lst-table thead{display:table-header-group}
+}
 </style>
 </head>
 <body>
@@ -543,6 +566,29 @@ html,body{margin:0;padding:0;background:white;color:#111;font:11px Arial,sans-se
 .report-facts,.report-logistics{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin:12px 0}.report-facts b,.report-logistics b{display:block}.report-warning{border:1px solid #a85b10;background:#fff4df;padding:10px}.report-foot{font-size:9px;margin-top:12px}
 .cold-report{page:cold;break-before:page;margin:0;padding:0;font:11px Arial,sans-serif}.cold-report h1{text-align:center;font-size:22px;margin:0 0 8px}.cold-report .date{text-align:center;font-weight:bold;margin-bottom:16px}
 .cold-report table{width:100%;border-collapse:collapse;table-layout:fixed;margin-bottom:20px}.cold-report th,.cold-report td{border:1px solid #222;padding:7px 5px;overflow-wrap:anywhere}.cold-report th{background:#aaa;color:white;text-align:left}.cold-report th.section{text-align:center;color:#111;background:#d9ebf6}.cold-report tbody tr:nth-child(odd){background:#b9e2ed}.cold-report .barrels th.section{background:#fff1ca}.cold-report .barrels tbody tr:nth-child(odd){background:#fff8df}.cold-report .qty{text-align:right}.cold-report .note{font-size:10px}thead{display:table-header-group}tr{break-inside:avoid}
+
+/* A5: listados Coruña — mismo estilo en la pantalla y dentro del iframe aislado. */
+.lst-page{background:#fff;color:#111;font:11px Arial,sans-serif;padding:14px 18px;margin:0 0 14px;break-after:page;page-break-after:always}
+.lst-page:last-child{break-after:auto;page-break-after:auto}
+.lst-page h1{text-align:center;font-size:18px;margin:0 0 4px;color:#111}
+.lst-date{text-align:center;font-weight:bold;font-size:13px;margin-bottom:14px}
+.lst-band{background:#d9d9d9;font-weight:bold;padding:7px 6px;margin:12px 0 0}
+.lst-band.sum{margin-top:16px}
+.lst-empty{padding:7px 6px;font-size:10px;color:#555}
+.lst-table{width:100%;border-collapse:collapse;table-layout:fixed;margin:0}
+.lst-table th,.lst-table td{border:1px solid #bbb;padding:6px 5px;font-size:10px;overflow-wrap:anywhere}
+.lst-table th{background:#d6e3ee;text-align:left}
+.lst-table.dark th{background:#555;color:#fff;font-weight:normal}
+.lst-table tbody tr:nth-child(odd){background:#f3f3f3}
+.lst-table .c{text-align:center}.lst-table .n{text-align:right}
+.lst-sum{background:#d9d9d9;font-weight:bold;padding:7px 6px;margin-top:12px}
+@media print{
+ .lst-page{margin:0;padding:0;break-after:page;page-break-after:always}
+ .lst-page:last-child{break-after:auto;page-break-after:auto}
+ .lst-page *{print-color-adjust:exact!important;-webkit-print-color-adjust:exact!important}
+ .lst-table tr{break-inside:avoid;page-break-inside:avoid}
+ .lst-table thead{display:table-header-group}
+}
 </style></head><body>${content}</body></html>`;
 }
 async function printPrepared(content,doc=document){
