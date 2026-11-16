@@ -62,27 +62,24 @@ export function createChecklistUI(root,scope,storage=localStorage){
   const enabled=allowed&&!review.closedAt;
   const checked=state==="ok",incident=state==="incident";
   const location=product.location||"SIN UBICACIÓN",description=product.description||"Sin descripción";
-  const stateIcon=checked?"✓":incident?"!":"○";
-  const face='<span class="cc-location">'+esc(location)+'</span>'+
-    '<span class="cc-product"><small class="cc-sku">'+esc(product.sku||"")+'</small><span class="cc-description">'+esc(description)+'</span></span>'+
-    '<strong class="cc-quantity">'+esc(product.qty)+" "+esc(product.unit||"")+'</strong>'+
-    '<span class="cc-state-icon" aria-hidden="true">'+stateIcon+'</span>';
+  const quantity=String(product.qty??"—")+(product.unit?" "+String(product.unit):"");
   const attrs=enabled?"":" disabled";
   const note=incident?'<div class="cc-incident-note">Comprobado: '+esc(review.lines[index]?.actualQty)+
-    (review.lines[index]?.note?" · "+esc(review.lines[index].note):"")+'</div>':"";
-  let controls;
-  if(FEATURES.tap){
-   controls='<button type="button" class="cc-tap" data-toggle="'+index+'" aria-label="'+
-    esc((checked?"Deshacer correcto de ":"Marcar correcto: ")+(product.sku||description))+'"'+attrs+'>'+face+'</button>'+
-    '<button type="button" class="cc-incident-action" data-incident="'+index+'" title="Registrar incidencia" aria-label="Incidencia de '+esc(product.sku||description)+'"'+attrs+'>!</button>';
-  }else{
-   controls='<div class="cc-tap cc-static">'+face+'</div><div class="cc-old-actions">'+
-    '<button type="button" data-ok="'+index+'"'+attrs+'>✓ Correcto</button>'+
-    '<button type="button" data-incident="'+index+'"'+attrs+'>! Incidencia</button>'+
-    '<button type="button" data-reset="'+index+'"'+attrs+'>Pendiente</button></div>';
-  }
+   (review.lines[index]?.note?" · "+esc(review.lines[index].note):"")+'</div>':"";
+  const details='<div class="cc-item-details">'+
+   '<span class="cc-location">'+esc(location)+'</span>'+
+   '<span class="cc-product"><small class="cc-sku">'+esc(product.sku||"")+'</small><span class="cc-description">'+esc(description)+'</span></span>'+
+   '</div>';
+  // El botón de cantidad reutiliza data-toggle y el guardado local existente.
+  const confirm='<button type="button" class="cc-quantity-action" data-toggle="'+index+
+   '" aria-pressed="'+(checked?"true":"false")+'" aria-label="'+
+   esc((checked?"Deshacer correcto: ":"Marcar correcto: ")+(product.sku||description)+" · "+quantity)+'"'+attrs+'>'+
+   (checked?'<span class="cc-qty-check" aria-hidden="true">✓</span>':"")+
+   '<span class="cc-qty-label">'+esc(quantity)+'</span></button>';
+  const incidentButton='<button type="button" class="cc-incident-action" data-incident="'+index+
+   '" title="Registrar incidencia" aria-label="Incidencia de '+esc(product.sku||description)+'"'+attrs+'>!</button>';
   return '<div class="cc-row cc-state-'+esc(state)+'" data-line-index="'+index+'">'+
-    '<div class="cc-row-main">'+controls+'</div>'+note+'</div>';
+   '<div class="cc-row-main">'+details+confirm+incidentButton+'</div>'+note+'</div>';
  }
  function render(){
   if(disposed)return;
