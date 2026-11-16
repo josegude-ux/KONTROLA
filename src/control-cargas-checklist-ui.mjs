@@ -89,6 +89,7 @@ export function createChecklistUI(root,scope,storage=localStorage){
   try{
    const loads=read();
    root.classList.toggle("cc-active",Boolean(selected));
+   root.closest("#controlChecklistView")?.classList.toggle("cc-detail-open",Boolean(selected));
    if(!selected){
     set('<div class="line"><h2>Cargas importadas ('+loads.length+')</h2><button type="button" id="ccRefresh" class="secondary">Actualizar</button></div>'+
      '<p class="muted">Origen: hojas ya importadas en Preparación · PRUEBA_3, en este dispositivo.</p>'+
@@ -151,13 +152,13 @@ export function createChecklistUI(root,scope,storage=localStorage){
    const filters=[["all","Todas"],["pending","Pendientes"],["incident","Incidencias"]].map(([value,label])=>
     '<button type="button" class="cc-filter'+(filter===value?" active":"")+'" data-filter="'+value+'" aria-pressed="'+(filter===value)+'">'+label+'</button>').join("");
    const toolbar='<div class="cc-toolbar'+(FEATURES.sticky?" is-sticky":"")+'">'+
+    '<div class="cc-heading"><strong>'+esc(load.id)+'</strong><span class="cc-heading-label">Verificación física</span></div>'+
     '<div class="cc-progress"><strong>'+summary.checked+'/'+summary.total+' comprobadas</strong><span>'+summary.incidents+' incidencias · '+summary.pending+' pendientes</span></div>'+
     '<div class="cc-filters" role="group" aria-label="Filtrar comprobaciones">'+filters+'</div></div>';
    const toast=FEATURES.pending&&undo?.loadId===load.id
     ?'<div class="cc-toast" role="status"><span>✓ Artículo comprobado</span><button type="button" data-undo>Deshacer</button></div>'
     :"";
-   set('<div class="cc-heading"><strong>'+esc(load.id)+'</strong></div>'+
-    (warning?'<p role="alert" class="status error">'+esc(warning)+'</p>':"")+
+   set((warning?'<p role="alert" class="status error">'+esc(warning)+'</p>':"")+
     (review.closedAt?'<p class="status">Revisión cerrada: '+esc(review.closedAt)+'</p>':"")+
     toolbar+'<div class="cc-groups" id="ccLines">'+sections.join("")+'</div>'+
     (!allowed||review.closedAt?"":'<button id="ccClose" class="primary" type="button" '+(summary.pending?"disabled":"")+'>Cerrar revisión</button>')+
@@ -217,6 +218,6 @@ export function createChecklistUI(root,scope,storage=localStorage){
   selected=null;resetDisplay();render();return true;
  },clear:()=>{
   disposed=true;resetDisplay();resizeObserver?.disconnect();root.classList.remove("cc-active");
-  root.style.removeProperty("--cc-sticky-top");selected=null;root.replaceChildren();
+  root.style.removeProperty("--cc-sticky-top");root.closest("#controlChecklistView")?.classList.remove("cc-detail-open");selected=null;root.replaceChildren();
  }};
 }

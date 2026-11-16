@@ -520,3 +520,21 @@ footer{padding:18px;text-align:center;background:#fff;border-top:1px solid #e6e8
 @media(max-width:500px){
  #controlChecklistView .cc-tap{grid-template-columns:minmax(50px,19%) minmax(0,1fr) auto 44px}
 }
+
+
+/* B2 · Ocultar cabecera vertical redundante al revisar una carga.
+   Número de carga, progreso y filtros quedan unidos en barra adhesiva. */
+#controlChecklistView.cc-detail-open>.page-heading{display:none}
+#controlChecklistView.cc-detail-open{padding-top:0}
+#controlChecklistView .cc-toolbar .cc-heading{
+ display:flex;align-items:center;justify-content:space-between;gap:8px;
+ min-height:22px;margin:0 2px 2px;
+}
+#controlChecklistView .cc-toolbar .cc-heading strong{font-size:14px;max-width:none;text-align:left}
+#controlChecklistView .cc-heading-label{font-size:10px;color:#607489;font-weight:700}
+#controlChecklistView .cc-toolbar.is-sticky{top:var(--cc-sticky-top,74px);margin-top:0}
+@media(max-width:500px){
+ #controlChecklistView.cc-detail-open>.page-heading{display:none}
+ #controlChecklistView .cc-toolbar .cc-heading{min-height:20px}
+ #controlChecklistView .cc-toolbar .cc-heading strong{font-size:13px}
+}
