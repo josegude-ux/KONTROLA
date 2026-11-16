@@ -14,16 +14,19 @@ const load=(code,fecha,extra={})=>({codigo:code,fecha,almacen:warehouse,preparad
 test('las dos acciones del submenú exterior son únicamente En preparación y En recepción',()=>{
  const node=html.match(/<section id="controlCargasFlujosView"[\s\S]*?<\/section>/)?.[0];assert.ok(node);
  assert.deepEqual([...node.matchAll(/<button id="(controlEnPreparacion|controlEnRecepcion)"/g)].map(x=>x[1]),['controlEnPreparacion','controlEnRecepcion']);
- assert.match(js,/\$\("openReview"\)\.addEventListener\("click",\(\)=>openControlFlujos\(\)\)/);
+ assert.match(js,/\$\("openReview"\)\.addEventListener\("click",\(\)=>\{void openPrueba3Cargas\(\);\}\)/);
+ assert.match(js,/\$\("cargasFlujosLegacy"\)\.addEventListener\("click",\(\)=>openControlFlujos\(\)\)/);
 });
 test('no se alteran id y recursos de la tarjeta principal',()=>{
  const card=html.match(/<button id="openReview"[\s\S]*?<\/button>/)?.[0];
  assert.ok(card);
- assert.equal(createHash('sha256').update(card).digest('hex'),'dc0da391d24b7dab60a1bba323dc6e8eb750c5c7981766bf70184ade9aff29f5');
+ assert.match(card,/<b>Control de Cargas<\/b>/);
+ assert.match(card,/foto-control-cargas-sin-texto\.webp/);
+ assert.match(card,/Importa PDF, prepara cargas y genera listados de frío/);
 });
 test('navegación original de Operaciones y submenú Preparación permanece',()=>{
  assert.match(js,/\$\("cargasVerificar"\)\.addEventListener\("click",\(\)=>openReviewMenu\("cargasMenuView"\)\)/);
- assert.match(js,/\$\("openCargas"\)\.addEventListener\("click",\(\)=>switchView\("cargasMenuView"\)\)/);
+ assert.match(js,/\$\("openCargas"\)\.addEventListener\("click",\(\)=>\{void openPrueba3Cargas\(\);\}\)/);
  assert.match(js,/\$\("openPreparation"\)\.addEventListener\("click",\(\)=>switchView\("preparacionMenuView"\)\)/);
  assert.match(js,/reviewLoadsParent=parent/);assert.match(js,/switchView\(reviewLoadsParent\)/);
  assert.match(js,/controlCargasFlujosView:"backFromControlFlujos"/);

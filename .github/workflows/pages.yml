@@ -37,11 +37,12 @@ jobs:
       - name: Preparar solo los archivos públicos de la aplicación
         run: |
           mkdir -p dist
-          cp index.html styles.css manifest.webmanifest sw.js version.json dist/
+          cp index.html styles.css manifest.webmanifest sw.js version.json control-cargas-prueba3.html dist/
           cp -R src assets vendor dist/
           touch dist/.nojekyll
           test -f dist/index.html
           test -f dist/src/app.mjs
+          test -f dist/control-cargas-prueba3.html
           test -f dist/vendor/supabase.mjs
       - name: Subir aplicación estática
         uses: actions/upload-pages-artifact@v3

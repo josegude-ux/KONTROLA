@@ -1,4 +1,4 @@
 {
-  "version": "0.3.45",
-  "notes": "Listado A4 COR1: matrícula, referencias, casillas HECHO grandes y totales exclusivamente por formato"
+  "version": "0.3.47",
+  "notes": "Integración de PRUEBA_3 en el panel de Control de Cargas; se conservan los circuitos antiguos."
 }
