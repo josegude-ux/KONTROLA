@@ -551,3 +551,13 @@ footer{padding:18px;text-align:center;background:#fff;border-top:1px solid #e6e8
  content:"";position:absolute;left:0;right:0;top:10px;bottom:10px;
  border-radius:6px;background:#eaf2f8;z-index:-1;
 }
+
+
+/* B5 · Aviso breve y fino, anclado sobre el área segura. */
+#controlChecklistView .cc-active{padding-bottom:calc(62px + env(safe-area-inset-bottom,0px))}
+#controlChecklistView .cc-toast{
+ bottom:calc(5px + env(safe-area-inset-bottom,0px));
+ padding:2px 10px;min-height:48px;max-width:430px;
+ border-radius:9px;font-size:12px;box-shadow:0 5px 15px #0b26472b;
+}
+#controlChecklistView .cc-toast button{min-height:44px;padding:3px 10px;font-size:12px}
