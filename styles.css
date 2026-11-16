@@ -561,3 +561,13 @@ footer{padding:18px;text-align:center;background:#fff;border-top:1px solid #e6e8
  border-radius:9px;font-size:12px;box-shadow:0 5px 15px #0b26472b;
 }
 #controlChecklistView .cc-toast button{min-height:44px;padding:3px 10px;font-size:12px}
+
+
+/* Verificación física R3.1: liberar el espacio del título oculto y del mensaje vacío. */
+#shell .container:has(> #controlChecklistView.cc-detail-open:not([hidden])){
+ padding-top:0;
+}
+#shell .container:has(> #controlChecklistView.cc-detail-open:not([hidden])) > #globalMessage:empty{
+ display:none;
+}
+#controlChecklistView.cc-detail-open .cc-active{margin-top:0;}
