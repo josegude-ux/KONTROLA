@@ -435,3 +435,58 @@ footer{padding:18px;text-align:center;background:#fff;border-top:1px solid #e6e8
 #labExpedientePanel button{min-height:44px;max-width:100%;white-space:normal;overflow-wrap:anywhere}
 #labExpedientePanel button:focus-visible{outline:3px solid #d94a3e;outline-offset:3px}
 
+
+
+/* Verificación física compacta — alcance exclusivo #controlChecklistView. */
+#controlChecklistView .cc-active{padding:0;border:0;background:transparent;box-shadow:none;margin-top:6px;}
+#controlChecklistView .cc-heading{display:flex;align-items:center;gap:12px;justify-content:space-between;min-height:44px;margin:0 0 5px;color:#0B2647;}
+#controlChecklistView .cc-heading .back-button{margin:0;min-height:44px;text-align:left;font-size:13px;}
+#controlChecklistView .cc-heading strong{font-size:15px;max-width:52%;text-align:right;overflow-wrap:anywhere;}
+#controlChecklistView .cc-toolbar{background:#fff;border:1px solid #dce6ee;border-radius:12px;padding:7px 8px;margin-bottom:7px;}
+#controlChecklistView .cc-toolbar.is-sticky{position:sticky;top:var(--cc-sticky-top,74px);z-index:9;box-shadow:0 5px 14px #0b264718;}
+#controlChecklistView .cc-progress{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:2px 3px 5px;color:#0B2647;font-size:12px;}
+#controlChecklistView .cc-progress strong{font-size:13px;font-weight:850;}
+#controlChecklistView .cc-progress span{font-size:11px;color:#52697e;text-align:right;}
+#controlChecklistView .cc-filters{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;}
+#controlChecklistView .cc-filter{border:1px solid #cbd8e5;border-radius:9px;background:#f5f8fa;color:#0B2647;min-height:44px;font-size:12px;font-weight:750;padding:4px 6px;}
+#controlChecklistView .cc-filter.active{background:#0B2647;color:white;border-color:#0B2647;}
+#controlChecklistView .cc-groups{padding-bottom:12px;}
+#controlChecklistView .cc-aisle{margin:0 0 7px;}
+#controlChecklistView .cc-aisle-head{display:flex;align-items:center;justify-content:space-between;width:100%;text-align:left;min-height:44px;border:0;border-bottom:1px solid #d3dce5;background:#eaf2f8;color:#0B2647;font-weight:800;padding:7px 11px;margin:0 0 4px;border-radius:8px;font-size:13px;}
+#controlChecklistView .cc-chevron{font-size:19px;}
+#controlChecklistView .cc-row{border:1px solid #e1e7ee;border-radius:9px;background:#f6f8fa;color:#0B2647;margin:3px 0;overflow:hidden;transition:opacity .16s ease,max-height .16s ease,transform .16s ease,margin .16s ease;}
+#controlChecklistView .cc-row.cc-state-ok{background:#edf8f1;border-color:#b6dcc5;}
+#controlChecklistView .cc-row.cc-state-incident{background:#fff2ea;border-color:#ecc1aa;}
+#controlChecklistView .cc-row-main{display:flex;align-items:stretch;min-width:0;gap:4px;}
+#controlChecklistView .cc-tap{display:grid;grid-template-columns:minmax(55px,21%) minmax(0,1fr) auto 17px;align-items:center;column-gap:5px;min-width:0;flex:1;border:0;background:transparent;color:inherit;text-align:left;padding:4px 6px;min-height:48px;font-size:12px;}
+#controlChecklistView .cc-static{cursor:default;}
+#controlChecklistView .cc-location{font-size:11px;font-weight:850;overflow-wrap:anywhere;line-height:1.15;}
+#controlChecklistView .cc-product{display:block;min-width:0;overflow:hidden;line-height:1.13;}
+#controlChecklistView .cc-sku{display:block;color:#607184;font-size:9.5px;font-weight:750;white-space:nowrap;text-overflow:ellipsis;overflow:hidden;}
+#controlChecklistView .cc-description{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-clamp:2;overflow:hidden;color:#21384e;font-size:11.5px;line-height:1.13;}
+#controlChecklistView .cc-quantity{font-size:11.5px;line-height:1.13;font-weight:850;max-width:80px;text-align:right;overflow-wrap:anywhere;}
+#controlChecklistView .cc-state-icon{font-size:17px;font-weight:900;justify-self:center;color:#718195;}
+#controlChecklistView .cc-state-ok .cc-state-icon{color:#237349;}
+#controlChecklistView .cc-state-incident .cc-state-icon{color:#ab4a20;}
+#controlChecklistView .cc-incident-action{flex:0 0 44px;width:44px;min-height:48px;border:1px solid #d9bbab;border-radius:8px;background:#fff7f0;color:#a34821;font-size:19px;font-weight:900;padding:0;}
+#controlChecklistView .cc-old-actions{display:flex;gap:3px;flex:none;padding:3px;}
+#controlChecklistView .cc-old-actions button{min-height:44px;font-size:11px;padding:3px 5px;background:#eaf3f9;border:1px solid #cbd8e5;color:#0B2647;border-radius:7px;}
+#controlChecklistView .cc-incident-note{font-size:10.5px;color:#8c3b24;padding:0 8px 5px 8px;overflow-wrap:anywhere;}
+#controlChecklistView .cc-exit{opacity:0;transform:translateX(10px);max-height:0!important;margin-top:0;margin-bottom:0;border-width:0;pointer-events:none;}
+#controlChecklistView #ccClose{width:100%;min-height:48px;margin:12px 0;}
+#controlChecklistView .cc-toast{position:fixed;z-index:40;bottom:calc(12px + env(safe-area-inset-bottom,0px));left:max(12px,env(safe-area-inset-left,0px));right:max(12px,env(safe-area-inset-right,0px));width:min(430px,calc(100% - 24px));margin-inline:auto;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:11px 14px;background:#0B2647;color:#fff;box-shadow:0 9px 24px #0b26473d;border-radius:12px;font-size:13px;font-weight:750;}
+#controlChecklistView .cc-toast button{min-height:44px;border-radius:9px;padding:6px 13px;border:1px solid #d9eafa;background:#fff;color:#0B2647;font-weight:850;}
+@media(max-width:500px){
+ #controlChecklistView .page-heading{margin-bottom:8px;}
+ #controlChecklistView .cc-toolbar{padding:5px 6px;}
+ #controlChecklistView .cc-tap{column-gap:4px;grid-template-columns:minmax(51px,20%) minmax(0,1fr) auto 15px;}
+ #controlChecklistView .cc-description{font-size:11px;}
+ #controlChecklistView .cc-quantity{font-size:10.5px;max-width:69px;}
+ #controlChecklistView .cc-old-actions{flex-wrap:wrap;}
+}
+@media(orientation:landscape) and (max-height:520px){
+ #controlChecklistView .cc-heading{min-height:44px;}
+ #controlChecklistView .cc-toolbar{padding-block:3px;}
+ #controlChecklistView .cc-progress{padding-bottom:2px;}
+}
+@media(prefers-reduced-motion:reduce){#controlChecklistView .cc-row{transition:none;}}
