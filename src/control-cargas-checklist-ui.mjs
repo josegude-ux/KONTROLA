@@ -144,7 +144,7 @@ export function createChecklistUI(root,scope,storage=localStorage){
     );
     const header=FEATURES.groups
      ?'<button type="button" class="cc-aisle-head" data-group="'+esc(group.key)+'" aria-expanded="'+(!collapsed)+'">'+
-       '<span>'+esc(group.key)+' · '+group.pending+' pendientes</span><span class="cc-chevron" aria-hidden="true">'+(collapsed?"▸":"▾")+'</span></button>'
+       '<span>'+esc(group.key)+' · '+group.pending+' '+(group.pending===1?'pendiente':'pendientes')+'</span><span class="cc-chevron" aria-hidden="true">'+(collapsed?"▸":"▾")+'</span></button>'
      :"";
     const rows=collapsed?"":group.items.map(({product,index})=>buildRow(load,review,product,index,allowed)).join("");
     if(FEATURES.groups||rows)sections.push('<section class="cc-aisle">'+header+rows+'</section>');
