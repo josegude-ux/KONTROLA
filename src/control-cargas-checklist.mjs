@@ -13,7 +13,7 @@ export function readLoads(storage,scope){
 }
 export function snapshot(load){
  if(!load||!Array.isArray(load.products)||!load.id)throw Error("Carga no válida");
- return {id:load.id,pdfHash:load.pdfHash||null,updatedAt:load.updatedAt||null,
+ return {id:load.id,pdfHash:load.pdfHash||null,
   products:load.products.map((p,i)=>({line:i,sku:String(p.sku||""),location:String(p.location||""),description:String(p.description||""),qty:Number(p.qty),unit:String(p.unit||"")}))};
 }
 export function sourceSignature(load){return JSON.stringify(snapshot(load));}
@@ -22,7 +22,7 @@ export function verificationAllowed(load){
   load.products.every(p=>p.sku&&Number.isFinite(Number(p.qty))&&Number(p.qty)>=0&&(Number(p.qty)===0||p.unit));
 }
 export function newReview(load,now=new Date().toISOString()){
- return {schema:1,loadId:load.id,sourceSignature:sourceSignature(load),createdAt:now,updatedAt:now,closedAt:null,lines:{}};
+ return {schema:1,loadId:load.id,sourceSignature:sourceSignature(load),createdAt:now,updatedAt:now,closedAt:null,lines:{},audit:[]};
 }
 export function readReviews(storage,scope){
  if(!validScope(scope))throw Error("Ámbito de usuario no válido");
@@ -46,7 +46,7 @@ export function markLine(review,load,line,status,actualQty=null,note="",now=new 
  const lines={...review.lines};
  if(status==="pending")delete lines[line];
  else lines[line]={status,actualQty:status==="incident"?actualQty:null,note:status==="incident"?String(note).slice(0,1000):"",at:now};
- return {...review,lines,updatedAt:now};
+ return {...review,lines,updatedAt:now,audit:[...(review.audit||[]),{at:now,line,from:review.lines[line]?.status||"pending",to:status,actualQty:status==="incident"?actualQty:null,note:status==="incident"?String(note).slice(0,1000):""}]};
 }
 export function reviewSummary(review,load){
  const values=load.products.map((_,i)=>review.lines[i]?.status||"pending");
@@ -57,7 +57,7 @@ export function closeReview(review,load,{acceptIncidents=false}={},now=new Date(
  const sum=reviewSummary(review,load);
  if(sum.pending)throw Error("Quedan líneas pendientes");
  if(sum.incidents&&!acceptIncidents)throw Error("Las incidencias requieren aceptación expresa");
- return {...review,closedAt:now,incidentsAccepted:sum.incidents>0,updatedAt:now};
+ return {...review,closedAt:now,incidentsAccepted:sum.incidents>0,updatedAt:now,audit:[...(review.audit||[]),{at:now,action:"close",incidentsAccepted:sum.incidents>0}]};
 }
 export function saveReview(storage,scope,review){
  if(!validScope(scope))throw Error("Ámbito de usuario no válido");
