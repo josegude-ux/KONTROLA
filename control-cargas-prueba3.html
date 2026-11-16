@@ -1,0 +1,1121 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#142e48"><meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="apple-mobile-web-app-title" content="Control Cargas">
+
+<title>Control de Cargas - Prueba integrada 3</title>
+<style>
+:root{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;color:#182e44;background:#f2f5f9;font-size:15px;color-scheme:light}*{box-sizing:border-box}body{margin:0;min-width:310px}button,input,select{font:inherit}button{cursor:pointer}.head{background:linear-gradient(135deg,#203d5b,#102840);color:#fff;padding:calc(24px + env(safe-area-inset-top,0px)) 20px 25px}.head .eyebrow{font-size:11px;opacity:.8;letter-spacing:1.4px}.head h1{font-size:25px;margin:9px 0 0;letter-spacing:-.6px}.wrap{max-width:850px;padding:18px;margin:auto}h2{font-size:22px;margin:0 0 6px;letter-spacing:-.5px}h3{font-size:17px;margin:0 0 10px}h4{font-size:14px;margin:16px 0 9px}.muted{color:#6a7c90;font-size:13px;line-height:1.5}.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:0;background:#227ab8;color:white;border-radius:12px;padding:13px 17px;font-weight:750;min-height:46px;text-decoration:none;white-space:nowrap}.btn.light{background:#e8f0f7;color:#1a4e73}.btn.ghost{background:white;color:#22567a;border:1px solid #d8e3ed}.btn:disabled{opacity:.48;cursor:default}.toolbar{display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:13px}.notice{padding:13px;border-radius:13px;background:#e5f1fb;color:#174b71;font-size:13px;line-height:1.5;margin-top:15px;white-space:pre-wrap}.notice.warn{background:#fff2df;color:#74471c}.notice.ok{background:#e5f4ed;color:#215d3d}.cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin:16px 0}.metric{background:white;border-radius:15px;padding:17px 8px;text-align:center;box-shadow:0 2px 8px #12324c08}.metric strong{display:block;font-size:23px}.metric span{color:#6e8294;font-size:11px}.panel{background:white;border-radius:18px;padding:17px;box-shadow:0 3px 13px #12324c0d;margin-top:15px}.line{display:flex;align-items:center;justify-content:space-between;gap:9px}.list-btn{display:block;text-align:left;width:100%;background:#fff;color:inherit;border:1px solid #dfe7ef;border-radius:14px;padding:15px 14px;margin-top:10px}.list-btn:active{background:#f1f6fb}.list-btn .name{font-size:17px;font-weight:750}.list-btn .kg{font-size:14px;font-weight:750;white-space:nowrap}.mini{font-size:13px;color:#687e90;margin:10px 0}.footrow{margin-top:12px;display:flex;align-items:center;justify-content:space-between;gap:8px}.tag{border-radius:8px;padding:6px 9px;font-size:12px;white-space:nowrap;background:#f5ead5;color:#805a1b}.tag.running{background:#e0efff;color:#195a9a}.tag.done{background:#def3e7;color:#206a46}
+.validation-overview{margin:8px 0 2px;font-size:13px;color:#33506a;line-height:1.6}
+.validation-line{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center;margin-top:11px}
+.validation-line .ok{color:#236449;background:#e4f3eb;border-radius:8px;padding:5px 8px;font-size:12px;font-weight:700}
+.validation-line .error{color:#855018;background:#fff1dc;border-radius:8px;padding:5px 8px;font-size:12px;font-weight:700}
+.validation-message{font-size:12px;color:#855018;line-height:1.45;overflow-wrap:anywhere;margin-top:6px}
+.filters{display:flex;gap:8px;overflow-x:auto;padding:14px 0 3px}.filter{font-size:13px;padding:9px 12px;border-radius:20px;border:1px solid #d2dfe9;background:#fff;color:#315269;white-space:nowrap}.filter.active{background:#183c5b;color:white;border-color:#183c5b}.bottom{display:flex;gap:9px;flex-wrap:wrap;margin-top:14px}.smallprint{text-align:center;color:#76899c;font-size:12px;margin:29px auto 15px;line-height:1.6}.screen{position:fixed;inset:0;z-index:20;background:#f2f5f9;overflow:auto;display:none}.screen.show{display:block}.detail-head{padding:calc(12px + env(safe-area-inset-top,0px)) 19px 21px;background:#193754;color:#fff}.back{background:transparent;color:#fff;border:0;padding:7px 0 18px}.detail-head h2{font-size:25px;margin:0}.d-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.d-cell{background:#f1f5f9;border-radius:11px;padding:13px;min-width:0}.d-cell small{color:#6b7d90;display:block;font-size:12px}.d-cell strong{display:block;font-size:17px;margin-top:6px;overflow-wrap:anywhere}.row-stat{display:flex;align-items:center;justify-content:space-between;gap:10px;border-bottom:1px solid #edf1f5;padding:10px 0}.row-stat:last-child{border-bottom:0}.row-stat strong{text-align:right}.help{border-radius:11px;background:#fff4e6;color:#6d4a1e;padding:12px;line-height:1.55;font-size:13px}.verified{background:#e4f4ea;color:#226345}.formlabel{display:block;font-size:13px;font-weight:650;margin:12px 0 7px}input[type=text],input[type=datetime-local],select{width:100%;min-height:44px;border:1px solid #cddce7;border-radius:10px;padding:10px;background:#fff;color:#1d3346;font-size:16px}.two{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.actions{display:flex;gap:8px;flex-wrap:wrap;margin:13px 0}.actions>*{flex:1}.thin{font-size:12px;color:#6b7d90;line-height:1.5}.hidden{display:none!important}.danger{color:#9b3c3c}.unlocated{background:#fff6e8;border-radius:12px;padding:11px;margin-top:10px}.unlocated p{margin:7px 0;font-size:12px}button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid #63a8d9;outline-offset:2px}
+@media(max-width:390px){.wrap{padding:13px}.head{padding-left:15px}.metric strong{font-size:20px}.btn{padding:12px 13px}}
+
+.updater{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;background:#fff;border:1px solid #dce6ef;border-radius:14px;padding:12px 14px;margin-top:15px;box-shadow:0 1px 6px #12324c09}
+.updater strong{font-size:14px}.updater #updateMessage{font-size:12px;color:#6a7c90;margin-top:3px;max-width:330px;line-height:1.4}
+@media(max-width:370px){.updater .btn{width:100%}}
+
+/* Acciones directas y vista de impresión */
+.card-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:13px}
+.card-actions button{font-size:13px;padding:9px 12px;min-height:39px}
+.list-btn{cursor:pointer}
+.list-btn:focus-visible{outline:3px solid #63a8d9;outline-offset:2px}
+.report-preview{padding:14px;max-width:850px;margin:auto}
+.report-paper{background:#fff;color:#111;border-radius:2px;box-shadow:0 3px 18px #23354c24;padding:26px 26px 23px;min-height:780px;font:12px Arial,sans-serif}
+.report-paper h1{font-size:21px;margin:0 0 5px;color:#183d59}
+.report-paper h2{font-size:13px;margin:20px 0 6px;color:#1b3951}
+.report-paper .sub{font-size:11px;color:#566b7b;margin-bottom:14px}
+.report-paper .report-facts{display:grid;grid-template-columns:repeat(3,1fr);gap:6px 14px;padding:10px 0;border-top:2px solid #173c57;border-bottom:1px solid #aaa;font-size:11px}
+.report-paper .report-facts b{display:block;font-size:12px;overflow-wrap:anywhere}
+.report-paper .report-logistics{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:10px 0 13px}
+.report-paper .report-logistics-cell{border:2px solid #173c57;border-radius:8px;padding:9px 12px;min-width:0;background:#f8fafc}
+.report-paper .report-logistics-cell small{display:block;color:#52687a;font-size:10px;font-weight:750;letter-spacing:.6px}
+.report-paper .report-logistics-cell b{display:block;font-size:17px;margin-top:4px;overflow-wrap:anywhere}
+@media(max-width:440px){.report-paper .report-logistics{grid-template-columns:1fr}}
+.report-paper .report-facts small{color:#566b7b}
+.report-paper table{border-collapse:collapse;width:100%;font-size:11px}
+.report-paper th,.report-paper td{border:1px solid #aab3bc;padding:6px 5px;text-align:center}
+.report-paper th{background:#eaf0f5;font-weight:700}
+.report-paper td:first-child,.report-paper th:first-child{text-align:left;font-weight:700}
+.report-paper tr:nth-child(even) td{background:#f8fafc}
+/* Lista de pasillos: bandas alternas contrastadas para seguimiento durante la preparación. */
+.report-paper .aisle-table{border:2px solid #8a9dad;table-layout:auto}
+.report-paper .aisle-table thead th{background:#cedae3;border-color:#8da2b2;padding:9px 6px}
+.report-paper .aisle-table tbody tr td{border-top:2px solid #afc0cd;padding:9px 7px;font-weight:700}
+.report-paper .aisle-table tbody tr:nth-child(odd) td{background:#e7eef4}
+.report-paper .aisle-table tbody tr:nth-child(even) td{background:#fff}
+.report-paper .aisle-table tbody tr:nth-child(odd) td.aisle-code{background:#c9d9e5}
+.report-paper .aisle-table tbody tr:nth-child(even) td.aisle-code{background:#e3eaf0}
+.report-paper .aisle-table .aisle-code{font-size:14px;font-weight:900;border-left:5px solid #5f7c92;min-width:64px;text-align:center}
+.report-paper .aisle-table .aisle-total th{background:#cdd8e1;border-top:3px solid #536e82;font-weight:850}
+@media print{
+ .report-paper .aisle-table,.report-paper .aisle-table th,.report-paper .aisle-table td{print-color-adjust:exact!important;-webkit-print-color-adjust:exact!important}
+ .report-paper .aisle-table tbody tr td{padding:7px 5px!important}
+ .report-paper .aisle-table .aisle-code{font-size:11px!important}
+}
+.report-paper .report-foot{margin-top:12px;font-size:10px;color:#566b7b}
+.report-paper .report-warning{background:#fff4df;border:2px solid #a85b10;padding:12px;margin:12px 0;font-size:12px;line-height:1.45;color:#62350c;overflow-wrap:anywhere}.report-paper .report-warning b{font-size:13px}.report-paper .report-warning ul{margin:6px 0 0;padding-left:17px}
+.report-paper .report-missing{font-size:10px;margin:2px 0 3px;overflow-wrap:anywhere}
+@media(max-width:440px){.report-paper{padding:16px 11px}.report-paper table{font-size:9px}.report-paper td,.report-paper th{padding:5px 2px}.report-paper .report-facts{grid-template-columns:repeat(2,1fr)}}
+.load-entry{display:flex;align-items:stretch;gap:8px;margin-top:10px}
+.load-entry .list-btn{margin-top:0;min-width:0;flex:1}
+.load-check{min-width:40px;display:flex;align-items:center;justify-content:center;border-radius:11px;background:#e8f0f7;cursor:pointer}
+.load-check input{width:23px;height:23px;accent-color:#227ab8;cursor:pointer}
+.batch-toolbar{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.batch-toolbar .btn{font-size:12px;padding:10px;min-height:40px}
+.batch-toolbar #printSelected{flex:1}
+#reportScreen.batch-mode #originalPages{display:block}
+#reportScreen.batch-mode #reportPaper{display:none}
+.batch-load{margin-bottom:18px}
+.batch-original .original-print-page img{display:block;max-width:100%;height:auto;margin:0 auto}
+.batch-summary{margin-top:12px}
+#originalPages{display:none}
+@page{size:A4 portrait;margin:11mm}
+@media print{
+ #originalPages{display:block!important}
+ .original-print-page{break-after:page;page-break-after:always;break-inside:avoid;page-break-inside:avoid;width:100%;height:auto;max-height:272mm}
+ .original-print-page img{display:block;max-width:100%;max-height:269mm;width:auto;height:auto;margin:0 auto;object-fit:contain}
+ #reportPaper{break-inside:avoid;page-break-inside:avoid}
+ .batch-summary{break-after:page;page-break-after:always;break-inside:avoid;page-break-inside:avoid;margin:0!important}
+ .batch-load:last-child .batch-summary{break-after:auto;page-break-after:auto}
+ .batch-load,.batch-original{margin:0!important}
+}
+@media print{
+  html,body{background:white!important;width:auto!important;min-width:0!important;margin:0!important;padding:0!important}
+  body>.head,body>main.wrap,#detail,.report-controls{display:none!important}
+  #reportScreen{position:static!important;display:block!important;overflow:visible!important;background:white!important}
+  .report-preview{padding:0!important;max-width:none!important;margin:0!important}
+  .report-paper{box-shadow:none!important;min-height:0!important;margin:0!important;padding:0!important;border:0!important;border-radius:0!important;width:100%!important}
+  .report-paper h1{font-size:16px!important}.report-paper h2{font-size:12px!important;margin-top:13px!important}
+  .report-paper th,.report-paper td{padding:4px!important;font-size:9px!important}
+  .report-paper .report-facts{font-size:9px!important}
+  .report-paper tr{break-inside:avoid;page-break-inside:avoid}
+}
+
+/* Estadísticas de preparación: lectura local sin servidores ni librerías nuevas */
+.stats-toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.stats-filter{flex:1 1 180px;min-width:125px}
+.stats-filter label{display:block;font-size:12px;font-weight:700;margin-bottom:5px;color:#385775}
+.stats-filter select,.stats-filter input[type=date]{min-height:42px;padding:9px;border:1px solid #cddce7;border-radius:10px;background:#fff;color:#193754;width:100%;font-size:14px}
+.stats-metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:14px}
+.stats-metric{background:#f1f5f9;border-radius:12px;padding:12px;min-width:0}
+.stats-metric strong{display:block;font-size:21px;word-break:break-word}
+.stats-metric small{display:block;color:#637990;margin-top:5px;line-height:1.3}
+.stats-scroll{max-width:100%;overflow-x:auto}
+.stats-table{width:100%;border-collapse:collapse;font-size:12px;white-space:nowrap}
+.stats-table th,.stats-table td{padding:9px 8px;text-align:right;border-bottom:1px solid #dce5ed}
+.stats-table th:first-child,.stats-table td:first-child{text-align:left}
+.stats-table th{background:#eaf0f5;font-weight:750}
+.stats-info{background:#fff3dd;border-radius:12px;padding:13px;color:#694718;font-size:12px;line-height:1.5;margin-top:12px}
+.stats-empty{padding:18px;color:#74899d;text-align:center}.stats-period-caption{font-size:13px;line-height:1.5;color:#34516a;margin:13px 0 0;font-weight:600}
+@media(max-width:650px){.stats-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.stats-table{font-size:11px}}
+@media print{
+ body.stats-print #reportScreen{display:none!important}
+ body.stats-print{height:auto!important;overflow:visible!important}
+ body.stats-print #statsScreen{display:block!important;position:relative!important;inset:auto!important;z-index:auto!important;width:100%!important;height:auto!important;min-height:0!important;max-height:none!important;overflow:visible!important;background:#fff!important}
+ body.stats-print .stats-controls{display:none!important}
+ body.stats-print #statsScreen .wrap{padding:0!important;max-width:none!important}
+ body.stats-print #statsScreen .panel{box-shadow:none!important;border:0!important;padding:6px 0!important;margin:0 0 15px!important}
+ body.stats-print #statsScreen .stats-scroll{overflow:visible!important}
+ body.stats-print #statsScreen .stats-table{white-space:normal!important;font-size:9px!important}
+ body.stats-print #statsScreen .stats-table th,body.stats-print #statsScreen .stats-table td{padding:5px 3px!important}
+ body.stats-print #statsScreen .stats-metric{background:#f5f6f8!important;print-color-adjust:exact}
+ body.stats-print #statsScreen h2{font-size:18px}
+ body.stats-print #statsScreen h3{font-size:14px}
+}
+
+.cold-report{background:white;color:#111;padding:22px;font:12px Arial;min-height:300px;margin-top:18px}
+.cold-report h1{text-align:center;font-size:22px;margin:0 0 8px}.cold-report .date{text-align:center;font-weight:bold;margin-bottom:20px}
+.cold-report table{width:100%;border-collapse:collapse;table-layout:fixed;margin-bottom:22px}.cold-report th,.cold-report td{border:1px solid #222;padding:7px 5px;overflow-wrap:anywhere}
+.cold-report th{background:#aaa;color:white;text-align:left}.cold-report th.section{background:#d9ebf6;color:#111;text-align:center}
+.cold-report tbody tr:nth-child(odd){background:#b9e2ed}.cold-report .barrels th.section{background:#fff1ca}.cold-report .barrels tbody tr:nth-child(odd){background:#fff8df}
+.cold-report .qty{text-align:right}.cold-report .note{font-size:10px;color:#555}
+@page cold{size:A4 landscape;margin:10mm}
+@media print{.cold-report{page:cold;break-before:page;margin:0;padding:0;min-height:0}.cold-report *{print-color-adjust:exact;-webkit-print-color-adjust:exact}.cold-report tr{break-inside:avoid}.cold-report thead{display:table-header-group}.cold-report td{font-size:9px}.cold-report .date{margin-bottom:12px}}
+</style>
+</head>
+<body>
+<header class="head"><div class="eyebrow">PRUEBA INTEGRADA 3</div><h1>Control de Cargas</h1></header>
+<main class="wrap">
+<div class="toolbar"><div><h2>Preparación de cargas</h2><div class="muted">Ordenadas por peso · Datos locales de este dispositivo</div></div><div class="stats-toolbar"><button class="btn light" type="button" id="openStats">▥ Estadísticas</button><label class="btn" for="pdfs">＋ Importar PDF</label><input id="pdfs" type="file" accept="application/pdf,.pdf" multiple class="hidden"></div></div>
+
+<div class="notice"><strong id="installedVersion">PRUEBA INTEGRADA 3</strong> · Una importación, todos los listados.</div>
+<div id="feedback" class="notice" role="status" aria-live="polite">Puedes seleccionar varias hojas de carga desde Archivos o OneDrive.</div>
+<div class="cards"><div class="metric"><strong id="nLoads">0</strong><span>Cargas</span></div><div class="metric"><strong id="nRefs">0</strong><span>Referencias</span></div><div class="metric"><strong id="nWeight">0</strong><span>Kg totales</span></div></div>
+<div id="validationOverview" class="validation-overview" aria-live="polite"></div>
+<section class="panel" style="margin-top:14px" aria-label="Resumen diario"><h3>Resumen diario</h3><p class="muted">Por fecha de carga del PDF. Los filtros también se aplican al listado.</p><div class="two"><div class="stats-filter"><label for="dailyDate">Fecha de carga</label><input type="date" id="dailyDate"></div><div class="stats-filter"><label for="dailyOperator">Operario</label><select id="dailyOperator"></select></div><div class="stats-filter"><label for="dailyRoute">Ruta</label><select id="dailyRoute"></select></div><div class="stats-filter"><label for="dailyPlate">Matrícula</label><select id="dailyPlate"></select></div></div><div class="actions"><button class="btn light" id="dailyToday">Hoy</button><button class="btn ghost" id="dailyReset">Todo el historial</button></div><div class="d-grid" id="dailyCounts" aria-live="polite"></div><p class="thin" id="dailyNote"></p></section>
+<div class="filters" id="filters"><button class="filter active" data-filter="Todas">Todas</button><button class="filter" data-filter="Verificadas">✓ Verificadas</button><button class="filter" data-filter="Con incidencias">⚠ Con incidencias</button><button class="filter" data-filter="Pendiente">Pendientes</button><button class="filter" data-filter="En curso">En curso</button><button class="filter" data-filter="Finalizada">Finalizadas</button></div>
+<section class="panel"><div class="line"><div><h3>Cargas importadas</h3><div class="muted">Pulsa una carga para registrar su preparación.</div></div></div><div class="batch-toolbar"><button class="btn light" id="selectAll" type="button">☑ Seleccionar todas</button><button class="btn light" id="selectVisible" type="button">Marcar visibles</button><button class="btn ghost" id="clearSelection" type="button">Desmarcar</button><button class="btn" id="printSelected" type="button" disabled>▤ Imprimir seleccionadas (0)</button></div><div class="bottom"><button class="btn" id="generateAll" disabled>Generar todos los listados (0)</button></div><details><summary style="margin:12px 0;cursor:pointer">Revisar destinos Coruña / Ferrol</summary><div id="coldDestinations"></div></details><div id="loadList"></div><div class="bottom"><button class="btn light" id="backup">Guardar copia</button><label class="btn ghost" for="restoreInput">Restaurar copia</label><input id="restoreInput" type="file" accept="application/json,.json" class="hidden"><button class="btn ghost" id="clear">Eliminar cargas</button></div></section>
+<p class="smallprint">Prueba local · Guarda el PDF generado · Las copias JSON no incluyen los PDF originales</p>
+</main>
+
+<div class="screen" id="statsScreen" aria-label="Estadísticas de preparadores" style="z-index:55">
+ <header class="detail-head stats-controls"><button class="back" id="closeStats" type="button">← Volver a cargas</button><h2>Estadísticas de preparación</h2><p style="opacity:.85;margin-bottom:0">Rendimiento por operario · Registros de este dispositivo</p></header>
+ <main class="wrap">
+  <section class="panel">
+   <div class="stats-toolbar stats-controls">
+    <div class="stats-filter"><label for="statsPeriod">Periodo</label><select id="statsPeriod"><option value="month">Mes actual</option><option value="week">Últimos 7 días</option><option value="all">Todo el historial</option><option value="custom">Personalizado</option></select></div>
+    <div class="stats-filter"><label for="statsOperator">Preparador</label><select id="statsOperator"><option value="">Todos los operarios</option></select></div>
+    <div class="stats-filter" id="statsFromWrap" hidden><label for="statsFrom">Desde</label><input type="date" id="statsFrom"></div>
+    <div class="stats-filter" id="statsToWrap" hidden><label for="statsTo">Hasta</label><input type="date" id="statsTo"></div>
+   </div>
+   <div id="statsPeriodCaption" class="stats-period-caption"></div><div class="stats-metrics" id="statsMetrics"></div>
+   <div id="statsNote" class="stats-info"></div>
+   <div class="stats-toolbar stats-controls" style="margin-top:14px">
+    <button class="btn light" id="statsExport" type="button">⇩ Exportar CSV para Excel</button>
+    <button class="btn" id="statsPrint" type="button">▤ Generar PDF</button>
+   </div>
+  </section>
+  <section class="panel"><h3>Comparativa de preparadores</h3><div class="stats-scroll" id="statsByOperator"></div></section>
+  <section class="panel"><h3>Detalle de las cargas finalizadas</h3><div class="stats-scroll" id="statsDetail"></div></section>
+  <p class="smallprint">Calculado con la hora de inicio y finalización. Los pesos globales de cargas mixtas Coruña/Ferrol se excluyen del cálculo de kg/h.</p>
+ </main>
+</div>
+<div class="screen" id="detail"><div class="detail-head"><button class="back" id="back">← Volver a cargas</button><h2 id="detailId"></h2><div id="detailDriver" style="opacity:.78;margin-top:8px"></div></div><div class="wrap">
+<section class="panel"><h3>Información de carga</h3><div class="d-grid" id="detailData"></div></section>
+<section class="panel"><div class="line"><h3>Resumen de mercancía</h3><button class="btn light" type="button" id="detailReport">▤ Generar listado</button></div><div id="verification"></div><div id="formats"></div><div id="aisles"></div><div id="unlocated"></div></section>
+<section class="panel"><h3>Preparación</h3><label class="formlabel" for="loadRoute">Ruta (si no figura en el PDF)</label><input type="text" id="loadRoute" placeholder="Sin ruta indicada"><button class="btn light" id="saveRoute" style="margin-top:8px">Guardar ruta</button><label class="formlabel" for="operator">Operario responsable</label><select id="operator"><option value="">Seleccionar operario…</option></select><div class="actions"><input type="text" id="newOperator" placeholder="Nuevo operario" aria-label="Nombre del operario"><button class="btn light" id="addOperator">Añadir</button></div><div class="actions"><button class="btn" id="start">▶ Iniciar</button><button class="btn light" id="finish">✓ Finalizar</button></div><p class="muted" id="timeStatus"></p><h4>Corrección manual de horarios</h4><div class="two"><div><label class="formlabel" for="editStart">Inicio</label><input type="datetime-local" id="editStart"></div><div><label class="formlabel" for="editEnd">Final</label><input type="datetime-local" id="editEnd"></div></div><button class="btn light" style="margin-top:12px" id="saveHours">Guardar horarios</button><p class="thin">Las modificaciones se guardan solo en este dispositivo.</p></section>
+</div></div>
+<div class="screen" id="reportScreen" aria-label="Listado de preparación" style="z-index:40">
+  <header class="detail-head report-controls"><button class="back" type="button" id="closeReport">← Volver a la aplicación</button><h2>Listado de preparación</h2><p id="printContents" style="margin-bottom:0;opacity:.9">Vista previa del documento · A4</p><button class="btn" type="button" id="printReport" style="margin-top:13px;background:#fff;color:#173956">▤ Imprimir / Guardar PDF</button></header>
+  <main class="report-preview"><div id="originalPages"></div><div id="reportPaper" class="report-paper"></div></main>
+</div>
+<script type="module">
+const VISURA_SCOPE=(()=>{const value=new URLSearchParams(location.search).get("visura_scope")||"";return /^[a-f0-9]{24}$/.test(value)?"_visura_"+value:"";})();
+
+const {parseDocumentPages,summarize}=(()=>{
+// Lector por coordenadas para hojas de carga VolDistribución.
+// Los formatos pueden incluir cantidades decimales (por ejemplo KG).
+const numeric = raw => raw==null ? null : Number(String(raw).trim().replace(/\./g,'').replace(',','.'));
+// La columna de unidades puede llevar tres decimales: «110.000» significa 110.
+// No usar la interpretación de millares propia del campo Peso carga.
+const numericQty = raw => {
+  if(raw==null)return null;
+  const text=String(raw).trim().replace(/\s/g,'');
+  if(!/^\d+(?:[,.]\d+)?$/.test(text))return null;
+  return Number(text.replace(',','.'));
+};
+const isQty = text => /^\d+(?:[,.]\d+)?$/.test(String(text).trim());
+const validQty = val => typeof val==='number' && Number.isFinite(val) && val>=0;
+function parseDocumentPages(pages, fileName='Documento.pdf') {
+ // Business Central puede incluir varios almacenes dentro del MISMO LP.
+ // La preparación de Coruña corresponde exclusivamente a COR_01_COR.
+ const warehouseOf=page=>{
+  const line=page.items.map(it=>it.text||'').join(' ');
+  const hit=line.match(/Almac[eé]n\s*:\s*(COR[\s_-]*0?\d{1,2}[\s_-]*[A-Z]{2,})/i);
+  if(!hit)return null;
+  const cleaned=hit[1].toUpperCase().replace(/[\s-]+/g,'_').replace(/_+/g,'_');
+  return cleaned.replace(/^COR_1_/,'COR_01_').replace(/^COR_2_/,'COR_02_');
+ };
+ const identified=pages.map(warehouseOf);
+ const warehouses=[...new Set(identified.filter(Boolean))];
+ const mixedWarehouse=warehouses.length>1;
+ if(warehouses.length&&!warehouses.includes('COR_01_COR'))throw new Error('El PDF no contiene el bloque de mercancía COR_01_COR');
+ if(warehouses.length){
+  let active=null;
+  pages=pages.filter((page,index)=>{
+   if(identified[index])active=identified[index];
+   return active==='COR_01_COR';
+  });
+ }
+ const every=pages.flatMap(p=>p.items.map(it=>({...it,page:p.number})));
+ const textAll=every.map(i=>i.text).join(' ').replace(/\s+/g,' ');
+ const extract=(regexp,source=textAll)=>source.match(regexp)?.[1]??null;
+ let id=extract(/\b(LP\s*\d{2}\s*[-–]\s*\d{4,6})\b/i);
+ if(!id)id=(fileName.match(/LP\d{2}[-_ ]\d{4,6}/i)||[])[0];
+ id=(id||fileName.replace(/\.pdf$/i,'')).replace(/\s+/g,'').replace('_','-');
+ const weight=numeric(extract(/Peso\s*carga\s*:?\s*([\d.]+,\d+|\d+(?:\.\d+)?)/i));
+ const refs=numeric(extract(/Total\s*referencias\s*prod\.?\s*:?\s*(\d+)/i));
+ const visits=numeric(extract(/N[º°o.]?\s*visitas\s*:?\s*(\d+)/i));
+ const driver=(extract(/Repartidor\s*:\s*(.{1,65}?)(?=N[º°o.]?\s*copias|N[º°o.]?\s*visitas|Peso\s*carga|Almac[eé]n|$)/i)||'').trim();
+ const plate=extract(/Matr[ií]cula\s*:?\s*([A-Z0-9-]{5,12})/i)||extract(/Cami[oó]n\s*:\s*CR(\d{4}[A-Z]{3})/i)||'';
+ // Leer «6G 4» como grandes/pequeños y «8G» sin inventar pequeños.
+ const truckLine=extract(/Cami[oó]n\s*:\s*(.{1,120}?)(?=\s*Matr[ií]cula\s*:|\s*Huecos\s*plts\.?\s*cami[oó]n\s*:|\s*Almac[eé]n\s*:|$)/i)||'';
+ const palletMatch=truckLine.match(/(?:^|[\s-])(\d{1,2})\s*G(?:\s*[-\/]?\s*(\d{1,2})\s*P?)?(?=\s|$|[-\/])/i);
+ const palletsLarge=palletMatch?Number(palletMatch[1]):null;
+ const palletsSmall=palletMatch&&palletMatch[2]!=null?Number(palletMatch[2]):null;
+ const date=extract(/Fecha\s*carga\s*:\s*(\d{2}\/\d{2}\/\d{2,4})/i);
+ const route=(extract(/Ruta\s*:\s*(.{1,60}?)(?=\s+(?:Repartidor|Matr[ií]cula|Cami[oó]n|Fecha|Peso|Almac[eé]n|N[º°o.]?\s*(?:copias|visitas))\s*:|$)/i)||'').trim();
+ let merchandise=false,declaredTotal=null;
+ const products=[],warnings=[];
+ for(const page of pages){
+  const items=page.items.filter(it=>it.text&&it.text.trim()).sort((a,b)=>a.y-b.y||a.x-b.x);
+  const goodsTitle=items.find(it=>/M\s*E\s*R\s*C\s*A\s*N\s*C\s*[IÍ]\s*A/i.test(it.text));
+  if(goodsTitle)merchandise=true;
+  const refsLabel=items.find(it=>/Total\s+referencias\s+prod/i.test(it.text));
+  const controlLabel=items.find(it=>/C\s*O\s*N\s*T\s*R\s*O\s*L\s*\s*E\s*N\s*V\s*A\s*S\s*E\s*S/i.test(it.text));
+  const palletsLabel=items.find(it=>/P\s*A\s*L\s*E\s*T\s*S/i.test(it.text));
+  if(!merchandise&&page.number===1&&refsLabel)merchandise=true;
+  if(!merchandise)continue;
+  const stop=Math.min(refsLabel?.y??Infinity,controlLabel?.y??Infinity,palletsLabel?.y??Infinity);
+  const begin=goodsTitle?goodsTitle.y+2:0;
+  const zone=items.filter(it=>it.y>=begin&&it.y<stop);
+  const rows=[];
+  for(const i of zone){
+   if(i.x>page.width*.4)continue;
+   const hit=i.text.match(/\bPRD\d{7}\b/i);
+   if(!hit)continue;
+   // Ubicación estandar y variante impresa K109-3 (pertenece al pasillo K).
+   const locPattern=/\b([A-Z]\d{2}-P\d{2}|[A-Z]\d{3}-\d|ZFRIO)\b/i;
+   const prev=zone.filter(p=>p.x<i.x+3&&Math.abs(p.y-i.y)<8).map(p=>p.text).join(' ');
+   const loc=(i.text.match(locPattern)||[])[0]||(prev.match(locPattern)||[])[0]||'';
+   rows.push({sku:hit[0].toUpperCase(),location:loc.toUpperCase(),y:i.y});
+  }
+  rows.sort((a,b)=>a.y-b.y);
+  const unique=[];
+  for(const row of rows){if(!unique.some(v=>v.sku===row.sku&&Math.abs(v.y-row.y)<5))unique.push(row)}
+  for(let n=0;n<unique.length;n++){
+   const r=unique[n];
+   const top=n?(unique[n-1].y+r.y)/2:r.y-8;
+   const bottom=n+1<unique.length?(r.y+unique[n+1].y)/2:Math.min(stop,r.y+45);
+   const cells=zone.filter(i=>i.y>=top&&i.y<bottom);
+   const amounts=cells.filter(i=>i.x>page.width*.68&&i.x<page.width*.77&&isQty(i.text)).sort((a,b)=>Math.abs(a.y-r.y)-Math.abs(b.y-r.y));
+   // Un campo Total unidades vacío significa mercancía no solicitada: 0, no error.
+   // No se toma el número de la columna Devoluciones previstas.
+   const qty=amounts.length?numericQty(amounts[0].text):0;
+   const units=cells.filter(i=>i.x>=page.width*.88).sort((a,b)=>a.y-b.y||a.x-b.x).map(i=>i.text.trim());
+   const rawUnit=units.join('').toUpperCase().replace(/[^A-ZÁÉÍÓÚÑ]/g,'');
+   let unit=rawUnit;
+   if(/^BOTELLAS?$|^BOTELLA?$/.test(rawUnit))unit='BOTELLA';
+   else if(/^PAQUETES?$/.test(rawUnit))unit='PAQUETE';
+   else if(/^CAJAS?$/.test(rawUnit))unit='CAJA';
+   else if(/^PACKS?$/.test(rawUnit))unit='PACK';
+   else if(/^BOLSAS?$/.test(rawUnit))unit='BOLSA';
+   else if(/^BARRILES?$/.test(rawUnit))unit='BARRIL';
+   else if(/^PALETS?$/.test(rawUnit))unit='PALET';
+   else if(/^KGS?$|^KILOS?$|^KILOGRAMOS?$/.test(rawUnit))unit='KG';
+   const description=cells.filter(i=>i.x>page.width*.18&&i.x<page.width*.67).sort((a,b)=>a.y-b.y||a.x-b.x).map(i=>i.text.trim()).filter(Boolean).join(' ').replace(/\s+/g,' ');
+   const product={...r,qty,unit,description};
+   if(!validQty(qty)||(qty>0&&!unit))warnings.push('Cantidad o unidad sin reconocer en '+r.sku);
+   products.push(product);
+  }
+  if(refsLabel){
+   const totalItem=items.find(i=>i.text.trim().toUpperCase()==='TOTAL:'&&Math.abs(i.y-refsLabel.y)<12);
+   if(totalItem){const q=items.filter(i=>i.x>page.width*.68&&i.x<page.width*.78&&Math.abs(i.y-totalItem.y)<9&&isQty(i.text)).sort((a,b)=>Math.abs(a.y-totalItem.y)-Math.abs(b.y-totalItem.y))[0];if(q)declaredTotal=numericQty(q.text)}
+   merchandise=false;
+  }else if(controlLabel||palletsLabel){merchandise=false}
+ }
+ if(warehouses.length&&!pages.length)warnings.push('El PDF no contiene mercancía de COR_01_COR');
+ const sum=products.reduce((a,p)=>a+Number(p.qty||0),0);
+ const countOK=refs!==null&&refs===products.length;
+ const amountOK=declaredTotal===null?null:Math.abs(declaredTotal-sum)<0.000001;
+ if(!countOK)warnings.push('Referencias detectadas: '+products.length+' / declaradas: '+(refs??'no consta'));
+ if(amountOK===false)warnings.push('Suma detectada: '+sum.toFixed(3)+' / declarada: '+declaredTotal);
+ if(declaredTotal===null)warnings.push('No se pudo contrastar el total del PDF');
+ const verified=countOK&&amountOK===true&&warnings.length===0;
+ return {id,weight,refs,visits,driver,plate,palletsLarge,palletsSmall,date,route,source:fileName,products,declaredTotal,actualTotal:sum,verified,warnings,warehouse:warehouses.length?'COR_01_COR':null,mixedWarehouse,availableWarehouses:warehouses};
+}
+function summarize(products){
+ const units={},aisles={},unlocated=[];
+ for(const p of products){
+  const qty=p.qty;
+  if(!validQty(qty)||qty===0)continue;
+  const unit=p.unit||'DESCONOCIDO';units[unit]=(units[unit]||0)+qty;
+  const aisle=p.location==='ZFRIO'?'FRÍO':p.location?p.location[0]:'SIN UBICACIÓN';
+  if(!aisles[aisle])aisles[aisle]={};aisles[aisle][unit]=(aisles[aisle][unit]||0)+qty;
+  if(!p.location)unlocated.push(p);
+ }
+ return {units,aisles,unlocated};
+}
+
+
+return {parseDocumentPages,summarize};
+})();
+const {dayOf,dailyRows,counts,fingerprint,revised}=(()=>{
+const stateOf = r => r.status === 'En preparación' ? 'En curso' : r.status || 'Pendiente';
+function dayOf(r){
+ const s=String(r.date||''); let m=s.match(/^(\d{2})\/(\d{2})\/(\d{2}|\d{4})$/);
+ if(m)return `${m[3].length===2?'20':''}${m[3]}-${m[2]}-${m[1]}`;
+ return /^\d{4}-\d{2}-\d{2}$/.test(s)?s:'';
+}
+function dailyRows(rows,f){return rows.filter(r=>(!f.day||dayOf(r)===f.day)&&['operator','route','plate'].every(k=>!f[k]||(r[k]||'')===f[k]));}
+function counts(rows){return Object.fromEntries(['Pendiente','En curso','Finalizada'].map(s=>[s,rows.filter(r=>stateOf(r)===s).length]));}
+async function fingerprint(file){return Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',await file.arrayBuffer())),b=>b.toString(16).padStart(2,'0')).join('');}
+function revised(old,incoming,hash,now=new Date().toISOString()){
+ const next={...old,...incoming,pdfHash:hash,importedAt:old?.importedAt||now,updatedAt:now,warehouseParsingVersion:1};
+ for(const k of ['operator','started','finished','status','automaticEnd','automaticEndReason','manualTimeEdited'])next[k]=old?.[k]??({operator:'',status:'Pendiente',started:null,finished:null}[k]??false);
+ next.status=stateOf(next);
+ if(!incoming.route&&old?.route)next.route=old.route;
+ next.importHistory=[...(old?.importHistory||[]),{at:now,source:incoming.source,hash,previous:old?{weight:old.weight,refs:old.refs,date:old.date,pdfHash:old.pdfHash||null}:null}];
+ return next;
+}
+
+
+return {dayOf,dailyRows,counts,fingerprint,revised};
+})();
+const {guardarOriginal,prepararMercancia,limpiarVista,borrarTodosOriginales,leerOriginal}=(()=>{
+// Impresión del PDF original: únicamente MERCANCÍA, sin envases, palés ni firmas.
+// Los PDF se almacenan localmente en IndexedDB, separados de los registros de preparación.
+const DB_NAME='control_cargas_originales_prueba_integrada_2'+VISURA_SCOPE, STORE='originales';
+const openDB=()=>new Promise((resolve,reject)=>{
+ const request=indexedDB.open(DB_NAME,1);
+ request.onupgradeneeded=()=>{if(!request.result.objectStoreNames.contains(STORE))request.result.createObjectStore(STORE)};
+ request.onsuccess=()=>resolve(request.result);
+ request.onerror=()=>reject(request.error||new Error('No se puede abrir el almacén local de PDF'));
+});
+async function guardarOriginal(id,file){
+ if(!id||!file)throw new Error('Falta el PDF o su número de carga');
+ const db=await openDB();
+ return new Promise((resolve,reject)=>{
+  const tx=db.transaction(STORE,'readwrite');
+  tx.objectStore(STORE).put(file,id);
+  tx.oncomplete=()=>{db.close();resolve(true)};
+  tx.onerror=()=>{db.close();reject(tx.error||new Error('Sin espacio para almacenar el PDF'))};
+  tx.onabort=()=>{db.close();reject(tx.error||new Error('Guardado cancelado'))};
+ });
+}
+async function borrarTodosOriginales(){
+ const db=await openDB();
+ return new Promise((resolve,reject)=>{
+  const tx=db.transaction(STORE,'readwrite');
+  tx.objectStore(STORE).clear();
+  tx.oncomplete=()=>{db.close();resolve()};
+  tx.onerror=()=>{db.close();reject(tx.error||new Error('No se pudieron eliminar los PDF'))};
+  tx.onabort=()=>{db.close();reject(tx.error||new Error('Eliminación cancelada'))};
+ });
+}
+async function leerOriginal(id){
+ const db=await openDB();
+ return new Promise((resolve,reject)=>{
+  const tx=db.transaction(STORE,'readonly');
+  const req=tx.objectStore(STORE).get(id);
+  req.onsuccess=()=>resolve(req.result||null);
+  req.onerror=()=>reject(req.error||new Error('No se puede leer el PDF guardado'));
+  tx.oncomplete=()=>db.close();
+ });
+}
+const norm=s=>String(s||'').toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^A-Z]/g,'');
+async function recortarMercancia(original){
+ const pdfjs=await import('https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.min.mjs');
+ pdfjs.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.worker.min.mjs';
+ const doc=await pdfjs.getDocument({data:new Uint8Array(await original.arrayBuffer())}).promise;
+ const images=[];let found=false;
+ try {
+  // Localizar PRIMERO los bloques de almacén en todas las páginas: COR_01 puede
+  // aparecer después de otro bloque y el número LP se repite entre almacenes.
+  const sourcePages=[];let hasWarehouse=false,hasCoruna=false;
+  for(let pageNumber=1;pageNumber<=doc.numPages;pageNumber++){
+   const page=await doc.getPage(pageNumber);
+   const content=await page.getTextContent();
+   const text=content.items.map(i=>i.str||'').join(' ');
+   const match=text.match(/Almac[eé]n\s*:\s*(COR[\s_-]*0?\d{1,2}[\s_-]*[A-Z]{2,})/i);
+   const warehouse=match?match[1].toUpperCase().replace(/[\s-]+/g,'_').replace(/^COR_1_/,'COR_01_').replace(/^COR_2_/,'COR_02_'):null;
+   if(warehouse){hasWarehouse=true;if(warehouse==='COR_01_COR')hasCoruna=true;}
+   sourcePages.push({page,content,warehouse});
+  }
+  if(hasWarehouse&&!hasCoruna)throw new Error('El PDF contiene almacenes, pero no se ha encontrado COR_01_COR');
+  let currentWarehouse=null;
+  for(const {page,content,warehouse} of sourcePages){
+   if(warehouse)currentWarehouse=warehouse;
+   if(hasWarehouse&&currentWarehouse!=='COR_01_COR')continue;
+   const lines=new Map();
+   for(const item of content.items){
+    if(typeof item.str!=='string'||!item.transform)continue;
+    const y=Math.round(item.transform[5]/3)*3;
+    if(!lines.has(y))lines.set(y,[]);
+    lines.get(y).push(item);
+   }
+   const ordered=[...lines.values()].map(items=>{
+    items.sort((a,b)=>a.transform[4]-b.transform[4]);
+    return {items,text:norm(items.map(x=>x.str).join(' '))};
+   });
+   const total=ordered.find(line=>line.text.includes('TOTALREFERENCIASPROD')||line.text.includes('TOTALREFERENCIAS'));
+   const boundary=ordered.find(line=>line.text.includes('CONTROLENVASES')||line.text==='PALETS'||line.text.includes('CONFORMIDADCARGA'));
+   // En estas hojas, la línea «Total referencias prod.» cierra la mercancía.
+   // Si solo aparece el encabezado de envases, se corta antes de ese encabezado.
+   const marker=total||boundary;
+   const viewport=page.getViewport({scale:1});
+   let bottom=viewport.height;
+   if(marker){
+    const baseline=viewport.height-Math.max(...marker.items.map(item=>item.transform[5]));
+    bottom=baseline+(total?15:-16);
+    if(bottom<80||bottom>viewport.height)throw new Error('Límite de mercancía no válido');
+    found=true;
+   }
+   const scale=1.5, view=page.getViewport({scale});
+   const canvas=document.createElement('canvas');
+   canvas.width=Math.ceil(view.width);canvas.height=Math.ceil(view.height);
+   await page.render({canvasContext:canvas.getContext('2d',{alpha:false}),viewport:view}).promise;
+   const crop=document.createElement('canvas');
+   crop.width=canvas.width;crop.height=Math.max(1,Math.min(canvas.height,Math.ceil(bottom*scale)));
+   const ctx=crop.getContext('2d',{alpha:false});
+   ctx.fillStyle='#fff';ctx.fillRect(0,0,crop.width,crop.height);
+   ctx.drawImage(canvas,0,0,crop.width,crop.height,0,0,crop.width,crop.height);
+   const image=await new Promise((resolve,reject)=>crop.toBlob(b=>b?resolve(b):reject(new Error('No se pudo crear imagen de la mercancía')),'image/png'));
+   images.push(image);canvas.width=canvas.height=0;crop.width=crop.height=0;
+   if(found)break;
+  }
+  if(!found||!images.length)throw new Error('No se ha localizado el final de MERCANCÍA: impresión cancelada para no incluir envases');
+  return images;
+ } finally {await doc.destroy()}
+}
+let imageURLs=[];
+function limpiarVista(contenedor){
+ for(const url of imageURLs)URL.revokeObjectURL(url);
+ imageURLs=[];if(contenedor)contenedor.replaceChildren();
+}
+async function prepararMercancia(id,contenedor,{append=false}={}){
+ const original=await leerOriginal(id);
+ if(!original)throw new Error('No se conserva el PDF de esta carga. Vuelve a importarlo desde Archivos o OneDrive; se mantendrán el operario y los horarios.');
+ const images=await recortarMercancia(original);
+ if(!append)limpiarVista(contenedor);
+ for(let i=0;i<images.length;i++){
+  const url=URL.createObjectURL(images[i]);imageURLs.push(url);
+  const page=document.createElement('div');page.className='original-print-page';
+  const image=document.createElement('img');image.alt='Hoja de carga original: mercancía '+(i+1);
+  page.appendChild(image);contenedor.appendChild(page);
+  await new Promise((resolve,reject)=>{image.onload=resolve;image.onerror=()=>reject(new Error('Error al preparar una página original'));image.src=url});
+ }
+ return images.length;
+}
+
+
+return {guardarOriginal,prepararMercancia,limpiarVista,borrarTodosOriginales,leerOriginal};
+})();
+const {coldLoad,reportHTML}=(()=>{
+function coldLoad(pages, fileName){
+ const text=pages.flatMap(p=>p.items.map(i=>i.text)).join(' ').replace(/\s+/g,' ');
+ const truck=text.match(/Cami[oó]n\s*:\s*([A-Z0-9]+)/i)?.[1]?.toUpperCase()||'';
+ const destination=truck.startsWith('FR')?'FERROL':truck.startsWith('CR')?'CORUÑA':'';
+ const warehouses=[...text.matchAll(/Almac[eé]n\s*:\s*(COR_\d+_[A-Z]+)/gi)].map(m=>m[1].toUpperCase());
+ if(!warehouses.length)throw new Error(fileName+': no se reconoce el almacén; revisar el PDF.');
+ const hasCor=warehouses.includes('COR_01_COR');
+ let data;
+ if(hasCor){data=parseDocumentPages(pages,fileName);if(!data.verified)throw new Error(fileName+': lectura no verificada. '+data.warnings.join('; '));}
+ else data={id:text.match(/LP\d{2}-\d+/)?.[0]||fileName,date:text.match(/Fecha\s*carga:\s*(\d{2}\/\d{2}\/\d{2,4})/i)?.[1]||'',driver:text.match(/Repartidor\s*:\s*(.*?)(?=N[º°o.]?\s*copias|Almac[eé]n|$)/i)?.[1]?.trim()||'',products:[],refs:0,weight:null,actualTotal:0,verified:true,warnings:[]};
+ const date=data.date?.replace(/\/(\d{2})$/,'/20$1')||'';
+ if(!date)throw new Error(fileName+': no se reconoce la fecha de carga.');
+ return {...data,date,truck,destination,hasCor,source:fileName,cold:data.products.filter(p=>p.location==='ZFRIO'&&p.qty>0),barrels:data.products.filter(p=>p.unit==='BARRIL'&&p.qty>0&&p.location!=='ZFRIO')};
+}
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function reportHTML(loads,destination,date){
+ const selected=loads.filter(l=>l.destination===destination&&l.date===date).sort((a,b)=>a.id.localeCompare(b.id));
+ const rows=key=>selected.flatMap(l=>l[key].map(p=>({load:l,...p})));
+ const table=(title,key,barrel=false)=>{
+ const products=rows(key);
+ return `<table class="${barrel?'barrels':''}"><colgroup><col style="width:12%"><col style="width:24%"><col style="width:44%"><col style="width:9%"><col style="width:11%"></colgroup><thead><tr><th colspan="5" class="section">${title}</th></tr><tr><th>N.º carga</th><th>Repartidor</th><th>Descripción</th><th>Cantidad</th><th>Peso real</th></tr></thead><tbody>${products.length?products.map(p=>`<tr><td>${esc(p.load.id)}</td><td>${esc(p.load.driver.replace(/\b(?:DF|CF|BF)\d+\s*/g,''))}</td><td>${esc(p.description)}</td><td class="qty">${p.qty.toLocaleString('es-ES',{maximumFractionDigits:3})}</td><td></td></tr>`).join(''):'<tr><td colspan="5">Sin referencias para este apartado.</td></tr>'}</tbody></table>`;
+ };
+ return `<!doctype html><html lang="es"><meta charset="utf-8"><title>FRIO_${destination}_${date.replaceAll('/','-')}</title><style>@page{size:A4 landscape;margin:10mm}*{box-sizing:border-box}body{font:12px Arial;color:#111;margin:20px}h1{text-align:center;font-size:22px;margin:0 0 8px}.date{text-align:center;font-size:14px;font-weight:bold;margin-bottom:22px}table{border-collapse:collapse;width:100%;table-layout:fixed;margin-bottom:24px}th,td{border:1px solid #222;padding:10px 7px;overflow-wrap:anywhere}th{text-align:left;background:#aaa;color:#fff}th.section{text-align:center;background:#d9ebf6;color:#111}td{height:36px}tbody tr:nth-child(odd){background:#b9e2ed}.barrels th.section{background:#fff1ca}.barrels tbody tr:nth-child(odd){background:#fff8df}.qty{text-align:right}tr{break-inside:avoid}thead{display:table-header-group}.note{font-size:10px;color:#555}button{padding:10px 18px;margin-bottom:20px}@media print{body{margin:0}button{display:none}*{print-color-adjust:exact;-webkit-print-color-adjust:exact}}</style><button onclick="window.print()">Imprimir / Guardar PDF</button><h1>FRÍO ${esc(destination)}</h1><div class="date">Fecha: ${esc(date)}</div>${table('FRÍO REFRIGERADO','cold')}${destination==='FERROL'?table('BARRILES','barrels',true):''}<p class="note">Mercancía de COR_01_COR · ${selected.length} cargas revisadas · Peso real para cumplimentar.</p></html>`;
+}
+
+return {coldLoad,reportHTML};
+})();
+const {planCombined,coldFragment}=(()=>{
+function planCombined(picked){
+ if(!picked.length)throw new Error('Selecciona al menos una carga.');
+ const seen=new Set();
+ for(const r of picked){
+  if(seen.has(r.id))throw new Error('Carga duplicada: '+r.id);seen.add(r.id);
+  if(!Array.isArray(r.cold)||!Array.isArray(r.barrels)||typeof r.hasCor!=='boolean')throw new Error('Reimporta '+r.id+' para incorporar sus datos de frío.');
+  if(!['FERROL','CORUÑA'].includes(r.destination))throw new Error('Elige el destino de '+r.id+' en la lista de destinos.');
+  if(!/^\d{2}\/\d{2}\/\d{4}$/.test(r.date))throw new Error('Fecha de carga no válida: '+r.id);
+  if(r.hasCor&&!r.verified)throw new Error('Revisa la lectura de '+r.id+' antes de generar todo.');
+ }
+ const dates=[...new Set(picked.map(r=>r.date))].sort((a,b)=>a.split('/').reverse().join('').localeCompare(b.split('/').reverse().join('')));
+ return {preparation:picked.filter(r=>r.hasCor),withoutCor:picked.filter(r=>!r.hasCor),reports:dates.flatMap(date=>['CORUÑA','FERROL'].map(destination=>({date,destination,loads:picked.filter(r=>r.date===date&&r.destination===destination)})).filter(r=>r.loads.length))};
+}
+function coldFragment({loads,destination,date}){
+ const doc=reportHTML(loads,destination,date);
+ const content=doc.slice(doc.indexOf('<h1>'),doc.lastIndexOf('</body>')>=0?doc.lastIndexOf('</body>'):doc.lastIndexOf('</html>'));
+ return '<article class="cold-report">'+content+'</article>';
+}
+
+return {planCombined,coldFragment};
+})();
+const {printPrepared}=(()=>{
+// Documento dedicado a impresión: no hereda pantallas fijas ni contenedores ocultos.
+function printDocument(content){
+ if(!content.trim())throw new Error('No hay contenido preparado para imprimir.');
+ return `<!doctype html><html lang="es"><head><meta charset="utf-8"><title>Control de cargas - Preparación y frío</title><style>
+@page{size:A4 portrait;margin:11mm}@page cold{size:A4 landscape;margin:10mm}
+*{box-sizing:border-box;print-color-adjust:exact;-webkit-print-color-adjust:exact}
+html,body{margin:0;padding:0;background:white;color:#111;font:11px Arial,sans-serif}
+.original-print-page{break-after:page;break-inside:avoid}.original-print-page img{display:block;max-width:100%;max-height:269mm;width:auto;height:auto;margin:auto}
+.batch-summary{break-after:page;padding:0;margin:0}.report-paper h1{font-size:18px}.report-paper h2{font-size:13px;margin:14px 0 6px}
+.report-paper table{width:100%;border-collapse:collapse}.report-paper th,.report-paper td{border:1px solid #999;padding:5px;font-size:10px}.report-paper th{background:#d6e3ee}.report-paper tbody tr:nth-child(odd){background:#edf3f8}
+.report-facts,.report-logistics{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin:12px 0}.report-facts b,.report-logistics b{display:block}.report-warning{border:1px solid #a85b10;background:#fff4df;padding:10px}.report-foot{font-size:9px;margin-top:12px}
+.cold-report{page:cold;break-before:page;margin:0;padding:0;font:11px Arial,sans-serif}.cold-report h1{text-align:center;font-size:22px;margin:0 0 8px}.cold-report .date{text-align:center;font-weight:bold;margin-bottom:16px}
+.cold-report table{width:100%;border-collapse:collapse;table-layout:fixed;margin-bottom:20px}.cold-report th,.cold-report td{border:1px solid #222;padding:7px 5px;overflow-wrap:anywhere}.cold-report th{background:#aaa;color:white;text-align:left}.cold-report th.section{text-align:center;color:#111;background:#d9ebf6}.cold-report tbody tr:nth-child(odd){background:#b9e2ed}.cold-report .barrels th.section{background:#fff1ca}.cold-report .barrels tbody tr:nth-child(odd){background:#fff8df}.cold-report .qty{text-align:right}.cold-report .note{font-size:10px}thead{display:table-header-group}tr{break-inside:avoid}
+</style></head><body>${content}</body></html>`;
+}
+async function printPrepared(content,doc=document){
+ const previous=doc.getElementById('dedicatedPrintFrame');if(previous)previous.remove();
+ const frame=doc.createElement('iframe');frame.id='dedicatedPrintFrame';frame.title='Documento completo para imprimir';
+ frame.style.cssText='position:fixed;left:-10000px;top:0;width:1100px;height:800px;border:0';
+ const loaded=new Promise((resolve,reject)=>{frame.onload=resolve;frame.onerror=()=>reject(new Error('No se ha podido abrir el documento de impresión.'));});
+ frame.srcdoc=printDocument(content);doc.body.appendChild(frame);await loaded;
+ const target=frame.contentDocument;
+ await Promise.all([...target.images].map(img=>img.complete?(img.naturalWidth?Promise.resolve():Promise.reject(new Error('Imagen de mercancía no disponible.'))):new Promise((resolve,reject)=>{img.onload=resolve;img.onerror=()=>reject(new Error('No se ha podido cargar una hoja de mercancía.'));})));
+ if(target.fonts?.ready)await target.fonts.ready;
+ frame.contentWindow.focus();frame.contentWindow.print();
+}
+
+return {printPrepared};
+})();
+
+const $=id=>document.getElementById(id);
+$('installedVersion').textContent='PRUEBA INTEGRADA 3';
+const KEY='control_cargas_prueba_integrada_2'+VISURA_SCOPE; // Compatibilidad con los datos de v0.4
+const OPKEY='control_cargas_operarios_prueba_2'+VISURA_SCOPE;
+let loads=[],operators=[],chosen=null,filter='Todas';
+const selectedIds=new Set();
+try{const raw=JSON.parse(localStorage.getItem(KEY)||'[]');loads=Array.isArray(raw)?raw:[]}catch{}
+try{const raw=JSON.parse(localStorage.getItem(OPKEY)||'[]');operators=Array.isArray(raw)?raw:[]}catch{}
+const fmt=n=>Number(n||0).toLocaleString('es-ES',{maximumFractionDigits:2});
+const fmtQty=n=>Number(n||0).toLocaleString('es-ES',{maximumFractionDigits:3});
+const html=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function persist(){try{localStorage.setItem(KEY,JSON.stringify(loads));localStorage.setItem(OPKEY,JSON.stringify(operators));return true}catch(e){notify('No se ha podido guardar: '+e.message,'warn');return false}}
+function notify(msg,t=''){const el=$('feedback');el.className='notice '+t;el.textContent=msg}
+const stateOf=r=>r.status==='En preparación'?'En curso':r.status||'Pendiente';
+const isVerified=r=>r.verified===true&&Array.isArray(r.products)&&(r.products.length>0||r.hasCor===false);
+const firstIncident=r=>Array.isArray(r.warnings)&&r.warnings.length?r.warnings[0]:'El recuento todavía no se ha podido verificar. Reimporta el PDF.';
+function syncSelectionUI(){
+ const btn=$('printSelected');const n=selectedIds.size;
+ btn.disabled=n===0;btn.textContent='Preparación + frío ('+n+')';
+ $('generateAll').disabled=n===0||importing||generating; $('generateAll').textContent='Generar todos los listados ('+n+')';
+ $('coldDestinations').innerHTML=loads.map(r=>'<label class="formlabel">'+html(r.id)+' · '+html(r.truck||'Camión no identificado')+'<select data-destination-id="'+html(r.id)+'"><option value="">Elegir destino</option>'+['CORUÑA','FERROL'].map(d=>'<option '+(r.destination===d?'selected':'')+'>'+d+'</option>').join('')+'</select></label>').join('');
+}
+function dailyScope(){return dailyRows(loads,{day:$('dailyDate').value,operator:$('dailyOperator').value,route:$('dailyRoute').value,plate:$('dailyPlate').value})}
+function matchesState(r){return filter==='Todas'||(filter==='Verificadas'?isVerified(r):filter==='Con incidencias'?!isVerified(r):stateOf(r)===filter)}
+function dailySummary(){
+ for(const [id,key,label] of [['dailyOperator','operator','Todos los operarios'],['dailyRoute','route','Todas las rutas'],['dailyPlate','plate','Todas las matrículas']]){
+  const el=$(id),value=el.value,options=[...new Set(loads.map(r=>r[key]).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'es'));
+  el.innerHTML='<option value="">'+label+'</option>'+options.map(v=>'<option value="'+html(v)+'">'+html(v)+'</option>').join('');if(options.includes(value))el.value=value;
+ }
+ const rows=dailyScope(),totals=counts(rows);
+ $('dailyCounts').innerHTML=[['Total',rows.length],...Object.entries(totals)].map(([label,n])=>'<div class="d-cell"><small>'+html(label)+'</small><strong>'+n+'</strong></div>').join('');
+ $('dailyNote').textContent=loads.filter(r=>!dayOf(r)).length+' cargas sin fecha reconocida (visibles en Todo el historial). '+loads.filter(r=>!r.route).length+' sin ruta indicada.';
+}
+for(const id of ['dailyDate','dailyOperator','dailyRoute','dailyPlate'])$(id).addEventListener('change',list);
+$('dailyToday').addEventListener('click',()=>{const d=new Date();$('dailyDate').value=new Date(d-d.getTimezoneOffset()*60000).toISOString().slice(0,10);filter='Todas';list()});
+$('dailyReset').addEventListener('click',()=>{for(const id of ['dailyDate','dailyOperator','dailyRoute','dailyPlate'])$(id).value='';filter='Todas';list()});
+const today=new Date();$('dailyDate').value=new Date(today-today.getTimezoneOffset()*60000).toISOString().slice(0,10);
+function list(){
+ for(const id of selectedIds)if(!loads.some(r=>r.id===id))selectedIds.delete(id);
+ loads.sort((a,b)=>(Number(b.weight)||0)-(Number(a.weight)||0));
+ $('nLoads').textContent=loads.length;
+ $('nRefs').textContent=loads.reduce((n,l)=>n+Number(l.refs||0),0);
+ $('nWeight').textContent=fmt(loads.reduce((n,l)=>n+Number(l.weight||0),0));
+ const verified=loads.filter(isVerified).length;
+ const issues=loads.length-verified;
+ $('validationOverview').textContent=verified+' cargas verificadas · '+issues+' con incidencias. '+loads.filter(r=>r.hasCor===false).length+' sin mercancía COR_01_COR.';
+ dailySummary();
+ const visible=dailyScope().filter(matchesState);
+ $('loadList').innerHTML=visible.map(r=>{
+  const status=stateOf(r);
+  const valid=isVerified(r);
+  return '<div class="load-entry"><label class="load-check" title="Marcar para imprimir"><input type="checkbox" data-select-id="'+html(r.id)+'" aria-label="Imprimir carga '+html(r.id)+'" '+(selectedIds.has(r.id)?'checked':'')+'></label><div class="list-btn" role="button" tabindex="0" data-load="'+html(r.id)+'" aria-label="Abrir carga '+html(r.id)+'">'+
+   '<div class="line"><span class="name">'+html(r.id)+'</span><span class="kg">'+fmt(r.weight)+' kg</span></div>'+
+   '<div class="mini">'+html(r.driver||'Repartidor pendiente')+' · '+html(r.plate||'Sin matrícula')+'</div>'+
+   '<div class="footrow"><span style="font-size:13px">'+(r.refs==null?'Referencias sin verificar':r.refs+' referencias')+'</span><span class="tag '+(status==='En curso'?'running':status==='Finalizada'?'done':'')+'">'+html(status)+'</span></div>'+
+   (valid?'<div class="validation-line"><span class="ok">✓ Verificada · Lista para imprimir</span></div>':'<div class="validation-line"><span class="error">⚠ Con incidencias · Imprimible con aviso</span></div><div class="validation-message">'+html(firstIncident(r))+'</div>')+
+   '<div class="card-actions"><button type="button" class="btn light" data-action="report" data-id="'+html(r.id)+'">▤ Generar listado'+(valid?'':' (provisional)')+'</button>'+
+   (status==='En curso'?'<button type="button" class="btn" data-action="finish" data-id="'+html(r.id)+'">✓ Finalizar</button>':'')+
+   '</div></div></div>';
+ }).join('')||'<p class="muted">No hay cargas para mostrar.</p>';
+ document.querySelectorAll('[data-filter]').forEach(b=>b.classList.toggle('active',b.dataset.filter===filter));
+ syncSelectionUI();
+}
+$('loadList').addEventListener('change',e=>{
+ const el=e.target.closest('input[data-select-id]');
+ if(!el)return;
+ if(el.checked)selectedIds.add(el.dataset.selectId);else selectedIds.delete(el.dataset.selectId);
+ syncSelectionUI();
+});
+$('selectAll').addEventListener('click',()=>{for(const r of loads)selectedIds.add(r.id);list()});
+$('selectVisible').addEventListener('click',()=>{
+ for(const r of dailyScope().filter(matchesState))selectedIds.add(r.id);
+ list();
+});
+$('clearSelection').addEventListener('click',()=>{selectedIds.clear();list()});
+$('loadList').addEventListener('click',e=>{
+ const action=e.target.closest('[data-action]');
+ if(action){const r=loads.find(x=>x.id===action.dataset.id);if(!r)return;if(action.dataset.action==='report')openReport(r);else if(action.dataset.action==='finish')quickFinish(r);return;}
+ const card=e.target.closest('[data-load]');if(card)openDetail(card.dataset.load);
+});
+$('loadList').addEventListener('keydown',e=>{if(e.target.matches('[data-load]')&&(e.key==='Enter'||e.key===' ')){e.preventDefault();openDetail(e.target.dataset.load)}});
+
+const localTime=v=>{if(!v)return '';const d=new Date(v);if(!Number.isFinite(d.getTime()))return '';return new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,16)};
+const elapsed=(a,b)=>{if(!a||!b)return '';const minutes=Math.round((new Date(b)-new Date(a))/60000);return minutes>=0?' · Duración: '+Math.floor(minutes/60)+' h '+String(minutes%60).padStart(2,'0')+' min':''};
+function openDetail(id){chosen=loads.find(r=>r.id===id);if(!chosen)return;
+ $('loadRoute').value=chosen.route||'';
+ $('detailId').textContent=chosen.id;$('detailDriver').textContent=chosen.driver||'Repartidor no identificado';
+ const values=[['Peso'+(chosen.mixedWarehouse?' del vehículo (global)':''),chosen.weight==null?'Sin verificar':fmt(chosen.weight)+' kg'],['Referencias COR 1',chosen.refs??'Sin verificar'],['Almacén',chosen.warehouse||'No indicado'],['Visitas',chosen.visits??'Sin dato'],['Matrícula',chosen.plate||'Sin dato'],['Palés grandes',Number.isInteger(chosen.palletsLarge)?chosen.palletsLarge:'No indicado'],['Palés pequeños',Number.isInteger(chosen.palletsSmall)?chosen.palletsSmall:'No indicado'],['Ruta',chosen.route||'Sin dato'],['Fecha carga',chosen.date||'Sin dato'],['Versiones importadas',chosen.importHistory?.length||1],['Archivo PDF',chosen.source||'No consta']];
+ $('detailData').innerHTML=values.map(([label,v])=>'<div class="d-cell"><small>'+html(label)+'</small><strong>'+html(v)+'</strong></div>').join('');
+ const p=chosen.products||[];let verified=chosen.verified===true;
+ if(verified){
+  $('verification').innerHTML='<div class="help verified">✓ Comprobado con el PDF: '+p.length+' referencias y '+fmtQty(chosen.actualTotal)+' (suma de cantidades de diversos formatos).</div>';
+  const summary=summarize(p);
+  $('formats').innerHTML='<h4>Unidades por formato</h4>'+Object.entries(summary.units).sort().map(([name,q])=>'<div class="row-stat"><span>'+html(name)+'</span><strong>'+fmtQty(q)+'</strong></div>').join('');
+  $('aisles').innerHTML='<h4>Unidades por pasillo</h4>'+Object.entries(summary.aisles).sort((a,b)=>a[0].localeCompare(b[0])).map(([aisle,units])=>'<div class="row-stat"><span>'+html(aisle)+'</span><strong>'+Object.entries(units).map(([name,q])=>fmtQty(q)+' '+html(name.toLowerCase())).join(' · ')+'</strong></div>').join('');
+  $('unlocated').innerHTML=summary.unlocated.length?'<div class="unlocated"><b>Referencias sin ubicación</b>'+summary.unlocated.map(v=>'<p>'+html(v.sku)+' · '+html(v.description)+' · '+fmtQty(v.qty)+' '+html(v.unit)+'</p>').join('')+'</div>':'';
+ }else{
+  const warning=chosen.products?.length?chosen.warnings?.join('. ')||'No se pudo verificar la extracción':'Vuelve a importar el PDF para obtener el desglose completo de mercancía.';
+  $('verification').innerHTML='<div class="help">⚠ Recuento pendiente de verificar. '+html(warning)+'</div>';$('formats').innerHTML='';$('aisles').innerHTML='';$('unlocated').innerHTML='';
+ }
+ const names=[...new Set([...operators,chosen.operator||''].filter(Boolean))];
+ $('operator').innerHTML='<option value="">Seleccionar operario…</option>'+names.map(n=>'<option value="'+html(n)+'">'+html(n)+'</option>').join('');$('operator').value=chosen.operator||'';
+ $('editStart').value=localTime(chosen.started);$('editEnd').value=localTime(chosen.finished);
+ $('timeStatus').textContent='Estado: '+stateOf(chosen)+(chosen.started?' · Inicio: '+new Date(chosen.started).toLocaleString('es-ES'):'')+(chosen.finished?' · Fin: '+new Date(chosen.finished).toLocaleString('es-ES'):'')+elapsed(chosen.started,chosen.finished)+(chosen.automaticEnd?' · Automático: '+chosen.automaticEndReason:'');
+ $('detail').classList.add('show');
+}
+$('saveRoute').addEventListener('click',()=>{if(!chosen)return;const previous=chosen.route;chosen.route=$('loadRoute').value.trim();if(!persist())chosen.route=previous;list();openDetail(chosen.id)});
+$('back').addEventListener('click',()=>{$('detail').classList.remove('show');list()});
+$('filters').addEventListener('click',e=>{const b=e.target.closest('[data-filter]');if(!b)return;filter=b.dataset.filter;list()});
+$('operator').addEventListener('change',()=>{if(chosen){chosen.operator=$('operator').value;persist()}});
+$('addOperator').addEventListener('click',()=>{if(!chosen)return;const name=$('newOperator').value.trim();if(!name)return alert('Indica un nombre');if(!operators.some(n=>n.toLowerCase()===name.toLowerCase()))operators.push(name);chosen.operator=name;persist();$('newOperator').value='';openDetail(chosen.id)});
+function finalizeLoad(r,stamp,{automatic=false,reason=''}={}){
+ if(!r||!r.started||r.finished)return false;
+ r.finished=stamp;
+ r.status='Finalizada';
+ if(automatic){r.automaticEnd=true;r.automaticEndReason=reason;}
+ return true;
+}
+function quickFinish(r){
+ if(!r||stateOf(r)!=='En curso'||r.finished)return alert('Esta carga no está en curso.');
+ if(!r.started)return alert('Esta carga no tiene hora de inicio registrada.');
+ if(!confirm('¿Finalizar la carga '+r.id+' ahora?'))return;
+ finalizeLoad(r,new Date().toISOString());persist();list();
+ if(chosen?.id===r.id&&$('detail').classList.contains('show'))openDetail(r.id);
+ notify('Carga '+r.id+' finalizada correctamente.','ok');
+}
+$('start').addEventListener('click',()=>{
+ if(!chosen)return;
+ const operator=$('operator').value.trim();
+ if(!operator)return alert('Selecciona un operario antes de comenzar');
+ if(chosen.finished)return alert('La carga ya está finalizada. Puedes corregir sus horarios.');
+ if(chosen.started&&stateOf(chosen)==='En curso')return alert('Esta carga ya está en curso.');
+ const now=new Date().toISOString();
+ const other=loads.filter(r=>r.id!==chosen.id&&r.started&&!r.finished&&stateOf(r)==='En curso'&&String(r.operator||'').trim().toLocaleLowerCase('es-ES')===operator.toLocaleLowerCase('es-ES'));
+ // El inicio de una nueva carga cierra las otras del mismo operario con el mismo instante exacto.
+ for(const r of other)finalizeLoad(r,now,{automatic:true,reason:'Inicio de '+chosen.id});
+ chosen.operator=operator;chosen.started=now;chosen.finished=null;chosen.status='En curso';
+ persist();list();openDetail(chosen.id);
+ if(other.length)alert('Se ha finalizado automáticamente '+other.map(r=>r.id).join(', ')+' al comenzar '+chosen.id+'.');
+});
+$('finish').addEventListener('click',()=>{
+ if(!chosen)return;if(!chosen.started)return alert('Inicia primero la preparación');
+ if(chosen.finished)return alert('Ya consta como finalizada');
+ finalizeLoad(chosen,new Date().toISOString());persist();list();openDetail(chosen.id);
+});
+$('saveHours').addEventListener('click',()=>{if(!chosen)return;let a=$('editStart').value,b=$('editEnd').value;if(b&&!a)return alert('Introduce primero el inicio');if(a&&b&&new Date(b)<new Date(a))return alert('La hora final no puede ser anterior al inicio');chosen.started=a?new Date(a).toISOString():null;chosen.finished=b?new Date(b).toISOString():null;chosen.status=chosen.finished?'Finalizada':chosen.started?'En curso':'Pendiente';chosen.automaticEnd=false;chosen.automaticEndReason='';chosen.manualTimeEdited=true;persist();list();openDetail(chosen.id)});
+
+// ESTADÍSTICAS: cada carga corresponde a un único preparador.
+// Nunca se reparten kg, referencias ni minutos entre distintos operarios.
+const toLocalDate=d=>{
+ const y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,'0'),day=String(d.getDate()).padStart(2,'0');
+ return y+'-'+m+'-'+day;
+};
+const hoursText=min=>{const m=Math.max(0,Math.round(min));return Math.floor(m/60)+' h '+String(m%60).padStart(2,'0')+' min'};
+const statsNumber=n=>Number(n||0).toLocaleString('es-ES',{maximumFractionDigits:2});
+let currentStatsRows=[];
+function statsPeriodBounds(){
+ const kind=$('statsPeriod').value,now=new Date(),today=toLocalDate(now);
+ if(kind==='all')return {from:'',to:''};
+ if(kind==='month')return {from:today.slice(0,7)+'-01',to:today};
+ if(kind==='week'){const since=new Date(now.getFullYear(),now.getMonth(),now.getDate()-6);return {from:toLocalDate(since),to:today}}
+ return {from:$('statsFrom').value,to:$('statsTo').value};
+}
+function collectStatsRows(){
+ const {from,to}=statsPeriodBounds(),op=$('statsOperator').value;
+ const rows=[];
+ for(const r of loads){
+  if(!r.operator||!r.started||!r.finished)continue;
+  const start=new Date(r.started),end=new Date(r.finished);
+  if(!Number.isFinite(start.getTime())||!Number.isFinite(end.getTime())||end<=start)continue;
+  const finishedDay=toLocalDate(end);
+  if((from&&finishedDay<from)||(to&&finishedDay>to)||(op&&r.operator!==op))continue;
+  const hours=(end-start)/3600000;
+  const refs=Number(r.refs);
+  const referenceCount=Number.isFinite(refs)&&refs>=0?refs:0;
+  const kg=Number(r.weight);
+  const weightEligible=!r.mixedWarehouse&&r.weight!=null&&Number.isFinite(kg)&&kg>=0;
+  rows.push({
+   id:r.id,operator:r.operator,start,end,day:finishedDay,hours,refs:referenceCount,
+   refsKnown:r.refs!=null,kg:weightEligible?kg:null,mixed:!!r.mixedWarehouse,
+   verified:isVerified(r),automatic:!!r.automaticEnd,manual:!!r.manualTimeEdited
+  });
+ }
+ rows.sort((a,b)=>b.end-a.end);
+ return rows;
+}
+function statsSummary(rows){
+ const by=new Map();
+ for(const row of rows){
+  const key=row.operator;
+  if(!by.has(key))by.set(key,{name:key,count:0,hours:0,refs:0,refsHours:0,kg:0,kgHours:0,kgLoads:0,mixed:0,issues:0,automatic:0,manual:0});
+  const a=by.get(key);a.count++;a.hours+=row.hours;
+  if(row.refsKnown){a.refs+=row.refs;a.refsHours+=row.hours}
+  if(row.kg!==null){a.kg+=row.kg;a.kgHours+=row.hours;a.kgLoads++}
+  if(row.mixed)a.mixed++;
+  if(!row.verified)a.issues++;
+  if(row.automatic)a.automatic++;
+  if(row.manual)a.manual++;
+ }
+ return [...by.values()].sort((a,b)=>a.name.localeCompare(b.name,'es'));
+}
+function renderStats(){
+ const previous=$('statsOperator').value;
+ const operatorNames=[...new Set([...operators,...loads.map(x=>x.operator)].filter(Boolean))].sort((a,b)=>a.localeCompare(b,'es'));
+ $('statsOperator').innerHTML='<option value="">Todos los operarios</option>'+operatorNames.map(name=>'<option value="'+html(name)+'">'+html(name)+'</option>').join('');
+ $('statsOperator').value=operatorNames.includes(previous)?previous:'';
+ const custom=$('statsPeriod').value==='custom';
+ $('statsFromWrap').hidden=!custom;
+ $('statsToWrap').hidden=!custom;
+ const rows=collectStatsRows(),groups=statsSummary(rows),totalHours=rows.reduce((t,r)=>t+r.hours,0);
+ const refsRows=rows.filter(r=>r.refsKnown),refs=refsRows.reduce((t,r)=>t+r.refs,0),refsHours=refsRows.reduce((t,r)=>t+r.hours,0);
+ const kgRows=rows.filter(r=>r.kg!==null),kg=kgRows.reduce((t,r)=>t+r.kg,0),kgHours=kgRows.reduce((t,r)=>t+r.hours,0);
+ currentStatsRows=rows;
+ const {from,to}=statsPeriodBounds();
+ const periodName=$('statsPeriod').selectedOptions[0]?.textContent||'Periodo';
+ $('statsPeriodCaption').textContent='Periodo: '+periodName+(from||to?' ('+(from||'sin inicio')+' a '+(to||'sin fin')+')':'')+' · Preparador: '+($('statsOperator').value||'Todos')+' · Emitido: '+new Date().toLocaleString('es-ES');
+ const blocks=[
+  [rows.length,'Cargas finalizadas'],[hoursText(totalHours*60),'Horas registradas'],
+  [statsNumber(refs),'Referencias detectadas'],[kgRows.length?statsNumber(kg):'—','Kg atribuibles'],
+  [refsHours?statsNumber(refs/refsHours):'—','Referencias/hora'],
+  [kgHours?statsNumber(kg/kgHours):'—','Kg/hora (no mixtas)'],
+  [rows.length?hoursText(totalHours*60/rows.length):'—','Tiempo medio/carga'],
+  [rows.filter(r=>r.mixed).length,'Cargas mixtas sin kg/h']
+ ];
+ $('statsMetrics').innerHTML=blocks.map(([v,label])=>'<div class="stats-metric"><strong>'+html(v)+'</strong><small>'+html(label)+'</small></div>').join('');
+ const pending=loads.filter(r=>!r.finished||!r.started).length;
+ const mixedCount=rows.filter(r=>r.mixed).length;
+ const incidentCount=rows.filter(r=>!r.verified).length;
+ const autos=rows.filter(r=>r.automatic).length;
+ const manual=rows.filter(r=>r.manual).length;
+ $('statsNote').textContent='Se incluyen únicamente cargas con preparador, inicio y fin válidos, según su fecha de finalización. '+pending+' cargas sin horario completo fuera del informe. '+mixedCount+' cargas mixtas excluidas del cálculo de kg/h. '+incidentCount+' cargas con incidencias de lectura. '+autos+' finalizaciones automáticas y '+manual+' correcciones manuales registradas desde esta versión. Los kg/h se calculan solo sobre el tiempo de las cargas con peso atribuible.';
+ if(!groups.length)$('statsByOperator').innerHTML='<div class="stats-empty">Todavía no hay cargas finalizadas con tiempos válidos en el periodo seleccionado.</div>';
+ else $('statsByOperator').innerHTML='<table class="stats-table"><thead><tr><th>Preparador</th><th>Cargas</th><th>Tiempo</th><th>Ref.</th><th>Ref./h</th><th>Kg</th><th>Kg/h</th><th>Mixtas</th><th>Incid.</th></tr></thead><tbody>'+groups.map(g=>'<tr><td>'+html(g.name)+'</td><td>'+g.count+'</td><td>'+hoursText(g.hours*60)+'</td><td>'+statsNumber(g.refs)+'</td><td>'+(g.refsHours?statsNumber(g.refs/g.refsHours):'—')+'</td><td>'+(g.kgLoads?statsNumber(g.kg):'—')+'</td><td>'+(g.kgHours?statsNumber(g.kg/g.kgHours):'—')+'</td><td>'+g.mixed+'</td><td>'+g.issues+'</td></tr>').join('')+'</tbody></table>';
+ if(!rows.length)$('statsDetail').innerHTML='<div class="stats-empty">Sin registros para este filtro.</div>';
+ else $('statsDetail').innerHTML='<table class="stats-table"><thead><tr><th>Fecha fin</th><th>Preparador</th><th>Carga</th><th>Duración</th><th>Ref.</th><th>Kg</th><th>Comprobación</th><th>Fin</th></tr></thead><tbody>'+rows.map(r=>'<tr><td>'+html(r.end.toLocaleDateString('es-ES'))+'</td><td>'+html(r.operator)+'</td><td>'+html(r.id)+'</td><td>'+hoursText(r.hours*60)+'</td><td>'+(r.refsKnown?statsNumber(r.refs):'—')+'</td><td>'+(r.mixed?'Global*':r.kg===null?'—':statsNumber(r.kg))+'</td><td>'+(r.verified?'Verificada':'Incidencia')+'</td><td>'+(r.automatic?'Automático':r.manual?'Corregido':'Registrado')+'</td></tr>').join('')+'</tbody></table>';
+}
+$('openStats').addEventListener('click',()=>{renderStats();$('statsScreen').classList.add('show');$('statsScreen').scrollTop=0});
+$('closeStats').addEventListener('click',()=>{$('statsScreen').classList.remove('show');document.body.classList.remove('stats-print')});
+for(const name of ['statsPeriod','statsOperator','statsFrom','statsTo'])$(name).addEventListener('change',renderStats);
+let pdfEnginePromise;
+function loadPdfEngine(){
+ if(window.jspdf?.jsPDF)return Promise.resolve(window.jspdf.jsPDF);
+ if(!pdfEnginePromise)pdfEnginePromise=new Promise((resolve,reject)=>{
+  const script=document.createElement('script');
+  script.src='https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js';
+  script.onload=()=>window.jspdf?.jsPDF?resolve(window.jspdf.jsPDF):reject(new Error('Generador PDF no disponible'));
+  script.onerror=()=>reject(new Error('No se pudo cargar el generador PDF. Comprueba la conexión.'));
+  document.head.appendChild(script);
+ }).catch(e=>{pdfEnginePromise=null;throw e});
+ return pdfEnginePromise;
+}
+function buildStatisticsPdf(jsPDF){
+ // Documento A4 apaisado, con tablas reales y tamaño de letra apto para impresión.
+ // Utiliza exactamente las filas y filtros que ya muestra Estadísticas.
+ const doc=new jsPDF({orientation:'landscape',unit:'mm',format:'a4'});
+ const W=297,H=210,M=13,CONTENT=W-M*2,BOTTOM=H-16;
+ const navy=[25,55,84],ink=[28,48,67],sub=[91,111,130];
+ const pale=[233,240,246],stripe=[247,250,252],border=[207,220,231];
+ let y=15;
+ const setColor=a=>doc.setTextColor(...a);
+ const text=(value,x,yy,size=9,bold=false,align='left')=>{
+  doc.setFont('helvetica',bold?'bold':'normal');doc.setFontSize(size);setColor(ink);
+  doc.text(String(value),x,yy,{align});
+ };
+ const freshPage=()=>{
+  doc.addPage();y=16;
+  text('CONTROL DE CARGAS MÓVIL  /  ESTADÍSTICAS',M,y,10,true);
+  doc.setDrawColor(...border);doc.line(M,y+3,W-M,y+3);y+=13;
+ };
+ const ensure=(height)=>{
+  if(y+height>BOTTOM)freshPage();
+ };
+ const paragraph=(value,size=9)=>{
+  doc.setFont('helvetica','normal');doc.setFontSize(size);
+  const lines=doc.splitTextToSize(String(value),CONTENT);
+  const dy=size*0.42+1.1;
+  for(const line of lines){ensure(dy+1);text(line,M,y+dy-1,size);y+=dy}
+  y+=3;
+ };
+ const heading=(name)=>{
+  ensure(15);y+=5;text(name,M,y,12,true);y+=5;
+  doc.setDrawColor(...border);doc.line(M,y,W-M,y);y+=4;
+ };
+ const table=(rootId,widths)=>{
+  const root=$(rootId),rows=[...root.querySelectorAll('tr')];
+  if(rows.length<2){paragraph(root.textContent.trim()||'Sin registros');return}
+  const values=tr=>[...tr.querySelectorAll('th,td')].map(c=>c.textContent.trim().replace(/\s+/g,' '));
+  const headers=values(rows[0]),entries=rows.slice(1).map(values);
+  const total=widths.reduce((a,b)=>a+b,0);
+  if(Math.abs(total-CONTENT)>.1)throw new Error('Anchura de tabla inválida');
+  const tableHeader=()=>{
+   const height=11;doc.setFillColor(...pale);doc.rect(M,y,CONTENT,height,'F');
+   let x=M;headers.forEach((v,j)=>{
+    doc.setDrawColor(...border);doc.rect(x,y,widths[j],height,'S');
+    const right=j>0;doc.setFont('helvetica','bold');doc.setFontSize(8.8);
+    const lines=doc.splitTextToSize(v,widths[j]-4);
+    lines.slice(0,2).forEach((line,k)=>text(line,right?x+widths[j]-2:x+2,y+4.5+k*3.6,8.8,true,right?'right':'left'));
+    x+=widths[j];
+   });y+=height;
+  };
+  ensure(11);tableHeader();
+  entries.forEach((cells,i)=>{
+   doc.setFont('helvetica','normal');doc.setFontSize(9);
+   const allLines=cells.map((c,j)=>doc.splitTextToSize(c,widths[j]-4));
+   const maxLines=Math.max(1,...allLines.map(a=>a.length));
+   const rowHeight=Math.max(11,5+maxLines*4.1);
+   if(y+rowHeight>BOTTOM){freshPage();tableHeader()}
+   if(i%2===0){doc.setFillColor(...stripe);doc.rect(M,y,CONTENT,rowHeight,'F')}
+   let x=M;
+   allLines.forEach((lines,j)=>{
+    doc.setDrawColor(...border);doc.rect(x,y,widths[j],rowHeight,'S');
+    lines.forEach((str,k)=>{
+     const xx=j===0?x+2:x+widths[j]-2;
+     text(str,xx,y+5+k*4.1,9,false,j===0?'left':'right');
+    });
+    x+=widths[j];
+   });y+=rowHeight;
+  });
+  y+=3;
+ };
+ setColor(navy);
+ doc.setFont('helvetica','bold');doc.setFontSize(17);
+ doc.text('ESTADÍSTICAS DE PREPARACIÓN',M,y);y+=9;
+ paragraph($('statsPeriodCaption').textContent,9);
+ heading('Resumen');
+ const metrics=[...$('statsMetrics').querySelectorAll('.stats-metric')].map(el=>({
+  label:el.querySelector('small')?.textContent||'',
+  value:el.querySelector('strong')?.textContent||''
+ }));
+ const gap=3,cardW=(CONTENT-gap*3)/4,cardH=22;
+ for(let i=0;i<metrics.length;i+=4){
+  ensure(cardH+4);
+  metrics.slice(i,i+4).forEach((metric,j)=>{
+   const x=M+j*(cardW+gap);
+   doc.setFillColor(...pale);doc.roundedRect(x,y,cardW,cardH,2,2,'F');
+   text(metric.value,x+3,y+9,14,true);
+   doc.setFont('helvetica','normal');doc.setFontSize(8);
+   const labels=doc.splitTextToSize(metric.label,cardW-6);
+   labels.slice(0,2).forEach((label,k)=>{doc.setTextColor(...sub);doc.text(label,x+3,y+14+k*3.3)});
+  });
+  y+=cardH+3;
+ }
+ heading('Comparativa de preparadores');
+ table('statsByOperator',[48,19,28,18,26,36,36,29,31]);
+ // Separar el detalle en otra página para que sea legible en papel sin reducir la fuente.
+ freshPage();
+ heading('Detalle de las cargas finalizadas');
+ table('statsDetail',[29,48,36,32,21,36,37,32]);
+ const pages=doc.getNumberOfPages();
+ for(let page=1;page<=pages;page++){
+  doc.setPage(page);doc.setDrawColor(...border);
+  doc.line(M,H-12,W-M,H-12);
+  doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(...sub);
+  doc.text('Control de Cargas Móvil  ·  Estadísticas de preparación',M,H-8);
+  doc.text(page+' / '+pages,W-M,H-8,{align:'right'});
+ }
+ return doc;
+}
+$('statsPrint').addEventListener('click',async()=>{
+ const button=$('statsPrint');if(button.disabled)return;
+ renderStats();
+ const viewer=window.open('','_blank');
+ button.disabled=true;button.textContent='Generando PDF…';
+ try{
+  const jsPDF=await loadPdfEngine(),doc=buildStatisticsPdf(jsPDF),blob=doc.output('blob');
+  const url=URL.createObjectURL(blob);
+  if(viewer&&!viewer.closed)viewer.location.href=url;
+  else{
+   const link=document.createElement('a');link.href=url;
+   link.download='Estadisticas_Control_Cargas_'+toLocalDate(new Date())+'.pdf';
+   document.body.appendChild(link);link.click();link.remove();
+  }
+  setTimeout(()=>URL.revokeObjectURL(url),120000);
+ }catch(error){if(viewer&&!viewer.closed)viewer.close();alert('No se ha podido generar el PDF: '+(error.message||error))}
+ finally{button.disabled=false;button.textContent='▤ Generar PDF'}
+});
+window.addEventListener('afterprint',()=>document.body.classList.remove('stats-print'));
+$('statsExport').addEventListener('click',()=>{
+ renderStats();
+ if(!currentStatsRows.length)return alert('No hay cargas finalizadas que exportar con estos filtros.');
+ const safe=v=>{const text=String(v??'');const escaped=/^[=+\-@\t\r]/.test(text)?"'"+text:text;return '"'+escaped.replace(/"/g,'""')+'"'};
+ const rows=[['Fecha fin','Operario','Nº carga','Inicio','Fin','Minutos','Referencias','Peso kg atribuible','Peso mixto global','Verificación','Finalización automática','Horario corregido'],...currentStatsRows.map(r=>[r.end.toLocaleDateString('es-ES'),r.operator,r.id,r.start.toLocaleString('es-ES'),r.end.toLocaleString('es-ES'),Math.round(r.hours*60),r.refsKnown?r.refs:'',r.kg===null?'':r.kg.toFixed(2).replace('.',','),r.mixed?'Sí':'No',r.verified?'Verificada':'Con incidencias',r.automatic?'Sí':'No',r.manual?'Sí':'No'])];
+ const csv='\ufeff'+rows.map(row=>row.map(safe).join(';')).join('\r\n');
+ const url=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8;'}));
+ const a=document.createElement('a');a.href=url;a.download='Rendimiento_preparadores_'+toLocalDate(new Date())+'.csv';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
+});
+
+const reportOrder=(a,b)=>{
+ const rank=k=>k==='SIN UBICACIÓN'?200:k==='FRÍO'?199:((k||'').charCodeAt(0)||100);
+ return rank(a)-rank(b);
+};
+function buildReport(r,target=$('reportPaper')){
+ const summary=summarize(r.products||[]);
+ const formats=Object.keys(summary.units).filter(k=>summary.units[k]>0).sort();
+ const aisles=Object.keys(summary.aisles).sort(reportOrder);
+ const cols=formats.map(k=>'<th>'+html(k)+'</th>').join('');
+ const rows=aisles.map(aisle=>'<tr class="aisle-row"><td class="aisle-code">'+html(aisle)+'</td>'+formats.map(k=>'<td>'+(summary.aisles[aisle][k]>0?fmtQty(summary.aisles[aisle][k]):'')+'</td>').join('')+'</tr>').join('');
+ const totals='<tr class="aisle-total"><th>TOTAL</th>'+formats.map(k=>'<th>'+fmtQty(summary.units[k])+'</th>').join('')+'</tr>';
+ const miss=summary.unlocated.filter(p=>p.qty>0);
+ const facts=[['Nº de carga',r.id],['Peso'+(r.mixedWarehouse?' global vehículo':''),r.weight==null?'Pendiente':fmt(r.weight)+' kg'],['Referencias COR 1',r.refs],['Almacén',r.warehouse||'No indicado'],['Fecha de carga',r.date||'Sin dato'],['Repartidor',r.driver||'Sin dato']];
+ const palletLabel=Number.isInteger(r.palletsLarge)?r.palletsLarge+' grandes'+(Number.isInteger(r.palletsSmall)?' · '+r.palletsSmall+' pequeños':''):'No indicado';
+ target.innerHTML='<h1>LISTADO DE PREPARACIÓN POR PASILLOS'+(isVerified(r)?'':' · PROVISIONAL')+'</h1><div class="sub">Control de Cargas · Exclusivamente MERCANCÍA de COR_01_COR · Sin líneas de envases ni palés</div>'+
+  '<div class="report-logistics"><div class="report-logistics-cell"><small>MATRÍCULA</small><b>'+html(r.plate||'No indicada')+'</b></div><div class="report-logistics-cell"><small>PALÉS DE LA HOJA DE CARGA</small><b>'+html(palletLabel)+'</b></div></div>'+
+  (isVerified(r)?'':'<div class="report-warning"><b>⚠ CARGA CON INCIDENCIAS · RESUMEN NO VERIFICADO</b><p>La hoja original de MERCANCÍA es la referencia para preparar esta carga. El desglose por pasillos puede contener errores: comprobar las cantidades manualmente.</p><ul>'+((Array.isArray(r.warnings)&&r.warnings.length?r.warnings:['Recuento sin verificar: comprobar con la hoja original']).map(w=>'<li>'+html(w)+'</li>').join(''))+'</ul></div>')+
+  '<div class="report-facts">'+facts.map(([label,value])=>'<div><small>'+html(label)+'</small><b>'+html(value)+'</b></div>').join('')+'</div>'+
+  '<h2>RESUMEN POR TIPO DE UNIDAD</h2><table><thead><tr><th>Formato</th><th>Cantidad</th></tr></thead><tbody>'+formats.map(k=>'<tr><td>'+html(k)+'</td><td>'+fmtQty(summary.units[k])+'</td></tr>').join('')+'</tbody></table>'+
+  '<h2>PREPARACIÓN POR PASILLOS</h2><table class="aisle-table"><thead><tr><th>Pasillo</th>'+cols+'</tr></thead><tbody>'+rows+totals+'</tbody></table>'+
+  (miss.length?'<div class="report-warning"><b>SIN UBICACIÓN - localizar antes de preparar</b>'+miss.map(p=>'<p class="report-missing">'+html(p.sku)+' · '+html(p.description||'Sin descripción')+' · '+p.qty+' '+html(p.unit)+'</p>').join('')+'</div>':'')+
+  '<div class="report-foot">'+r.products.length+' referencias'+(isVerified(r)?' verificadas':' detectadas (SIN VERIFICAR)')+' · '+fmtQty(r.actualTotal)+' (suma '+(isVerified(r)?'de formatos distintos':'PROVISIONAL, NO CONFIRMADA')+'). Documento generado '+new Date().toLocaleString('es-ES')+'.</div>';
+}
+let reportId=null,reportMode='single';
+function openReport(r){
+ if(!r)return;
+ if(!isVerified(r))notify('La carga '+r.id+' tiene incidencias. Su impresión incluirá el original y un resumen marcado PROVISIONAL.','warn');
+ $('printContents').textContent='Preparación individual de '+r.id;reportId=r.id;reportMode='single';$('reportScreen').classList.remove('batch-mode');limpiarVista($('originalPages'));buildReport(r);$('reportScreen').classList.add('show');
+ $('reportScreen').scrollTop=0;
+}
+
+async function printSelectedLoads(){
+ const btn=$('printSelected');if(btn.disabled)return;
+ const picked=loads.filter(r=>selectedIds.has(r.id)&&r.hasCor!==false);if(!picked.length){notify('No hay mercancía COR_01_COR en las cargas seleccionadas.','warn');return;}
+ const unverified=picked.filter(r=>!isVerified(r));
+ if(unverified.length&&!confirm('Hay '+unverified.length+' cargas con incidencias: '+unverified.map(r=>r.id).join(', ')+'. Se imprimirán igualmente con sus hojas originales y el resumen PROVISIONAL, que debe contrastarse con la mercancía original. ¿Continuar con las '+picked.length+' cargas?'))return;
+ btn.disabled=true;btn.textContent='Preparando '+picked.length+' cargas…';
+ let opened=false;
+ try{
+  const missing=[];
+  for(const r of picked)if(!await leerOriginal(r.id))missing.push(r.id);
+  if(missing.length&&!confirm('Falta el PDF original de '+missing.join(', ')+'. Estas cargas NO podrán preparar su hoja original. ¿Imprimir el resto y crear un aviso visible para las que faltan?'))return;
+  const target=$('originalPages');limpiarVista(target);
+  $('reportPaper').replaceChildren();
+  reportMode='batch';reportId=null;
+  $('reportScreen').classList.add('show','batch-mode');opened=true;
+  $('reportScreen').scrollTop=0;
+  $('printReport').disabled=true;$('printReport').textContent='Preparando el bloque…';
+  for(const r of picked){
+   const block=document.createElement('section');block.className='batch-load';
+   const original=document.createElement('div');original.className='batch-original';
+   const summary=document.createElement('article');summary.className='report-paper batch-summary';
+   block.append(original,summary);target.appendChild(block);
+   try{await prepararMercancia(r.id,original,{append:true})}
+   catch(err){const notice=document.createElement('div');notice.className='report-paper batch-summary';notice.innerHTML='<h1>⚠ HOJA ORIGINAL NO DISPONIBLE</h1><p><b>Carga '+html(r.id)+'</b></p><p>'+html(err.message||err)+'</p><p>REIMPORTAR EL PDF PARA PODER PREPARAR ESTA CARGA. Esta hoja de aviso no sustituye a la mercancía original.</p>';original.appendChild(notice);}
+   buildReport(r,summary);
+  }
+  $('printReport').disabled=false;$('printReport').textContent='▤ Imprimir / Guardar PDF';
+  await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
+  window.print();
+ }catch(err){
+  if(opened){
+   limpiarVista($('originalPages'));$('reportPaper').replaceChildren();
+   $('reportScreen').classList.remove('show','batch-mode');reportMode='single';
+  }
+  alert('No se ha preparado la impresión: '+(err.message||err)+'. No se ha enviado ninguna carga a imprimir.');
+ }finally{
+  $('printReport').disabled=false;$('printReport').textContent='▤ Imprimir / Guardar PDF';
+  syncSelectionUI();
+ }
+}
+
+$('coldDestinations').addEventListener('change',e=>{const id=e.target.dataset.destinationId;const r=loads.find(x=>x.id===id);if(r){r.destination=e.target.value;persist();}});
+$('generateAll').addEventListener('click',async()=>{
+ if(importing||generating)return;
+ if(lastImportErrors.length){alert('Hay PDF que no se han podido importar. Repite la importación corrigiendo estos archivos antes de generar el conjunto:\n'+lastImportErrors.join('\n'));return;}
+ let plan;
+ try{plan=planCombined(loads.filter(r=>selectedIds.has(r.id)))}catch(e){alert(e.message);return;}
+ generating=true;syncSelectionUI();const btn=$('generateAll');btn.textContent='Preparando todos los listados…';
+ const target=$('originalPages');
+ try{
+  for(const r of plan.preparation)if(!await leerOriginal(r.id))throw new Error('Falta el PDF original de '+r.id+'. Vuelve a importarlo.');
+  limpiarVista(target);$('reportPaper').replaceChildren();reportMode='batch';reportId=null;
+  $('reportScreen').classList.add('show','batch-mode');$('reportScreen').scrollTop=0;
+  $('printReport').disabled=true;$('printReport').textContent='Preparando todos los listados…';
+  for(const r of plan.preparation){
+   const block=document.createElement('section');block.className='batch-load';
+   const original=document.createElement('div');original.className='batch-original';
+   const summary=document.createElement('article');summary.className='report-paper batch-summary';
+   block.append(original,summary);target.appendChild(block);
+   await prepararMercancia(r.id,original,{append:true});buildReport(r,summary);
+  }
+  for(const report of plan.reports){const block=document.createElement('section');block.innerHTML=coldFragment(report);target.appendChild(block);}
+  $('printContents').textContent=plan.preparation.length+' cargas de preparación · '+plan.reports.map(r=>'FRÍO '+r.destination+': '+r.loads.reduce((n,l)=>n+l.cold.length,0)+' líneas'+(r.destination==='FERROL'?' + '+r.loads.reduce((n,l)=>n+l.barrels.length,0)+' líneas de barriles':'')+' ('+r.date+')').join(' · ');
+  $('printReport').textContent='Imprimir / Guardar TODO en PDF';$('printReport').disabled=false;
+  notify('Conjunto preparado: '+plan.preparation.length+' cargas con mercancía COR_01_COR y '+plan.reports.length+' listados de frío.'+(plan.withoutCor.length?' Sin mercancía de Coruña: '+plan.withoutCor.map(r=>r.id).join(', ')+'.':''),'ok');
+ }catch(e){limpiarVista(target);$('reportPaper').replaceChildren();$('reportScreen').classList.remove('show','batch-mode');reportMode='single';alert('No se ha generado el conjunto: '+e.message);}
+ finally{generating=false;syncSelectionUI();$('printReport').disabled=false;}
+});
+
+$('printSelected').addEventListener('click',()=>$('generateAll').click());
+$('detailReport').addEventListener('click',()=>{if(chosen)openReport(chosen)});
+$('closeReport').addEventListener('click',()=>{$('reportScreen').classList.remove('show','batch-mode');reportId=null;reportMode='single';limpiarVista($('originalPages'));$('reportPaper').replaceChildren()});
+$('printReport').addEventListener('click',async()=>{
+ if(reportMode==='batch'){
+ const button=$('printReport');button.disabled=true;
+ try{await printPrepared($('originalPages').innerHTML);}catch(e){alert('No se ha enviado el documento a imprimir: '+e.message);}finally{button.disabled=false;}
+ return;
+ }
+ if(!reportId)return;
+ const btn=$('printReport');if(btn.disabled)return;
+ btn.disabled=true;btn.textContent='Preparando original + resumen…';
+ try{
+  const count=await prepararMercancia(reportId,$('originalPages'));
+  if(!count)throw new Error('No se han detectado páginas de mercancía');
+  window.print();
+ }catch(err){
+  limpiarVista($('originalPages'));
+  alert('No se ha podido preparar la impresión: '+(err.message||err));
+ }finally{btn.disabled=false;btn.textContent='▤ Imprimir / Guardar PDF'}
+});
+async function readPdf(file){
+ const pdfjs=await import('https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.min.mjs');
+ pdfjs.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.worker.min.mjs';
+ const pdf=await pdfjs.getDocument({data:new Uint8Array(await file.arrayBuffer())}).promise;const pages=[];
+ for(let n=1;n<=pdf.numPages;n++){const pg=await pdf.getPage(n);const cont=await pg.getTextContent();const h=pg.getViewport({scale:1}).height;const items=cont.items.filter(i=>typeof i.str==='string').map(i=>({text:i.str,x:i.transform?.[4]??0,y:h-(i.transform?.[5]??0)}));pages.push({number:n,width:pg.getViewport({scale:1}).width,items})}
+ try{return coldLoad(pages,file.name)}finally{await pdf.destroy();}
+}
+let importing=false,generating=false,lastImportErrors=[];
+$('pdfs').addEventListener('change',async e=>{
+ if(importing)return;const files=[...e.target.files];if(!files.length)return;importing=true;e.target.disabled=true;
+ let added=0,updated=0,duplicates=0,cancelled=0,errors=[];
+ try{for(let k=0;k<files.length;k++){
+  const file=files[k];notify('Leyendo '+(k+1)+'/'+files.length+': '+file.name);
+  try{
+   const hash=await fingerprint(file);
+   const identical=loads.find(r=>r.pdfHash===hash);
+   if(identical&&await leerOriginal(identical.id)){selectedIds.add(identical.id);duplicates++;continue;}
+   const incoming=await readPdf(file);if(!incoming.id)throw new Error('Sin identificador de carga');
+   const old=loads.find(x=>x.id===incoming.id),original=old?await leerOriginal(incoming.id):null;
+   if(original&&await fingerprint(original)===hash){duplicates++;continue;}
+   if(old&&old.pdfHash!==hash&&!confirm('Ya existe la carga '+incoming.id+'. Este PDF es diferente.\nPeso: '+(old.weight??'—')+' → '+(incoming.weight??'—')+' kg\nReferencias: '+(old.refs??'—')+' → '+(incoming.refs??'—')+'\nFecha: '+(old.date||'—')+' → '+(incoming.date||'—')+'\n¿Actualizar el documento conservando operario, horarios y estado?')){cancelled++;continue;}
+   const next=revised(old,incoming,hash),previous=loads;
+   // Guardar cada versión bajo una clave propia antes de actualizar la activa.
+   if(original)await guardarOriginal(incoming.id+'::'+(old.pdfHash||await fingerprint(original)),original);
+   await guardarOriginal(incoming.id+'::'+hash,file);
+   await guardarOriginal(incoming.id,file);
+   loads=loads.filter(x=>x.id!==incoming.id).concat(next);
+   try{localStorage.setItem(KEY,JSON.stringify(loads))}catch(storageError){
+    loads=previous;
+    if(original)await guardarOriginal(incoming.id,original);
+    throw new Error('No se pudo guardar la carga. Se conserva el registro anterior.');
+   }
+   selectedIds.add(next.id);
+   if(old)updated++;else added++;
+  }catch(err){errors.push(file.name+': '+(err.message||err))}
+  list();
+ }}finally{lastImportErrors=errors;importing=false;e.target.disabled=false;e.target.value='';
+ const selected=loads.filter(r=>selectedIds.has(r.id));const dates=[...new Set(selected.map(dayOf))];if(dates.length===1)$('dailyDate').value=dates[0];list();}
+ notify(added+' nuevas · '+updated+' actualizadas · '+duplicates+' duplicadas omitidas · '+cancelled+' canceladas.'+(errors.length?'\nNo importados:\n'+errors.join('\n'):''),errors.length?'warn':'ok');
+});
+$('clear').addEventListener('click',async()=>{
+ if(!confirm('Se eliminarán todas las cargas, sus PDF originales y los registros de tiempos de este dispositivo. ¿Continuar?'))return;
+ try{
+  await borrarTodosOriginales();
+  loads=[];lastImportErrors=[];selectedIds.clear();persist();list();notify('Cargas, PDF originales y registros eliminados de este dispositivo.','warn');
+ }catch(e){notify('No se han eliminado las cargas: '+(e.message||e),'warn')}
+});
+$('backup').addEventListener('click',()=>{const content={format:'control-cargas-backup',version:'0.5.15',created:new Date().toISOString(),loads,operators};const blob=new Blob([JSON.stringify(content,null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='Control_Cargas_Copia_'+new Date().toISOString().slice(0,10)+'.json';document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000)});
+$('restoreInput').addEventListener('change',async e=>{const file=e.target.files[0];if(!file)return;try{const parsed=JSON.parse(await file.text());if(parsed.format!=='control-cargas-backup'||!Array.isArray(parsed.loads)||!Array.isArray(parsed.operators))throw new Error('Archivo de copia no compatible');if(!confirm('¿Restaurar la copia? Reemplazará las cargas guardadas en este iPhone.'))return;loads=parsed.loads;operators=parsed.operators;selectedIds.clear();persist();list();notify('Copia restaurada correctamente.','ok')}catch(err){notify('No se ha restaurado la copia: '+err.message,'warn')}finally{e.target.value=''}});
+
+list();
+</script>
+</body></html>

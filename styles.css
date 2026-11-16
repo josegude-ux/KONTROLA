@@ -390,3 +390,15 @@ footer{padding:18px;text-align:center;background:#fff;border-top:1px solid #e6e8
   .quantity-correction-form{grid-template-columns:minmax(0,1fr)}
   .quantity-correction-form label:nth-child(3),.quantity-correction-form button{grid-column:1}
 }
+
+
+/* VISURA PREPARA: sustitución del panel de cargas por PRUEBA_3.
+   El módulo conserva su HTML y CSS originales dentro del marco. */
+#cargasMenuView .prueba3-host{border:1px solid #dfe5ef;background:#f2f5f9;border-radius:17px;overflow:hidden;min-width:0}
+#cargasMenuView .prueba3-tools{display:flex;gap:12px;flex-wrap:wrap;justify-content:space-between;align-items:center;padding:10px 14px;background:#fff;color:#1a4261;font-weight:800;font-size:12px}
+#cargasMenuView .prueba3-tools button{min-height:40px}
+#cargasMenuView .prueba3-host iframe{display:block;width:100%;min-height:650px;height:calc(100dvh - 240px);max-height:1150px;border:0;background:#f2f5f9}
+#cargasMenuView .prueba3-legacy{margin-top:19px;border-top:1px solid #dce5ee;padding-top:13px}
+#cargasMenuView .prueba3-legacy>summary{cursor:pointer;color:#46647d;font-size:13px;font-weight:700}
+#cargasMenuView .prueba3-legacy .submenu-grid{margin-top:16px}
+@media(max-width:720px){#cargasMenuView .prueba3-host iframe{height:calc(100dvh - 190px);min-height:620px}#cargasMenuView .prueba3-tools{padding:8px 11px}}

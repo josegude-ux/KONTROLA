@@ -40,6 +40,7 @@ function switchView(id,{force=false}={}){
   return true;
 }
 function loggedOut(message=""){
+  const cargasFrame=$("prueba3Frame");if(cargasFrame){cargasFrame.src="about:blank";delete cargasFrame.dataset.scope;}
   user=null;profile=null;loads=[];historyRows=[];historyReady=false;current=null;currentPreparation=null;currentReadOnly=false;reviewLoads=[];currentVerification=null;verificationLines=[];
   loadsRequestSerial++;legacyHeaderCache.clear();legacyHeaderBusy=false;
   truckCapacitySession.clear();truckCapacityTouched=false;
@@ -471,7 +472,30 @@ async function openAdminMenu(parent="homeView"){
 }
 $("openPreparation").addEventListener("click",()=>openLoadsMenu());
 $("openReview").addEventListener("click",()=>openReviewMenu());
-$("openCargas").addEventListener("click",()=>switchView("cargasMenuView"));
+// Entrada al panel PRUEBA_3: no crea sesiones de preparación ni modifica Supabase.
+async function openPrueba3Cargas(){
+  const accountId=user?.id;
+  if(!accountId||!switchView("cargasMenuView"))return;
+  try{
+    const bytes=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(accountId));
+    if(user?.id!==accountId||$("cargasMenuView").hidden)return;
+    const scope=Array.from(new Uint8Array(bytes).slice(0,12),b=>b.toString(16).padStart(2,"0")).join("");
+    const frame=$("prueba3Frame");
+    if(frame.dataset.scope!==scope){
+      frame.dataset.scope=scope;
+      frame.src="./control-cargas-prueba3.html?visura_scope="+scope;
+    }
+  }catch(error){global("No se ha podido cargar el panel local de cargas: "+String(error?.message||error),"error");}
+}
+$("openCargas").addEventListener("click",()=>{void openPrueba3Cargas();});
+$("prueba3Fullscreen").addEventListener("click",()=>{
+  const frame=$("prueba3Frame");
+  if(!frame?.dataset.scope)return;
+  if(typeof frame.requestFullscreen==="function"){
+    frame.requestFullscreen().catch(()=>global("Pantalla completa no disponible en este navegador.","error"));
+  }else global("Pantalla completa no disponible en este navegador.","error");
+});
+
 $("cargasConsultar").addEventListener("click",()=>openLoadsMenu("cargasMenuView","consulta"));
 $("cargasPreparar").addEventListener("click",()=>openLoadsMenu("cargasMenuView"));
 $("cargasVerificar").addEventListener("click",()=>openReviewMenu("cargasMenuView"));

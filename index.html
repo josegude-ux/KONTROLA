@@ -66,8 +66,18 @@
         <button type="button" data-back="home" class="back-button">← Volver al inicio</button>
         <p class="eyebrow">VISURA PREPARA / CONTROL DE CARGAS</p>
         <h1>Control de Cargas</h1>
-        <p class="muted">Accede a las funciones de las cargas. Consultar no inicia ni modifica la preparación.</p>
+        <p class="muted">Panel integrado PRUEBA_3. Importación, preparación y listados locales, sin modificar las cargas publicadas ni el inventario.</p>
       </div>
+      <div id="prueba3Host" class="prueba3-host">
+        <div class="prueba3-tools">
+          <span>CONTROL DE CARGAS · PRUEBA_3</span>
+          <button type="button" id="prueba3Fullscreen" class="secondary">Pantalla completa</button>
+        </div>
+        <iframe id="prueba3Frame" title="Control de Cargas PRUEBA_3" src="about:blank" allow="fullscreen" loading="eager"></iframe>
+      </div>
+      <p class="hint">Los registros y PDF originales se guardan en el dispositivo, separados por usuario de VISURA. No se importan ni sincronizan automáticamente con las cargas del servidor.</p>
+      <details class="prueba3-legacy" id="cargasLegacyActions">
+        <summary>Funciones anteriores de VISURA (conservadas)</summary>
       <div class="submenu-grid" aria-label="Funciones de Control de Cargas">
         <button id="cargasConsultar" type="button" class="submenu-card"><span class="submenu-icon submenu-3d" aria-hidden="true"><img src="./assets/home/visura-prepara-operaciones-3d.webp" loading="lazy" decoding="async" alt="" width="96" height="96"></span><span><b>Consultar cargas</b><small>Documentos, referencias y mercancía por pasillos</small></span><span class="submenu-arrow" aria-hidden="true">›</span></button>
         <button id="cargasPreparar" type="button" class="submenu-card"><span class="submenu-icon submenu-3d" aria-hidden="true"><img src="./assets/home/visura-prepara-preparacion-3d.webp" loading="lazy" decoding="async" alt="" width="96" height="96"></span><span><b>Preparación de cargas</b><small>Comprueba la carga con calma antes de iniciar</small></span><span class="submenu-arrow" aria-hidden="true">›</span></button>
@@ -78,6 +88,7 @@
         <button id="cargasAntiguas" type="button" class="submenu-card" hidden><span class="submenu-icon submenu-3d" aria-hidden="true"><img src="./assets/home/visura-prepara-operaciones-3d.webp" loading="lazy" decoding="async" alt="" width="96" height="96"></span><span><b>Cargas antiguas</b><small>Consultar, seleccionar y restaurar cargas históricas (solo administración)</small></span><span class="submenu-arrow" aria-hidden="true">›</span></button>
       </div>
       <p class="hint">Este menú reúne funciones existentes. El picking y las regularizaciones se realizan en Business Central.</p>
+      </details>
     </section>
     <section id="cargasHistoryView" class="view" hidden>
       <div class="page-heading">
