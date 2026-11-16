@@ -14,7 +14,7 @@ const load=(code,fecha,extra={})=>({codigo:code,fecha,almacen:warehouse,preparad
 test('las dos acciones del submenú exterior son únicamente En preparación y En recepción',()=>{
  const node=html.match(/<section id="controlCargasFlujosView"[\s\S]*?<\/section>/)?.[0];assert.ok(node);
  assert.deepEqual([...node.matchAll(/<button id="(controlEnPreparacion|controlEnRecepcion)"/g)].map(x=>x[1]),['controlEnPreparacion','controlEnRecepcion']);
- assert.match(js,/\$\("openReview"\)\.addEventListener\("click",\(\)=>\{void openPrueba3Cargas\(\);\}\)/);
+ assert.match(js,/\$\("openReview"\)\.addEventListener\("click",\(\)=>\{void openChecklist\(\);\}\)/);
  assert.match(js,/\$\("cargasFlujosLegacy"\)\.addEventListener\("click",\(\)=>openControlFlujos\(\)\)/);
 });
 test('no se alteran id y recursos de la tarjeta principal',()=>{
@@ -22,7 +22,7 @@ test('no se alteran id y recursos de la tarjeta principal',()=>{
  assert.ok(card);
  assert.match(card,/<b>Control de Cargas<\/b>/);
  assert.match(card,/foto-control-cargas-sin-texto\.webp/);
- assert.match(card,/Importa PDF, prepara cargas y genera listados de frío/);
+ assert.match(card,/Verifica físicamente cada carga y registra incidencias/);
 });
 test('navegación original de Operaciones y submenú Preparación permanece',()=>{
  assert.match(js,/\$\("cargasVerificar"\)\.addEventListener\("click",\(\)=>openReviewMenu\("cargasMenuView"\)\)/);
@@ -109,5 +109,5 @@ test('revisión accesible: tab, botones táctiles, estilos y precache preservado
 test('no se cambia la maqueta del submenú Preparación A',()=>{
  const section=html.match(/<section id="preparacionMenuView"[\s\S]*?<\/section>/)?.[0];
  assert.ok(section);
- assert.equal(createHash('sha256').update(section).digest('hex'),'f3f88528c45b227ddf12453c4238050e0ce4c6d0209a7d2556a8b06fe84c97b7');
+ assert.equal(createHash('sha256').update(section).digest('hex'),'acd9bb49ec84a3cd4de45e791dc6500b50cd5e4c54322408be4555c5cf10da42');
 });

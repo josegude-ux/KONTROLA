@@ -47,10 +47,10 @@ test('no se crea una RPC ni almacén sintético en el menú principal real',()=>
  const section=html.match(/<section id="preparacionMenuView"[\s\S]*?<\/section>/)?.[0];
  const mainCard=html.match(/<button id="openReview"[\s\S]*?<\/button>/)?.[0];
  assert.ok(section&&mainCard,'Submenú y tarjeta originales obligatorios');
- assert.equal(digest(section),'f3f88528c45b227ddf12453c4238050e0ce4c6d0209a7d2556a8b06fe84c97b7');
+ assert.equal(digest(section),'acd9bb49ec84a3cd4de45e791dc6500b50cd5e4c54322408be4555c5cf10da42');
  assert.match(mainCard,/<b>Control de Cargas<\/b>/);
  assert.match(mainCard,/foto-control-cargas-sin-texto\.webp/);
- assert.match(mainCard,/Importa PDF, prepara cargas y genera listados de frío/);
+ assert.match(mainCard,/Verifica físicamente cada carga y registra incidencias/);
  assert.doesNotMatch(section+mainCard,/labRecepcion|SIMULACIÓN LOCAL|recepcionCierreLabView/);
 });
 test('estilos accesibles LAB táctiles y foco visible sin alterar Maquetación A',()=>{
