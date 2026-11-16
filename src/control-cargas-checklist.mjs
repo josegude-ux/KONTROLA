@@ -19,7 +19,7 @@ export function snapshot(load){
 export function sourceSignature(load){return JSON.stringify(snapshot(load));}
 export function verificationAllowed(load){
  return load?.verified===true&&Array.isArray(load.products)&&load.products.length>0&&
-  load.products.every(p=>p.sku&&Number.isFinite(Number(p.qty))&&Number(p.qty)>=0&&p.unit);
+  load.products.every(p=>p.sku&&Number.isFinite(Number(p.qty))&&Number(p.qty)>=0&&(Number(p.qty)===0||p.unit));
 }
 export function newReview(load,now=new Date().toISOString()){
  return {schema:1,loadId:load.id,sourceSignature:sourceSignature(load),createdAt:now,updatedAt:now,closedAt:null,lines:{}};
