@@ -490,3 +490,33 @@ footer{padding:18px;text-align:center;background:#fff;border-top:1px solid #e6e8
  #controlChecklistView .cc-progress{padding-bottom:2px;}
 }
 @media(prefers-reduced-motion:reduce){#controlChecklistView .cc-row{transition:none;}}
+
+
+/* B1 · Un toque en toda la fila, confirmación de 44px y aviso secundario. */
+#controlChecklistView .cc-row-main{gap:5px;align-items:stretch}
+#controlChecklistView .cc-tap{
+ min-height:54px;
+ grid-template-columns:minmax(50px,19%) minmax(0,1fr) auto 44px;
+ padding:3px 3px 3px 6px;
+}
+#controlChecklistView .cc-state-icon{
+ box-sizing:border-box;width:44px;height:44px;display:grid;place-items:center;
+ border:2px solid #8798ab;border-radius:50%;background:#fff;color:#526779;
+ font-size:18px;line-height:1;
+}
+#controlChecklistView .cc-state-ok .cc-state-icon{border-color:#3c9a65;background:#e9f7ed;color:#237349}
+#controlChecklistView .cc-state-incident .cc-state-icon{border-color:#d19f75;background:#fff1e2;color:#a65a2b}
+#controlChecklistView .cc-incident-action{
+ flex:0 0 44px;width:44px;min-height:44px;margin:0;
+ display:grid;place-items:center;font-size:0;
+ border:0;background:transparent;color:#9e5e38;
+}
+#controlChecklistView .cc-incident-action::before{
+ content:"!";box-sizing:border-box;width:29px;height:29px;
+ display:grid;place-items:center;border:1px solid #dabda9;
+ border-radius:8px;background:#fff7f0;font-size:15px;font-weight:850;
+}
+#controlChecklistView .cc-incident-action:focus-visible::before{outline:3px solid #D52835;outline-offset:2px}
+@media(max-width:500px){
+ #controlChecklistView .cc-tap{grid-template-columns:minmax(50px,19%) minmax(0,1fr) auto 44px}
+}
