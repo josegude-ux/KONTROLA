@@ -49,6 +49,7 @@ function switchView(id,{force=false}={}){
   return true;
 }
 function loggedOut(message=""){
+  const cargasFrame=$("prueba3Frame");if(cargasFrame){cargasFrame.src="about:blank";delete cargasFrame.dataset.scope;}
   user=null;profile=null;loads=[];historyRows=[];historyReady=false;current=null;currentPreparation=null;currentReadOnly=false;reviewLoads=[];recepcionRows=[];jornadaFecha=fechaOperativa();currentVerification=null;verificationLines=[];
   stopPreparationClock();
   loadsRequestSerial++;legacyHeaderCache.clear();legacyHeaderBusy=false;
@@ -625,7 +626,32 @@ $("movimientosVistaPrevia").addEventListener("click",()=>{
 });
 $("backFromPreparacionArticulos").addEventListener("click",()=>switchView("preparacionMenuView"));
 $("backFromPreparacionMovimientos").addEventListener("click",()=>switchView("preparacionMenuView"));
-$("openReview").addEventListener("click",()=>openControlFlujos());
+// Acceso directo al Control de Cargas PRUEBA_3 en el panel oficial de VISURA.
+// El módulo usa almacenamiento local por usuario, sin transferir PDF a Supabase.
+async function openPrueba3Cargas(){
+  const accountId=user?.id;
+  if(!accountId||!switchView("cargasMenuView"))return;
+  try{
+    const digest=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(accountId));
+    if(user?.id!==accountId||$("cargasMenuView").hidden)return;
+    const scope=Array.from(new Uint8Array(digest).slice(0,12),n=>n.toString(16).padStart(2,"0")).join("");
+    const frame=$("prueba3Frame");
+    if(frame.dataset.scope!==scope){
+      frame.dataset.scope=scope;
+      frame.src="./control-cargas-prueba3.html?visura_scope="+scope;
+    }
+  }catch(error){global("Error al abrir Control de Cargas: "+String(error?.message||error),"error");}
+}
+$("openReview").addEventListener("click",()=>{void openPrueba3Cargas();});
+$("openCargas").addEventListener("click",()=>{void openPrueba3Cargas();});
+$("cargasFlujosLegacy").addEventListener("click",()=>openControlFlujos());
+$("prueba3Fullscreen").addEventListener("click",()=>{
+  const frame=$("prueba3Frame");
+  if(!frame?.dataset.scope)return;
+  if(typeof frame.requestFullscreen==="function")
+    frame.requestFullscreen().catch(()=>global("Pantalla completa no disponible.","error"));
+  else global("Pantalla completa no disponible.","error");
+});
 $("controlEnPreparacion").addEventListener("click",()=>openReviewMenu("controlCargasFlujosView"));
 $("controlEnRecepcion").addEventListener("click",()=>openControlRecepcion());
 $("backFromControlFlujos").addEventListener("click",()=>switchView("homeView"));
@@ -638,7 +664,7 @@ $("reviewHistory").addEventListener("click",()=>openHistoryFrom("reviewLoadsView
 $("recepcionHistorial").addEventListener("click",()=>openHistoryFrom("controlRecepcionView"));
 $("reloadControlRecepcion").addEventListener("click",()=>refreshControlRecepcion().catch(()=>{}));
 $("recepcionIncidenciasAdmin").addEventListener("click",()=>{if(profile?.rol==="administrador")openAdminMenu("controlRecepcionView");});
-$("openCargas").addEventListener("click",()=>switchView("cargasMenuView"));
+
 $("cargasConsultar").addEventListener("click",()=>openLoadsMenu("cargasMenuView","consulta"));
 $("cargasPreparar").addEventListener("click",()=>openLoadsMenu("cargasMenuView"));
 $("cargasVerificar").addEventListener("click",()=>openReviewMenu("cargasMenuView"));
