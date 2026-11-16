@@ -19,6 +19,7 @@ let reviewLoads=[],recepcionRows=[],jornadaFecha=fechaOperativa(),historyParent=
 // Modo estrictamente loopback: no conecta con servicios empresariales.
 const RECEPCION_LAB=(["localhost","127.0.0.1","[::1]"].includes(location.hostname)&&new URLSearchParams(location.search).get("visura15_recepcion_lab")==="1");
 let labRecepcionUi=null;
+let checklistUi=null;
 let warehouses=[],selectedWarehouse=localStorage.getItem("kontrola-warehouse")||"COR_01_COR",adminController=null;
 let loadsParent="homeView",reviewLoadsParent="homeView",loadsMode="preparacion",currentReadOnly=false,detailBackView="loadsView",historyRows=[],historyReady=false,adminParent="homeView",prepTimerId=null;
 let loadsRequestSerial=0,legacyHeaderBusy=false;
@@ -49,6 +50,7 @@ function switchView(id,{force=false}={}){
   return true;
 }
 function loggedOut(message=""){
+  checklistUi?.clear?.();checklistUi=null;
   const cargasFrame=$("prueba3Frame");if(cargasFrame){cargasFrame.src="about:blank";delete cargasFrame.dataset.scope;}
   user=null;profile=null;loads=[];historyRows=[];historyReady=false;current=null;currentPreparation=null;currentReadOnly=false;reviewLoads=[];recepcionRows=[];jornadaFecha=fechaOperativa();currentVerification=null;verificationLines=[];
   stopPreparationClock();
@@ -642,7 +644,21 @@ async function openPrueba3Cargas(){
     }
   }catch(error){global("Error al abrir Control de Cargas: "+String(error?.message||error),"error");}
 }
-$("openReview").addEventListener("click",()=>{void openPrueba3Cargas();});
+async function openChecklist(){
+ const accountId=user?.id;
+ if(!accountId||!switchView("controlChecklistView"))return;
+ try{
+  const digest=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(accountId));
+  if(user?.id!==accountId||$("controlChecklistView").hidden)return;
+  const scope="_visura_"+Array.from(new Uint8Array(digest).slice(0,12),n=>n.toString(16).padStart(2,"0")).join("");
+  const {createChecklistUI}=await import("./control-cargas-checklist-ui.mjs");
+  checklistUi?.clear?.();
+  checklistUi=createChecklistUI($("controlChecklistRoot"),scope);
+ }catch(error){global("No se pudo abrir la verificación: "+String(error?.message||error),"error");}
+}
+$("openReview").addEventListener("click",()=>{void openChecklist();});
+$("preparacionPrueba3").addEventListener("click",()=>{void openPrueba3Cargas();});
+$("backFromChecklist").addEventListener("click",()=>switchView("homeView"));
 $("openCargas").addEventListener("click",()=>{void openPrueba3Cargas();});
 $("cargasFlujosLegacy").addEventListener("click",()=>openControlFlujos());
 $("prueba3Fullscreen").addEventListener("click",()=>{
@@ -684,6 +700,7 @@ $("backToReviewLoads").addEventListener("click",()=>switchView("reviewLoadsView"
 $("globalBack").addEventListener("click",()=>{
   const view=document.querySelector("#shell .view:not([hidden])")?.id;
   const backButtons={
+    controlChecklistView:"backFromChecklist",
     preparacionArticulosView:"backFromPreparacionArticulos",
     preparacionMovimientosView:"backFromPreparacionMovimientos",
     cargasHistoryView:"backFromHistory",
