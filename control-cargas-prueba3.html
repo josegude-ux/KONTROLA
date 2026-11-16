@@ -150,7 +150,7 @@
 <div id="validationOverview" class="validation-overview" aria-live="polite"></div>
 <section class="panel" style="margin-top:14px" aria-label="Resumen diario"><h3>Resumen diario</h3><p class="muted">Por fecha de carga del PDF. Los filtros también se aplican al listado.</p><div class="two"><div class="stats-filter"><label for="dailyDate">Fecha de carga</label><input type="date" id="dailyDate"></div><div class="stats-filter"><label for="dailyOperator">Operario</label><select id="dailyOperator"></select></div><div class="stats-filter"><label for="dailyRoute">Ruta</label><select id="dailyRoute"></select></div><div class="stats-filter"><label for="dailyPlate">Matrícula</label><select id="dailyPlate"></select></div></div><div class="actions"><button class="btn light" id="dailyToday">Hoy</button><button class="btn ghost" id="dailyReset">Todo el historial</button></div><div class="d-grid" id="dailyCounts" aria-live="polite"></div><p class="thin" id="dailyNote"></p></section>
 <div class="filters" id="filters"><button class="filter active" data-filter="Todas">Todas</button><button class="filter" data-filter="Verificadas">✓ Verificadas</button><button class="filter" data-filter="Con incidencias">⚠ Con incidencias</button><button class="filter" data-filter="Pendiente">Pendientes</button><button class="filter" data-filter="En curso">En curso</button><button class="filter" data-filter="Finalizada">Finalizadas</button></div>
-<section class="panel"><div class="line"><div><h3>Cargas importadas</h3><div class="muted">Pulsa una carga para registrar su preparación.</div></div></div><div class="batch-toolbar"><button class="btn light" id="selectAll" type="button">☑ Seleccionar todas</button><button class="btn light" id="selectVisible" type="button">Marcar visibles</button><button class="btn ghost" id="clearSelection" type="button">Desmarcar</button><button class="btn" id="printSelected" type="button" disabled>▤ Imprimir seleccionadas (0)</button></div><div class="bottom"><button class="btn" id="generateAll" disabled>Generar todos los listados (0)</button></div><details><summary style="margin:12px 0;cursor:pointer">Revisar destinos Coruña / Ferrol</summary><div id="coldDestinations"></div></details><div id="loadList"></div><div class="bottom"><button class="btn light" id="backup">Guardar copia</button><label class="btn ghost" for="restoreInput">Restaurar copia</label><input id="restoreInput" type="file" accept="application/json,.json" class="hidden"><button class="btn ghost" id="clear">Eliminar cargas</button></div></section>
+<section class="panel"><div class="line"><div><h3>Cargas importadas</h3><div class="muted">Pulsa una carga para registrar su preparación.</div></div></div><div class="batch-toolbar"><button class="btn light" id="selectAll" type="button">☑ Seleccionar todas</button><button class="btn light" id="selectVisible" type="button">Marcar visibles</button><button class="btn ghost" id="clearSelection" type="button">Desmarcar</button><button class="btn" id="printSelected" type="button" disabled>▤ Imprimir seleccionadas (0)</button></div><div class="bottom"><button class="btn" id="generateAll" disabled>Generar todos los listados (0)</button><button class="btn light" id="printPlates" type="button" disabled>Matrículas por peso · Coruña</button></div><details><summary style="margin:12px 0;cursor:pointer">Revisar destinos Coruña / Ferrol</summary><div id="coldDestinations"></div></details><div id="loadList"></div><div class="bottom"><button class="btn light" id="backup">Guardar copia</button><label class="btn ghost" for="restoreInput">Restaurar copia</label><input id="restoreInput" type="file" accept="application/json,.json" class="hidden"><button class="btn ghost" id="clear">Eliminar cargas</button></div></section>
 <p class="smallprint">Prueba local · Guarda el PDF generado · Las copias JSON no incluyen los PDF originales</p>
 </main>
 
@@ -579,7 +579,7 @@ const firstIncident=r=>Array.isArray(r.warnings)&&r.warnings.length?r.warnings[0
 function syncSelectionUI(){
  const btn=$('printSelected');const n=selectedIds.size;
  btn.disabled=n===0;btn.textContent='Preparación + frío ('+n+')';
- $('generateAll').disabled=n===0||importing||generating; $('generateAll').textContent='Generar todos los listados ('+n+')';
+ $('generateAll').disabled=n===0||importing||generating; $('printPlates').disabled=n===0||importing||generating; $('generateAll').textContent='Generar todos los listados ('+n+')';
  $('coldDestinations').innerHTML=loads.map(r=>'<label class="formlabel">'+html(r.id)+' · '+html(r.truck||'Camión no identificado')+'<select data-destination-id="'+html(r.id)+'"><option value="">Elegir destino</option>'+['CORUÑA','FERROL'].map(d=>'<option '+(r.destination===d?'selected':'')+'>'+d+'</option>').join('')+'</select></label>').join('');
 }
 function dailyScope(){return dailyRows(loads,{day:$('dailyDate').value,operator:$('dailyOperator').value,route:$('dailyRoute').value,plate:$('dailyPlate').value})}
@@ -1046,6 +1046,53 @@ $('generateAll').addEventListener('click',async()=>{
  }catch(e){limpiarVista(target);$('reportPaper').replaceChildren();$('reportScreen').classList.remove('show','batch-mode');reportMode='single';alert('No se ha generado el conjunto: '+e.message);}
  finally{generating=false;syncSelectionUI();$('printReport').disabled=false;}
 });
+
+
+// Listado Coruña independiente de preparación: se limita a las cargas seleccionadas.
+function listLoadsCoruna(){
+ const picked=loads.filter(r=>selectedIds.has(r.id));
+ if(!picked.length)throw new Error('Selecciona al menos una carga.');
+ for(const r of picked){
+  if(!['FERROL','CORUÑA'].includes(r.destination))throw new Error('Selecciona el destino de '+r.id+'.');
+  if(!/^\d{2}\/\d{2}\/\d{4}$/.test(r.date||''))throw new Error('Fecha inválida en '+r.id+'. Reimporta el PDF.');
+ }
+ const coruna=picked.filter(r=>r.destination==='CORUÑA');
+ if(!coruna.length)throw new Error('No hay cargas seleccionadas de Coruña.');
+ const byDate=new Map();
+ for(const r of coruna){if(!byDate.has(r.date))byDate.set(r.date,[]);byDate.get(r.date).push(r);}
+ const dates=[...byDate.keys()].sort((a,b)=>a.split('/').reverse().join('').localeCompare(b.split('/').reverse().join('')));
+ return {dates,byDate,total:coruna.length,skipped:picked.length-coruna.length};
+}
+const crewParts=value=>String(value||'').split(/[;,]/).map(name=>name.replace(/^\s*[A-Z]{1,3}\d{2,4}\s+/,'').trim()).filter(Boolean);
+const driverOf=r=>crewParts(r.driver)[0]||'';
+const companionOf=r=>r.companion?crewParts(r.companion).join(' / '):crewParts(r.driver).slice(1).join(' / ');
+const plateOf=r=>r.plate||String(r.truck||'').replace(/^CR/i,'');
+function platesByWeightHTML(){
+ const {dates,byDate,total,skipped}=listLoadsCoruna();
+ let noWeight=0;
+ const pages=dates.map(date=>{
+  const rows=[...byDate.get(date)].sort((a,b)=>{
+   const wa=typeof a.weight==='number'&&Number.isFinite(a.weight)?a.weight:-Infinity;
+   const wb=typeof b.weight==='number'&&Number.isFinite(b.weight)?b.weight:-Infinity;
+   return wb-wa||String(a.id).localeCompare(String(b.id));
+  });
+  noWeight+=rows.filter(r=>typeof r.weight!=='number'||!Number.isFinite(r.weight)).length;
+  const sum=rows.reduce((n,r)=>n+(typeof r.weight==='number'&&Number.isFinite(r.weight)?r.weight:0),0);
+  const body=rows.map((r,i)=>'<tr><td class="c">'+(i+1)+'</td><td><b>'+html(plateOf(r))+'</b></td><td>'+html(driverOf(r))+'</td><td>'+html(r.id)+'</td><td class="n">'+(typeof r.weight==='number'&&Number.isFinite(r.weight)?fmtQty(r.weight):'—')+'</td></tr>').join('');
+  return '<article class="lst-page"><h1>MATRÍCULAS POR PESO · CORUÑA</h1><div class="lst-date">Fecha: '+html(date)+'</div><table class="lst-table"><colgroup><col style="width:7%"><col style="width:20%"><col style="width:41%"><col style="width:16%"><col style="width:16%"></colgroup><thead><tr><th class="c">Nº</th><th>Matrícula</th><th>Repartidor</th><th>Carga</th><th class="n">Peso (kg)</th></tr></thead><tbody>'+body+'</tbody></table><div class="lst-sum">RESUMEN: '+rows.length+' cargas | Peso total: '+fmtQty(sum)+' kg</div></article>';
+ }).join('');
+ return {html:pages,summary:'Matrículas por peso · Coruña: '+total+' cargas · '+dates.join(', ')+(skipped?' · '+skipped+' de Ferrol omitidas':'')+(noWeight?' · ⚠ '+noWeight+' sin peso (se muestran al final con —)':'')};
+}
+function openExtraList(build){
+ if(importing||generating)return;
+ let out;try{out=build();}catch(error){alert(error.message);return;}
+ const target=$('originalPages');limpiarVista(target);$('reportPaper').replaceChildren();
+ reportMode='batch';reportId=null;target.innerHTML=out.html;
+ $('reportScreen').classList.add('show','batch-mode');$('reportScreen').scrollTop=0;
+ $('printContents').textContent=out.summary;
+ $('printReport').textContent='Imprimir / Guardar PDF';$('printReport').disabled=false;
+}
+$('printPlates').addEventListener('click',()=>openExtraList(platesByWeightHTML));
 
 $('printSelected').addEventListener('click',()=>$('generateAll').click());
 $('detailReport').addEventListener('click',()=>{if(chosen)openReport(chosen)});
