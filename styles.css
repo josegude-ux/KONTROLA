@@ -571,3 +571,21 @@ footer{padding:18px;text-align:center;background:#fff;border-top:1px solid #e6e8
  display:none;
 }
 #controlChecklistView.cc-detail-open .cc-active{margin-top:0;}
+
+
+/* Verificación física R3.3: filas densas sin reducir círculo ni áreas táctiles. */
+#controlChecklistView .cc-aisle{margin-bottom:1px;}
+#controlChecklistView .cc-row{margin:1px 0;border-radius:7px;}
+#controlChecklistView .cc-row-main{gap:3px;}
+#controlChecklistView .cc-tap{
+ min-height:46px;
+ padding:0 3px 0 5px;
+ column-gap:3px;
+}
+#controlChecklistView .cc-state-icon{
+ width:44px;
+ height:44px;
+ min-width:44px;
+ min-height:44px;
+}
+#controlChecklistView .cc-incident-action{min-height:46px;}
