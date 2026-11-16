@@ -471,7 +471,7 @@ async function openAdminMenu(parent="homeView"){
   await adminController.open().catch(error=>global(errorText(error),"error"));
 }
 $("openPreparation").addEventListener("click",()=>openLoadsMenu());
-$("openReview").addEventListener("click",()=>openReviewMenu());
+$("openReview").addEventListener("click",()=>{void openPrueba3Cargas();});
 // Entrada al panel PRUEBA_3: no crea sesiones de preparación ni modifica Supabase.
 async function openPrueba3Cargas(){
   const accountId=user?.id;
