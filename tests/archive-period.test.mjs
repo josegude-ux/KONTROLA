@@ -53,7 +53,8 @@ test("el módulo de archivo no registra ni borra cargas y respeta lotes de 20",(
  assert.match(src,/row\.estado==="publicada"&&row\.publicado_en/);
  assert.match(src,/allRows\.filter\(row=>publicadaHoy\(row,today\)\)/);
  assert.match(src,/portadaLoteArchivo\(verified,/);
- assert.match(src,/selected\.size>=MAX_HOJAS_ARCHIVO/);
+ assert.match(src,/evaluarLoteImpresion\(selected,MAX_HOJAS_ARCHIVO\)/);
+  assert.match(src,/chosen\.length>MAX_HOJAS_ARCHIVO/);
  assert.match(src,/id/); // controles de selección por código de carga
  assert.doesNotMatch(ui,/id="batchPrintFrom"|id="batchPrintTo"/);
  assert.match(ui,/id="batchPrintReprint"/);
@@ -81,11 +82,11 @@ test("archivo de veinte cargas conserva todas las referencias e impide nombres l
 test("selector de grupos sucesivos recorre la lista en bloques de veinte",()=>{
  const src=readFileSync(new URL("../src/admin-print-batch.mjs",import.meta.url),"utf8");
  const ui=readFileSync(new URL("../index.html",import.meta.url),"utf8");
- assert.match(src,/rows\.slice\(start,start\+MAX_HOJAS_ARCHIVO\)/);
- assert.match(src,/nextGroupStart=Math\.min\(rows\.length,start\+MAX_HOJAS_ARCHIVO\)/);
- assert.match(src,/Math\.ceil\(rows\.length\/MAX_HOJAS_ARCHIVO\)/);
- assert.match(src,/if\(nextGroupStart>=rows\.length\)nextGroupStart=0/);
+ assert.match(src,/visibles\.slice\(start,start\+MAX_HOJAS_ARCHIVO\)/);
+ assert.match(src,/nextGroupStart=Math\.min\(visibles\.length,start\+MAX_HOJAS_ARCHIVO\)/);
+ assert.match(src,/Math\.ceil\(visibles\.length\/MAX_HOJAS_ARCHIVO\)/);
+ assert.match(src,/if\(nextGroupStart>=visibles\.length\)nextGroupStart=0/);
  assert.match(src,/nombreSugeridoArchivo\([\s\S]*?\[\.\.\.selected\]/);
- assert.match(ui,/Seleccionar siguiente grupo de hasta 20 cargas/);
+ assert.match(ui,/Siguiente grupo \(máximo 20\)/);
  assert.match(ui,/Máximo 20 hojas por grupo/);
 });

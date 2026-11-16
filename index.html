@@ -197,8 +197,17 @@
         <p class="hint">Solo aparecen cargas publicadas de hoy. Las pendientes se revisan desde «Pendientes». Máximo 20 hojas por grupo. El archivo en OneDrive se gestiona por separado.</p>
         <p class="hint" id="batchArchiveName" aria-live="polite"></p>
         <label class="batch-print-reprint"><input id="batchPrintReprint" type="checkbox"> Reimprimir cargas ya generadas (sin confirmar impresión)</label>
+        <label class="batch-print-search" for="batchPrintSearch">Buscar por carga, ruta, repartidor o matrícula
+          <input id="batchPrintSearch" type="search" placeholder="Filtrar cargas de este almacén" autocomplete="off">
+        </label>
+        <div class="actions batch-print-actions" role="group" aria-label="Seleccionar cargas para imprimir">
+          <button id="batchPrintSelectAll" type="button" class="secondary">☑ Seleccionar todas</button>
+          <button id="batchPrintMarkVisible" type="button" class="secondary">Marcar visibles</button>
+          <button id="batchPrintClear" type="button" class="secondary">Desmarcar</button>
+          <button id="batchPrintSelectVisible" type="button" class="secondary">Siguiente grupo (máximo 20)</button>
+        </div>
+        <p class="hint">La selección puede incluir más de 20 cargas, pero cada PDF se genera como máximo con 20. «Siguiente grupo» permite preparar bloques sin truncarlos silenciosamente. No incluye los originales: esta función imprime hojas procesadas.</p>
         <div id="batchPrintList" class="batch-print-list"></div>
-        <button id="batchPrintSelectVisible" type="button" class="secondary">Seleccionar siguiente grupo de hasta 20 cargas</button>
         <button id="batchPrintOpen" type="button" class="primary" disabled>Preparar impresión de hojas seleccionadas</button>
       </section>
       <section class="panel" id="adminSection3" role="tabpanel" hidden id="operatorStatsPanel">

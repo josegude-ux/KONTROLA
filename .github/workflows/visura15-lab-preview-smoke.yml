@@ -1,0 +1,57 @@
+name: VISURA 15 LAB PR95 · Control de acceso preview privado
+on:
+  push:
+    branches:
+      - lab/visura15-paridad-control-cargas-v056-20261109
+    paths:
+      - .github/workflows/visura15-lab-preview-smoke.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verificar-acceso-privado:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Node 22 disponible
+        run: node --version
+      - name: Verificar acceso publico de preview y archivos LAB (sin credenciales)
+        env:
+          LAB_PREVIEW: https://id-preview--719d7bce-4843-4fc0-9409-a83f9ad4c3ad.lovable.app
+        run: |
+          node --input-type=module <<'EOF'
+          import assert from 'node:assert/strict';
+          const base=process.env.LAB_PREVIEW;
+          const pages=[
+            ['/lab/visura-prepara-v056.html',['VISURA PREPARA','id="demo"','id="pdfs"']],
+            ['/lab/visura-prepara-v056-lab.mjs',['planificarRecortesMercancia','window.print()']],
+            ['/src/batch-selection-v056.mjs',['seleccionarTodasImpresion','marcarVisiblesImpresion']],
+            ['/src/mercancia-v056.mjs',['planificarRecortesMercancia','No se ha identificado el final de MERCANCIA']]
+          ];
+          for(const [path,needles] of pages){
+            const url=new URL(path,base);
+            const response=await fetch(url,{redirect:'follow',signal:AbortSignal.timeout(20000)});
+            if(response.status===401||response.status===403){
+              console.log('PREVIEW PRIVADO: HTTP '+response.status+'; no se ejecutan comprobaciones E2E sin sesión.');
+              const fs=await import('node:fs/promises');
+              if(process.env.GITHUB_STEP_SUMMARY){
+                await fs.appendFile(process.env.GITHUB_STEP_SUMMARY,
+                  '## LAB PREPARA PR95: acceso restringido\n\n'+
+                  '- URL sin credenciales: **HTTP '+response.status+'**.\n'+
+                  '- **NO E2E**: el acceso privado impide verificar la web desde runner externo.\n'+
+                  '- Pendiente: pruebas de usuario autenticado en escritorio y Safari iPhone.\n');
+              }
+              process.exit(0);
+            }
+            if(!response.ok)throw Error(path+' HTTP '+response.status);
+            const body=await response.text();
+            for(const needle of needles)assert.ok(body.includes(needle),path+' missing '+needle);
+            console.log('PASS',path,'HTTP',response.status,'bytes',body.length);
+          }
+          for(const path of ['/vendor/pdf.min.mjs','/vendor/pdf.worker.min.mjs']){
+            const response=await fetch(new URL(path,base),{method:'HEAD',redirect:'follow',signal:AbortSignal.timeout(20000)});
+            if(!response.ok)throw Error(path+' HTTP '+response.status);
+            console.log('PASS',path,'HEAD',response.status);
+          }
+          console.log('SMOKE REMOTO LAB: PASS; solo GET/HEAD, sin PDF, datos ni sesiones.');
+          EOF

@@ -1,0 +1,52 @@
+name: VISURA 15 LAB PR95 · E2E local Chromium y WebKit
+on:
+  push:
+    branches:
+      - lab/visura15-paridad-control-cargas-v056-20261109
+    paths:
+      - tests/lab-pr95-e2e.mjs
+      - lab/visura-prepara-v056-lab.mjs
+      - lab/visura-prepara-v056.html
+      - src/mercancia-v056.mjs
+      - src/batch-selection-v056.mjs
+      - .github/workflows/visura15-lab-pr95-e2e.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  comprobar-lab-aislado:
+    name: Navegador ${{ matrix.browser }} (servidor 127.0.0.1)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [chromium, webkit]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Dependencias del repositorio sin scripts remotos
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Playwright aislado (sin modificar lockfile)
+        run: npm install --no-save --ignore-scripts --no-audit --no-fund playwright@1.56.1
+      - name: Instalar navegador y librerías del runner
+        run: npx playwright install --with-deps ${{ matrix.browser }}
+      - name: Comprobar sintaxis
+        run: node --check tests/lab-pr95-e2e.mjs
+      - name: E2E local exclusivamente con datos ficticios
+        env:
+          PW_BROWSER: ${{ matrix.browser }}
+        run: node tests/lab-pr95-e2e.mjs
+      - name: Guardar capturas de prueba y resultado (no datos reales)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: visura15-lab-pr95-e2e-${{ matrix.browser }}
+          path: test-results/pr95-e2e/${{ matrix.browser }}/
+          if-no-files-found: ignore
+          retention-days: 7
