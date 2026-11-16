@@ -538,3 +538,16 @@ footer{padding:18px;text-align:center;background:#fff;border-top:1px solid #e6e8
  #controlChecklistView .cc-toolbar .cc-heading{min-height:20px}
  #controlChecklistView .cc-toolbar .cc-heading strong{font-size:13px}
 }
+
+
+/* B3 · Banda de pasillo visualmente baja; zona táctil continúa ≥44px. */
+#controlChecklistView .cc-aisle{margin:0 0 2px}
+#controlChecklistView .cc-aisle-head{
+ position:relative;isolation:isolate;min-height:44px;height:44px;
+ padding:0 8px;margin:0 0 1px;border:0;background:transparent;
+ font-size:12px;line-height:1.15;border-radius:0;
+}
+#controlChecklistView .cc-aisle-head::before{
+ content:"";position:absolute;left:0;right:0;top:10px;bottom:10px;
+ border-radius:6px;background:#eaf2f8;z-index:-1;
+}
