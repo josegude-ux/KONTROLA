@@ -757,3 +757,37 @@ footer{padding:18px;text-align:center;background:#fff;border-top:1px solid #e6e8
  #controlChecklistView .cc-single-incident{width:76px}
  #controlChecklistView .cc-single-primary{font-size:16px}
 }
+
+
+/* VISURA PREPARA R6: descripción protagonista en la LISTA de verificación.
+   No altera dimensiones, márgenes ni activación de los botones de cantidad e incidencia. */
+#controlChecklistView .cc-item-details{
+ display:flex;
+ flex-direction:column;
+ justify-content:center;
+ align-items:stretch;
+ min-width:0;
+ padding:4px 4px 4px 9px;
+}
+#controlChecklistView .cc-item-details .cc-product{
+ display:block;
+ width:100%;
+ min-width:0;
+ overflow:visible;
+}
+#controlChecklistView .cc-item-details .cc-description{
+ display:block;
+ font-size:clamp(15px,3.9vw,16px);
+ line-height:1.23;
+ font-weight:650;
+ color:#16334e;
+ white-space:normal;
+ overflow:visible;
+ overflow-wrap:break-word;
+ -webkit-line-clamp:unset;
+ line-clamp:unset;
+}
+@media(max-width:370px){
+ #controlChecklistView .cc-item-details{padding-left:6px;padding-right:3px}
+ #controlChecklistView .cc-item-details .cc-description{font-size:14px;line-height:1.22}
+}
