@@ -608,6 +608,16 @@ async function printPrepared(content,doc=document){
 return {printPrepared};
 })();
 
+// FASE 3A: puente checklist/outbox preparado, ESTRICTAMENTE INERTE.
+// No importar modulo, no crear IndexedDB, ni instalar botones, listeners o RPC.
+// Cambiar esta bandera NO activa la operativa: el puente sigue enabled:false.
+const F3A_CHECKLIST_PREPARADO_SOLO_LAB=false;
+if(F3A_CHECKLIST_PREPARADO_SOLO_LAB){
+ void import('./src/control-cargas-f3a-puente-inerte.mjs').then(({crearPuenteChecklistF3A})=>{
+  const puente=crearPuenteChecklistF3A({enabled:false});
+  if(puente.estado!=='desactivado')throw Error('F3A debe permanecer desactivada');
+ }).catch(()=>{/* No activacion ni mutacion por error de importacion */});
+}
 const $=id=>document.getElementById(id);
 $('installedVersion').textContent='PRUEBA INTEGRADA 3';
 const KEY='control_cargas_prueba_integrada_2'+VISURA_SCOPE; // Compatibilidad con los datos de v0.4
