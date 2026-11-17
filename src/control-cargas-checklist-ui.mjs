@@ -104,14 +104,15 @@ export function createChecklistUI(root,scope,storage=localStorage){
   if(filter!=="all"&&state!==filter)return "";
   const enabled=allowed&&!review.closedAt;
   const checked=state==="ok",incident=state==="incident";
-  const location=product.location||"SIN UBICACIÓN",description=product.description||"Sin descripción";
+  const description=product.description||"Sin descripción";
   const quantity=String(product.qty??"—")+(product.unit?" "+String(product.unit):"");
   const attrs=enabled?"":" disabled";
   const note=incident?'<div class="cc-incident-note">Comprobado: '+esc(review.lines[index]?.actualQty)+
    (review.lines[index]?.note?" · "+esc(review.lines[index].note):"")+'</div>':"";
+  // En LISTA se destaca el producto que debe verificarse: sin ubicación ni código visual.
+  // Los campos originales se conservan en la carga y en el modo UNO A UNO.
   const details='<div class="cc-item-details">'+
-   '<span class="cc-location">'+esc(location)+'</span>'+
-   '<span class="cc-product"><small class="cc-sku">'+esc(product.sku||"")+'</small><span class="cc-description">'+esc(description)+'</span></span>'+
+   '<span class="cc-product"><span class="cc-description">'+esc(description)+'</span></span>'+
    '</div>';
   // El botón de cantidad reutiliza data-toggle y el guardado local existente.
   const confirm='<button type="button" class="cc-quantity-action" data-toggle="'+index+
