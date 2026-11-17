@@ -860,3 +860,133 @@ footer{padding:18px;text-align:center;background:#fff;border-top:1px solid #e6e8
 }
 #controlChecklistView .cc-final-actions .cc-final-close{background:#0B2647;color:#fff;border-color:#0B2647}
 #controlChecklistView .cc-final-actions button:disabled{opacity:.4}
+
+
+/* Verificación física · cabecera fija con matrícula y menús flotantes.
+   Los estilos R5/R6 de las filas y sus descripciones permanecen intactos. */
+#shell:has(#controlChecklistView.cc-detail-open:not([hidden]))>.topbar{
+ padding-top:calc(12px + env(safe-area-inset-top,0px));
+}
+#controlChecklistView .cc-toolbar{
+ padding:6px 7px;
+ margin-bottom:7px;
+ overflow:visible;
+}
+#controlChecklistView .cc-toolbar.is-sticky{
+ top:var(--cc-sticky-top,74px);
+ z-index:9;
+}
+#controlChecklistView .cc-toolbar .cc-heading{
+ min-height:28px;
+ margin:0 2px 1px;
+ justify-content:flex-start;
+ align-items:baseline;
+ gap:9px;
+ min-width:0;
+}
+#controlChecklistView .cc-toolbar .cc-heading .cc-plate{
+ font-size:clamp(20px,5.7vw,28px);
+ font-weight:900;
+ color:#0B2647;
+ line-height:1.06;
+ letter-spacing:.2px;
+ max-width:none;
+ min-width:0;
+ overflow-wrap:anywhere;
+}
+#controlChecklistView .cc-toolbar .cc-load-id{
+ color:#506981;
+ font-size:12px;
+ line-height:1.2;
+ font-weight:750;
+ white-space:nowrap;
+}
+#controlChecklistView .cc-toolbar .cc-progress{
+ display:block;
+ padding:1px 2px 5px;
+}
+#controlChecklistView .cc-toolbar .cc-progress strong{
+ font-size:13px;
+ font-weight:800;
+ line-height:1.2;
+}
+#controlChecklistView .cc-menu-row{
+ display:grid;
+ grid-template-columns:minmax(0,1.05fr) minmax(0,.88fr) minmax(0,1.43fr);
+ gap:4px;
+ align-items:stretch;
+}
+#controlChecklistView .cc-menu{min-width:0;position:relative}
+#controlChecklistView .cc-menu-trigger{
+ display:flex;
+ align-items:center;
+ justify-content:center;
+ gap:3px;
+ width:100%;
+ min-height:44px;
+ padding:5px 3px;
+ border:1px solid #b6cbdc;
+ border-radius:8px;
+ background:#eef4f9;
+ color:#0B2647;
+ font-size:clamp(10px,2.7vw,12px);
+ font-weight:800;
+ line-height:1.18;
+ text-align:center;
+ overflow-wrap:normal;
+}
+#controlChecklistView .cc-menu-trigger[aria-expanded="true"]{
+ color:#fff;
+ background:#0B2647;
+ border-color:#0B2647;
+}
+#controlChecklistView .cc-menu-popup{
+ position:absolute;
+ z-index:25;
+ top:calc(100% + 5px);
+ left:0;
+ min-width:max(100%,150px);
+ padding:5px;
+ border:1px solid #adc4d6;
+ border-radius:10px;
+ background:#fff;
+ box-shadow:0 10px 28px #0b264736;
+}
+#controlChecklistView .cc-menu-option{
+ display:block;
+ width:100%;
+ min-height:44px;
+ padding:8px 11px;
+ text-align:left;
+ border:0;
+ border-radius:7px;
+ background:#fff;
+ color:#0B2647;
+ font-size:13px;
+ font-weight:750;
+}
+#controlChecklistView .cc-menu-option[aria-checked="true"]{
+ background:#0B2647;
+ color:#fff;
+}
+#controlChecklistView .cc-menu-popup--history{
+ right:0;
+ left:auto;
+ width:min(360px,calc(100vw - 32px));
+ min-width:0;
+ max-height:min(55dvh,390px);
+ overflow-y:auto;
+ overscroll-behavior:contain;
+}
+#controlChecklistView .cc-menu-popup--history .cc-history-panel{
+ margin:0;
+ padding:6px;
+ box-shadow:none;
+ border:0;
+}
+@media(max-width:390px){
+ #controlChecklistView .cc-toolbar{padding:5px 6px}
+ #controlChecklistView .cc-menu-row{gap:3px}
+ #controlChecklistView .cc-menu-trigger{padding:4px 2px;font-size:10px}
+ #controlChecklistView .cc-toolbar .cc-heading .cc-plate{font-size:21px}
+}

@@ -12,7 +12,7 @@ const aisleOf=product=>{
 const MODE_KEY="visura_prepara_verificacion_modo_v1";
 export function createChecklistUI(root,scope,storage=localStorage){
  let selected=null,filter="all",query="",undo=null,undoTimer=null,resizeObserver=null,disposed=false;
- let viewMode="list",oneCursor=null,oneLockUntil=0,historyExpanded=false,finalReviewOpen=false;
+ let viewMode="list",oneCursor=null,oneLockUntil=0,finalReviewOpen=false,openMenu=null;
  try{viewMode=storage.getItem(MODE_KEY)==="single"?"single":"list";}catch{}
  const exitTimers=new Set(),manuallyCollapsed=new Set(),manuallyExpanded=new Set(),previousPending=new Map();
 
@@ -55,6 +55,41 @@ export function createChecklistUI(root,scope,storage=localStorage){
  root.addEventListener("pointerup",gestureEnd,{passive:true});
  root.addEventListener("pointercancel",gestureCancel,{passive:true});
 
+ function syncMenus(){
+  root.querySelectorAll("[data-cc-menu]").forEach(menu=>{
+   const active=menu.dataset.ccMenu===openMenu;
+   menu.querySelector(".cc-menu-popup").hidden=!active;
+   menu.querySelector("[data-menu-toggle]").setAttribute("aria-expanded",String(active));
+  });
+ }
+ function closeMenu(restoreFocus=false){
+  const previous=openMenu;openMenu=null;syncMenus();
+  if(restoreFocus&&previous)root.querySelector('[data-menu-toggle="'+previous+'"]')?.focus({preventScroll:true});
+ }
+ function handleOutsidePointer(event){
+  if(openMenu&&!event.target.closest?.("#controlChecklistView .cc-menu"))closeMenu();
+ }
+ function handleMenuFocus(event){
+  if(openMenu&&!event.target.closest?.("#controlChecklistView .cc-menu"))closeMenu();
+ }
+ function handleMenuKeydown(event){
+  if(!openMenu)return;
+  if(event.key==="Escape"){event.preventDefault();closeMenu(true);return;}
+  if(!["ArrowDown","ArrowUp","Home","End"].includes(event.key))return;
+  const panel=event.target.closest?.('[role="menu"]');
+  if(!panel)return;
+  const choices=[...panel.querySelectorAll("button:not(:disabled)")];
+  if(!choices.length)return;
+  event.preventDefault();
+  const at=choices.indexOf(event.target);
+  const next=event.key==="Home"?0:event.key==="End"?choices.length-1:
+   (at+(event.key==="ArrowDown"?1:-1)+choices.length)%choices.length;
+  choices[next].focus({preventScroll:true});
+ }
+ document.addEventListener("pointerdown",handleOutsidePointer,{passive:true});
+ document.addEventListener("focusin",handleMenuFocus);
+ root.addEventListener("keydown",handleMenuKeydown);
+
  const read=()=>readLoads(storage,scope);
  const set=content=>{root.innerHTML=content;};
  function clearUndo(){
@@ -62,7 +97,7 @@ export function createChecklistUI(root,scope,storage=localStorage){
   undoTimer=null;undo=null;
  }
  function clearExits(){for(const t of exitTimers)clearTimeout(t);exitTimers.clear();}
- function resetDisplay(){clearUndo();clearExits();manuallyCollapsed.clear();manuallyExpanded.clear();previousPending.clear();oneCursor=null;oneLockUntil=0;historyExpanded=false;finalReviewOpen=false;}
+ function resetDisplay(){clearUndo();clearExits();manuallyCollapsed.clear();manuallyExpanded.clear();previousPending.clear();oneCursor=null;oneLockUntil=0;openMenu=null;finalReviewOpen=false;}
  function updateStickyOffset(){
   if(!FEATURES.sticky)return;
   const topbar=document.querySelector(".topbar");
@@ -136,7 +171,6 @@ export function createChecklistUI(root,scope,storage=localStorage){
   return true;
  }
  function renderHistory(load,review,allowed){
-  if(!historyExpanded)return "";
   const entries=historyActions(review);
   if(!entries.length)return '<section class="cc-history-panel" aria-label="Últimas acciones"><p class="muted">Todavía no hay comprobaciones registradas.</p></section>';
   const names={ok:"Correcto",incident:"Incidencia",pending:"Pendiente"};
@@ -359,17 +393,30 @@ export function createChecklistUI(root,scope,storage=localStorage){
     sections.push('<section class="cc-aisle">'+header+rows+'</section>');
    }
    const filters=[["all","Todas"],["pending","Pendientes"],["incident","Incidencias"]].map(([value,label])=>
-    '<button type="button" class="cc-filter'+(filter===value?" active":"")+'" data-filter="'+value+'" aria-pressed="'+(filter===value)+'">'+label+'</button>').join("");
+    '<button type="button" class="cc-menu-option" role="menuitemradio" aria-checked="'+(filter===value)+
+    '" data-filter="'+value+'">'+label+'</button>').join("");
    const modes=[["list","Lista"],["single","Uno a uno"]].map(([value,label])=>
-    '<button type="button" class="cc-mode-button'+(viewMode===value?" active":"")+'" data-mode="'+value+
-    '" aria-pressed="'+(viewMode===value)+'">'+label+'</button>').join("");
+    '<button type="button" class="cc-menu-option" role="menuitemradio" aria-checked="'+(viewMode===value)+
+    '" data-mode="'+value+'">'+label+'</button>').join("");
+   const plate=String(load.plate||load.matricula||"").trim()||"Matrícula no indicada";
+   const filterLabel={all:"Todas",pending:"Pendientes",incident:"Incidencias"}[filter]||"Todas";
+   const viewLabel=viewMode==="single"?"Uno a uno":"Lista";
    const toolbar='<div class="cc-toolbar'+(FEATURES.sticky?" is-sticky":"")+'">'+
-    '<div class="cc-heading"><strong>'+esc(load.id)+'</strong><span class="cc-heading-label">Verificación física</span></div>'+
+    '<div class="cc-heading"><strong class="cc-plate" aria-label="Matrícula del camión">'+esc(plate)+
+    '</strong><span class="cc-load-id">'+esc(load.id)+'</span></div>'+
     '<div class="cc-progress"><strong>'+summary.checked+'/'+summary.total+
-     (viewMode==="single"?"":" comprobadas")+'</strong><span>'+summary.incidents+' incidencias'+
-     (viewMode==="single"?"":" · "+summary.pending+" pendientes")+'</span></div>'+
-    '<div class="cc-filters" role="group" aria-label="Filtrar comprobaciones">'+filters+'</div>'+
-    '<div class="cc-mode-switch" role="group" aria-label="Modo de presentación">'+modes+'</div></div>';
+    ' comprobadas · '+summary.incidents+' incidencias</strong></div>'+
+    '<div class="cc-menu-row" role="group" aria-label="Controles de verificación física">'+
+     '<div class="cc-menu" data-cc-menu="filter">'+
+      '<button type="button" class="cc-menu-trigger" data-menu-toggle="filter" aria-haspopup="menu" aria-controls="cc-menu-filter" aria-expanded="'+(openMenu==="filter")+'">Filtro: '+esc(filterLabel)+' <span aria-hidden="true">▾</span></button>'+
+      '<div id="cc-menu-filter" class="cc-menu-popup" role="menu" aria-label="Filtrar comprobaciones"'+(openMenu==="filter"?"":' hidden')+'>'+filters+'</div></div>'+
+     '<div class="cc-menu" data-cc-menu="view">'+
+      '<button type="button" class="cc-menu-trigger" data-menu-toggle="view" aria-haspopup="menu" aria-controls="cc-menu-view" aria-expanded="'+(openMenu==="view")+'">Vista: '+esc(viewLabel)+' <span aria-hidden="true">▾</span></button>'+
+      '<div id="cc-menu-view" class="cc-menu-popup" role="menu" aria-label="Modo de presentación"'+(openMenu==="view"?"":' hidden')+'>'+modes+'</div></div>'+
+     '<div class="cc-menu cc-menu--history" data-cc-menu="history">'+
+      '<button type="button" class="cc-menu-trigger" data-menu-toggle="history" aria-haspopup="dialog" aria-controls="cc-menu-history" aria-expanded="'+(openMenu==="history")+'">Últimos 5 movimientos <span aria-hidden="true">▾</span></button>'+
+      '<div id="cc-menu-history" class="cc-menu-popup cc-menu-popup--history" role="region" aria-label="Últimos cinco movimientos"'+(openMenu==="history"?"":' hidden')+'>'+
+       renderHistory(load,review,allowed)+'</div></div></div></div>';
    const toast=FEATURES.pending&&undo?.loadId===load.id
     ?'<div class="cc-toast" role="status"><span>✓ Artículo comprobado</span><button type="button" data-undo>Deshacer</button></div>'
     :"";
@@ -381,24 +428,26 @@ export function createChecklistUI(root,scope,storage=localStorage){
    set((warning?'<p role="alert" class="status error">'+esc(warning)+'</p>':"")+
     (review.closedAt?'<p class="status">Revisión cerrada: '+esc(review.closedAt)+'</p>':"")+
     toolbar+
-    (finalReviewOpen?"":'<div class="cc-history-bar"><button type="button" data-history-toggle aria-expanded="'+historyExpanded+'">'+
-     (historyExpanded?"Ocultar últimas acciones":"Últimas acciones")+'</button></div>'+
-     renderHistory(load,review,allowed))+
     body+
     (!finalReviewOpen&&viewMode==="list"?'<button type="button" class="cc-final-entry" data-final-open>'+
      (review.closedAt?"Ver revisión final":"Revisión final antes de cerrar")+'</button>':"")+
     '<p id="ccMessage" role="status" class="status"></p>'+(!finalReviewOpen&&viewMode==="list"?toast:""));
    updateStickyOffset();
+   root.querySelectorAll("[data-menu-toggle]").forEach(button=>button.onclick=()=>{
+    const name=button.dataset.menuToggle;
+    openMenu=openMenu===name?null:name;
+    syncMenus();
+    if(openMenu==="filter"||openMenu==="view"){
+     root.querySelector('[data-cc-menu="'+openMenu+'"] [aria-checked="true"]')?.focus({preventScroll:true});
+    }
+   });
    root.querySelectorAll("[data-mode]").forEach(button=>button.onclick=()=>{
     const next=button.dataset.mode==="single"?"single":"list";
-    if(viewMode===next)return;
-    viewMode=next;oneCursor=null;oneLockUntil=0;finalReviewOpen=false;
+    if(viewMode===next){closeMenu(true);return;}
+    openMenu=null;viewMode=next;oneCursor=null;oneLockUntil=0;finalReviewOpen=false;
     manuallyCollapsed.clear();manuallyExpanded.clear();previousPending.clear();
     try{storage.setItem(MODE_KEY,viewMode);}catch{}
     render();
-   });
-   root.querySelector("[data-history-toggle]")?.addEventListener("click",()=>{
-    historyExpanded=!historyExpanded;render();
    });
    root.querySelectorAll("[data-history-revert]").forEach(button=>button.onclick=event=>{
     if(!isShortClick(event))return;
@@ -406,7 +455,9 @@ export function createChecklistUI(root,scope,storage=localStorage){
     revertHistory(load,index,review.audit?.[index]);
    });
    root.querySelectorAll("[data-filter]").forEach(button=>button.onclick=()=>{
-    filter=button.dataset.filter;oneCursor=null;finalReviewOpen=false;manuallyCollapsed.clear();manuallyExpanded.clear();render();
+    const next=button.dataset.filter;
+    if(filter===next){closeMenu(true);return;}
+    openMenu=null;filter=next;oneCursor=null;finalReviewOpen=false;manuallyCollapsed.clear();manuallyExpanded.clear();render();
    });
    root.querySelectorAll("[data-group]").forEach(button=>button.onclick=()=>{
     const key=button.dataset.group;
@@ -456,7 +507,7 @@ export function createChecklistUI(root,scope,storage=localStorage){
     apply(load,action.index,action.from,action.quantity,action.note);
    });
    root.querySelectorAll("[data-final-open]").forEach(button=>button.onclick=()=>{
-    finalReviewOpen=true;historyExpanded=false;clearUndo();render();
+    finalReviewOpen=true;openMenu=null;clearUndo();render();
    });
    root.querySelector("[data-final-back]")?.addEventListener("click",()=>{
     finalReviewOpen=false;render();
@@ -512,6 +563,8 @@ export function createChecklistUI(root,scope,storage=localStorage){
   disposed=true;resetDisplay();resizeObserver?.disconnect();pointerGestures.clear();
    root.removeEventListener("pointerdown",gestureDown);root.removeEventListener("pointermove",gestureMove);
    root.removeEventListener("pointerup",gestureEnd);root.removeEventListener("pointercancel",gestureCancel);
+   document.removeEventListener("pointerdown",handleOutsidePointer);document.removeEventListener("focusin",handleMenuFocus);
+   root.removeEventListener("keydown",handleMenuKeydown);
    root.classList.remove("cc-active","cc-mode-single");
   root.style.removeProperty("--cc-sticky-top");root.closest("#controlChecklistView")?.classList.remove("cc-detail-open");selected=null;root.replaceChildren();
  }};
