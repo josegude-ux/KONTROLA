@@ -138,14 +138,23 @@ export function crearCoordinadorCheckF3A({scope,repo,now=()=>Date.now()}){
 export function crearRepositorioIndexedDBChecksF3A({scope,idb=globalThis.indexedDB}){
  if(!SCOPE.test(scope)||!idb?.open)refuse('IndexedDB no disponible o scope invalido');
  let opened=null;
+ let activeDb=null;
  // Un fallo inicial (incluido IDB.open que lanza sincrónicamente) no debe
  // mantener en caché una Promise rechazada hasta que se recargue la PWA.
- // La reapertura solo sucede cuando el llamador vuelve a usar el repositorio;
- // no hay bucles ni reintentos automáticos sobre errores persistentes.
+ // Tras un cierre inesperado o versionchange, invalidar SOLO esa conexión:
+ // un evento tardío de una antigua no debe borrar una apertura posterior.
+ // La siguiente operación podrá abrir, sin reintentos automáticos.
  const open=()=>opened??=new Promise((resolve,reject)=>{
   const req=idb.open('visura_f3a_checks_outbox_v1'+scope,1);
   req.onupgradeneeded=()=>{if(!req.result.objectStoreNames.contains('colas'))req.result.createObjectStore('colas',{keyPath:'key'});};
-  req.onsuccess=()=>resolve(req.result);
+  req.onsuccess=()=>{
+   const db=req.result;
+   activeDb=db;
+   const invalidate=()=>{if(activeDb===db){activeDb=null;opened=null;}};
+   db.onclose=invalidate;
+   db.onversionchange=()=>{invalidate();db.close();};
+   resolve(db);
+  };
   req.onerror=()=>reject(req.error);
  }).catch(err=>{opened=null;throw err});
  return Object.freeze({
