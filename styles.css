@@ -714,3 +714,46 @@ footer{padding:18px;text-align:center;background:#fff;border-top:1px solid #e6e8
  font-size:12px;
 }
 #controlChecklistView .cc-toast button{min-height:44px;padding:4px 11px}
+
+
+/* R5.6 — Modo alternativo UNO A UNO; guardado y contrato de revisión intactos. */
+#controlChecklistView .cc-mode-switch{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin-top:6px}
+#controlChecklistView .cc-mode-button{border:1px solid #cbd8e5;border-radius:8px;background:#f4f7fa;color:#0B2647;min-height:44px;padding:5px 8px;font-size:12px;font-weight:800}
+#controlChecklistView .cc-mode-button.active{background:#0B2647;border-color:#0B2647;color:white}
+#controlChecklistView .cc-mode-single{padding-bottom:0!important}
+#controlChecklistView .cc-single-area{display:flex;flex-direction:column;gap:12px;min-width:0}
+#controlChecklistView .cc-single-card{border:1px solid #d3e0ea;background:#f7f9fc;border-radius:14px;min-height:min(43dvh,410px);padding:20px 16px;display:flex;flex-direction:column;gap:10px;justify-content:center;overflow-wrap:anywhere}
+#controlChecklistView .cc-single-card.cc-state-ok{background:#edf8f1;border-color:#b6dcc5}
+#controlChecklistView .cc-single-card.cc-state-incident{background:#fff2ea;border-color:#ecc1aa}
+#controlChecklistView .cc-single-position{text-align:right;font-size:11px;font-weight:750;color:#60758a}
+#controlChecklistView .cc-single-location{font-size:clamp(28px,8vw,43px);font-weight:900;line-height:1.12;color:#0B2647}
+#controlChecklistView .cc-single-sku{font-size:13px;font-weight:800;color:#65798c;letter-spacing:.2px}
+#controlChecklistView .cc-single-description{font-size:clamp(15px,4vw,19px);line-height:1.3;color:#23394d;white-space:normal;overflow-wrap:anywhere}
+#controlChecklistView .cc-single-quantity{margin-top:auto;font-size:clamp(27px,8vw,46px);font-weight:900;text-align:center;color:#0B2647;overflow-wrap:normal}
+#controlChecklistView .cc-single-nav{display:flex;gap:16px;justify-content:space-between;align-items:center}
+#controlChecklistView .cc-single-nav button{min-height:44px;min-width:104px;flex:1;background:#e9f1f7;color:#0B2647;border:1px solid #cbd8e5;border-radius:10px;font-weight:800;padding:5px 10px}
+#controlChecklistView .cc-single-dock{position:sticky;bottom:0;z-index:10;background:linear-gradient(to bottom,#fffdfae0,#fffdfa);padding:6px 0 calc(8px + env(safe-area-inset-bottom,0px));border-radius:12px}
+#controlChecklistView .cc-single-actions{display:grid;grid-template-columns:minmax(0,1fr) 88px;gap:16px;align-items:center}
+#controlChecklistView .cc-single-primary{width:100%;min-width:0;min-height:72px;padding:9px 12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;text-align:center;background:#0B2647;color:white;border:0;border-radius:12px;font-size:18px;font-weight:900}
+#controlChecklistView .cc-single-primary strong{font-size:clamp(16px,4.8vw,23px);font-weight:900;white-space:nowrap}
+#controlChecklistView .cc-single-primary[aria-pressed="true"]{background:#227348}
+#controlChecklistView .cc-single-incident{min-height:54px;width:88px;background:#fff7f0;border:1px solid #d8bba9;border-radius:10px;color:#9e5e38;font-size:18px;font-weight:900;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
+#controlChecklistView .cc-single-incident small{font-size:11px;font-weight:750}
+#controlChecklistView .cc-mode-single .cc-toast{position:static;left:auto;right:auto;bottom:auto;width:100%;max-width:none;margin:0 0 8px;min-height:46px}
+#controlChecklistView .cc-single-summary{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:14px;min-height:45dvh;border:1px solid #d3e0ea;border-radius:14px;padding:20px;background:#f7f9fc}
+#controlChecklistView .cc-single-summary strong{font-size:22px;color:#0B2647}
+#controlChecklistView .cc-single-summary p{color:#47627a;font-size:15px;line-height:1.4}
+#controlChecklistView .cc-one-return{min-height:48px;padding:9px 16px;background:#0B2647;color:#fff;border:0;border-radius:10px;font-weight:800}
+#controlChecklistView .cc-single-toast-inline{margin:12px 0}
+@media(orientation:landscape) and (max-height:540px){
+ #controlChecklistView .cc-single-card{min-height:180px;padding:12px 14px;gap:5px}
+ #controlChecklistView .cc-single-location{font-size:27px}
+ #controlChecklistView .cc-single-description{font-size:14px}
+ #controlChecklistView .cc-single-quantity{font-size:27px}
+ #controlChecklistView .cc-single-area{gap:6px}
+}
+@media(max-width:370px){
+ #controlChecklistView .cc-single-actions{grid-template-columns:minmax(0,1fr) 76px;gap:16px}
+ #controlChecklistView .cc-single-incident{width:76px}
+ #controlChecklistView .cc-single-primary{font-size:16px}
+}
