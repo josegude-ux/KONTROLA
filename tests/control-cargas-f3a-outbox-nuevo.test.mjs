@@ -66,15 +66,15 @@ test('Q6: respuesta válida se acredita, misma respuesta inyectada después se r
  const x=make(),o=x.coordinator();await o.guardarIntencion(entry());
  await o.acreditarRegistroLocal({identity:id,operacionId:uid(1),revision:audit(0)});
  await o.reservarEnvio(send());
- assert.equal((await o.aceptarRecibo({identity:id,operacionId:uid(1),tabId:uid(500),recibo:receipt()})).version,1);
+ assert.equal((await o.aceptarRecibo({identity:id,operacionId:uid(1),tabId:uid(500),actorSesion:uid(900),recibo:receipt()})).version,1);
  assert.equal((await o.estado({identity:id})).versionConfirmada,1);
- await assert.rejects(o.aceptarRecibo({identity:id,operacionId:uid(1),tabId:uid(500),recibo:receipt()}),/sin operacion reservada/);
+ await assert.rejects(o.aceptarRecibo({identity:id,operacionId:uid(1),tabId:uid(500),actorSesion:uid(900),recibo:receipt()}),/sin operacion reservada/);
 });
 test('Q7: recibo fraudulento, con actor ausente o versión incorrecta no confirma',async()=>{
  const x=make(),o=x.coordinator();await o.guardarIntencion(entry());
  await o.acreditarRegistroLocal({identity:id,operacionId:uid(1),revision:audit(0)});await o.reservarEnvio(send());
  const bad={...receipt(),actor:null};
- await assert.rejects(o.aceptarRecibo({identity:id,operacionId:uid(1),tabId:uid(500),recibo:bad}),/recibo no acreditado/);
+ await assert.rejects(o.aceptarRecibo({identity:id,operacionId:uid(1),tabId:uid(500),actorSesion:uid(900),recibo:bad}),/recibo no acreditado/);
  assert.equal((await o.estado({identity:id})).pendientes[0].status,'incierta');
 });
 test('Q8: CAS servidor en conflicto no auto-rebase; bloquea hasta revisión humana',async()=>{
@@ -87,7 +87,7 @@ test('Q9: cola serial con dos checks offline, second usa versión 1 tras primer 
  const x=make(),o=x.coordinator();await o.guardarIntencion(entry());await o.acreditarRegistroLocal({identity:id,operacionId:uid(1),revision:audit(0)});
  await o.guardarIntencion(entry(uid(2),1,'incident',1));await o.acreditarRegistroLocal({identity:id,operacionId:uid(2),revision:audit(1,1,'incident')});
  const one=await o.reservarEnvio(send(id,uid(500),0));assert.equal(one.peticion.p_operacion,uid(1));
- await o.aceptarRecibo({identity:id,operacionId:uid(1),tabId:uid(500),recibo:receipt()});
+ await o.aceptarRecibo({identity:id,operacionId:uid(1),tabId:uid(500),actorSesion:uid(900),recibo:receipt()});
  const two=await o.reservarEnvio(send(id,uid(500),1));
  assert.equal(two.peticion.p_operacion,uid(2));assert.equal(two.peticion.p_version_esperada,1);
 });
@@ -113,7 +113,7 @@ test('Q13: recuperación con revisión de otro PDF no marca lista',async()=>{
 });
 test('Q14: versión del servidor incompatible impide auto-rebase en cola siguiente',async()=>{
  const x=make(),o=x.coordinator();await o.guardarIntencion(entry());await o.acreditarRegistroLocal({identity:id,operacionId:uid(1),revision:audit(0)});
- await o.reservarEnvio(send(id,uid(500),0));await o.aceptarRecibo({identity:id,operacionId:uid(1),tabId:uid(500),recibo:receipt()});
+ await o.reservarEnvio(send(id,uid(500),0));await o.aceptarRecibo({identity:id,operacionId:uid(1),tabId:uid(500),actorSesion:uid(900),recibo:receipt()});
  await o.guardarIntencion(entry(uid(2),1,'ok',1));await o.acreditarRegistroLocal({identity:id,operacionId:uid(2),revision:audit(1,1,'ok')});
  assert.equal((await o.reservarEnvio(send(id,uid(500),17))).status,'reconciliacion_necesaria');
 });

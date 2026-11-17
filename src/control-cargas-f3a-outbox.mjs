@@ -84,7 +84,7 @@ export function crearCoordinadorCheckF3A({scope,repo,now=()=>Date.now()}){
     return {next:row,value:{status:'incierta',reintentarMismoId:true}};
    });
   },
-  async aceptarRecibo({identity:i,operacionId,tabId,recibo}){
+  async aceptarRecibo({identity:i,operacionId,tabId,recibo,actorSesion}){
    const k=lookup(i);
    return repo.atomicUpdate(k,row=>{
     assertSource(row,i);const p=row?.pendientes.find(x=>x.id===operacionId);
@@ -92,11 +92,14 @@ export function crearCoordinadorCheckF3A({scope,repo,now=()=>Date.now()}){
     // La RPC R4.1 entrega los cuatro recuentos del servidor. Nunca acreditar
     // un recibo incompleto o incoherente, aunque UUID y versión coincidan.
     // Los contadores NO certifican comprobación física: solo estado registrado.
+    // Vincular actor a usuario actualmente autenticado; una sesión cambiada NO acredita.
+    // actorSesion debe venir del usuario autenticado verificado (no del recibo mismo).
     if(!recibo||recibo.operacion_id!==p.id||recibo.almacen!==i.almacen||
        recibo.lp!==i.lp||recibo.pdf_hash!==i.pdfHash||recibo.linea!==p.linea||
        recibo.estado!==p.estado||recibo.version!==p.versionEsperada+1||
        recibo.procedencia!=='evento_registrado_en_servidor'||
-       recibo.verificacion_fisica_acreditada!==false||!UUID.test(recibo.actor||'')||
+       recibo.verificacion_fisica_acreditada!==false||!UUID.test(actorSesion||'')||
+       !UUID.test(recibo.actor||'')||recibo.actor.toLowerCase()!==actorSesion.toLowerCase()||
        !Number.isFinite(Date.parse(recibo.hora_servidor||''))||
        !int(recibo.total)||recibo.total<1||recibo.total>3000||
        !int(recibo.checked)||!int(recibo.pending)||!int(recibo.incidents)||

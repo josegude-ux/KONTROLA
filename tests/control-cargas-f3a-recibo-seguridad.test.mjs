@@ -29,7 +29,7 @@ function receipt(estado='ok'){
   actor:'a71d3ee7-181f-4c2a-9000-000000000009',hora_servidor:'2026-11-17T10:00:00Z',
   total:3,checked:estado==='pending'?0:1,pending:estado==='pending'?3:2,incidents:estado==='incident'?1:0};
 }
-async function submit(o,recibo){return o.aceptarRecibo({identity,operacionId:op,tabId:tab,recibo})}
+async function submit(o,recibo){return o.aceptarRecibo({identity,operacionId:op,tabId:tab,actorSesion:'a71d3ee7-181f-4c2a-9000-000000000009',recibo})}
 
 test('R1: recibo realista y completo confirma el evento',async()=>{
  const o=await ready();assert.equal((await submit(o,receipt())).status,'confirmada');
