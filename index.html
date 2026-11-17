@@ -42,7 +42,7 @@
       <button class="primary full" type="submit" id="loginButton">Entrar</button>
     </form>
     <p id="authMessage" class="status" role="status" aria-live="polite"></p>
-    <p class="hint">Las cuentas son habilitadas por administración. No existen usuarios de demostración.<br>Versión <span id="loginVersion">0.3.50</span></p>
+    <p class="hint">Las cuentas son habilitadas por administración. No existen usuarios de demostración.<br>Versión <span id="loginVersion">0.3.51</span></p>
   </div>
 </section>
 <div id="shell" hidden>
@@ -74,10 +74,9 @@
         </div>
       </div>
       <div class="submenu-grid prepara-submenu-grid v15-subprep__cards" aria-label="Funciones de Preparación">
-        <button id="preparacionCargas" type="button" class="submenu-card prepara-submenu-card v15-subprep__card v15-subprep__card--cargas"><span class="submenu-icon v15-subprep__card-icon" aria-hidden="true"><svg viewBox="0 0 48 48" focusable="false" aria-hidden="true"><path d="M8 15 24 7l16 8v18L24 41 8 33Z M8 15l16 8 16-8 M24 23v18 M16 11l16 9"/></svg></span><span class="v15-subprep__card-copy"><b class="v15-subprep__card-title">1. Preparación de cargas</b><small class="v15-subprep__card-text">Accede a las cargas y al procedimiento de preparación existente.</small></span><span class="submenu-arrow v15-subprep__card-arrow" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false" aria-hidden="true"><path d="M4 12h15 M13 5l7 7-7 7"/></svg></span></button>
+        <button id="preparacionCargas" type="button" class="submenu-card prepara-submenu-card v15-subprep__card v15-subprep__card--cargas"><span class="submenu-icon v15-subprep__card-icon" aria-hidden="true"><svg viewBox="0 0 48 48" focusable="false" aria-hidden="true"><path d="M8 15 24 7l16 8v18L24 41 8 33Z M8 15l16 8 16-8 M24 23v18 M16 11l16 9"/></svg></span><span class="v15-subprep__card-copy"><b class="v15-subprep__card-title">1. Preparación de cargas</b><small class="v15-subprep__card-text">Importa las hojas de carga en PDF, prepara las cargas y genera los listados.</small></span><span class="submenu-arrow v15-subprep__card-arrow" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false" aria-hidden="true"><path d="M4 12h15 M13 5l7 7-7 7"/></svg></span></button>
         <button id="preparacionArticulos" type="button" class="submenu-card prepara-submenu-card v15-subprep__card v15-subprep__card--consulta"><span class="submenu-icon v15-subprep__card-icon" aria-hidden="true"><svg viewBox="0 0 48 48" focusable="false" aria-hidden="true"><circle cx="20" cy="20" r="13"/><path d="m30 30 13 13"/></svg></span><span class="v15-subprep__card-copy"><b class="v15-subprep__card-title">2. Consulta de artículos</b><small class="v15-subprep__card-text">Buscar artículos en las cargas publicadas de tu almacén.</small></span><span class="submenu-arrow v15-subprep__card-arrow" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false" aria-hidden="true"><path d="M4 12h15 M13 5l7 7-7 7"/></svg></span></button>
         <button id="preparacionMovimientos" type="button" class="submenu-card prepara-submenu-card v15-subprep__card v15-subprep__card--movimientos"><span class="submenu-icon v15-subprep__card-icon" aria-hidden="true"><svg viewBox="0 0 48 48" focusable="false" aria-hidden="true"><rect x="4" y="8" width="40" height="32" rx="6"/><path d="M10 24h28 M17 17l-7 7 7 7 M31 17l7 7-7 7"/></svg></span><span class="v15-subprep__card-copy"><b class="v15-subprep__card-title">3. Movimientos</b><small class="v15-subprep__card-text">Crear una vista previa local, sin registrar traslados.</small></span><span class="submenu-arrow v15-subprep__card-arrow" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false" aria-hidden="true"><path d="M4 12h15 M13 5l7 7-7 7"/></svg></span></button>
-        <button id="preparacionPrueba3" type="button" class="submenu-card"><span class="submenu-icon">📄</span><span><b>Hojas de carga · PRUEBA_3</b><small>Importación, preparación y listados existentes</small></span><span class="submenu-arrow">›</span></button>
       </div>
     </section>
     <section id="preparacionArticulosView" class="view" hidden>
@@ -161,13 +160,13 @@
     </section>
     <section id="cargasMenuView" class="view" hidden>
       <div class="page-heading">
-        <button type="button" data-back="home" class="back-button">← Volver al inicio</button>
-        <p class="eyebrow">VISURA PREPARA / CONTROL DE CARGAS</p>
-        <h1>Control de Cargas</h1>
-        <p class="muted">PRUEBA_3 integrada: importar PDF, preparar cargas y generar listados de frío.</p>
+        <button type="button" id="backFromCargasMenu" class="back-button">← Volver al inicio</button>
+        <p class="eyebrow" id="cargasMenuEyebrow">VISURA PREPARA / CONTROL DE CARGAS</p>
+        <h1 id="cargasMenuTitle">Control de Cargas</h1>
+        <p class="muted">Importar hojas de carga en PDF, preparar cargas y generar listados de frío.</p>
       </div>
       <div class="prueba3-host" id="prueba3Host">
-        <div class="prueba3-tools"><span>CONTROL DE CARGAS · PRUEBA_3</span><button type="button" id="prueba3Fullscreen" class="secondary">Pantalla completa</button></div>
+        <div class="prueba3-tools"><span>HOJAS DE CARGA</span><button type="button" id="prueba3Fullscreen" class="secondary">Pantalla completa</button></div>
         <iframe id="prueba3Frame" title="Control de Cargas PRUEBA_3" src="about:blank" allow="fullscreen" loading="eager"></iframe>
       </div>
       <p class="hint">Los PDF y los registros de PRUEBA_3 se almacenan solo en este dispositivo, separados por usuario. No se sincronizan automáticamente ni modifican los datos publicados.</p>
@@ -351,7 +350,7 @@
     <section id="settingsView" class="view" hidden>
       <div class="page-heading"><button type="button" data-back="home" class="back-button">← Volver</button><h1>Ajustes</h1></div>
       <section class="panel">
-        <p><b>Aplicación:</b> VISURA PREPARA</p><p><b>Versión:</b> <span id="appVersion">0.3.50</span></p>
+        <p><b>Aplicación:</b> VISURA PREPARA</p><p><b>Versión:</b> <span id="appVersion">0.3.51</span></p>
         <p><b>Usuario:</b> <span id="profileName"></span></p><p><b>Perfil:</b> <span id="profileRole"></span></p>
         <div class="actions"><button type="button" id="checkUpdates" class="secondary">Buscar actualización</button><button id="logout" type="button" class="ghost-danger">Cerrar sesión</button></div>
         <div class="status" id="settingsStatus" role="status" aria-live="polite"></div>

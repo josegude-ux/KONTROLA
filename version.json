@@ -1,4 +1,4 @@
 {
-  "version": "0.3.50",
-  "notes": "Verificación física: matrículas completas en una línea en móvil. Conserva estados, revisiones y tiempos PRUEBA_3."
+  "version": "0.3.51",
+  "notes": "Preparación de cargas abre Hojas de carga (antes PRUEBA_3), con PDF.js local sin conexión y vuelta a Preparación."
 }

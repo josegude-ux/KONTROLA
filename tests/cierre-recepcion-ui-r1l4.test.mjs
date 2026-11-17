@@ -47,7 +47,7 @@ test('no se crea una RPC ni almacén sintético en el menú principal real',()=>
  const section=html.match(/<section id="preparacionMenuView"[\s\S]*?<\/section>/)?.[0];
  const mainCard=html.match(/<button id="openReview"[\s\S]*?<\/button>/)?.[0];
  assert.ok(section&&mainCard,'Submenú y tarjeta originales obligatorios');
- assert.equal(digest(section),'acd9bb49ec84a3cd4de45e791dc6500b50cd5e4c54322408be4555c5cf10da42');
+ assert.equal(digest(section),'f3d5ca281c8ddbdae8a5d20db4fc0c902602e4b0f439a2a1a85417c230516b37');
  assert.match(mainCard,/<b>Control de Cargas<\/b>/);
  assert.match(mainCard,/foto-control-cargas-sin-texto\.webp/);
  assert.match(mainCard,/Verifica físicamente cada carga y registra incidencias/);

@@ -5,7 +5,7 @@
 <meta name="theme-color" content="#142e48"><meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="apple-mobile-web-app-title" content="Control Cargas">
 
-<title>Control de Cargas - Prueba integrada 3</title>
+<title>Hojas de carga · VISURA PREPARA</title>
 <style>
 :root{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;color:#182e44;background:#f2f5f9;font-size:15px;color-scheme:light}*{box-sizing:border-box}body{margin:0;min-width:310px}button,input,select{font:inherit}button{cursor:pointer}.head{background:linear-gradient(135deg,#203d5b,#102840);color:#fff;padding:calc(24px + env(safe-area-inset-top,0px)) 20px 25px}.head .eyebrow{font-size:11px;opacity:.8;letter-spacing:1.4px}.head h1{font-size:25px;margin:9px 0 0;letter-spacing:-.6px}.wrap{max-width:850px;padding:18px;margin:auto}h2{font-size:22px;margin:0 0 6px;letter-spacing:-.5px}h3{font-size:17px;margin:0 0 10px}h4{font-size:14px;margin:16px 0 9px}.muted{color:#6a7c90;font-size:13px;line-height:1.5}.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:0;background:#227ab8;color:white;border-radius:12px;padding:13px 17px;font-weight:750;min-height:46px;text-decoration:none;white-space:nowrap}.btn.light{background:#e8f0f7;color:#1a4e73}.btn.ghost{background:white;color:#22567a;border:1px solid #d8e3ed}.btn:disabled{opacity:.48;cursor:default}.toolbar{display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:13px}.notice{padding:13px;border-radius:13px;background:#e5f1fb;color:#174b71;font-size:13px;line-height:1.5;margin-top:15px;white-space:pre-wrap}.notice.warn{background:#fff2df;color:#74471c}.notice.ok{background:#e5f4ed;color:#215d3d}.cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin:16px 0}.metric{background:white;border-radius:15px;padding:17px 8px;text-align:center;box-shadow:0 2px 8px #12324c08}.metric strong{display:block;font-size:23px}.metric span{color:#6e8294;font-size:11px}.panel{background:white;border-radius:18px;padding:17px;box-shadow:0 3px 13px #12324c0d;margin-top:15px}.line{display:flex;align-items:center;justify-content:space-between;gap:9px}.list-btn{display:block;text-align:left;width:100%;background:#fff;color:inherit;border:1px solid #dfe7ef;border-radius:14px;padding:15px 14px;margin-top:10px}.list-btn:active{background:#f1f6fb}.list-btn .name{font-size:17px;font-weight:750}.list-btn .kg{font-size:14px;font-weight:750;white-space:nowrap}.mini{font-size:13px;color:#687e90;margin:10px 0}.footrow{margin-top:12px;display:flex;align-items:center;justify-content:space-between;gap:8px}.tag{border-radius:8px;padding:6px 9px;font-size:12px;white-space:nowrap;background:#f5ead5;color:#805a1b}.tag.running{background:#e0efff;color:#195a9a}.tag.done{background:#def3e7;color:#206a46}
 .validation-overview{margin:8px 0 2px;font-size:13px;color:#33506a;line-height:1.6}
@@ -163,11 +163,11 @@
 </style>
 </head>
 <body>
-<header class="head"><div class="eyebrow">PRUEBA INTEGRADA 3</div><h1>Control de Cargas</h1></header>
+<header class="head" id="p3StandaloneHead"><div class="eyebrow">VISURA PREPARA</div><h1>Hojas de carga</h1></header>
 <main class="wrap">
 <div class="toolbar"><div><h2>Preparación de cargas</h2><div class="muted">Ordenadas por peso · Datos locales de este dispositivo</div></div><div class="stats-toolbar"><button class="btn light" type="button" id="openStats">▥ Estadísticas locales anteriores</button><label class="btn" for="pdfs">＋ Importar PDF</label><input id="pdfs" type="file" accept="application/pdf,.pdf" multiple class="hidden"></div></div>
 
-<div class="notice"><strong id="installedVersion">PRUEBA INTEGRADA 3</strong> · Una importación, todos los listados.</div>
+<div class="notice"><strong id="installedVersion">Hojas de carga</strong> · Una importación, todos los listados.</div>
 <div id="feedback" class="notice" role="status" aria-live="polite">Puedes seleccionar varias hojas de carga desde Archivos o OneDrive.</div>
 <div class="cards"><div class="metric"><strong id="nLoads">0</strong><span>Cargas</span></div><div class="metric"><strong id="nRefs">0</strong><span>Referencias</span></div><div class="metric"><strong id="nWeight">0</strong><span>Kg totales</span></div></div>
 <div id="validationOverview" class="validation-overview" aria-live="polite"></div>
@@ -211,6 +211,12 @@
 <script type="module">
 const VISURA_SCOPE=(()=>{const value=new URLSearchParams(location.search).get("visura_scope")||"";return /^[a-f0-9]{24}$/.test(value)?"_visura_"+value:"";})();
 if(!VISURA_SCOPE){document.body.textContent="Abre Control de Cargas desde tu sesión de VISURA PREPARA.";throw Error("Falta contexto de usuario de VISURA");}
+// PDF.js publicado con la aplicación (vendor/): funciona sin conexión y sin depender de un CDN externo.
+let pdfjsPromise=null;
+function loadPdfjs(){
+ if(!pdfjsPromise)pdfjsPromise=import('./vendor/pdf.min.mjs').then(m=>{m.GlobalWorkerOptions.workerSrc=new URL('./vendor/pdf.worker.min.mjs',location.href).href;return m;}).catch(e=>{pdfjsPromise=null;throw e;});
+ return pdfjsPromise;
+}
 
 const {parseDocumentPages,summarize}=(()=>{
 // Lector por coordenadas para hojas de carga VolDistribución.
@@ -415,9 +421,8 @@ async function leerOriginal(id){
 }
 const norm=s=>String(s||'').toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^A-Z]/g,'');
 async function recortarMercancia(original){
- const pdfjs=await import('https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.min.mjs');
- pdfjs.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.worker.min.mjs';
- const doc=await pdfjs.getDocument({data:new Uint8Array(await original.arrayBuffer())}).promise;
+ const pdfjs=await loadPdfjs();
+ const docTask=pdfjs.getDocument({data:new Uint8Array(await original.arrayBuffer())});const doc=await docTask.promise;
  const images=[];let found=false;
  try {
   // Localizar PRIMERO los bloques de almacén en todas las páginas: COR_01 puede
@@ -476,7 +481,7 @@ async function recortarMercancia(original){
   }
   if(!found||!images.length)throw new Error('No se ha localizado el final de MERCANCÍA: impresión cancelada para no incluir envases');
   return images;
- } finally {await doc.destroy()}
+ } finally {await docTask.destroy()}
 }
 let imageURLs=[];
 function limpiarVista(contenedor){
@@ -607,7 +612,7 @@ return {printPrepared};
 })();
 
 const $=id=>document.getElementById(id);
-$('installedVersion').textContent='PRUEBA INTEGRADA 3';
+$('installedVersion').textContent='Hojas de carga';if(window.self!==window.top)$('p3StandaloneHead').hidden=true;
 const KEY='control_cargas_prueba_integrada_2'+VISURA_SCOPE; // Compatibilidad con los datos de v0.4
 const OPKEY='control_cargas_operarios_prueba_2'+VISURA_SCOPE;
 let loads=[],operators=[],chosen=null,filter='Todas',p3Controller=null;
@@ -1198,11 +1203,10 @@ $('printReport').addEventListener('click',async()=>{
  }finally{btn.disabled=false;btn.textContent='▤ Imprimir / Guardar PDF'}
 });
 async function readPdf(file){
- const pdfjs=await import('https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.min.mjs');
- pdfjs.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.worker.min.mjs';
- const pdf=await pdfjs.getDocument({data:new Uint8Array(await file.arrayBuffer())}).promise;const pages=[];
+ const pdfjs=await loadPdfjs();
+ const pdfTask=pdfjs.getDocument({data:new Uint8Array(await file.arrayBuffer())});const pdf=await pdfTask.promise;const pages=[];
  for(let n=1;n<=pdf.numPages;n++){const pg=await pdf.getPage(n);const cont=await pg.getTextContent();const h=pg.getViewport({scale:1}).height;const items=cont.items.filter(i=>typeof i.str==='string').map(i=>({text:i.str,x:i.transform?.[4]??0,y:h-(i.transform?.[5]??0)}));pages.push({number:n,width:pg.getViewport({scale:1}).width,items})}
- try{return coldLoad(pages,file.name)}finally{await pdf.destroy();}
+ try{return coldLoad(pages,file.name)}finally{await pdfTask.destroy();}
 }
 let importing=false,generating=false,lastImportErrors=[];
 $('pdfs').addEventListener('change',async e=>{
@@ -1251,6 +1255,6 @@ $('restoreInput').addEventListener('change',async e=>{const file=e.target.files[
 $('p3Controlled').addEventListener('click',async()=>{if(chosen&&p3Controller){await p3Controller.controlled(chosen);openDetail(chosen.id);}});
 $('p3Reassign').addEventListener('click',async()=>{if(chosen&&p3Controller){await p3Controller.reassign(chosen);openDetail(chosen.id);}});
 list();
-import('./src/prueba3-tiempos.mjs').then(m=>m.iniciarTiemposPrueba3({scope:VISURA_SCOPE.slice(8),getLoads:()=>loads,render:list,openLocal:openDetail,readOriginal:leerOriginal,notice:notify})).then(c=>{p3Controller=c;list();}).catch(error=>{notify('Control de tiempos compartido no disponible: '+String(error?.message||error)+'. Los datos locales siguen intactos.','warn');});
+import('./src/prueba3-tiempos.mjs').then(m=>m.iniciarTiemposPrueba3({scope:VISURA_SCOPE.slice(8),getLoads:()=>loads,render:list,openLocal:openDetail,readOriginal:leerOriginal,notice:notify})).then(c=>{p3Controller=c;list();}).catch(error=>{notify('Control de tiempos compartido no disponible: '+String(error?.message||error).replace(/[.\s]+$/,'')+'. Los datos locales siguen intactos.','warn');});
 </script>
 </body></html>
