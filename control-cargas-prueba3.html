@@ -209,6 +209,8 @@
   <main class="report-preview"><div id="originalPages"></div><div id="reportPaper" class="report-paper"></div></main>
 </div>
 <script type="module">
+import {normalizarLP} from "./src/control-cargas-lp.mjs";
+import {crearAdaptadorLocalDescarte} from "./src/control-cargas-descarte-adapter.mjs";
 const VISURA_SCOPE=(()=>{const value=new URLSearchParams(location.search).get("visura_scope")||"";return /^[a-f0-9]{24}$/.test(value)?"_visura_"+value:"";})();
 if(!VISURA_SCOPE){document.body.textContent="Abre Control de Cargas desde tu sesión de VISURA PREPARA.";throw Error("Falta contexto de usuario de VISURA");}
 
@@ -610,6 +612,8 @@ const $=id=>document.getElementById(id);
 $('installedVersion').textContent='PRUEBA INTEGRADA 3';
 const KEY='control_cargas_prueba_integrada_2'+VISURA_SCOPE; // Compatibilidad con los datos de v0.4
 const OPKEY='control_cargas_operarios_prueba_2'+VISURA_SCOPE;
+// F2: consulta LOCAL obligatoria en cada PDF; sin red, sin intervención en preparación.
+const descarteAdapter=crearAdaptadorLocalDescarte({scope:VISURA_SCOPE,storage:localStorage});
 let loads=[],operators=[],chosen=null,filter='Todas',p3Controller=null;
 const selectedIds=new Set();
 try{const raw=JSON.parse(localStorage.getItem(KEY)||'[]');loads=Array.isArray(raw)?raw:[]}catch{}
@@ -1212,10 +1216,31 @@ $('pdfs').addEventListener('change',async e=>{
   const file=files[k];notify('Leyendo '+(k+1)+'/'+files.length+': '+file.name);
   try{
    const hash=await fingerprint(file);
+   const incoming=await readPdf(file);if(!incoming.id)throw new Error('Sin identificador de carga');
+   // Una sola identidad LP para reimportación, futura restauración y descarte.
+   // No reescribir claves históricas ambiguas: las colisiones requieren revisión.
+   const canon=normalizarLP(incoming.id);
+   const matches=loads.filter(r=>normalizarLP(r.id)===canon);
+   if(matches.length>1||matches.some(r=>r.id!==canon))
+    throw new Error('LP existente en formato distinto/duplicado; revisión manual antes de importar.');
+   incoming.id=canon;
+   const old=matches[0]||null;
+   const decision=descarteAdapter.decidirImportacion({lp:canon,hash,cargaLocal:old});
+   if(decision.accion==="bloquear")
+    throw new Error('Registro de descartes no disponible: se conserva la carga sin cambios. '+decision.motivo);
+   if(decision.accion==="conservar"){duplicates++;continue;}
+   if(decision.accion==="registrar_version_posterior"){
+    // Guardar únicamente otra versión con hash propio. NO sustituir la copia activa,
+    // NO llamar revised(), NO modificar revisiones, audit ni progreso.
+    await guardarOriginal(canon+'::'+hash,file);
+    descarteAdapter.registrarVersionPosterior({lp:canon,hash,
+     hashOriginal:old?.pdfHash||decision.hashOriginal});
+    cancelled++;continue;
+   }
+   // Solo cargas ACTIVA: se conserva sin cambios la ruta de importación anterior.
    const identical=loads.find(r=>r.pdfHash===hash);
    if(identical&&await leerOriginal(identical.id)){selectedIds.add(identical.id);duplicates++;continue;}
-   const incoming=await readPdf(file);if(!incoming.id)throw new Error('Sin identificador de carga');
-   const old=loads.find(x=>x.id===incoming.id),original=old?await leerOriginal(incoming.id):null;
+   const original=old?await leerOriginal(canon):null;
    if(original&&await fingerprint(original)===hash){duplicates++;continue;}
    if(old&&old.pdfHash!==hash&&!confirm('Ya existe la carga '+incoming.id+'. Este PDF es diferente.\nPeso: '+(old.weight??'—')+' → '+(incoming.weight??'—')+' kg\nReferencias: '+(old.refs??'—')+' → '+(incoming.refs??'—')+'\nFecha: '+(old.date||'—')+' → '+(incoming.date||'—')+'\n¿Actualizar el documento conservando operario, horarios y estado?')){cancelled++;continue;}
    const next=revised(old,incoming,hash),previous=loads;

@@ -60,9 +60,9 @@ test("F1: modelo impide descarte si está cerrada o totalmente comprobada",()=>{
   {total:2,checked:1,pending:1,incidents:0,revision_actualizada_en:"2026-11-17T01:00:00Z"});
  assert.equal(validacionDescarte({...l,products:[]},review()).apta,false);
 });
-test("F1: solo administrador activo autorizado en modelo; permiso servidor aún pendiente",()=>{
+test("F2: operario y administrador activos, con validación definitiva pendiente del servidor",()=>{
  assert.equal(permisoDescarte({id:"fake-admin",rol:"administrador",activo:true}),true);
- assert.equal(permisoDescarte({id:"fake-operator",rol:"operario",activo:true}),false);
+ assert.equal(permisoDescarte({id:"fake-operator",rol:"operario",activo:true}),true);
  assert.equal(permisoDescarte({id:"fake-admin",rol:"administrador",activo:false}),false);
  assert.equal(permisoDescarte({id:"",rol:"administrador",activo:true}),false);
 });

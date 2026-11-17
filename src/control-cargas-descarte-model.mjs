@@ -1,4 +1,5 @@
-// VISURA PREPARA · FASE 1, exclusivamente modelo de descarte local.
+import {normalizarLP} from "./control-cargas-lp.mjs";
+// VISURA PREPARA · FASE 2, modelo inerte y compatible con F1.
 // Módulo puro: NO modifica almacenamiento, interfaz, BC, Supabase ni registros reales.
 // Registro separado del array importado de PRUEBA_3 para evitar reactivaciones.
 export const DESCARTE_SCHEMA=1;
@@ -12,19 +13,24 @@ export const descarteKey=scope=>{
 const objeto=v=>v!==null&&typeof v==="object"&&!Array.isArray(v);
 const copia=v=>JSON.parse(JSON.stringify(v));
 export function codigoEstable(load){
- const id=String(load?.id??"").trim();
- if(!/^[\w.:-]{1,80}$/u.test(id))throw Error("Identificador de carga inválido");
- return id.toUpperCase();
+ return normalizarLP(load);
 }
 export function registroActivo(){
  return {estado_descarte:"activa",descartada_en:null,descartada_por:null,
-  motivo_descarte:null,progreso_al_descartar:null,version_descarte:0,
-  historial_descarte:[]};
+  motivo_descarte:null,progreso_al_descartar:null,
+  // El progreso es un SNAPSHOT (no el estado vivo). F3: capturado y sellado en servidor.
+  snapshot_progreso_al_descartar:null,
+  // Solo la futura RPC puede fijar descartada_por=auth.uid() y descartada_en=clock_timestamp().
+  // El dato del dispositivo, si se admite, será exclusivamente informativo.
+  versiones_posteriores_recibidas:[],pendiente_confirmacion:false,
+  version_descarte:0,historial_descarte:[]};
 }
 export function revisarRegistro(v){
  if(!objeto(v)||!Object.values(DESCARTE_ESTADOS).includes(v.estado_descarte)||
   !Number.isSafeInteger(v.version_descarte)||v.version_descarte<0||
-  !Array.isArray(v.historial_descarte))throw Error("Registro de descarte inválido");
+  !Array.isArray(v.historial_descarte)||
+  (v.versiones_posteriores_recibidas!==undefined&&!Array.isArray(v.versiones_posteriores_recibidas)))
+  throw Error("Registro de descarte inválido");
  if(v.estado_descarte==="descartada"&&
   (!v.descartada_en||!v.descartada_por||!objeto(v.progreso_al_descartar)))
   throw Error("Descarte sin trazabilidad");
@@ -51,7 +57,10 @@ export function validacionDescarte(load,review){
  return {apta:true,motivo:null,progreso:progress};
 }
 export function permisoDescarte({id,rol,activo}={}){
- return typeof id==="string"&&id.length>0&&rol==="administrador"&&activo===true;
+ // Solo comprobación preparatoria: la autorización REAL será auth.uid()+rol+almacén en SQL.
+ // La petición explícita de F2 admite tanto operario como administrador.
+ return typeof id==="string"&&id.length>0&&activo===true&&
+  (rol==="operario"||rol==="administrador");
 }
 // FASE 1: vista previa puramente aditiva. No llama storage.setItem ni ejecuta SQL.
 // El ledger independiente evita que revised() de PRUEBA_3 borre el descarte.
@@ -64,9 +73,10 @@ export function prepararMigracionLocal({scope,loads,reviews={},ledgerAnterior=nu
   throw Error("Ledger previo incompatible; no se sobrescribe");
  const items=Object.create(null);
  for(const [id,entry] of Object.entries(previous?.items??{})){
-  if(!/^[\w.:-]{1,80}$/u.test(id))throw Error("Clave de ledger inválida");
+  const canonico=normalizarLP(id);
+  if(Object.hasOwn(items,canonico))throw Error("Colisión de LP del registro previo: "+canonico);
   revisarRegistro(entry);
-  items[id]=copia(entry);
+  items[canonico]=copia(entry);
  }
  let nuevos=0,preservados=0;
  const seen=new Set();

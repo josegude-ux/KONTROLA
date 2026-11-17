@@ -7,7 +7,9 @@ const SCOPED_PREFIXES=[
  "control_cargas_prueba_integrada_2",
  "control_cargas_operarios_prueba_2",
  "visura_control_revision_v1",
- "visura_prepara_descarte_v1"
+ "visura_prepara_descarte_v1",
+ "visura_prepara_descarte_cache_v1",
+ "visura_prepara_descarte_incidencias_v1"
 ];
 const LIMIT_BYTES=256*1024*1024; // Si se excede, abortar; JAMÁS exportar un respaldo parcial.
 const hex=bytes=>Array.from(bytes,b=>b.toString(16).padStart(2,"0")).join("");
