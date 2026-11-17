@@ -40,11 +40,15 @@ export function createChecklistUI(root,scope,storage=localStorage){
   pointerGestures.delete(e.pointerId);pointerVerdicts.set(touch.button,false);
  }
  function isShortClick(event){
-  // Keyboard and assistive technology synthesize click with detail=0.
-  if(event.detail===0)return true;
-  const button=event.currentTarget,accepted=pointerVerdicts.get(button)===true;
-  pointerVerdicts.delete(button);
-  return accepted;
+  const button=event.currentTarget;
+  // El dictamen del gesto tiene prioridad incluso si Safari emite click con detail=0.
+  if(pointerVerdicts.has(button)){
+   const accepted=pointerVerdicts.get(button)===true;
+   pointerVerdicts.delete(button);
+   return accepted;
+  }
+  // Sin gesto táctil previo: solo teclado o tecnologías de asistencia.
+  return event.detail===0;
  }
  root.addEventListener("pointerdown",gestureDown,{passive:true});
  root.addEventListener("pointermove",gestureMove,{passive:true});
