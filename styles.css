@@ -702,3 +702,15 @@ footer{padding:18px;text-align:center;background:#fff;border-top:1px solid #e6e8
 @media(max-width:370px){
  #controlChecklistView .cc-description{font-size:11px;line-height:1.2}
 }
+
+
+/* R5.5 — Deshacer accesible 4 s sin bloquear las últimas filas. */
+#controlChecklistView .cc-active{padding-bottom:calc(82px + env(safe-area-inset-bottom,0px))}
+#controlChecklistView .cc-toast{
+ bottom:calc(4px + env(safe-area-inset-bottom,0px));
+ min-height:46px;
+ padding:1px 9px;
+ gap:8px;
+ font-size:12px;
+}
+#controlChecklistView .cc-toast button{min-height:44px;padding:4px 11px}

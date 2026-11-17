@@ -82,7 +82,7 @@ export function createChecklistUI(root,scope,storage=localStorage){
     undoTimer=setTimeout(()=>{
      undo=null;undoTimer=null;
      root.querySelector(".cc-toast")?.remove();
-    },3000);
+    },4000);
    }else if(undo?.index===index&&undo?.loadId===load.id){clearUndo();}
    if(FEATURES.pending&&animate&&status==="ok"&&filter==="pending"&&!window.matchMedia?.("(prefers-reduced-motion: reduce)").matches){
     const row=root.querySelector('[data-line-index="'+index+'"]');
