@@ -17,7 +17,7 @@ Entrada => salida:
 - LP2621230 => LP26-21230
 - LP2026-21230, LP26-123, LP26-1234567 => ERROR.
 
-Consulta exclusivamente de LECTURA en proyecto Supabase existente control-cargas-movil, sobre las columnas codigo de kontrolla_cargas y visura_p3_cargas, 17/11/2026: 45 LP; 45 códigos distintos; 45 canónicos distintos; 0 colisiones; un formato observado, LP26 con guion y cinco cifras; 0 desconocidos. No se pudo acceder a los registros EXCLUSIVAMENTE guardados en los móviles: alcance de verificación parcial.
+Consulta exclusivamente de LECTURA en proyecto Supabase existente control-cargas-movil, sobre las columnas codigo de kontrola_cargas y visura_p3_cargas, 17/11/2026: 45 LP; 45 códigos distintos; 45 canónicos distintos; 0 colisiones; un formato observado, LP26 con guion y cinco cifras; 0 desconocidos. No se pudo acceder a los registros EXCLUSIVAMENTE guardados en los móviles: alcance de verificación parcial.
 
 ## Protección implementada (solo código en rama sin publicación)
 
@@ -44,7 +44,7 @@ Cinco tablas propias: verificacion_cargas_revisiones, verificacion_cargas_descar
 
 | Regla | Archivo KONTROLA existente | Descarte Verificación física |
 | --- | --- | --- |
-| Fuente | kontrolla_cargas.archivado | verificacion_cargas_descartes |
+| Fuente | kontrola_cargas.archivado | verificacion_cargas_descartes |
 | Estado requerido | CERRADA, verificación finalizada | NO CERRADA y con pendientes |
 | Plazo | 90 días y sin dependencias/incidencias activas | Sin antigüedad obligatoria para la operación; UI futura sugiere días anteriores |
 | Roles | Solo administrador | Operario y administrador activos y autorizados por almacén |
@@ -54,7 +54,7 @@ Cinco tablas propias: verificacion_cargas_revisiones, verificacion_cargas_descar
 | PDF/reimportación | Archivo operativo existente | LP descartado persiste, original inmutable y versiones posteriores aparte |
 | Restauración | Revierte archivo operativo | Reactiva la lista, conserva progreso y revisión exactos |
 
-Referencia existente: supabase/migrations/20261031_kontrola_archivo_logico_seguro.sql. NO reutilizar kontrolla_cambiar_archivo ni modificar su contrato de 90 días.
+Referencia existente: supabase/migrations/20261031_kontrola_archivo_logico_seguro.sql. NO reutilizar kontrola_cambiar_archivo ni modificar su contrato de 90 días.
 
 ## Proyecto de pruebas y puertas de seguridad
 

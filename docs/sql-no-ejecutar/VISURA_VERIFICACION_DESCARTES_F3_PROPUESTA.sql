@@ -126,7 +126,7 @@ create trigger vc_eventos_append_only before update or delete
 -- Esta RPC NO forma parte del código conectado en F2.
 create or replace function public.verificacion_cargas_sincronizar_revision(
  p_almacen text,p_codigo text,p_pdf_hash text,p_lineas jsonb,
- p_version_esperada bigint,p_cerrar boolean default false)
+ p_version_esperada bigint,p_cerrar boolean default false,p_aceptar_incidencias boolean default false)
 returns jsonb language plpgsql security definer set search_path='' as $$
 declare v_user uuid:=auth.uid();v_codigo text;
  v_total int;v_checked int;v_incidents int;
@@ -147,13 +147,17 @@ begin
  v_total:=jsonb_array_length(p_lineas);
  if v_total<1 or v_total>3000 then raise exception 'Líneas fuera de rango' using errcode='22023';end if;
  if exists(select 1 from jsonb_array_elements(p_lineas) as t(item)
-   where jsonb_typeof(item)<>'object' or item->>'status' not in ('pending','ok','incident')) then
+   where jsonb_typeof(item)<>'object' or coalesce(item->>'status','') not in ('pending','ok','incident')) then
   raise exception 'Línea de verificación inválida' using errcode='22023';
  end if;
  select count(*) filter(where item->>'status'<>'pending'),
         count(*) filter(where item->>'status'='incident')
  into v_checked,v_incidents from jsonb_array_elements(p_lineas) as t(item);
+ if p_version_esperada is null then raise exception 'Versión esperada requerida' using errcode='22023';end if;
  if p_cerrar and v_checked<>v_total then raise exception 'Quedan pendientes' using errcode='22023';end if;
+ if p_cerrar and v_incidents>0 and not coalesce(p_aceptar_incidencias,false) then
+  raise exception 'Incidencias sin aceptación expresa' using errcode='22023';
+ end if;
  select * into v_previous from public.verificacion_cargas_revisiones
   where almacen=p_almacen and codigo=v_codigo for update;
  if found then
@@ -181,9 +185,9 @@ begin
  return jsonb_build_object('codigo',v_codigo,'version_revision',v_new_version,
    'comprobadas',v_checked,'total',v_total,'actor_servidor',v_user,'fecha_servidor',v_time);
 end $$;
-revoke all on function public.verificacion_cargas_sincronizar_revision(text,text,text,jsonb,bigint,boolean)
+revoke all on function public.verificacion_cargas_sincronizar_revision(text,text,text,jsonb,bigint,boolean,boolean)
  from public,anon,authenticated;
-grant execute on function public.verificacion_cargas_sincronizar_revision(text,text,text,jsonb,bigint,boolean)
+grant execute on function public.verificacion_cargas_sincronizar_revision(text,text,text,jsonb,bigint,boolean,boolean)
  to authenticated;
 
 -- Descarte atómico: solicitud misma operación+contenido devuelve MISMO recibo.
