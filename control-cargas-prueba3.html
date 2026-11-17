@@ -653,8 +653,9 @@ function list(){
  const issues=loads.length-verified;
  $('validationOverview').textContent=verified+' cargas verificadas · '+issues+' con incidencias. '+loads.filter(r=>r.hasCor===false).length+' sin mercancía COR_01_COR.';
  dailySummary();
- const term=$('loadSearch').value.trim().toLocaleLowerCase('es-ES');const matchSearch=r=>!term||[r.id||r.codigo,r.route||r.ruta,r.plate||r.matricula].some(v=>String(v||'').toLocaleLowerCase('es-ES').includes(term));const visible=dailyScope().filter(matchesState).filter(matchSearch);const other=p3Controller?.remoteRows().filter(matchesState).filter(matchSearch)||[];
+ const term=$('loadSearch').value.trim().toLocaleLowerCase('es-ES');const matchSearch=r=>!term||[r.id||r.codigo,r.route||r.ruta,r.plate||r.matricula].some(v=>String(v||'').toLocaleLowerCase('es-ES').includes(term));const ranking={'En preparación':0,'Sin iniciar':1,'Finalizada':2};const visible=[...dailyScope().filter(matchesState).filter(matchSearch),...(p3Controller?.remoteRows().filter(matchesState).filter(matchSearch)||[])].sort((a,b)=>(ranking[p3Controller?.status(a)||'Sin iniciar']??1)-(ranking[p3Controller?.status(b)||'Sin iniciar']??1)||(Number(b.weight??b.peso_kg)||0)-(Number(a.weight??a.peso_kg)||0));
  $('loadList').innerHTML=visible.map(r=>{
+  if(r._p3remote)return p3Controller.remoteCard(r);
   const status=p3Controller?.status(r)||(r.finished?'Finalizada':'Sin iniciar');
   const valid=isVerified(r);
   return '<div class="load-entry"><label class="load-check" title="Marcar para imprimir"><input type="checkbox" data-select-id="'+html(r.id)+'" aria-label="Imprimir carga '+html(r.id)+'" '+(selectedIds.has(r.id)?'checked':'')+'></label><div class="list-btn" role="button" tabindex="0" data-load="'+html(r.id)+'" aria-label="Abrir carga '+html(r.id)+'">'+
@@ -665,7 +666,7 @@ function list(){
    '<div class="card-actions"><button type="button" class="btn light" data-action="report" data-id="'+html(r.id)+'">▤ Generar listado'+(valid?'':' (provisional)')+'</button>'+
    ''+
    '</div></div></div>';
- }).join('')+other.map(r=>p3Controller.remoteCard(r)).join('')||'<p class="muted">No hay cargas para mostrar.</p>';
+ }).join('')||'<p class="muted">No hay cargas para mostrar.</p>';
  document.querySelectorAll('[data-filter]').forEach(b=>b.classList.toggle('active',b.dataset.filter===filter));
  syncSelectionUI();
 }
@@ -687,12 +688,12 @@ $('loadList').addEventListener('pointermove',e=>{if(p3Origin&&Math.hypot(e.clien
 $('loadList').addEventListener('pointerup',()=>{p3Origin=null;},{passive:true});
 $('loadList').addEventListener('click',async e=>{
  if(p3Moved){p3Moved=false;return;}
- const remote=e.target.closest('[data-p3-remote]');if(remote&&p3Controller){const r=p3Controller.remoteRows().find(x=>x.id===remote.dataset.p3Remote);if(r)p3Controller.remoteOpen(r);return;}
+ const remote=e.target.closest('[data-p3-remote]');if(remote&&p3Controller){const r=p3Controller.remoteByKey(remote.dataset.p3Remote);if(r)p3Controller.remoteOpen(r);return;}
  const action=e.target.closest('[data-action]');
  if(action){const r=loads.find(x=>x.id===action.dataset.id);if(!r)return;if(action.dataset.action==='report')openReport(r);return;}
  const card=e.target.closest('[data-load]');if(card){const r=loads.find(x=>x.id===card.dataset.load);if(!r)return;if(p3Controller)await p3Controller.beforeOpen(r,()=>openDetail(r.id));else{notify('No se ha podido conectar el control de tiempos al servidor. Apertura en modo consulta.','warn');openDetail(r.id);}}
 });
-$('loadList').addEventListener('keydown',async e=>{if(e.target.matches('[data-load],[data-p3-remote]')&&(e.key==='Enter'||e.key===' ')){e.preventDefault();const r=loads.find(x=>x.id===e.target.dataset.load);if(r){if(p3Controller)await p3Controller.beforeOpen(r,()=>openDetail(r.id));else openDetail(r.id);}else if(p3Controller){const remote=p3Controller.remoteRows().find(x=>x.id===e.target.dataset.p3Remote);if(remote)p3Controller.remoteOpen(remote);}}});
+$('loadList').addEventListener('keydown',async e=>{if(e.target.matches('[data-load],[data-p3-remote]')&&(e.key==='Enter'||e.key===' ')){e.preventDefault();const r=loads.find(x=>x.id===e.target.dataset.load);if(r){if(p3Controller)await p3Controller.beforeOpen(r,()=>openDetail(r.id));else openDetail(r.id);}else if(p3Controller){const remote=p3Controller.remoteByKey(e.target.dataset.p3Remote);if(remote)p3Controller.remoteOpen(remote);}}});
 
 const localTime=v=>{if(!v)return '';const d=new Date(v);if(!Number.isFinite(d.getTime()))return '';return new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,16)};
 const elapsed=(a,b)=>{if(!a||!b)return '';const minutes=Math.round((new Date(b)-new Date(a))/60000);return minutes>=0?' · Duración: '+Math.floor(minutes/60)+' h '+String(minutes%60).padStart(2,'0')+' min':''};

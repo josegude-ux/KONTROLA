@@ -70,7 +70,7 @@ export async function iniciarTiemposPrueba3({scope,getLoads,render,openLocal,rea
   return [...state.values()].filter(r=>r.almacen===W&&!known.has(key(r))).map(r=>({...r,id:r.codigo,pdfHash:r.pdf_hash,weight:r.peso_kg,refs:r.referencias,visits:r.visitas,route:r.ruta,plate:r.matricula,_p3remote:true}));
  }
  function remoteCard(r){
-  return '<div class="list-btn p3-remote" data-p3-remote="'+esc(r.id)+'" role="button" tabindex="0"><div class="line"><strong>'+esc(r.codigo)+'</strong><strong>'+esc(r.peso_kg??"—")+' kg</strong></div><div class="mini">'+esc(r.ruta||"Sin ruta")+' · '+esc(r.matricula||"Sin matrícula")+' · Copia compartida (PDF no presente en este dispositivo)</div><div class="footrow">'+badge(r)+'</div></div>';
+  return '<div class="list-btn p3-remote" data-p3-remote="'+esc(key(r))+'" role="button" tabindex="0"><div class="line"><strong>'+esc(r.codigo)+'</strong><strong>'+esc(r.peso_kg??"—")+' kg</strong></div><div class="mini">'+esc(r.ruta||"Sin ruta")+' · '+esc(r.matricula||"Sin matrícula")+' · Copia compartida (PDF no presente en este dispositivo)</div><div class="footrow">'+badge(r)+'</div></div>';
  }
  async function refresh(){
   if(!navigator.onLine||!await isAuthenticated())return;
@@ -226,5 +226,5 @@ export async function iniciarTiemposPrueba3({scope,getLoads,render,openLocal,rea
  try{await refresh();}catch(e){notice("Modo sin conexión: "+String(e.message||e),"warn");}
  await syncCopies().catch(e=>notice(String(e.message||e),"warn"));
  await flush().catch(e=>notice(String(e.message||e),"warn"));
- return {status,badge,remoteRows,remoteCard,beforeOpen,remoteOpen,controlled,reassign,syncCopies,refresh};
+ return {status,badge,remoteRows,remoteCard,remoteByKey:k=>remoteRows().find(r=>key(r)===k),beforeOpen,remoteOpen,controlled,reassign,syncCopies,refresh};
 }
