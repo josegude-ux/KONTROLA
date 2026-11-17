@@ -1,4 +1,4 @@
 {
-  "version": "0.3.48",
-  "notes": "PRUEBA_3: tiempos de preparación por operario compartidos en Supabase, copias independientes por LP y hash PDF, cola offline. Sin cambios en cargas operativas."
+  "version": "0.3.49",
+  "notes": "Verificación física: matrícula destacada y estados de carga visuales; conserva tiempos PRUEBA_3 y protección de datos existentes."
 }

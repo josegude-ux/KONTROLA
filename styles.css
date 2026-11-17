@@ -990,3 +990,71 @@ footer{padding:18px;text-align:center;background:#fff;border-top:1px solid #e6e8
  #controlChecklistView .cc-menu-trigger{padding:4px 2px;font-size:10px}
  #controlChecklistView .cc-toolbar .cc-heading .cc-plate{font-size:21px}
 }
+
+
+/* Tarjetas de Verificación física: matrícula prioritaria y estados de revisión local.
+   No modifica Preparación ni el modelo de datos de PRUEBA_3. */
+#controlChecklistView .cc-load-list{display:grid;gap:12px;margin-top:14px}
+#controlChecklistView .cc-load-card{
+ --cc-load-accent:#8795a8;display:grid;grid-template-columns:minmax(0,1.12fr) minmax(0,1fr) 18px;
+ align-items:center;column-gap:12px;position:relative;width:100%;min-height:126px;
+ padding:14px 15px 14px 21px;border:1px solid #d4dfe8;border-radius:17px;
+ background:#fcfdff;color:#0b2647;text-align:left;box-shadow:0 2px 9px #0b264708;
+ font:inherit;cursor:pointer;touch-action:pan-y
+}
+#controlChecklistView .cc-load-card::before{
+ content:"";position:absolute;left:8px;top:14px;bottom:14px;width:5px;
+ border-radius:6px;background:var(--cc-load-accent)
+}
+#controlChecklistView .cc-load-card--pendiente{
+ --cc-load-accent:#8795a8;background:#fcfdff;border-color:#d4dfe8
+}
+#controlChecklistView .cc-load-card--en-proceso{
+ --cc-load-accent:#e78b12;background:#fffaf1;border-color:#f0d5a7
+}
+#controlChecklistView .cc-load-card--finalizada{
+ --cc-load-accent:#24a058;background:#f2fcf5;border-color:#bfdfc9
+}
+#controlChecklistView .cc-load-card:focus-visible{outline:3px solid #1674bf;outline-offset:3px}
+#controlChecklistView .cc-load-main,
+#controlChecklistView .cc-load-info{display:flex;flex-direction:column;align-items:stretch;min-width:0}
+#controlChecklistView .cc-load-main{gap:8px}
+#controlChecklistView .cc-load-id{
+ display:block;font-weight:850;font-size:clamp(18px,4.5vw,23px);line-height:1.15;
+ letter-spacing:-.02em;overflow-wrap:anywhere
+}
+#controlChecklistView .cc-load-plate{
+ display:flex;flex-direction:column;align-items:flex-start;min-width:0;
+ border:1.5px solid var(--cc-load-accent);border-radius:11px;
+ padding:8px 11px;background:#fff;gap:2px
+}
+#controlChecklistView .cc-load-plate small{
+ font-size:10px;font-weight:850;line-height:1.2;letter-spacing:.075em;color:#536d85
+}
+#controlChecklistView .cc-load-plate strong{
+ font-size:clamp(22px,5.6vw,33px);font-weight:900;line-height:1.12;
+ letter-spacing:.01em;overflow-wrap:anywhere;font-variant-numeric:tabular-nums
+}
+#controlChecklistView .cc-load-info{gap:8px}
+#controlChecklistView .cc-load-state{
+ display:inline-flex;align-self:flex-start;align-items:center;gap:5px;white-space:nowrap;
+ background:#e8edf2;color:#35475b;border-radius:999px;padding:7px 10px;
+ font-size:clamp(12px,3vw,15px);font-weight:850
+}
+#controlChecklistView .cc-load-state [aria-hidden]{font-size:19px;line-height:1}
+#controlChecklistView .cc-load-card--en-proceso .cc-load-state{background:#ffedc9;color:#914e00}
+#controlChecklistView .cc-load-card--finalizada .cc-load-state{background:#d6f5dd;color:#11682e}
+#controlChecklistView .cc-load-route,
+#controlChecklistView .cc-load-progress,
+#controlChecklistView .cc-load-warning{
+ color:#50647a;font-size:clamp(12px,3vw,14px);line-height:1.3;overflow-wrap:anywhere
+}
+#controlChecklistView .cc-load-warning{color:#a34e08;font-weight:800}
+#controlChecklistView .cc-load-arrow{font-size:26px;font-weight:700;justify-self:center;line-height:1}
+@media(max-width:380px){
+ #controlChecklistView .cc-load-card{grid-template-columns:minmax(0,1fr) 18px;row-gap:9px}
+ #controlChecklistView .cc-load-main{grid-column:1;grid-row:1}
+ #controlChecklistView .cc-load-info{grid-column:1;grid-row:2;gap:5px}
+ #controlChecklistView .cc-load-arrow{grid-column:2;grid-row:1 / 3}
+ #controlChecklistView .cc-load-plate strong{font-size:26px}
+}

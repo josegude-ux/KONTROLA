@@ -4,6 +4,12 @@ import {readLoads,getReview,saveReview,markLine,reviewSummary,closeReview,verifi
 const FEATURES=Object.freeze({compact:true,tap:true,pending:true,groups:true,sticky:true});
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const statusOf=(review,index)=>review.lines[index]?.status||"pending";
+// Estado visual de la verificación, no del tiempo de preparación ni del transporte.
+// Solo un cierre confirmado convierte una carga en Finalizada.
+export function estadoTarjetaVerificacion(review,summary){
+ if(review?.closedAt)return "finalizada";
+ return Number(summary?.checked)>0?"en-proceso":"pendiente";
+}
 const aisleOf=product=>{
  const location=String(product?.location||"").trim().toUpperCase();
  const match=location.match(/^([A-Z]{1,4}\d{2,3})(?=$|[-\s])/);
@@ -18,7 +24,7 @@ export function createChecklistUI(root,scope,storage=localStorage){
 
  // Solo clicks breves sin desplazamiento. Nada de touchstart: el scroll no confirma.
  const pointerGestures=new Map(),pointerVerdicts=new WeakMap();
- const guardedButtons="button[data-toggle],button[data-single-ok],button[data-incident],button[data-single-incident],button[data-one-nav],button[data-history-revert],button[data-final-edit],button[data-final-ok],button[data-final-close]";
+ const guardedButtons="button[data-toggle],button[data-single-ok],button[data-incident],button[data-single-incident],button[data-one-nav],button[data-history-revert],button[data-final-edit],button[data-final-ok],button[data-final-close],button[data-load]";
  const gestureTarget=e=>e.target?.closest?.(guardedButtons);
  function gestureDown(e){
   const button=gestureTarget(e);
@@ -333,10 +339,21 @@ export function createChecklistUI(root,scope,storage=localStorage){
     set('<div class="line"><h2>Cargas importadas ('+loads.length+')</h2><button type="button" id="ccRefresh" class="secondary">Actualizar</button></div>'+
      '<p class="muted">Origen: hojas ya importadas en Preparación · PRUEBA_3, en este dispositivo.</p>'+
      '<label>Buscar carga<input id="ccSearch" type="search" placeholder="LP, ruta o matrícula" value="'+esc(query)+'"></label>'+
-     '<div class="loads-list">'+loads.filter(load=>(load.id+" "+(load.route||"")+" "+(load.plate||"")).toLowerCase().includes(query.toLowerCase())).map(load=>{
+     '<div class="cc-load-list">'+loads.filter(load=>(load.id+" "+(load.route||"")+" "+(load.plate||load.matricula||"")).toLocaleLowerCase("es-ES").includes(query.toLocaleLowerCase("es-ES"))).map(load=>{
       const {review,stale}=getReview(storage,scope,load),summary=reviewSummary(review,load);
-      return '<button type="button" class="submenu-card" data-load="'+esc(load.id)+'"><span><b>'+esc(load.id)+'</b><small>'+esc(load.route||"Sin ruta")+
-       ' · '+summary.checked+'/'+summary.total+' comprobadas'+(stale?' · Hoja modificada':'')+(review.closedAt?' · Cerrada':'')+'</small></span><span>›</span></button>';
+      const state=estadoTarjetaVerificacion(review,summary);
+      const label={"pendiente":"Pendiente","en-proceso":"En proceso","finalizada":"Finalizada"}[state];
+      const symbol={"pendiente":"◷","en-proceso":"↻","finalizada":"✓"}[state];
+      const plate=String(load.plate||load.matricula||"").trim();
+      return '<button type="button" class="cc-load-card cc-load-card--'+state+'" data-load="'+esc(load.id)+
+       '" aria-label="'+esc("Abrir carga "+load.id+"; matrícula "+(plate||"no indicada")+"; "+label+"; "+summary.checked+" de "+summary.total+" comprobadas")+'">'+
+       '<span class="cc-load-main"><strong class="cc-load-id">'+esc(load.id)+'</strong>'+
+        '<span class="cc-load-plate"><small>MATRÍCULA</small><strong>'+esc(plate||"No indicada")+'</strong></span></span>'+
+       '<span class="cc-load-info"><span class="cc-load-state"><span aria-hidden="true">'+symbol+'</span> '+label+'</span>'+
+        '<span class="cc-load-route">'+esc(load.route||"Sin ruta")+'</span>'+
+        '<span class="cc-load-progress">'+summary.checked+'/'+summary.total+' comprobadas</span>'+
+        (stale?'<span class="cc-load-warning">Hoja modificada · revisar</span>':"")+'</span>'+
+       '<span class="cc-load-arrow" aria-hidden="true">›</span></button>';
      }).join("")+'</div>');
     root.querySelector("#ccRefresh").onclick=render;
     root.querySelector("#ccSearch").oninput=event=>{
@@ -344,7 +361,8 @@ export function createChecklistUI(root,scope,storage=localStorage){
      const input=root.querySelector("#ccSearch");
      input.focus();input.setSelectionRange(query.length,query.length);
     };
-    root.querySelectorAll("[data-load]").forEach(button=>button.onclick=()=>{
+    root.querySelectorAll("[data-load]").forEach(button=>button.onclick=event=>{
+     if(!isShortClick(event))return;
      selected=button.dataset.load;filter=FEATURES.pending?"pending":"all";resetDisplay();render();
     });
     return;
