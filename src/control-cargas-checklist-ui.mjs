@@ -12,6 +12,42 @@ const aisleOf=product=>{
 export function createChecklistUI(root,scope,storage=localStorage){
  let selected=null,filter="all",query="",undo=null,undoTimer=null,resizeObserver=null,disposed=false;
  const exitTimers=new Set(),manuallyCollapsed=new Set(),manuallyExpanded=new Set(),previousPending=new Map();
+
+ // Solo clicks breves sin desplazamiento. Nada de touchstart: el scroll no confirma.
+ const pointerGestures=new Map(),pointerVerdicts=new WeakMap();
+ const guardedButtons="button[data-toggle],button[data-single-ok],button[data-incident],button[data-single-incident]";
+ const gestureTarget=e=>e.target?.closest?.(guardedButtons);
+ function gestureDown(e){
+  const button=gestureTarget(e);
+  if(!button||!root.contains(button))return;
+  pointerGestures.set(e.pointerId,{button,x:e.clientX,y:e.clientY,start:performance.now(),moved:false});
+ }
+ function gestureMove(e){
+  const touch=pointerGestures.get(e.pointerId);
+  if(touch&&Math.hypot(e.clientX-touch.x,e.clientY-touch.y)>8)touch.moved=true;
+ }
+ function gestureEnd(e){
+  const touch=pointerGestures.get(e.pointerId);if(!touch)return;
+  pointerGestures.delete(e.pointerId);
+  if(Math.hypot(e.clientX-touch.x,e.clientY-touch.y)>8)touch.moved=true;
+  pointerVerdicts.set(touch.button,!touch.moved&&performance.now()-touch.start<=600);
+ }
+ function gestureCancel(e){
+  const touch=pointerGestures.get(e.pointerId);if(!touch)return;
+  pointerGestures.delete(e.pointerId);pointerVerdicts.set(touch.button,false);
+ }
+ function isShortClick(event){
+  // Keyboard and assistive technology synthesize click with detail=0.
+  if(event.detail===0)return true;
+  const button=event.currentTarget,accepted=pointerVerdicts.get(button)===true;
+  pointerVerdicts.delete(button);
+  return accepted;
+ }
+ root.addEventListener("pointerdown",gestureDown,{passive:true});
+ root.addEventListener("pointermove",gestureMove,{passive:true});
+ root.addEventListener("pointerup",gestureEnd,{passive:true});
+ root.addEventListener("pointercancel",gestureCancel,{passive:true});
+
  const read=()=>readLoads(storage,scope);
  const set=content=>{root.innerHTML=content;};
  function clearUndo(){
@@ -176,14 +212,16 @@ export function createChecklistUI(root,scope,storage=localStorage){
     else{manuallyCollapsed.delete(key);manuallyExpanded.add(key);}
     render();
    });
-   root.querySelectorAll("[data-toggle]").forEach(button=>button.onclick=()=>{
+   root.querySelectorAll("[data-toggle]").forEach(button=>button.onclick=event=>{
+    if(!isShortClick(event))return;
     const index=Number(button.dataset.toggle);
     const status=statusOf(getReview(storage,scope,load).review,index);
     apply(load,index,status==="ok"?"pending":"ok",null,"",true);
    });
    root.querySelectorAll("[data-ok]").forEach(button=>button.onclick=()=>apply(load,Number(button.dataset.ok),"ok",null,"",true));
    root.querySelectorAll("[data-reset]").forEach(button=>button.onclick=()=>apply(load,Number(button.dataset.reset),"pending"));
-   root.querySelectorAll("[data-incident]").forEach(button=>button.onclick=()=>{
+   root.querySelectorAll("[data-incident]").forEach(button=>button.onclick=event=>{
+    if(!isShortClick(event))return;
     const index=Number(button.dataset.incident),product=load.products[index];
     const raw=prompt("Cantidad comprobada para "+product.sku+" (esperada "+product.qty+"):");
     if(raw===null)return;
@@ -218,7 +256,10 @@ export function createChecklistUI(root,scope,storage=localStorage){
   if(disposed||!selected)return false;
   selected=null;resetDisplay();render();return true;
  },clear:()=>{
-  disposed=true;resetDisplay();resizeObserver?.disconnect();root.classList.remove("cc-active");
+  disposed=true;resetDisplay();resizeObserver?.disconnect();pointerGestures.clear();
+   root.removeEventListener("pointerdown",gestureDown);root.removeEventListener("pointermove",gestureMove);
+   root.removeEventListener("pointerup",gestureEnd);root.removeEventListener("pointercancel",gestureCancel);
+   root.classList.remove("cc-active");
   root.style.removeProperty("--cc-sticky-top");root.closest("#controlChecklistView")?.classList.remove("cc-detail-open");selected=null;root.replaceChildren();
  }};
 }
