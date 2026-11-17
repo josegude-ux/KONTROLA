@@ -1,4 +1,4 @@
 {
-  "version": "0.3.47",
-  "notes": "Preparación: PRUEBA_3 para PDF y listados. Control de Cargas: verificación física independiente por carga, incidencias y auditoría local. Operaciones y Administración conservadas."
+  "version": "0.3.48",
+  "notes": "PRUEBA_3: tiempos de preparación por operario compartidos en Supabase, copias independientes por LP y hash PDF, cola offline. Sin cambios en cargas operativas."
 }
