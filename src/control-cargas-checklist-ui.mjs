@@ -18,7 +18,7 @@ export function createChecklistUI(root,scope,storage=localStorage){
 
  // Solo clicks breves sin desplazamiento. Nada de touchstart: el scroll no confirma.
  const pointerGestures=new Map(),pointerVerdicts=new WeakMap();
- const guardedButtons="button[data-toggle],button[data-single-ok],button[data-incident],button[data-single-incident]";
+ const guardedButtons="button[data-toggle],button[data-single-ok],button[data-incident],button[data-single-incident],button[data-one-nav]";
  const gestureTarget=e=>e.target?.closest?.(guardedButtons);
  function gestureDown(e){
   const button=gestureTarget(e);
@@ -310,7 +310,8 @@ export function createChecklistUI(root,scope,storage=localStorage){
     if(!isShortClick(event)||performance.now()<oneLockUntil)return;
     requestIncident(load,Number(button.dataset.singleIncident),true);
    });
-   root.querySelectorAll("[data-one-nav]").forEach(button=>button.onclick=()=>{
+   root.querySelectorAll("[data-one-nav]").forEach(button=>button.onclick=event=>{
+    if(!isShortClick(event))return;
     const eligible=load.products.map((_,index)=>index)
      .filter(index=>filter==="all"||statusOf(review,index)===filter);
     if(!eligible.length)return;
