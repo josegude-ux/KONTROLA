@@ -36,8 +36,12 @@ export function crearAdaptadorLocalDescarte({scope,storage,now=()=>new Date().to
   if(principal.estado==="legible"&&cache.estado==="legible"){
    const x=JSON.stringify(principal.ledger),y=JSON.stringify(cache.ledger);
    if(x!==y){
-    // Nunca declarar autoritativa una copia contradictoria sin secuencia de servidor.
-    return {estado:"indeterminado",motivo:"Copias de descarte divergentes; resolver conflicto"};
+    // Una divergencia afecta a los LP con diferencias, no a todas las cargas.
+    const keys=new Set([...Object.keys(principal.ledger.items),...Object.keys(cache.ledger.items)]);
+    const codigosAfectados=[...keys].filter(key=>
+     JSON.stringify(principal.ledger.items[key])!==JSON.stringify(cache.ledger.items[key]));
+    return {estado:"parcial",ledger:principal.ledger,codigosAfectados,
+     pendienteConfirmacion:true,motivo:"Copias divergentes; se aíslan LP afectados"};
    }
    return {estado:"disponible",ledger:principal.ledger,pendienteConfirmacion:false};
   }
@@ -67,8 +71,10 @@ export function crearAdaptadorLocalDescarte({scope,storage,now=()=>new Date().to
     pendienteConfirmacion:res.estado!=="disponible"||res.pendienteConfirmacion,
     motivo:res.motivo||"Descarte conservado en carga local"};
   }
-  if(res.estado!=="disponible"){
-   return {codigo,estado:"indeterminado",registro:null,
+  if(res.estado==="indeterminado"||
+     (res.estado==="parcial"&&res.codigosAfectados.includes(codigo))){
+   return {codigo,estado:"indeterminado",registro:null,afectado:
+    res.estado==="parcial"&&res.codigosAfectados.includes(codigo),
     pendienteConfirmacion:true,motivo:res.motivo};
   }
   const entry=res.ledger.items[codigo];
@@ -82,6 +88,12 @@ export function crearAdaptadorLocalDescarte({scope,storage,now=()=>new Date().to
   if(!HASH.test(String(hash)))throw Error("SHA-256 de PDF inválido");
   if(estado.estado==="indeterminado"){
    const incidencia=registrarIncidencia({lp,motivo:estado.motivo,hash});
+   // Carga realmente NUEVA: permitir importación y avisar, sin afirmar estado del ledger.
+   // LP existente o detectado en copias contradictorias: NO reactivar.
+   if(!cargaLocal&&!estado.afectado){
+    return {...estado,estado:"nueva_pendiente_confirmacion",
+     accion:"importar",aviso:estado.motivo,incidencia};
+   }
    return {...estado,accion:"bloquear",incidencia};
   }
   if(estado.estado==="descartada"){
@@ -91,7 +103,8 @@ export function crearAdaptadorLocalDescarte({scope,storage,now=()=>new Date().to
    return {...estado,accion:misma?"conservar":"registrar_version_posterior",
     hashOriginal:original||null};
   }
-  return {...estado,accion:"importar"};
+  return {...estado,accion:"importar",
+   aviso:estado.pendienteConfirmacion?estado.motivo:null};
  }
  function registrarVersionPosterior({lp,hash,hashOriginal=null}){
   const codigo=normalizarLP(lp);

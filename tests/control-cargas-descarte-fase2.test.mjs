@@ -93,11 +93,12 @@ test("F2: última copia válida impide reactivar aun sin registro principal",()=
  assert.equal(state.estado,"descartada");assert.equal(state.accion,"conservar");
  assert.equal(state.pendienteConfirmacion,true);
 });
-test("F2: sin registro ni copia se bloquea y registra incidencia; no crea carga",()=>{
+test("F2: sin registro ni copia permite LP nuevo con aviso e incidencia",()=>{
  const storage=store();
  const adapter=crearAdaptadorLocalDescarte({scope,storage,now:()=>"2026-11-17T08:10:00Z"});
- const decision=adapter.decidirImportacion({lp:"LP26-21230",hash:H2,cargaLocal:fake("LP26-21230")});
- assert.equal(decision.accion,"bloquear");assert.equal(decision.pendienteConfirmacion,true);
+ const decision=adapter.decidirImportacion({lp:"LP26-21230",hash:H2,cargaLocal:null});
+ assert.equal(decision.accion,"importar");assert.ok(decision.aviso);
+ assert.equal(decision.pendienteConfirmacion,true);
  assert.equal(decision.incidencia.persistida,true);
  assert.equal(JSON.parse(storage.getItem(incidenciasKey(scope))).length,1);
 });
@@ -135,4 +136,27 @@ test("F2: inspección estática de entrada real protege antes de revised() y no 
  assert.ok(checklist.includes("export function closeReview("));
  assert.equal(permisoDescarte({id:"operador",rol:"operario",activo:true}),true);
  assert.equal(permisoDescarte({id:"admin",rol:"administrador",activo:true}),true);
+});
+
+test("F2 corrección CP011: LP existente y ledger ausente bloquea solo su reactivación",()=>{
+ const storage=store(),adapter=crearAdaptadorLocalDescarte({scope,storage});
+ assert.equal(adapter.decidirImportacion({lp:"LP26-21230",hash:H1,cargaLocal:fake("LP26-21230")}).accion,"bloquear");
+ assert.equal(adapter.decidirImportacion({lp:"LP26-21231",hash:H1,cargaLocal:null}).accion,"importar");
+});
+test("F2 corrección CP011: divergencia en LP A no bloquea LP B nuevo",()=>{
+ const storage=store(),ledger=seed(storage,["LP26-21230","LP26-21231"],["LP26-21230"]);
+ const changed=JSON.parse(JSON.stringify(ledger));
+ changed.items["LP26-21230"].motivo_descarte="conflicto documentado";
+ storage.setItem(cacheKey(scope),JSON.stringify(changed));
+ const adapter=crearAdaptadorLocalDescarte({scope,storage});
+ assert.equal(adapter.decidirImportacion({lp:"LP26-21230",hash:H2,cargaLocal:null}).accion,"bloquear");
+ const b=adapter.decidirImportacion({lp:"LP26-21231",hash:H2,cargaLocal:null});
+ assert.equal(b.accion,"importar");assert.ok(b.aviso);
+ const c=adapter.decidirImportacion({lp:"LP26-21232",hash:H2,cargaLocal:null});
+ assert.equal(c.accion,"importar");assert.ok(c.aviso);
+});
+test("F2 corrección CP011: plantilla sin cambios HTML/CSS en la corrección",()=>{
+ const src=readFileSync(new URL("../control-cargas-prueba3.html",import.meta.url),"utf8");
+ assert.ok(src.includes("avisos.push(canon+': '+decision.aviso)"));
+ assert.ok(src.includes("const matches=loads.filter(r=>{try{return normalizarLP(r.id)===canon}catch{return false}});"));
 });

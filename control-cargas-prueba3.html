@@ -1211,7 +1211,7 @@ async function readPdf(file){
 let importing=false,generating=false,lastImportErrors=[];
 $('pdfs').addEventListener('change',async e=>{
  if(importing)return;const files=[...e.target.files];if(!files.length)return;importing=true;e.target.disabled=true;
- let added=0,updated=0,duplicates=0,cancelled=0,errors=[];
+ let added=0,updated=0,duplicates=0,cancelled=0,errors=[],avisos=[];
  try{for(let k=0;k<files.length;k++){
   const file=files[k];notify('Leyendo '+(k+1)+'/'+files.length+': '+file.name);
   try{
@@ -1220,12 +1220,13 @@ $('pdfs').addEventListener('change',async e=>{
    // Una sola identidad LP para reimportación, futura restauración y descarte.
    // No reescribir claves históricas ambiguas: las colisiones requieren revisión.
    const canon=normalizarLP(incoming.id);
-   const matches=loads.filter(r=>normalizarLP(r.id)===canon);
+   const matches=loads.filter(r=>{try{return normalizarLP(r.id)===canon}catch{return false}});
    if(matches.length>1||matches.some(r=>r.id!==canon))
     throw new Error('LP existente en formato distinto/duplicado; revisión manual antes de importar.');
    incoming.id=canon;
    const old=matches[0]||null;
    const decision=descarteAdapter.decidirImportacion({lp:canon,hash,cargaLocal:old});
+   if(decision.aviso)avisos.push(canon+': '+decision.aviso);
    if(decision.accion==="bloquear")
     throw new Error('Registro de descartes no disponible: se conserva la carga sin cambios. '+decision.motivo);
    if(decision.accion==="conservar"){duplicates++;continue;}
@@ -1260,7 +1261,7 @@ $('pdfs').addEventListener('change',async e=>{
   list();
  }}finally{lastImportErrors=errors;importing=false;e.target.disabled=false;e.target.value='';
  const selected=loads.filter(r=>selectedIds.has(r.id));const dates=[...new Set(selected.map(dayOf))];if(dates.length===1)$('dailyDate').value=dates[0];list();}
- notify(added+' nuevas · '+updated+' actualizadas · '+duplicates+' duplicadas omitidas · '+cancelled+' canceladas.'+(errors.length?'\nNo importados:\n'+errors.join('\n'):''),errors.length?'warn':'ok');
+ notify(added+' nuevas · '+updated+' actualizadas · '+duplicates+' duplicadas omitidas · '+cancelled+' canceladas.'+(errors.length?'\nNo importados:\n'+errors.join('\n'):'')+(avisos.length?'\nAvisos de descartes:\n'+avisos.join('\n'):''),(errors.length||avisos.length)?'warn':'ok');
  if(p3Controller)void p3Controller.syncCopies().catch(error=>notify('No se ha completado la copia compartida: '+String(error.message||error),'warn'));
 });
 $('clear').addEventListener('click',async()=>{
