@@ -1,4 +1,4 @@
 {
-  "version": "0.3.50",
-  "notes": "Verificación física: matrículas completas en una línea en móvil. Conserva estados, revisiones y tiempos PRUEBA_3."
+  "version": "0.3.51",
+  "notes": "Verificación física: tarjeta de artículo con descripción uniforme, confirmar a toda la altura e incidencia separada. Sin cambios de lógica."
 }
