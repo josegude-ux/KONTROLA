@@ -209,6 +209,9 @@
   <main class="report-preview"><div id="originalPages"></div><div id="reportPaper" class="report-paper"></div></main>
 </div>
 <script type="module">
+import {renderHojaRepartoUnica} from "./src/prueba3-reparto-unico.mjs";
+import {normalizarLP} from "./src/control-cargas-lp.mjs";
+import {crearAdaptadorLocalDescarte} from "./src/control-cargas-descarte-adapter.mjs";
 const VISURA_SCOPE=(()=>{const value=new URLSearchParams(location.search).get("visura_scope")||"";return /^[a-f0-9]{24}$/.test(value)?"_visura_"+value:"";})();
 if(!VISURA_SCOPE){document.body.textContent="Abre Control de Cargas desde tu sesión de VISURA PREPARA.";throw Error("Falta contexto de usuario de VISURA");}
 
@@ -606,10 +609,22 @@ async function printPrepared(content,doc=document){
 return {printPrepared};
 })();
 
+// FASE 3A: puente checklist/outbox preparado, ESTRICTAMENTE INERTE.
+// No importar modulo, no crear IndexedDB, ni instalar botones, listeners o RPC.
+// Cambiar esta bandera NO activa la operativa: el puente sigue enabled:false.
+const F3A_CHECKLIST_PREPARADO_SOLO_LAB=false;
+if(F3A_CHECKLIST_PREPARADO_SOLO_LAB){
+ void import('./src/control-cargas-f3a-puente-inerte.mjs').then(({crearPuenteChecklistF3A})=>{
+  const puente=crearPuenteChecklistF3A({enabled:false});
+  if(puente.estado!=='desactivado')throw Error('F3A debe permanecer desactivada');
+ }).catch(()=>{/* No activacion ni mutacion por error de importacion */});
+}
 const $=id=>document.getElementById(id);
 $('installedVersion').textContent='PRUEBA INTEGRADA 3';
 const KEY='control_cargas_prueba_integrada_2'+VISURA_SCOPE; // Compatibilidad con los datos de v0.4
 const OPKEY='control_cargas_operarios_prueba_2'+VISURA_SCOPE;
+// F2: consulta LOCAL obligatoria en cada PDF; sin red, sin intervención en preparación.
+const descarteAdapter=crearAdaptadorLocalDescarte({scope:VISURA_SCOPE,storage:localStorage});
 let loads=[],operators=[],chosen=null,filter='Todas',p3Controller=null;
 const selectedIds=new Set();
 try{const raw=JSON.parse(localStorage.getItem(KEY)||'[]');loads=Array.isArray(raw)?raw:[]}catch{}
@@ -1152,27 +1167,12 @@ function openExtraList(build){
 $('printPlates').addEventListener('click',()=>openExtraList(platesByWeightHTML));
 
 function deliverySheetHTML(){
- const {dates,byDate,total,skipped}=listLoadsCoruna();
- const selected=dates.flatMap(date=>byDate.get(date));
- for(const r of selected){
-  if(!Array.isArray(r.cold)&&r.hasCor!==false)throw new Error('Reimporta '+r.id+' para obtener las líneas de frío sin inventar su clasificación.');
- }
- const section=(title,rows,cold)=>{
-  const head='<div class="lst-band">'+title+' ('+rows.length+')</div>';
-  if(!rows.length)return head+'<div class="lst-empty">SIN CAMIONES EN ESTA SECCION</div>';
-  const body=rows.map(r=>'<tr><td>'+html(r.truck||plateOf(r))+'</td><td>'+html(driverOf(r))+'</td><td>'+html(companionOf(r))+'</td><td class="c">'+(cold?'SI':'')+'</td></tr>').join('');
-  return head+'<table class="lst-table dark"><colgroup><col style="width:17%"><col style="width:41%"><col style="width:33%"><col style="width:9%"></colgroup><thead><tr><th>Cod. camion</th><th>Nombre repartidor</th><th>Acompañante</th><th>FRIO</th></tr></thead><tbody>'+body+'</tbody></table>';
- };
- const pages=dates.map(date=>{
-  const rows=byDate.get(date),sortDriver=(a,b)=>driverOf(a).localeCompare(driverOf(b),'es');
-  const withCold=rows.filter(r=>Array.isArray(r.cold)&&r.cold.some(p=>p.location==='ZFRIO'&&Number(p.qty)>0)).sort(sortDriver);
-  const without=rows.filter(r=>!withCold.includes(r)).sort(sortDriver);
-  return '<article class="lst-page"><h1>HOJA DE REPARTO</h1><div class="lst-date">Fecha: '+html(date)+'</div>'+
-   section('CAMIONES QUE COGEN FRIO',withCold,true)+section('CAMIONES SIN FRIO',without,false)+
-   '<div class="lst-band sum">RESUMEN: '+rows.length+' registros | Con frio: '+withCold.length+' | Sin frio: '+without.length+'</div></article>';
- }).join('');
- return {html:pages,summary:'Hoja de reparto · Coruña: '+total+' cargas · '+dates.join(', ')+(skipped?' · '+skipped+' de Ferrol omitidas':'')};
+ const {dates,byDate,skipped}=listLoadsCoruna();
+ // Un solo conjunto de filas, tanto para previsualización como para imprimir/PDF.
+ // No modifica las cargas ni sus pesos, frío, tiempos, originales o histórico.
+ return renderHojaRepartoUnica(dates.flatMap(date=>byDate.get(date)),{skipped,driverOf,companionOf,plateOf});
 }
+
 $('printDelivery').addEventListener('click',()=>openExtraList(deliverySheetHTML));
 
 
@@ -1207,15 +1207,37 @@ async function readPdf(file){
 let importing=false,generating=false,lastImportErrors=[];
 $('pdfs').addEventListener('change',async e=>{
  if(importing)return;const files=[...e.target.files];if(!files.length)return;importing=true;e.target.disabled=true;
- let added=0,updated=0,duplicates=0,cancelled=0,errors=[];
+ let added=0,updated=0,duplicates=0,cancelled=0,errors=[],avisos=[];
  try{for(let k=0;k<files.length;k++){
   const file=files[k];notify('Leyendo '+(k+1)+'/'+files.length+': '+file.name);
   try{
    const hash=await fingerprint(file);
+   const incoming=await readPdf(file);if(!incoming.id)throw new Error('Sin identificador de carga');
+   // Una sola identidad LP para reimportación, futura restauración y descarte.
+   // No reescribir claves históricas ambiguas: las colisiones requieren revisión.
+   const canon=normalizarLP(incoming.id);
+   const matches=loads.filter(r=>{try{return normalizarLP(r.id)===canon}catch{return false}});
+   if(matches.length>1||matches.some(r=>r.id!==canon))
+    throw new Error('LP existente en formato distinto/duplicado; revisión manual antes de importar.');
+   incoming.id=canon;
+   const old=matches[0]||null;
+   const decision=descarteAdapter.decidirImportacion({lp:canon,hash,cargaLocal:old});
+   if(decision.aviso)avisos.push(canon+': '+decision.aviso);
+   if(decision.accion==="bloquear")
+    throw new Error('Registro de descartes no disponible: se conserva la carga sin cambios. '+decision.motivo);
+   if(decision.accion==="conservar"){duplicates++;continue;}
+   if(decision.accion==="registrar_version_posterior"){
+    // Guardar únicamente otra versión con hash propio. NO sustituir la copia activa,
+    // NO llamar revised(), NO modificar revisiones, audit ni progreso.
+    await guardarOriginal(canon+'::'+hash,file);
+    descarteAdapter.registrarVersionPosterior({lp:canon,hash,
+     hashOriginal:old?.pdfHash||decision.hashOriginal});
+    cancelled++;continue;
+   }
+   // Solo cargas ACTIVA: se conserva sin cambios la ruta de importación anterior.
    const identical=loads.find(r=>r.pdfHash===hash);
    if(identical&&await leerOriginal(identical.id)){selectedIds.add(identical.id);duplicates++;continue;}
-   const incoming=await readPdf(file);if(!incoming.id)throw new Error('Sin identificador de carga');
-   const old=loads.find(x=>x.id===incoming.id),original=old?await leerOriginal(incoming.id):null;
+   const original=old?await leerOriginal(canon):null;
    if(original&&await fingerprint(original)===hash){duplicates++;continue;}
    if(old&&old.pdfHash!==hash&&!confirm('Ya existe la carga '+incoming.id+'. Este PDF es diferente.\nPeso: '+(old.weight??'—')+' → '+(incoming.weight??'—')+' kg\nReferencias: '+(old.refs??'—')+' → '+(incoming.refs??'—')+'\nFecha: '+(old.date||'—')+' → '+(incoming.date||'—')+'\n¿Actualizar el documento conservando operario, horarios y estado?')){cancelled++;continue;}
    const next=revised(old,incoming,hash),previous=loads;
@@ -1235,7 +1257,7 @@ $('pdfs').addEventListener('change',async e=>{
   list();
  }}finally{lastImportErrors=errors;importing=false;e.target.disabled=false;e.target.value='';
  const selected=loads.filter(r=>selectedIds.has(r.id));const dates=[...new Set(selected.map(dayOf))];if(dates.length===1)$('dailyDate').value=dates[0];list();}
- notify(added+' nuevas · '+updated+' actualizadas · '+duplicates+' duplicadas omitidas · '+cancelled+' canceladas.'+(errors.length?'\nNo importados:\n'+errors.join('\n'):''),errors.length?'warn':'ok');
+ notify(added+' nuevas · '+updated+' actualizadas · '+duplicates+' duplicadas omitidas · '+cancelled+' canceladas.'+(errors.length?'\nNo importados:\n'+errors.join('\n'):'')+(avisos.length?'\nAvisos de descartes:\n'+avisos.join('\n'):''),(errors.length||avisos.length)?'warn':'ok');
  if(p3Controller)void p3Controller.syncCopies().catch(error=>notify('No se ha completado la copia compartida: '+String(error.message||error),'warn'));
 });
 $('clear').addEventListener('click',async()=>{
