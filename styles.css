@@ -791,3 +791,32 @@ footer{padding:18px;text-align:center;background:#fff;border-top:1px solid #e6e8
  #controlChecklistView .cc-item-details{padding-left:6px;padding-right:3px}
  #controlChecklistView .cc-item-details .cc-description{font-size:14px;line-height:1.22}
 }
+
+
+/* CP HISTORIAL · Cinco acciones leídas del audit existente, sin tablas nuevas. */
+#controlChecklistView .cc-history-bar{display:flex;justify-content:flex-end;margin:4px 0 8px}
+#controlChecklistView .cc-history-bar button{
+ min-height:44px;border:1px solid #cedce7;border-radius:10px;
+ padding:7px 13px;background:#eef4f8;color:#0B2647;font-size:12px;font-weight:800;
+}
+#controlChecklistView .cc-history-panel{
+ background:#fff;border:1px solid #d7e2ec;border-radius:12px;
+ padding:12px;margin:0 0 12px;box-shadow:0 2px 9px #0b264711;
+}
+#controlChecklistView .cc-history-panel h3{font-size:15px;margin:0 0 6px}
+#controlChecklistView .cc-history-hint{color:#546d82;font-size:11px;line-height:1.4;margin:0 0 9px}
+#controlChecklistView .cc-history-entry{
+ display:flex;align-items:center;justify-content:space-between;gap:10px;
+ border-top:1px solid #e8edf3;padding:7px 0;
+}
+#controlChecklistView .cc-history-label{min-width:0;flex:1}
+#controlChecklistView .cc-history-label b{
+ display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;
+ font-size:12px;line-height:1.25;overflow:hidden;
+}
+#controlChecklistView .cc-history-label small{display:block;color:#60768a;font-size:11px;margin-top:3px}
+#controlChecklistView .cc-history-entry button{
+ flex:none;min-height:44px;border:1px solid #b5ccdc;border-radius:9px;
+ padding:8px 11px;font-size:12px;font-weight:850;background:#e9f3fa;color:#0B2647;
+}
+#controlChecklistView .cc-history-entry button:disabled{opacity:.42}

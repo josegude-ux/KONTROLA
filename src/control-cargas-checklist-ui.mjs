@@ -12,13 +12,13 @@ const aisleOf=product=>{
 const MODE_KEY="visura_prepara_verificacion_modo_v1";
 export function createChecklistUI(root,scope,storage=localStorage){
  let selected=null,filter="all",query="",undo=null,undoTimer=null,resizeObserver=null,disposed=false;
- let viewMode="list",oneCursor=null,oneLockUntil=0;
+ let viewMode="list",oneCursor=null,oneLockUntil=0,historyExpanded=false;
  try{viewMode=storage.getItem(MODE_KEY)==="single"?"single":"list";}catch{}
  const exitTimers=new Set(),manuallyCollapsed=new Set(),manuallyExpanded=new Set(),previousPending=new Map();
 
  // Solo clicks breves sin desplazamiento. Nada de touchstart: el scroll no confirma.
  const pointerGestures=new Map(),pointerVerdicts=new WeakMap();
- const guardedButtons="button[data-toggle],button[data-single-ok],button[data-incident],button[data-single-incident],button[data-one-nav]";
+ const guardedButtons="button[data-toggle],button[data-single-ok],button[data-incident],button[data-single-incident],button[data-one-nav],button[data-history-revert]";
  const gestureTarget=e=>e.target?.closest?.(guardedButtons);
  function gestureDown(e){
   const button=gestureTarget(e);
@@ -62,7 +62,7 @@ export function createChecklistUI(root,scope,storage=localStorage){
   undoTimer=null;undo=null;
  }
  function clearExits(){for(const t of exitTimers)clearTimeout(t);exitTimers.clear();}
- function resetDisplay(){clearUndo();clearExits();manuallyCollapsed.clear();manuallyExpanded.clear();previousPending.clear();oneCursor=null;oneLockUntil=0;}
+ function resetDisplay(){clearUndo();clearExits();manuallyCollapsed.clear();manuallyExpanded.clear();previousPending.clear();oneCursor=null;oneLockUntil=0;historyExpanded=false;}
  function updateStickyOffset(){
   if(!FEATURES.sticky)return;
   const topbar=document.querySelector(".topbar");
@@ -99,6 +99,79 @@ export function createChecklistUI(root,scope,storage=localStorage){
    }else render();
   }catch(error){message(error);}
  }
+
+ // Leer únicamente las últimas cinco acciones YA GUARDADAS por el contrato v1.
+ // Un historial antiguo nunca debe sobrescribir otra intervención posterior.
+ function historyActions(review){
+  const audit=Array.isArray(review.audit)?review.audit:[];
+  return audit.map((action,index)=>({action,index}))
+   .filter(({action})=>Number.isInteger(action?.line)&&["ok","incident","pending"].includes(action.to))
+   .slice(-5).reverse();
+ }
+ function previousState(review,auditIndex){
+  const audit=Array.isArray(review.audit)?review.audit:[];
+  const action=audit[auditIndex];
+  if(!action||!Number.isInteger(action.line))return null;
+  let preceding=null;
+  for(let i=auditIndex-1;i>=0;i--){
+   if(audit[i]?.line===action.line){preceding=audit[i];break;}
+  }
+  const status=preceding?.to||"pending";
+  if(status!==(action.from||"pending"))return null;
+  if(status==="incident"&&(!Number.isFinite(preceding?.actualQty)))return null;
+  return {status,quantity:status==="incident"?preceding.actualQty:null,
+   note:status==="incident"?preceding.note||"":""};
+ }
+ function canRevertHistory(review,index){
+  if(review.closedAt)return false;
+  const audit=Array.isArray(review.audit)?review.audit:[];
+  const action=audit[index],prior=previousState(review,index);
+  if(!action||!prior)return false;
+  if(audit.slice(index+1).some(other=>other?.line===action.line))return false;
+  const current=review.lines[action.line];
+  if((current?.status||"pending")!==action.to)return false;
+  if(action.to==="incident"&&(
+   current?.actualQty!==action.actualQty||(current?.note||"")!==(action.note||"")
+  ))return false;
+  return true;
+ }
+ function renderHistory(load,review,allowed){
+  if(!historyExpanded)return "";
+  const entries=historyActions(review);
+  if(!entries.length)return '<section class="cc-history-panel" aria-label="Últimas acciones"><p class="muted">Todavía no hay comprobaciones registradas.</p></section>';
+  const names={ok:"Correcto",incident:"Incidencia",pending:"Pendiente"};
+  return '<section class="cc-history-panel" aria-label="Últimas cinco acciones">'+
+   '<h3>Últimas cinco acciones</h3><p class="cc-history-hint">Solo se puede revertir la acción más reciente de cada artículo, mientras la revisión permanezca abierta.</p>'+
+   entries.map(({action,index})=>{
+    const p=load.products[action.line]||{};
+    const valid=allowed&&canRevertHistory(review,index);
+    const time=Number.isFinite(Date.parse(action.at||""))?new Date(action.at).toLocaleTimeString("es-ES",{hour:"2-digit",minute:"2-digit"}):"Hora no disponible";
+    return '<div class="cc-history-entry"><span class="cc-history-label"><b>'+esc(p.description||p.sku||"Artículo")+'</b>'+
+     '<small>'+esc(time)+' · '+esc(names[action.from]||"Pendiente")+' → '+esc(names[action.to]||"Pendiente")+'</small></span>'+
+     '<button type="button" data-history-revert="'+index+'" '+(valid?"":'disabled title="La acción ya no es la última de este artículo, no es recuperable o la revisión está cerrada"')+
+     '>Revertir</button></div>';
+   }).join("")+'</section>';
+ }
+ function revertHistory(load,auditIndex,expected){
+  if(!Number.isInteger(auditIndex)||!expected)return;
+  const current=getReview(storage,scope,load);
+  if(current.stale||!verificationAllowed(load)||current.review.closedAt){message("Esta revisión no permite correcciones.");return;}
+  const action=current.review.audit?.[auditIndex];
+  if(!action||action!==expected&&JSON.stringify(action)!==JSON.stringify(expected)||!canRevertHistory(current.review,auditIndex)){
+   message("La comprobación ha cambiado. Actualiza el historial antes de corregir.");return;
+  }
+  const prior=previousState(current.review,auditIndex);
+  if(!prior){message("No se puede recuperar el estado anterior con seguridad.");return;}
+  const name=load.products[action.line]?.description||"este artículo";
+  if(!confirm('¿Revertir la última acción de '+name+' al estado '+({ok:"Correcto",incident:"Incidencia",pending:"Pendiente"}[prior.status])+'?'))return;
+  // Confirmación humana: volver a leer y verificar tras el diálogo.
+  const fresh=getReview(storage,scope,load);
+  if(fresh.stale||fresh.review.closedAt||JSON.stringify(fresh.review.audit?.[auditIndex])!==JSON.stringify(expected)||!canRevertHistory(fresh.review,auditIndex)){
+   message("Hay cambios más recientes. No se ha modificado el artículo.");return;
+  }
+  apply(load,action.line,prior.status,prior.quantity,prior.note);
+ }
+
  function buildRow(load,review,product,index,allowed){
   const state=statusOf(review,index);
   if(filter!=="all"&&state!==filter)return "";
@@ -266,7 +339,9 @@ export function createChecklistUI(root,scope,storage=localStorage){
     :'<div class="cc-groups" id="ccLines">'+sections.join("")+'</div>';
    set((warning?'<p role="alert" class="status error">'+esc(warning)+'</p>':"")+
     (review.closedAt?'<p class="status">Revisión cerrada: '+esc(review.closedAt)+'</p>':"")+
-    toolbar+body+
+    toolbar+'<div class="cc-history-bar"><button type="button" data-history-toggle aria-expanded="'+historyExpanded+'">'+
+    (historyExpanded?"Ocultar últimas acciones":"Últimas acciones")+'</button></div>'+
+    renderHistory(load,review,allowed)+body+
     (viewMode==="list"&&allowed&&!review.closedAt?'<button id="ccClose" class="primary" type="button" '+(summary.pending?"disabled":"")+'>Cerrar revisión</button>':"")+
     '<p id="ccMessage" role="status" class="status"></p>'+(viewMode==="list"?toast:""));
    updateStickyOffset();
@@ -277,6 +352,14 @@ export function createChecklistUI(root,scope,storage=localStorage){
     manuallyCollapsed.clear();manuallyExpanded.clear();previousPending.clear();
     try{storage.setItem(MODE_KEY,viewMode);}catch{}
     render();
+   });
+   root.querySelector("[data-history-toggle]")?.addEventListener("click",()=>{
+    historyExpanded=!historyExpanded;render();
+   });
+   root.querySelectorAll("[data-history-revert]").forEach(button=>button.onclick=event=>{
+    if(!isShortClick(event))return;
+    const index=Number(button.dataset.historyRevert);
+    revertHistory(load,index,review.audit?.[index]);
    });
    root.querySelectorAll("[data-filter]").forEach(button=>button.onclick=()=>{
     filter=button.dataset.filter;oneCursor=null;manuallyCollapsed.clear();manuallyExpanded.clear();render();
