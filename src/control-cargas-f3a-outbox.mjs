@@ -89,12 +89,22 @@ export function crearCoordinadorCheckF3A({scope,repo,now=()=>Date.now()}){
    return repo.atomicUpdate(k,row=>{
     assertSource(row,i);const p=row?.pendientes.find(x=>x.id===operacionId);
     if(!p||p.status!=='incierta'||row.bloqueo?.tabId!==tabId)refuse('sin operacion reservada');
+    // La RPC R4.1 entrega los cuatro recuentos del servidor. Nunca acreditar
+    // un recibo incompleto o incoherente, aunque UUID y versión coincidan.
+    // Los contadores NO certifican comprobación física: solo estado registrado.
     if(!recibo||recibo.operacion_id!==p.id||recibo.almacen!==i.almacen||
        recibo.lp!==i.lp||recibo.pdf_hash!==i.pdfHash||recibo.linea!==p.linea||
        recibo.estado!==p.estado||recibo.version!==p.versionEsperada+1||
        recibo.procedencia!=='evento_registrado_en_servidor'||
        recibo.verificacion_fisica_acreditada!==false||!UUID.test(recibo.actor||'')||
-       !Number.isFinite(Date.parse(recibo.hora_servidor||'')))refuse('recibo no acreditado');
+       !Number.isFinite(Date.parse(recibo.hora_servidor||''))||
+       !int(recibo.total)||recibo.total<1||recibo.total>3000||
+       !int(recibo.checked)||!int(recibo.pending)||!int(recibo.incidents)||
+       recibo.checked+recibo.pending!==recibo.total||
+       recibo.incidents>recibo.checked||
+       (p.estado==='ok'&&recibo.checked<1)||
+       (p.estado==='incident'&&recibo.incidents<1)||
+       (p.estado==='pending'&&recibo.pending<1))refuse('recibo no acreditado');
     p.status='confirmada';p.recibo=copy(recibo);
     row.versionConfirmada=recibo.version;row.bloqueo=null;
     return {next:row,value:{status:'confirmada',version:recibo.version}};

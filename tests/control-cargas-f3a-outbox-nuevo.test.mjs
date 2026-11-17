@@ -25,7 +25,8 @@ function make(){
 const entry=(op=uid(1),line=0,state='ok',auditIndex=0)=>({identity:id,operacionId:op,linea:line,estado:state,auditIndex,sourceSignature:'firma-pdf-a'});
 const receipt=(op=uid(1),version=1,line=0,state='ok')=>({operacion_id:op,almacen:id.almacen,lp:id.lp,pdf_hash:id.pdfHash,linea:line,estado:state,
  version,procedencia:'evento_registrado_en_servidor',verificacion_fisica_acreditada:false,
- actor:uid(900),hora_servidor:'2026-11-17T11:50:00Z'});
+ actor:uid(900),hora_servidor:'2026-11-17T11:50:00Z',
+ total:3,checked:state==='pending'?0:1,pending:state==='pending'?3:2,incidents:state==='incident'?1:0});
 const send=(identity=id,tab=uid(500),version=0)=>({identity,tabId:tab,online:true,versionServidor:version});
 
 test('Q1: crash tras guardar intención pero antes de saveReview no permite enviar',async()=>{
