@@ -674,3 +674,12 @@ footer{padding:18px;text-align:center;background:#fff;border-top:1px solid #e6e8
  #controlChecklistView .cc-row-main{column-gap:0}
  #controlChecklistView .cc-quantity-action{min-width:124px;margin-inline:8px 12px;padding-inline:8px;font-size:13px}
 }
+
+
+/* R5.2 — Separación 11px entre filas, contraste sin perder los estados. */
+#controlChecklistView .cc-aisle{display:flex;flex-direction:column;gap:11px;margin:0 0 10px}
+#controlChecklistView .cc-row{margin:0;border:1px solid #c4d3e0;border-radius:9px;background:#f7f9fb}
+#controlChecklistView .cc-row.cc-state-pending:nth-of-type(even){background:#edf3f8}
+#controlChecklistView .cc-row.cc-state-ok{background:#edf8f1;border-color:#b6dcc5}
+#controlChecklistView .cc-row.cc-state-incident{background:#fff2ea;border-color:#ecc1aa}
+#controlChecklistView .cc-aisle-head{margin:0}
