@@ -48,7 +48,7 @@ test("F1: rechazo preventivo de duplicados, scopes incompatibles y datos corrupt
  assert.throws(()=>prepararMigracionLocal({scope,loads:[l,{...l}]}),/duplicado/);
  assert.throws(()=>prepararMigracionLocal({scope:"_visura_ERR",loads:[]}),/Ámbito/);
  assert.throws(()=>prepararMigracionLocal({scope,loads:[l],ledgerAnterior:{schema:1,scope:"_visura_"+"b".repeat(24),items:{}}}),/incompatible/);
- assert.throws(()=>codigoEstable({id:"../secreto"}),/inválido/);
+ assert.throws(()=>codigoEstable({id:"../secreto"}),/Formato LP/);
 });
 test("F1: modelo impide descarte si está cerrada o totalmente comprobada",()=>{
  const l=load();
