@@ -31,3 +31,14 @@ test("Tarjetas: estados con etiquetas y colores, gesto seguro, sin nuevas escrit
  assert.match(ui,/if\(!isShortClick\(event\)\)return;/);
  assert.doesNotMatch(ui,/client\.rpc\(|createClient\(|visura_p3_comando/);
 });
+
+test("Matrícula: una sola línea, tamaño fluido y columna prioritaria en móvil",()=>{
+ const rule=css.match(/#controlChecklistView \.cc-load-plate strong\s*\{([^}]+)\}/);
+ assert.ok(rule,"falta la regla de matrícula");
+ assert.match(rule[1],/white-space:nowrap/);
+ assert.match(rule[1],/font-size:clamp\(18px,4\.8vw,25px\)/);
+ assert.match(rule[1],/word-break:normal/);
+ assert.match(css,/grid-template-columns:minmax\(0,1\.4fr\) minmax\(0,\.8fr\) 14px/);
+ assert.match(css,/@media\(max-width:380px\)/);
+ assert.match(css,/cc-load-plate strong\{font-size:clamp\(19px,5\.4vw,24px\);white-space:nowrap\}/);
+});

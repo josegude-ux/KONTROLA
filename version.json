@@ -1,4 +1,4 @@
 {
-  "version": "0.3.49",
-  "notes": "Verificación física: matrícula destacada y estados de carga visuales; conserva tiempos PRUEBA_3 y protección de datos existentes."
+  "version": "0.3.50",
+  "notes": "Verificación física: matrículas completas en una línea en móvil. Conserva estados, revisiones y tiempos PRUEBA_3."
 }
