@@ -653,3 +653,24 @@ footer{padding:18px;text-align:center;background:#fff;border-top:1px solid #e6e8
  #controlChecklistView .cc-item-details{gap:2px;padding-left:3px;grid-template-columns:minmax(45px,27%) minmax(0,1fr);}
  #controlChecklistView .cc-quantity-action{font-size:13px;min-width:110px;padding:0 5px;gap:3px;}
 }
+
+
+/* R5.1 — Exclusividad del botón de cantidad y separación física antierrores. */
+#controlChecklistView .cc-row-main{column-gap:0}
+#controlChecklistView .cc-quantity-action{
+ box-sizing:border-box;
+ min-height:56px;
+ min-width:132px;
+ width:max-content;
+ white-space:nowrap;
+ margin-inline:8px 12px;
+ padding-inline:8px;
+ font-size:clamp(13px,3.4vw,15px);
+ font-weight:850;
+}
+#controlChecklistView .cc-quantity-action .cc-qty-label{white-space:nowrap}
+#controlChecklistView .cc-incident-action{min-width:44px;width:44px;min-height:56px}
+@media(max-width:370px){
+ #controlChecklistView .cc-row-main{column-gap:0}
+ #controlChecklistView .cc-quantity-action{min-width:124px;margin-inline:8px 12px;padding-inline:8px;font-size:13px}
+}
