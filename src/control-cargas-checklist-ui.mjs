@@ -12,13 +12,13 @@ const aisleOf=product=>{
 const MODE_KEY="visura_prepara_verificacion_modo_v1";
 export function createChecklistUI(root,scope,storage=localStorage){
  let selected=null,filter="all",query="",undo=null,undoTimer=null,resizeObserver=null,disposed=false;
- let viewMode="list",oneCursor=null,oneLockUntil=0,historyExpanded=false;
+ let viewMode="list",oneCursor=null,oneLockUntil=0,historyExpanded=false,finalReviewOpen=false;
  try{viewMode=storage.getItem(MODE_KEY)==="single"?"single":"list";}catch{}
  const exitTimers=new Set(),manuallyCollapsed=new Set(),manuallyExpanded=new Set(),previousPending=new Map();
 
  // Solo clicks breves sin desplazamiento. Nada de touchstart: el scroll no confirma.
  const pointerGestures=new Map(),pointerVerdicts=new WeakMap();
- const guardedButtons="button[data-toggle],button[data-single-ok],button[data-incident],button[data-single-incident],button[data-one-nav],button[data-history-revert]";
+ const guardedButtons="button[data-toggle],button[data-single-ok],button[data-incident],button[data-single-incident],button[data-one-nav],button[data-history-revert],button[data-final-edit],button[data-final-ok],button[data-final-close]";
  const gestureTarget=e=>e.target?.closest?.(guardedButtons);
  function gestureDown(e){
   const button=gestureTarget(e);
@@ -62,7 +62,7 @@ export function createChecklistUI(root,scope,storage=localStorage){
   undoTimer=null;undo=null;
  }
  function clearExits(){for(const t of exitTimers)clearTimeout(t);exitTimers.clear();}
- function resetDisplay(){clearUndo();clearExits();manuallyCollapsed.clear();manuallyExpanded.clear();previousPending.clear();oneCursor=null;oneLockUntil=0;historyExpanded=false;}
+ function resetDisplay(){clearUndo();clearExits();manuallyCollapsed.clear();manuallyExpanded.clear();previousPending.clear();oneCursor=null;oneLockUntil=0;historyExpanded=false;finalReviewOpen=false;}
  function updateStickyOffset(){
   if(!FEATURES.sticky)return;
   const topbar=document.querySelector(".topbar");
@@ -205,7 +205,8 @@ export function createChecklistUI(root,scope,storage=localStorage){
   if(summary.pending===0){
    return '<section class="cc-single-summary"><strong>Revisión completada</strong>'+
     '<p>'+summary.total+' artículos comprobados · '+summary.incidents+' incidencias.</p>'+
-    '<button type="button" data-mode="list" class="cc-one-return">Volver a la lista</button></section>'+
+    '<button type="button" data-mode="list" class="cc-one-return">Volver a la lista</button>'+
+     '<button type="button" data-final-open class="cc-one-return">Revisión final</button></section>'+
     (toast?'<div class="cc-single-toast-inline">'+toast+'</div>':"");
   }
   if(!items.length){
@@ -247,6 +248,44 @@ export function createChecklistUI(root,scope,storage=localStorage){
   const note=prompt("Observaciones (opcional):")??"";
   if(advance){oneCursor=index+1;oneLockUntil=performance.now()+400;}
   apply(load,index,"incident",Number(normalized),note);
+ }
+
+
+ function renderFinalReview(load,review,summary,allowed){
+  const incidents=load.products.map((product,index)=>({product,index,record:review.lines[index]}))
+   .filter(({record})=>record?.status==="incident");
+  const good=summary.checked-summary.incidents;
+  const editable=allowed&&!review.closedAt;
+  const notices=summary.pending
+   ?'<p class="cc-final-warning" role="status">Quedan '+summary.pending+' artículos pendientes. No es posible cerrar hasta comprobarlos.</p>'
+   :incidents.length
+    ?'<p class="cc-final-warning">Revisa las incidencias y acepta expresamente su existencia antes de cerrar.</p>'
+    :'<p class="cc-final-ok">No hay pendientes ni incidencias. Revisión preparada para cerrar.</p>';
+  const detail=incidents.map(({product,index,record})=>
+   '<article class="cc-final-incident"><div class="cc-final-incident-text">'+
+   '<strong>'+esc(product.description||product.sku||"Artículo")+'</strong>'+
+   '<small>Esperado: '+esc(product.qty)+" "+esc(product.unit||"")+' · Comprobado: '+esc(record.actualQty)+'</small>'+
+   (record.note?'<p>'+esc(record.note)+'</p>':"")+'</div>'+
+   (editable?'<div class="cc-final-incident-actions">'+
+    '<button type="button" data-final-edit="'+index+'">Editar incidencia</button>'+
+    '<button type="button" data-final-ok="'+index+'">Marcar correcto</button></div>':"")+
+   '</article>'
+  ).join("");
+  return '<section class="cc-final-review" aria-label="Revisión final de la carga">'+
+   '<h3>Revisión final · '+esc(load.id)+'</h3>'+
+   '<div class="cc-final-metrics">'+
+    '<span><b>'+good+'</b> correctos</span><span><b>'+summary.incidents+'</b> incidencias</span>'+
+    '<span><b>'+summary.pending+'</b> pendientes</span></div>'+notices+
+   (incidents.length?'<h4>Incidencias registradas</h4>'+detail:
+    '<p class="cc-final-no-incidents">Sin incidencias registradas.</p>')+
+   '<div class="cc-final-actions">'+
+    '<button type="button" data-final-back>Volver a la comprobación</button>'+
+    (summary.pending?'<button type="button" data-final-pending>Ir a pendientes</button>':"")+
+    (editable?'<button type="button" class="cc-final-close" data-final-close '+(summary.pending?'disabled':"")+
+     '>Cerrar revisión'+(summary.incidents?' aceptando incidencias':"")+'</button>':"")+
+   '</div>'+
+   (review.closedAt?'<p class="cc-final-ok">Revisión cerrada el '+esc(new Date(review.closedAt).toLocaleString("es-ES"))+'.</p>':"")+
+   '</section>';
  }
 
  function render(){
@@ -334,21 +373,26 @@ export function createChecklistUI(root,scope,storage=localStorage){
    const toast=FEATURES.pending&&undo?.loadId===load.id
     ?'<div class="cc-toast" role="status"><span>✓ Artículo comprobado</span><button type="button" data-undo>Deshacer</button></div>'
     :"";
-   const body=viewMode==="single"
-    ?buildOneByOne(load,review,summary,allowed,toast)
-    :'<div class="cc-groups" id="ccLines">'+sections.join("")+'</div>';
+   const body=finalReviewOpen
+    ?renderFinalReview(load,review,summary,allowed)
+    :viewMode==="single"
+     ?buildOneByOne(load,review,summary,allowed,toast)
+     :'<div class="cc-groups" id="ccLines">'+sections.join("")+'</div>';
    set((warning?'<p role="alert" class="status error">'+esc(warning)+'</p>':"")+
     (review.closedAt?'<p class="status">Revisión cerrada: '+esc(review.closedAt)+'</p>':"")+
-    toolbar+'<div class="cc-history-bar"><button type="button" data-history-toggle aria-expanded="'+historyExpanded+'">'+
-    (historyExpanded?"Ocultar últimas acciones":"Últimas acciones")+'</button></div>'+
-    renderHistory(load,review,allowed)+body+
-    (viewMode==="list"&&allowed&&!review.closedAt?'<button id="ccClose" class="primary" type="button" '+(summary.pending?"disabled":"")+'>Cerrar revisión</button>':"")+
-    '<p id="ccMessage" role="status" class="status"></p>'+(viewMode==="list"?toast:""));
+    toolbar+
+    (finalReviewOpen?"":'<div class="cc-history-bar"><button type="button" data-history-toggle aria-expanded="'+historyExpanded+'">'+
+     (historyExpanded?"Ocultar últimas acciones":"Últimas acciones")+'</button></div>'+
+     renderHistory(load,review,allowed))+
+    body+
+    (!finalReviewOpen&&viewMode==="list"?'<button type="button" class="cc-final-entry" data-final-open>'+
+     (review.closedAt?"Ver revisión final":"Revisión final antes de cerrar")+'</button>':"")+
+    '<p id="ccMessage" role="status" class="status"></p>'+(!finalReviewOpen&&viewMode==="list"?toast:""));
    updateStickyOffset();
    root.querySelectorAll("[data-mode]").forEach(button=>button.onclick=()=>{
     const next=button.dataset.mode==="single"?"single":"list";
     if(viewMode===next)return;
-    viewMode=next;oneCursor=null;oneLockUntil=0;
+    viewMode=next;oneCursor=null;oneLockUntil=0;finalReviewOpen=false;
     manuallyCollapsed.clear();manuallyExpanded.clear();previousPending.clear();
     try{storage.setItem(MODE_KEY,viewMode);}catch{}
     render();
@@ -362,7 +406,7 @@ export function createChecklistUI(root,scope,storage=localStorage){
     revertHistory(load,index,review.audit?.[index]);
    });
    root.querySelectorAll("[data-filter]").forEach(button=>button.onclick=()=>{
-    filter=button.dataset.filter;oneCursor=null;manuallyCollapsed.clear();manuallyExpanded.clear();render();
+    filter=button.dataset.filter;oneCursor=null;finalReviewOpen=false;manuallyCollapsed.clear();manuallyExpanded.clear();render();
    });
    root.querySelectorAll("[data-group]").forEach(button=>button.onclick=()=>{
     const key=button.dataset.group;
@@ -411,18 +455,53 @@ export function createChecklistUI(root,scope,storage=localStorage){
     if(latest.review.lines[action.index]?.status!=="ok"){render();return;}
     apply(load,action.index,action.from,action.quantity,action.note);
    });
-   const close=root.querySelector("#ccClose");
-   if(close)close.onclick=()=>{
-    const accept=summary.incidents>0
-     ?confirm("Hay "+summary.incidents+" incidencias. ¿Aceptar expresamente y cerrar la revisión?")
-     :confirm("¿Cerrar la revisión de esta carga?");
-    if(!accept)return;
+   root.querySelectorAll("[data-final-open]").forEach(button=>button.onclick=()=>{
+    finalReviewOpen=true;historyExpanded=false;clearUndo();render();
+   });
+   root.querySelector("[data-final-back]")?.addEventListener("click",()=>{
+    finalReviewOpen=false;render();
+   });
+   root.querySelector("[data-final-pending]")?.addEventListener("click",()=>{
+    finalReviewOpen=false;filter="pending";oneCursor=null;render();
+   });
+   root.querySelectorAll("[data-final-edit]").forEach(button=>button.onclick=event=>{
+    if(!isShortClick(event)||!allowed||review.closedAt)return;
+    requestIncident(load,Number(button.dataset.finalEdit));
+   });
+   root.querySelectorAll("[data-final-ok]").forEach(button=>button.onclick=event=>{
+    if(!isShortClick(event)||!allowed||review.closedAt)return;
+    const index=Number(button.dataset.finalOk);
+    if(getReview(storage,scope,load).review.lines[index]?.status!=="incident"){render();return;}
+    if(!confirm("¿Confirmar como correcto este artículo y eliminar su incidencia?"))return;
+    const latest=getReview(storage,scope,load);
+    if(latest.stale||latest.review.closedAt||latest.review.lines[index]?.status!=="incident"){
+     message("El artículo ha cambiado. Actualiza la revisión.");return;
+    }
+    apply(load,index,"ok");
+   });
+   root.querySelector("[data-final-close]")?.addEventListener("click",event=>{
+    if(!isShortClick(event))return;
     try{
-     const latest=getReview(storage,scope,load);
-     saveReview(storage,scope,closeReview(latest.review,load,{acceptIncidents:summary.incidents>0}));
+     const fresh=getReview(storage,scope,load);
+     if(fresh.stale||fresh.review.closedAt||!verificationAllowed(load)){
+      throw Error("Esta revisión no permite el cierre.");
+     }
+     const total=reviewSummary(fresh.review,load);
+     if(total.pending)throw Error("Quedan "+total.pending+" artículos pendientes.");
+     const confirmationText=total.incidents
+      ?"Se cerrará la revisión de "+load.id+" aceptando expresamente "+total.incidents+" incidencias. ¿Confirmar cierre?"
+      :"¿Confirmar el cierre definitivo de la revisión "+load.id+"?";
+     if(!confirm(confirmationText))return;
+     const again=getReview(storage,scope,load);
+     if(again.stale||again.review.closedAt||!verificationAllowed(load)||
+      JSON.stringify(again.review)!==JSON.stringify(fresh.review)){
+      throw Error("La revisión ha cambiado durante la confirmación. Vuelve a comprobarla.");
+     }
+     saveReview(storage,scope,closeReview(again.review,load,{acceptIncidents:total.incidents>0}));
      clearUndo();render();
     }catch(error){message(error);}
-   };
+   });
+
   }catch(error){set('<p role="alert" class="status error">No se pudieron leer las hojas: '+esc(error.message)+'</p>');}
  }
  render();

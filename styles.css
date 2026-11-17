@@ -820,3 +820,43 @@ footer{padding:18px;text-align:center;background:#fff;border-top:1px solid #e6e8
  padding:8px 11px;font-size:12px;font-weight:850;background:#e9f3fa;color:#0B2647;
 }
 #controlChecklistView .cc-history-entry button:disabled{opacity:.42}
+
+
+/* CP REVISIÓN FINAL · Resumen antes del cierre sin nuevos campos. */
+#controlChecklistView .cc-final-entry{
+ display:block;width:100%;min-height:48px;background:#0B2647;color:#fff;
+ font-size:14px;font-weight:850;border:0;border-radius:11px;padding:11px 16px;margin:12px 0;
+}
+#controlChecklistView .cc-final-review{
+ border:1px solid #cad9e6;background:#fff;border-radius:14px;
+ padding:15px;margin:12px 0;box-shadow:0 3px 14px #0b264713;
+}
+#controlChecklistView .cc-final-review h3{margin:0 0 12px;font-size:19px;color:#0B2647}
+#controlChecklistView .cc-final-metrics{
+ display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin:0 0 14px;
+}
+#controlChecklistView .cc-final-metrics span{
+ background:#edf3f8;color:#0B2647;border-radius:9px;
+ padding:10px 6px;font-size:11px;text-align:center;line-height:1.45;
+}
+#controlChecklistView .cc-final-metrics b{display:block;font-size:23px}
+#controlChecklistView .cc-final-review h4{margin:16px 0 8px;color:#0B2647}
+#controlChecklistView .cc-final-warning{background:#fff3e3;color:#85511f;border-radius:10px;padding:12px;font-size:13px;line-height:1.5}
+#controlChecklistView .cc-final-ok{background:#e9f6ed;color:#215d3d;border-radius:10px;padding:12px;font-size:13px;line-height:1.5}
+#controlChecklistView .cc-final-no-incidents{font-size:13px;color:#5d7388}
+#controlChecklistView .cc-final-incident{border:1px solid #e6d5c6;border-radius:11px;padding:11px;margin:8px 0;background:#fffaf6}
+#controlChecklistView .cc-final-incident-text strong{display:block;font-size:14px;line-height:1.35}
+#controlChecklistView .cc-final-incident-text small{display:block;margin-top:5px;color:#775338;font-size:12px}
+#controlChecklistView .cc-final-incident-text p{font-size:12px;margin:5px 0;color:#544b40;overflow-wrap:anywhere}
+#controlChecklistView .cc-final-incident-actions{display:flex;flex-wrap:wrap;gap:9px;margin-top:10px}
+#controlChecklistView .cc-final-incident-actions button{
+ flex:1;min-height:44px;border:1px solid #d5b89f;border-radius:9px;
+ background:#fff;color:#734625;font-size:12px;font-weight:800;padding:8px;
+}
+#controlChecklistView .cc-final-actions{display:flex;flex-wrap:wrap;gap:9px;margin-top:16px}
+#controlChecklistView .cc-final-actions button{
+ flex:1 1 160px;min-height:48px;border:1px solid #c7d7e5;border-radius:10px;
+ background:#eaf2f8;color:#0B2647;font-size:13px;font-weight:800;padding:10px;
+}
+#controlChecklistView .cc-final-actions .cc-final-close{background:#0B2647;color:#fff;border-color:#0B2647}
+#controlChecklistView .cc-final-actions button:disabled{opacity:.4}
