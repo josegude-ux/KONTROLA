@@ -56,8 +56,11 @@ export function crearCoordinadorCheckF3A({scope,repo,now=()=>Date.now()}){
    return repo.atomicUpdate(k,row=>{
     assertSource(row,i);if(!row||row.pendientes.length===0)return {next:row,value:{status:'vacia'}};
     const hora=now();
-    if(row.bloqueo&&row.bloqueo.hasta>hora&&row.bloqueo.tabId!==tabId)
-      return {next:row,value:{status:'otra_pestana'}};
+    // Un lease vigente bloquea también una segunda reserva desde la MISMA pestaña.
+    // Sin este guard, dos callbacks online/sync pueden enviar el mismo UUID a la vez.
+    // Tras timeout o caducidad se permite recuperar con el mismo UUID y CAS.
+    if(row.bloqueo&&row.bloqueo.hasta>hora)
+      return {next:row,value:{status:row.bloqueo.tabId===tabId?'en_curso':'otra_pestana'}};
     const p=row.pendientes.find(x=>x.status!=='confirmada');
     if(!p)return {next:row,value:{status:'vacia'}};
     if(p.status==='intencion'||p.status==='bloqueada')return {next:row,value:{status:p.status}};
