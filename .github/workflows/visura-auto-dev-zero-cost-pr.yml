@@ -1,0 +1,95 @@
+name: VISURA AUTO-DEV - Zero Cost PR Pilot
+# Deterministic zero-cost pilot. No AI, external services, or production access.
+# Recheck draft PR creation after repository permission was enabled.
+on:
+  push:
+    branches:
+      - chore/visura-auto-dev-guardrails
+    paths:
+      - .github/workflows/visura-auto-dev-zero-cost-pr.yml
+  workflow_dispatch:
+    inputs:
+      pilot_id:
+        description: 'Pilot identifier (fixed issue #31; output run 34)'
+        required: true
+        default: '31'
+        type: choice
+        options:
+          - '31'
+permissions:
+  contents: read
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      issues: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Validate pilot task and safety tests
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          python3 -m unittest discover -s tests -p 'test_visura_*.py' -v
+          python3 -m scripts.visura_safety_smoke
+          python3 scripts/visura_queue_audit.py
+  draft_pr:
+    needs: prepare
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: read
+    steps:
+      - name: Create deterministic draft PR from approved task
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          BASE: chore/visura-auto-dev-guardrails
+          HEAD: chore/visura-auto-dev-generated-34
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$REPO" = "josegude-ux/KONTROLA"
+          # Fixed issue #31 and output branch prevent untrusted inputs from controlling writes.
+          # Never use issue body as executable code or instructions.
+          state="$(gh api "repos/$REPO/issues/31" --jq '.state')"
+          is_pr="$(gh api "repos/$REPO/issues/31" --jq 'has("pull_request")')"
+          test "$state" = "open"
+          test "$is_pr" = "false"
+          # Idempotent: an existing branch must never be overwritten.
+          if ! gh api "repos/$REPO/git/ref/heads/$HEAD" >/dev/null 2>&1; then
+            base_sha="$(gh api "repos/$REPO/git/ref/heads/$BASE" --jq '.object.sha')"
+            gh api --method POST "repos/$REPO/git/refs" \
+              -f "ref=refs/heads/$HEAD" -f "sha=$base_sha" >/dev/null
+            text="$(printf '# VISURA AUTO-DEV: tarea 31\\n\\nDocumento generado automáticamente por un workflow determinista, sin IA de pago.\\n\\n- Origen: issue #31 (solo metadatos).\\n- Sin acceso a Business Central ni Supabase.\\n- No autoriza fusiones ni despliegues.\\n')"
+            encoded="$(printf '%s' "$text" | base64 -w0)"
+            gh api --method PUT "repos/$REPO/contents/docs/VISURA_AUTO_DEV_GENERADO_34.md" \
+              -f "message=docs: generate safe zero-cost pilot from issue 31" \
+              -f "content=$encoded" -f "branch=$HEAD" >/dev/null
+          fi
+          # Re-runs must not create duplicate PRs. Existing PR may be open or closed.
+          existing="$(gh api "repos/$REPO/pulls?state=all&head=josegude-ux:$HEAD&base=$BASE" --jq 'length')"
+          if [ "$existing" != "0" ]; then
+            echo "Pilot PR already exists; no writes performed."
+            exit 0
+          fi
+          echo 'Attempting draft PR creation with GitHub Actions token.'
+          response_file="$(mktemp)"
+          if ! gh api --method POST "repos/$REPO/pulls" \
+            -f "title=docs: VISURA AUTO-DEV zero-cost generated pilot #34" \
+            -f "head=$HEAD" -f "base=$BASE" \
+            -f "body=Automatically generated from approved issue #31 metadata only. No AI calls. Human review required. Do not merge without explicit approval." \
+            -F "draft=true" >"$response_file"; then
+            echo "::error::GitHub rejected draft PR creation. Check Settings > Actions > General > Workflow permissions > Allow GitHub Actions to create and approve pull requests."
+            exit 1
+          fi
+          pr_url="$(jq -r '.html_url // empty' "$response_file")"
+          test -n "$pr_url"
+          echo "Draft PR created: $pr_url"
+          echo "### Zero-cost pilot" >> "$GITHUB_STEP_SUMMARY"
+          echo "Draft PR: $pr_url" >> "$GITHUB_STEP_SUMMARY"

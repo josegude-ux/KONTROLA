@@ -3,7 +3,7 @@ name: Publicar KONTROLA de pruebas (GitHub Pages)
 on:
   push:
     branches:
-      - cursor/verificacion-fisica-cargas-8ba0
+      - main
   workflow_dispatch:
 
 permissions:

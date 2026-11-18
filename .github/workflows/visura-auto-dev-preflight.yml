@@ -1,0 +1,41 @@
+name: VISURA AUTO-DEV - Preflight seguro
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: visura-auto-dev-preflight
+  cancel-in-progress: false
+jobs:
+  preflight:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      MONTHLY_BUDGET_EUR: "10"
+      AGENT_ENABLED: "false"
+      PAID_API_CALLS_ENABLED: "false"
+    steps:
+      - name: Checkout sin credenciales persistentes
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Comprobar política sin consumir tokens
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$AGENT_ENABLED" = "false"
+          test "$PAID_API_CALLS_ENABLED" = "false"
+          test "$MONTHLY_BUDGET_EUR" = "10"
+          test -f docs/CONTINUIDAD.md
+          test -f docs/VISURA_AUTO_DEV_SEGURIDAD.md
+          test -f docs/VISURA_AUTO_DEV_PLAN_10EUR.md
+          {
+            echo "## VISURA AUTO-DEV — preflight"
+            echo "- Presupuesto objetivo: 10 EUR/mes (NO es todavía un límite técnico de facturación)"
+            echo "- Agente autónomo: DESACTIVADO"
+            echo "- Peticiones pagadas: DESACTIVADAS"
+            echo "- Credenciales externas: NO CONSULTADAS"
+            echo "- Escritura a repositorio: NO PERMITIDA"
+            echo "- Supabase y despliegues: NO ACCEDIDOS"
+            echo "- Próxima puerta: implementar y verificar corte real de gasto antes de activar llamadas"
+          } >> "$GITHUB_STEP_SUMMARY"
