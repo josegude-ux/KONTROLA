@@ -18,6 +18,7 @@ import uuid
 IMAGE_TAG = "python:3.12.16-alpine3.24"
 IMAGE_ID_RE = re.compile(r"sha256:[a-f0-9]{64}\Z")
 CONTAINER_NAME_PREFIX = "visura-container-smoke-"
+CONTAINER_NAME_RE = re.compile(r"visura-container-smoke-[a-f0-9]{32}\Z")
 TIMEOUT_SECONDS = 45
 PROBE = r'''
 import json
@@ -66,8 +67,7 @@ def docker_args(image_id, workspace, name):
     if (not workspace.is_absolute() or not workspace.is_dir()
             or workspace.is_symlink()):
         raise ValueError("Workspace must be an existing non-symlink absolute directory")
-    if not isinstance(name, str) or not re.fullmatch(
-            r"visura-container-smoke-[a-f0-9]{32}", name):
+    if not isinstance(name, str) or not CONTAINER_NAME_RE.fullmatch(name):
         raise ValueError("Invalid ephemeral container name")
     return [
         "docker", "run", "--rm", "--pull=never", "--name", name,
@@ -94,6 +94,33 @@ def _run(argv, timeout=TIMEOUT_SECONDS):
     )
 
 
+def cleanup_container(name):
+    """Remove a test container and independently verify whether it remains."""
+    if not isinstance(name, str) or not CONTAINER_NAME_RE.fullmatch(name):
+        raise ValueError("Invalid ephemeral container name")
+    try:
+        _run(["docker", "rm", "-f", name], timeout=10)
+    except Exception:
+        pass
+    try:
+        remaining = _run(
+            ["docker", "container", "ls", "--all", "--format={{.Names}}"],
+            timeout=10,
+        )
+    except Exception:
+        return "unverifiable"
+    if remaining.returncode != 0 or not isinstance(remaining.stdout, str):
+        return "unverifiable"
+    names = remaining.stdout.splitlines()
+    matches = [container_name for container_name in names
+               if container_name in (name, "/" + name)]
+    if not matches:
+        return "confirmed"
+    if len(matches) == 1:
+        return "failed"
+    return "unverifiable"
+
+
 def run_smoke_pilot():
     """Pull a fixed tag, pin the observed image ID, and run trusted probe."""
     if shutil.which("docker") is None:
@@ -116,12 +143,21 @@ def run_smoke_pilot():
             completed = _run(cmd, timeout=TIMEOUT_SECONDS)
         except subprocess.TimeoutExpired as exc:
             # A timed-out Docker CLI need not terminate the child container.
-            cleanup = _run(["docker", "rm", "-f", name], timeout=10)
-            raise RuntimeError("Smoke timeout; container cleanup attempted: "
-                               + str(cleanup.returncode)) from exc
+            cleanup_status = cleanup_container(name)
+            raise RuntimeError(
+                "Smoke timeout; container cleanup " + cleanup_status
+            ) from exc
+        except (subprocess.SubprocessError, OSError) as exc:
+            cleanup_status = cleanup_container(name)
+            raise RuntimeError(
+                "Smoke launch failed; container cleanup " + cleanup_status
+            ) from exc
         if completed.returncode:
-            raise RuntimeError("Container smoke failed: " + completed.stderr[-700:]
-                               + completed.stdout[-700:])
+            cleanup_status = cleanup_container(name)
+            raise RuntimeError(
+                "Container smoke failed; container cleanup " + cleanup_status
+                + ": " + completed.stderr[-700:] + completed.stdout[-700:]
+            )
         try:
             report = json.loads(completed.stdout.strip())
         except json.JSONDecodeError as exc:
