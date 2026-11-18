@@ -1,0 +1,41 @@
+name: VISURA AUTO-DEV - Container Isolation Smoke
+# Pilot ONLY on an isolated known branch: never on pull_request_target,
+# workflow_run, arbitrary PR code, main, a publishing branch, or production.
+on:
+  push:
+    branches:
+      - chore/visura-auto-dev-replay-guard-001
+    paths:
+      - scripts/visura_container_smoke.py
+      - tests/test_visura_container_smoke.py
+      - .github/workflows/visura-auto-dev-container-smoke.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: visura-auto-dev-container-smoke
+  cancel-in-progress: false
+jobs:
+  bounded-fixture:
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
+    steps:
+      - name: Checkout isolated branch without GitHub credentials
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Validate read-only policy and command construction
+        run: |
+          python3 -m compileall -q scripts/visura_container_smoke.py tests/test_visura_container_smoke.py
+          python3 -m unittest discover -s tests -p 'test_visura_container_smoke.py' -v
+      - name: Confirm ephemeral Docker host is available
+        run: docker info --format '{{.ServerVersion}}'
+      - name: Run trusted fixture with no network, no credentials, read-only root
+        run: python3 -m scripts.visura_container_smoke --pilot
+      - name: Declare remaining safety boundary
+        run: |
+          echo '## VISURA trusted fixture isolation smoke' >> "$GITHUB_STEP_SUMMARY"
+          echo '- Docker flags and in-container observations validated on this runner' >> "$GITHUB_STEP_SUMMARY"
+          echo '- Untrusted code execution: NOT AUTHORIZED' >> "$GITHUB_STEP_SUMMARY"
+          echo '- Independent host attestation and external supervisor: NOT IMPLEMENTED' >> "$GITHUB_STEP_SUMMARY"
+          echo '- Model calls, repository writes, deployment: NONE' >> "$GITHUB_STEP_SUMMARY"
