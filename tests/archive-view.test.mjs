@@ -1,0 +1,10 @@
+import test from "node:test";
+import assert from "node:assert/strict";
+import { filtrarArchivoLogico } from "../src/archive-view.mjs";
+const datos=[{codigo:"A",archivado:false},{codigo:"B",archivado:true},{codigo:"C"},{codigo:"D",archivado:null}];
+test("activas excluye solo archivo confirmado",()=>assert.deepEqual(filtrarArchivoLogico(datos).map(x=>x.codigo),["A","C","D"]));
+test("archivadas incluye solo archivo confirmado",()=>assert.deepEqual(filtrarArchivoLogico(datos,{vista:"archivadas"}).map(x=>x.codigo),["B"]));
+test("todas conserva cargas",()=>assert.equal(filtrarArchivoLogico(datos,{vista:"todas"}).length,4));
+test("vista desconocida deniega resultados",()=>assert.deepEqual(filtrarArchivoLogico(datos,{vista:"eliminar"}),[]));
+test("entrada invalida no rompe",()=>assert.deepEqual(filtrarArchivoLogico(null),[]));
+test("no muta datos originales",()=>{filtrarArchivoLogico(datos);assert.equal(datos.length,4)});

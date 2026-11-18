@@ -1,0 +1,18 @@
+{
+ "results": {
+  "reparto": {
+   "summary": "Hoja de reparto · Coruña: 2 repartidores · Con frio: 1 · Sin frio: 1 · Incidencias: 1 · 18/11/2026 · 1 de Ferrol omitidas · 1 cargas excluidas",
+   "len": 4600,
+   "text": " Control de cargas - Preparación y frío HOJA DE REPARTO Fecha: 18/11/2026 CAMIONES QUE COGEN FRIO (1) Cod. camion Nombre repartidor Acompañante FRIO CRFIC0001 ANA FICTICIA BRUNO PRUEBA SI CAMIONES SIN FRIO (1) Cod. camion Nombre repartidor Acompañante FRIO CRFIC0003 CARLOS INVENTADO INCIDENCIAS (1) ELENA SINVERIF: Pesos no comparables o sin acreditar RESUMEN: 2 repartidores | Con frio: 1 | Sin frio: 1 | Incidencias: 1 "
+  },
+  "matriculas": {
+   "summary": "Matrículas por peso · Coruña: 5 cargas · 18/11/2026 · 1 de Ferrol omitidas",
+   "len": 4536,
+   "text": " Control de cargas - Preparación y frío MATRÍCULAS POR PESO · CORUÑA Fecha: 18/11/2026 Nº Matrícula Repartidor Carga Peso (kg) 1 FIC0003 CARLOS INVENTADO LPFICT003 2100 2 FIC0001 ANA FICTICIA LPFICT001 1500 3 FIC0005 ELENA SINVERIF LPFICT005 900 4 FIC0002 ANA FICTICIA LPFICT002 800 5 ALM0001 DANI ALMACEN LPFICT004 500 RESUMEN: 5 cargas | Peso total: 5800 kg "
+  },
+  "cargasIntactas": true
+ },
+ "dialogs": [],
+ "blocked": [],
+ "logs": []
+}

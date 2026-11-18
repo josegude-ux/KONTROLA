@@ -1,4 +1,4 @@
 {
-  "version": "0.1.0",
-  "notes": "Primera fase de KONTROLA; pendiente de migración SQL y pruebas en dispositivos."
+  "version": "0.3.52",
+  "notes": "Preparación de cargas abre Hojas de carga (antes PRUEBA_3), con PDF.js local sin conexión y vuelta a Preparación. Rehace la PR #100 (ade2177) sobre 0.3.51 (tarjeta de verificación diseño B)."
 }
