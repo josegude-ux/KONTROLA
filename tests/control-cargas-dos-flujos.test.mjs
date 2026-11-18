@@ -109,5 +109,5 @@ test('revisión accesible: tab, botones táctiles, estilos y precache preservado
 test('no se cambia la maqueta del submenú Preparación A',()=>{
  const section=html.match(/<section id="preparacionMenuView"[\s\S]*?<\/section>/)?.[0];
  assert.ok(section);
- assert.equal(createHash('sha256').update(section).digest('hex'),'acd9bb49ec84a3cd4de45e791dc6500b50cd5e4c54322408be4555c5cf10da42');
+ assert.equal(createHash('sha256').update(section).digest('hex'),'f3d5ca281c8ddbdae8a5d20db4fc0c902602e4b0f439a2a1a85417c230516b37');
 });

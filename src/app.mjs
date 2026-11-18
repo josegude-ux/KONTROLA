@@ -529,7 +529,7 @@ async function openAdminMenu(parent="homeView"){
   await adminController.open().catch(error=>global(errorText(error),"error"));
 }
 $("openPreparation").addEventListener("click",()=>switchView("preparacionMenuView"));
-$("preparacionCargas").addEventListener("click",()=>openLoadsMenu("preparacionMenuView"));
+$("preparacionCargas").addEventListener("click",()=>{void openPrueba3Cargas("preparacionMenuView");});
 // Única fuente nueva: reutiliza exclusivamente la lectura ya autorizada por PREPARA.
 // No consulta stock BC y no llama a RPC/tabla de mutación.
 async function refrescarArticulosCargas(){
@@ -630,9 +630,16 @@ $("backFromPreparacionArticulos").addEventListener("click",()=>switchView("prepa
 $("backFromPreparacionMovimientos").addEventListener("click",()=>switchView("preparacionMenuView"));
 // Acceso directo al Control de Cargas PRUEBA_3 en el panel oficial de VISURA.
 // El módulo usa almacenamiento local por usuario, sin transferir PDF a Supabase.
-async function openPrueba3Cargas(){
+// Origen desde el que se abrió Hojas de carga, para que «Volver» regrese allí.
+let prueba3Parent="homeView";
+async function openPrueba3Cargas(parent="homeView"){
   const accountId=user?.id;
   if(!accountId||!switchView("cargasMenuView"))return;
+  prueba3Parent=parent==="preparacionMenuView"?"preparacionMenuView":"homeView";
+  const fromPrep=prueba3Parent==="preparacionMenuView";
+  $("backFromCargasMenu").textContent=fromPrep?"← Volver a Preparación":"← Volver al inicio";
+  $("cargasMenuEyebrow").textContent=fromPrep?"VISURA PREPARA / PREPARACIÓN":"VISURA PREPARA / CONTROL DE CARGAS";
+  $("cargasMenuTitle").textContent=fromPrep?"Preparación de cargas":"Control de Cargas";
   try{
     const digest=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(accountId));
     if(user?.id!==accountId||$("cargasMenuView").hidden)return;
@@ -657,7 +664,7 @@ async function openChecklist(){
  }catch(error){global("No se pudo abrir la verificación: "+String(error?.message||error),"error");}
 }
 $("openReview").addEventListener("click",()=>{void openChecklist();});
-$("preparacionPrueba3").addEventListener("click",()=>{void openPrueba3Cargas();});
+$("backFromCargasMenu").addEventListener("click",()=>switchView(prueba3Parent));
 $("backFromChecklist").addEventListener("click",()=>{
   if(checklistUi?.back?.())return;
   switchView("homeView");
@@ -715,7 +722,8 @@ $("globalBack").addEventListener("click",()=>{
     reviewLoadsView:"backFromReviewLoads",
     reviewDetailView:"backToReviewLoads"
   };
-  if(view==="preparacionMenuView"||view==="cargasMenuView"||view==="settingsView")switchView("homeView");
+  if(view==="cargasMenuView")switchView(prueba3Parent);
+  else if(view==="preparacionMenuView"||view==="settingsView")switchView("homeView");
   else if(view==="adminView")switchView(adminParent);
   else if(backButtons[view])$(backButtons[view]).click();
 });

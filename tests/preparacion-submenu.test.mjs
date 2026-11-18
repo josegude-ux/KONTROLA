@@ -14,7 +14,7 @@ test("Preparación abre un submenú y no directamente cargas",()=>{
   assert.deepEqual(ids.map(id=>html.indexOf(`id="${id}"`)),[...ids.map(id=>html.indexOf(`id="${id}"`))].sort((a,b)=>a-b));
 });
 test("Preparación de cargas reutiliza flujo existente con retorno a submenú",()=>{
-  assert.match(app,/\$\("preparacionCargas"\)\.addEventListener\("click",\(\)=>openLoadsMenu\("preparacionMenuView"\)\)/);
+  assert.match(app,/\$\("preparacionCargas"\)\.addEventListener\("click",\(\)=>\{void openPrueba3Cargas\("preparacionMenuView"\);\}\)/);
   assert.match(app,/\$\("backFromLoads"\)\.addEventListener\("click",\(\)=>switchView\(loadsParent\)\)/);
   assert.match(app,/function openLoadsMenu\(parent="homeView",mode="preparacion"\)/);
 });
@@ -30,7 +30,9 @@ test("Consulta de artículos y Movimientos tienen paneles funcionales sin escrit
 test("La vuelta funciona por botón superior sin alterar Control de Cargas",()=>{
   for(const id of ["preparacionArticulosView","preparacionMovimientosView","preparacionMenuView"])
     assert.match(app,new RegExp(id));
-  assert.match(app,/if\(view==="preparacionMenuView"\|\|view==="cargasMenuView"/);
+  assert.match(app,/if\(view==="cargasMenuView"\)switchView\(prueba3Parent\)/);
+  assert.match(app,/\$\("backFromCargasMenu"\)\.addEventListener\("click",\(\)=>switchView\(prueba3Parent\)\)/);
+  assert.match(app,/view==="preparacionMenuView"\|\|view==="settingsView"\)switchView\("homeView"\)/);
   assert.match(app,/preparacionArticulosView:"backFromPreparacionArticulos"/);
   assert.match(app,/preparacionMovimientosView:"backFromPreparacionMovimientos"/);
   assert.match(app,/\$\("cargasPreparar"\)\.addEventListener\("click",\(\)=>openLoadsMenu\("cargasMenuView"\)\)/);
