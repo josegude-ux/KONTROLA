@@ -3,13 +3,27 @@
 Estado: **decisión de arquitectura aprobada. Sin implementación.** No se modifica código, no se conecta a SQL y no se usan datos reales.
 Fecha: 18/11/2026. Repositorio público: aquí no se escriben servidores, bases, rutas de SharePoint, credenciales ni identificadores internos.
 
+## 0. Papel de VISURA
+
+VISURA PREPARA ALMACÉN es una **herramienta de apoyo** a la operativa. No es un sistema de gestión.
+
+- **Business Central** es el sistema de referencia: pedidos, cargas, repartidores, artículos y cantidades.
+- **EKDAL** es donde se pistolean las referencias durante el picking.
+- VISURA solo **lee** lo que viene de BC, ya sea por SQL (réplica de BC) o por PDF (documentos generados por BC), para producir listados de ayuda.
+
+Consecuencias:
+- VISURA nunca escribe en BC ni en EKDAL, ni pretende sustituirlos.
+- Si VISURA no coincide con BC, **manda BC**. VISURA avisa y no corrige nada.
+- Un fallo de VISURA no puede parar la operativa: BC y EKDAL siguen funcionando sin ella.
+- Los datos propios de VISURA (tiempos, operario, estado de preparación) son auxiliares y no se devuelven a BC.
+
 ## 1. Decisión
 
 - **Una sola aplicación y un solo motor de informes.** Dos fuentes alimentan un contrato de datos común.
 - **SQL = fuente principal** (consultas de solo lectura, sin que nadie abra Excel).
 - **PDF = contingencia operativa.** Se conserva el importador actual tal cual.
 - Los cuatro listados (repartidores con frío, sin frío, frío Coruña, frío y barriles Ferrol) salen con el **mismo formato** sea cual sea la fuente, indicando qué datos faltan cuando la fuente es PDF.
-- Sin duplicar cargas ni cantidades. Cada carga conserva fecha, almacén, número de carga y procedencia. Si SQL y PDF difieren, **se avisa antes de sustituir**.
+- Sin duplicar cargas ni cantidades. Cada carga conserva fecha, almacén, número de carga y procedencia. Si SQL y PDF difieren, **se avisa antes de sustituir**. Las dos fuentes reflejan BC; cuando la diferencia es con BC, prevalece BC.
 - Volver a SQL tras una incidencia no pierde documentos, tiempos ni registros hechos con PDF.
 
 ```
