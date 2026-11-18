@@ -66,7 +66,7 @@ for(const [id,klass,title] of [
  });
 }
 test('conserva listeners existentes, lectura permitida y borrador sin mutar BC',()=>{
- assert.match(app,/\$\("preparacionCargas"\)\.addEventListener\("click",\(\)=>openLoadsMenu\("preparacionMenuView"\)\)/);
+ assert.match(app,/\$\("preparacionCargas"\)\.addEventListener\("click",\(\)=>\{void openPrueba3Cargas\("preparacionMenuView"\);\}\)/);
  assert.match(app,/\$\("preparacionArticulos"\)\.addEventListener\("click"/);
  assert.match(app,/\$\("preparacionMovimientos"\)\.addEventListener\("click"/);
  assert.match(app,/preparacionArticulosView:"backFromPreparacionArticulos"/);
@@ -76,7 +76,7 @@ test('conserva listeners existentes, lectura permitida y borrador sin mutar BC',
 });
 test('la base JS de Preparación A conserva los listeners y sus destinos originales',()=>{
  const rutas={
-  preparacionCargas:/\$\("preparacionCargas"\)\.addEventListener\("click",\(\)=>openLoadsMenu\("preparacionMenuView"\)\)/,
+  preparacionCargas:/\$\("preparacionCargas"\)\.addEventListener\("click",\(\)=>\{void openPrueba3Cargas\("preparacionMenuView"\);\}\)/,
   preparacionArticulos:/\$\("preparacionArticulos"\)\.addEventListener\("click"/,
   preparacionMovimientos:/\$\("preparacionMovimientos"\)\.addEventListener\("click"/
  };

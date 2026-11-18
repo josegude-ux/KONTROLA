@@ -41,7 +41,7 @@ test("acciones de las cuatro tarjetas siguen conectadas a controladores original
   const app = readFileSync(resolve(root, "src/app.mjs"), "utf8");
   const bindings = [
     ["openPreparation", 'switchView("preparacionMenuView")'],
-    ["openReview", "openPrueba3Cargas()"],
+    ["openReview", "openChecklist()"],
     ["openCargas", "openPrueba3Cargas()"],
     ["openAdmin", 'openAdminMenu("homeView")']
   ];
@@ -51,7 +51,7 @@ test("acciones de las cuatro tarjetas siguen conectadas a controladores original
     assert.match(app, re, `No se encuentra el manejador original para ${id}`);
   }
   // PRUEBA_3 abre el panel principal; Preparación y circuitos anteriores conservan rutas.
-  assert.match(app, /\$\("preparacionCargas"\)\.addEventListener\("click",\(\)=>openLoadsMenu\("preparacionMenuView"\)\)/);
+  assert.match(app, /\$\("preparacionCargas"\)\.addEventListener\("click",\(\)=>\{void openPrueba3Cargas\("preparacionMenuView"\);\}\)/);
 });
 
 test("administración permanece oculta por defecto hasta autorizar su visibilidad", () => {
