@@ -29,10 +29,10 @@ test("PRUEBA_3 mantiene frío y separa persistencia por usuario",()=>{
  for(const k of ["control_cargas_originales_prueba_integrada_2","control_cargas_prueba_integrada_2","control_cargas_operarios_prueba_2"])
    assert.ok(source.includes(k+"'"+ "+VISURA_SCOPE"),k);
 });
-test("Versión 0.3.52 y módulo incluidos en GitHub Pages",()=>{
- assert.equal(JSON.parse(read("version.json")).version,"0.3.52");
- assert.equal(JSON.parse(read("package.json")).version,"0.3.52");
- assert.ok(read("src/config.mjs").includes('APP_VERSION="0.3.52"'));
+test("Versión 0.3.53 y módulo incluidos en GitHub Pages",()=>{
+ assert.equal(JSON.parse(read("version.json")).version,"0.3.53");
+ assert.equal(JSON.parse(read("package.json")).version,"0.3.53");
+ assert.ok(read("src/config.mjs").includes('APP_VERSION="0.3.53"'));
  assert.ok(read("sw.js").includes('"./control-cargas-prueba3.html"'));
  assert.ok(read(".github/workflows/pages.yml").includes("cp index.html styles.css manifest.webmanifest sw.js version.json control-cargas-prueba3.html dist/"));
 });
