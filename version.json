@@ -1,4 +1,4 @@
 {
-  "version": "0.3.52",
-  "notes": "Preparación de cargas abre Hojas de carga (antes PRUEBA_3), con PDF.js local sin conexión y vuelta a Preparación. Rehace la PR #100 (ade2177) sobre 0.3.51 (tarjeta de verificación diseño B)."
+  "version": "0.3.53",
+  "notes": "Huecos del camión: el código 8G 4E / 6G 1E prevalece sobre un «Huecos plts. camión: 0»; se reconoce el formato E (europeo) y un 0 heredado obliga a releer el PDF. Rehace la PR #74 (e5aacd8) sobre main 0.3.52."
 }

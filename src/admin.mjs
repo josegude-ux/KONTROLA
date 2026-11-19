@@ -22,7 +22,7 @@ const asPayload=parsed=>({
   bultos:parsed.bultos??null,
   observaciones:parsed.observations?.trim()||null,
   huecos_palets_grandes:parsed.palletsLarge??null,huecos_palets_pequenos:parsed.palletsSmall??null,
-  huecos_palets_total:parsed.palletsTotal??null,
+  huecos_palets_europeos:parsed.palletsEuropean??null,huecos_palets_total:parsed.palletsTotal??null,
   almacen:parsed.warehouse,declared_total:parsed.declaredTotal??null,actual_total:parsed.actualTotal??null,
   parser_metadata:{
     verified:parsed.verified===true,warnings:Array.isArray(parsed.warnings)?parsed.warnings:[],
@@ -181,7 +181,7 @@ export function createAdminController({client,getUser,bucket,global,errorText,on
         id:payload.codigo,date:payload.fecha,plate:payload.matricula,route:payload.ruta,driver:payload.repartidor,
         weight:payload.peso_kg,refs:payload.referencias,bultos:payload.bultos??payload.declared_total,warehouse:payload.almacen,products:payload.productos,
         observations:payload.observaciones||null,palletsLarge:payload.huecos_palets_grandes??null,
-        palletsSmall:payload.huecos_palets_pequenos??null,palletsTotal:payload.huecos_palets_total??null,
+        palletsSmall:payload.huecos_palets_pequenos??null,palletsEuropean:payload.huecos_palets_europeos??null,palletsTotal:payload.huecos_palets_total??null,
         declaredTotal:payload.declared_total,actualTotal:payload.actual_total,
         verified:payload.parser_metadata?.verified,warnings:payload.parser_metadata?.warnings||[],
         mixedWarehouse:payload.parser_metadata?.mixed_warehouse,
