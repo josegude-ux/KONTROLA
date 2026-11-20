@@ -329,6 +329,15 @@
           <div id="visuraR7SharedList" class="vprint-shared-list" aria-label="LP compartidas autorizadas"></div>
           <button id="visuraR7SharedImport" type="button" class="primary" disabled>Traer PDF seleccionados a R7</button>
         </section>
+        <section class="vprint-reconcile" aria-label="Conciliación de impresión R7 y VISURA">
+          <div class="vprint-shared-title">
+            <div><h3>Comparar los listados de R7 con VISURA</h3>
+              <p class="muted">Detecta los listados generados localmente que aún no constan en el servidor o corresponden a otro PDF. La comparación no registra ni reimprime nada.</p></div>
+            <button id="visuraR7Compare" type="button" class="secondary">Comparar estados</button>
+          </div>
+          <div id="visuraR7CompareStatus" class="status" role="status" aria-live="polite">Sin comparar. Continúa trabajando con el motor R7 habitual.</div>
+          <div id="visuraR7CompareList" class="vprint-compare-list" aria-label="Diferencias de listados"></div>
+        </section>
         <div id="visuraR7FrameStatus" class="status" role="status" aria-live="polite">Abre Impresión para cargar el motor R7.</div>
         <iframe id="visuraR7PrintFrame" title="VISURA PREPARA · Motor de impresión R7" class="vprint-r7-frame" loading="lazy" referrerpolicy="no-referrer" src="about:blank"></iframe>
         <details id="visuraLegacyPrintDetails" class="vprint-old-panel">
