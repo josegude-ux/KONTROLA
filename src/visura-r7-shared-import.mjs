@@ -41,7 +41,7 @@ export function crearImportadorCompartidoR7({client,getUser,getWarehouse,bucket}
     !$("adminSection2").hidden;
   function reset(){
     serial++;current=[];counts=new Map();selected.clear();busy=false;
-    list.replaceChildren();importButton.disabled=true;refreshButton.disabled=false;
+    list.replaceChildren();importButton.disabled=true;refreshButton.disabled=false;include.disabled=false;
     status.textContent="Abre Impresión y selecciona un almacén para consultar las LP compartidas.";
   }
   function render(){
@@ -118,8 +118,9 @@ export function crearImportadorCompartidoR7({client,getUser,getWarehouse,bucket}
     if(busy||selected.size<1||selected.size>MAX_FILES)return;
     const id=++serial,ctx=snapshot(),codes=[...selected];
     if(!valid(ctx)||ctx.warehouse!=="COR_01_COR")return;
-    busy=true;importButton.disabled=true;refreshButton.disabled=true;
+    busy=true;importButton.disabled=true;refreshButton.disabled=true;include.disabled=true;
     let finalMessage="";
+    render();
     status.textContent="Comprobando permisos, estado y huella de "+codes.length+" PDF…";
     const active=()=>id===serial&&valid(ctx);
     try{
@@ -169,7 +170,7 @@ export function crearImportadorCompartidoR7({client,getUser,getWarehouse,bucket}
     }catch(error){
       if(active())finalMessage="Importación no iniciada: "+errorText(error);
     }finally{
-      if(id===serial){busy=false;refreshButton.disabled=false;render();if(finalMessage)status.textContent=finalMessage;}
+      if(id===serial){busy=false;refreshButton.disabled=false;include.disabled=false;render();if(finalMessage)status.textContent=finalMessage;}
     }
   }
   refreshButton.addEventListener("click",refresh);
