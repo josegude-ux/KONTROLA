@@ -2,6 +2,7 @@ import {fechaAlmacen} from "./business-date.mjs";
 import {validarLotePdf,resumenLotePdf} from "./import-batch.mjs";
 import {configurarEstadisticasOperarios} from "./admin-stats.mjs";
 import {configurarLoteImpresion} from "./admin-print-batch.mjs";
+import {crearImportadorCompartidoR7} from "./visura-r7-shared-import.mjs";
 import {analyzeDocument,applyLineCorrection,publicationReadiness,warehouseZone,normalizeReviewFindings} from "./document-review.mjs";
 import {fechaISO} from "./logic.mjs";
 import {parsePdfFile} from "./pdf.mjs";
@@ -45,6 +46,8 @@ export function createAdminController({client,getUser,bucket,global,errorText,on
   const revisionControl=configureRevisionHistory({client,getUser,bucket,errorText});
   const operatorStats=configurarEstadisticasOperarios({client,getUser,errorText,getWarehouse:()=>document.getElementById("adminWarehouse").value});
   const printBatch=configurarLoteImpresion({client,getUser,errorText,bucket,getWarehouse:()=>document.getElementById("adminWarehouse").value});
+  const sharedR7=crearImportadorCompartidoR7({client,getUser,bucket,
+    getWarehouse:()=>document.getElementById("adminWarehouse").value});
   // El motor R7 original se aloja en la vista de impresión existente, sin
   // duplicar su lógica. Sus datos locales quedan separados por usuario/almacén.
   // En LAB no se proyectan ni copian registros de Supabase a localStorage.
@@ -657,7 +660,7 @@ export function createAdminController({client,getUser,bucket,global,errorText,on
   const adminActions=[
     ()=>{if(!busy)$("pdfInput").click();},
     ()=>Promise.all([refreshAttention(),refreshPendingPublish()]),
-    ()=>Promise.all([printBatch.refresh(),mostrarMotorR7()]),
+    ()=>Promise.all([printBatch.refresh(),mostrarMotorR7(),sharedR7.refresh()]),
     ()=>operatorStats.refresh(),
     ()=>refreshIncidents(),
     ()=>{$("revisionCode").focus();},
@@ -713,7 +716,7 @@ export function createAdminController({client,getUser,bucket,global,errorText,on
     $("archiveCode").value="";
     $("archiveStatus").textContent="";
     $("archivedLoadsList").replaceChildren();
-    revisionControl.clear();operatorStats.clear();printBatch.clear();cerrarMotorR7();
+    revisionControl.clear();operatorStats.clear();printBatch.clear();sharedR7.reset();cerrarMotorR7();
     for(const id of ["documentReview","attentionList","adminSummary","adminActivity",
       "incidentList","reviewReadiness","reportPaper"]){
       const element=$(id);if(element)element.replaceChildren();
@@ -730,10 +733,10 @@ export function createAdminController({client,getUser,bucket,global,errorText,on
   $("saveCompactA4Admin").addEventListener("click",saveAdminA4);
   $("printCor1Pack").addEventListener("click",printCor1Bundle);
   $("previewCor2Detail").addEventListener("click",showCor2Detail);
-  $("goToBatchPrint").addEventListener("click",()=>{selectAdminTab(2);printBatch.refresh();void mostrarMotorR7();});
+  $("goToBatchPrint").addEventListener("click",()=>{selectAdminTab(2);printBatch.refresh();void mostrarMotorR7();void sharedR7.refresh();});
   $("locationReport").addEventListener("click",showLocationReport);
   $("publishReviewedLoad").addEventListener("click",publish);
-  $("adminWarehouse").addEventListener("change",()=>{if(!$("adminSection2").hidden)void mostrarMotorR7();return Promise.all([refreshAttention(),refreshPendingPublish(),refreshReviewSelector(),refreshSummary(),operatorStats.refresh(),printBatch.refresh()]);});
+  $("adminWarehouse").addEventListener("change",()=>{if(!$("adminSection2").hidden){void mostrarMotorR7();void sharedR7.refresh();}else sharedR7.reset();return Promise.all([refreshAttention(),refreshPendingPublish(),refreshReviewSelector(),refreshSummary(),operatorStats.refresh(),printBatch.refresh()]);});
   $("reloadAttention").addEventListener("click",()=>Promise.all([refreshAttention(),refreshPendingPublish(),refreshReviewSelector()]));
   $("reloadIncidents").addEventListener("click",refreshIncidents);
   // iOS 27 can silently ignore window.print() from a standalone installed PWA.
