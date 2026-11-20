@@ -304,7 +304,21 @@
         <div id="postPublishActions" class="post-publish-actions" hidden><p class="muted">Carga publicada. Siguiente paso:</p><button id="generateSheet" type="button" class="primary" disabled>Generar hoja de preparación COR1</button><button id="saveCompactA4Admin" type="button" class="secondary" disabled>Guardar listado A4 COR1</button><button id="goToBatchPrint" type="button" class="secondary">Imprimir varias cargas</button></div>
       </section>
       <section class="panel" id="adminSection1" role="tabpanel" hidden><div class="line"><div><h2>Necesitan atención</h2><p class="muted">Documentos, clasificaciones, verificaciones e incidencias pendientes.</p></div><button id="reloadAttention" type="button" class="secondary">Actualizar</button></div><div id="pendingPublishSummary" class="status" role="status"></div><div class="actions"><button id="pendingSelectAll" type="button" class="secondary">Seleccionar aprobadas</button><button id="pendingPublishSelected" type="button" class="primary" disabled>Publicar seleccionadas</button></div><div id="pendingPublishList" class="attention-list"></div><div id="pendingPublishResult" class="status" role="status"></div><h3>Otros avisos</h3><div id="attentionList" class="attention-list"></div></section>
-      <section class="panel visura-print-panel" id="adminSection2" role="tabpanel" hidden><div id="batchPrintPanel">
+      <section class="panel visura-print-panel" id="adminSection2" role="tabpanel" hidden>
+        <div class="vprint-r7-intro">
+          <div><p class="vprint-eyebrow">VISURA PREPARA · ALMACÉN</p>
+            <h2>Impresión de cargas · R7</h2>
+            <p class="muted">Motor original PRUEBA_3 R7 integrado en esta pantalla. Importa los PDF, revisa los destinos y genera todos los listados con las reglas ya desarrolladas.</p>
+          </div>
+          <span class="vprint-lab-tag">LAB · Sin publicar</span>
+        </div>
+        <p class="vprint-storage-note"><strong>Importante:</strong> este motor conserva los PDF y las marcas «Listado generado» en <strong>este navegador</strong>, aislados por usuario y almacén. <strong>No se sincronizan todavía</strong> entre ordenadores ni sustituyen el registro compartido de VISURA.</p>
+        <div id="visuraR7FrameStatus" class="status" role="status" aria-live="polite">Abre Impresión para cargar el motor R7.</div>
+        <iframe id="visuraR7PrintFrame" title="VISURA PREPARA · Motor de impresión R7" class="vprint-r7-frame" loading="lazy" referrerpolicy="no-referrer" src="about:blank"></iframe>
+        <details id="visuraLegacyPrintDetails" class="vprint-old-panel">
+          <summary>Consultar el sistema de impresión compartido existente</summary>
+          <p class="muted">Este apartado conserva el registro compartido original de VISURA. Evita registrar dos veces una misma LP mientras se homologa la conexión de R7.</p>
+          <div id="batchPrintPanel">
         <div class="vprint-heading">
           <div class="vprint-heading-symbol" aria-hidden="true">▤</div>
           <div class="vprint-heading-text"><p class="vprint-eyebrow">VISURA PREPARA · ALMACÉN</p><h2>Documentación e impresión</h2>
@@ -341,7 +355,7 @@
           <button id="batchOriginalLote" type="button" class="secondary" disabled>Revisar lote BC + FRÍO (LAB · 1–5 LP)</button>
         </div>
         <p class="hint">Para imprimir a doble cara sin mezclar LP, utiliza «Guardar PDF dúplex por LP» desde la vista previa. La copia de OneDrive se gestiona por separado. La revisión del original BC es solo LAB y no marca el listado como generado.</p>
-      </div></section>
+      </div></details></section>
       <section class="panel" id="adminSection3" role="tabpanel" hidden id="operatorStatsPanel">
         <div class="line"><div><h2>Actividad por operario</h2><p class="muted">Estadísticas del almacén seleccionado. Solo visibles para administración.</p></div><button id="operatorStatsRefresh" type="button" class="secondary">Actualizar</button></div>
         <label>Fecha de inicio de la operación<input id="operatorStatsDate" type="date"></label>
