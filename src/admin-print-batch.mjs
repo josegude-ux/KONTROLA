@@ -274,7 +274,7 @@ export function configurarLoteImpresion({client,getUser,getWarehouse,errorText,b
         link.href=url;link.download=output.name;document.body.appendChild(link);link.click();link.remove();
         setTimeout(()=>URL.revokeObjectURL(url),60000);
       }
-      if(active())status.textContent="Original COR1 recortado ("+result.paginasOriginales+" páginas) y detalle preparados en LAB. No se ha marcado «listado generado».";
+      if(active())status.textContent="Original COR1 recortado ("+result.paginasOriginales+" páginas), detalle y "+result.hojasFrio+" hoja(s) individual(es) FRÍO CORUÑA. "+(result.sinDestinoFrio?"Atención: hay productos ZFRIO, pero falta destino CORUÑA acreditado: no se ha creado la hoja individual. ":"")+"Vista LAB: no se ha marcado «listado generado».";
     }catch(error){
       if(active()&&error?.name!=="AbortError")
         status.textContent="Original BC no preparado: "+errorText(error)+". No se ha registrado impresión.";
