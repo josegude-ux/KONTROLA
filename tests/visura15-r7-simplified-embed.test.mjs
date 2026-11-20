@@ -6,6 +6,7 @@ const read=path=>readFileSync(new URL("../"+path,import.meta.url),"utf8");
 const r7=read("lab/visura-prepara-impresion-r7.html");
 const html=read("index.html");
 const admin=read("src/admin.mjs");
+const app=read("src/app.mjs");
 const sw=read("sw.js");
 const workflow=read(".github/workflows/pages.yml");
 
@@ -34,6 +35,10 @@ test("un solo acceso principal dentro de Administración > Impresión",()=>{
  assert.equal(html.split('id="visuraR7PrintFrame"').length-1,1);
  assert.match(html,/id="adminSection2"[\s\S]*id="visuraR7PrintFrame"[\s\S]*id="batchPrintPanel"/);
  assert.match(html,/id="visuraLegacyPrintDetails"/);
+ assert.equal(html.split('id="preparacionImpresionR7Shortcut"').length-1,1);
+ assert.match(app,/visible\(\$\("preparacionImpresionR7Shortcut"\),ownProfile\.rol==="administrador"\)/);
+ assert.match(app,/\$\("preparacionImpresionR7Shortcut"\)\.addEventListener/);
+ assert.match(app,/document\.querySelector\('\[data-admin-tab="2"\]'\)\?\.click\(\)/);
  assert.match(html,/No se sincronizan todavía/);
  assert.match(admin,/async function mostrarMotorR7/);
  assert.match(admin,/getUser\(\)\?\.id/);
