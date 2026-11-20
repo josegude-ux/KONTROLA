@@ -102,7 +102,8 @@ export function crearImportadorCompartidoR7({client,getUser,getWarehouse,bucket}
   }
   async function refresh(){
     if(busy)return;
-    compareSerial++;
+    compareSerial++;compareButton.disabled=false;compareList.replaceChildren();
+    compareStatus.textContent="Actualiza la comparación cuando termine la consulta.";
     const id=++serial,ctx=snapshot();
     selected.clear();list.replaceChildren();importButton.disabled=true;
     if(!valid(ctx)||ctx.warehouse!=="COR_01_COR"){
@@ -233,7 +234,10 @@ export function crearImportadorCompartidoR7({client,getUser,getWarehouse,bucket}
       if(active())compareStatus.textContent="No se pudo conciliar: "+errorText(error)+
         ". No se han modificado los estados de impresión.";
     }finally{
-      if(id===compareSerial)compareButton.disabled=false;
+      if(id===compareSerial){
+        compareButton.disabled=false;
+        if(!active())compareStatus.textContent="Comparación cancelada por cambio de usuario, almacén o sesión.";
+      }
     }
   }
   compareButton.addEventListener("click",comparar);
