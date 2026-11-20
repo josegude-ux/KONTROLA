@@ -44,7 +44,7 @@ export function buildReportDownloadHtml(title,styles,content){
 export function createAdminController({client,getUser,bucket,global,errorText,onPublished}){
   const revisionControl=configureRevisionHistory({client,getUser,bucket,errorText});
   const operatorStats=configurarEstadisticasOperarios({client,getUser,errorText,getWarehouse:()=>document.getElementById("adminWarehouse").value});
-  const printBatch=configurarLoteImpresion({client,getUser,errorText,getWarehouse:()=>document.getElementById("adminWarehouse").value});
+  const printBatch=configurarLoteImpresion({client,getUser,errorText,bucket,getWarehouse:()=>document.getElementById("adminWarehouse").value});
   let busy=false,draft=null;
   let archiveGeneration=0;
   const setStatus=(message="",level="")=>{
