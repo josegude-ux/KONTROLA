@@ -92,6 +92,7 @@ async function authorize(authUser){
   $("profileName").textContent=ownProfile.nombre||authUser.email||"";
   $("profileRole").textContent=ownProfile.rol;
   visible($("openAdmin"),ownProfile.rol==="administrador");
+  visible($("preparacionImpresionR7Shortcut"),ownProfile.rol==="administrador");
   visible($("cargasAdministrar"),ownProfile.rol==="administrador");
   visible($("cargasImportar"),ownProfile.rol==="administrador");
   visible($("recepcionIncidenciasAdmin"),ownProfile.rol==="administrador");
@@ -535,6 +536,12 @@ async function openAdminMenu(parent="homeView"){
 }
 $("openPreparation").addEventListener("click",()=>switchView("preparacionMenuView"));
 $("preparacionCargas").addEventListener("click",()=>{void openPrueba3Cargas("preparacionMenuView");});
+$("preparacionImpresionR7Shortcut").addEventListener("click",async()=>{
+  if(profile?.rol!=="administrador")return;
+  await openAdminMenu("preparacionMenuView");
+  if(profile?.rol==="administrador"&&!$("adminView").hidden)
+    document.querySelector('[data-admin-tab="2"]')?.click();
+});
 // Única fuente nueva: reutiliza exclusivamente la lectura ya autorizada por PREPARA.
 // No consulta stock BC y no llama a RPC/tabla de mutación.
 async function refrescarArticulosCargas(){
