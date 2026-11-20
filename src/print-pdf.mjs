@@ -70,7 +70,7 @@ function makePdf(pdfPages){
 }
 
 // Input comes exclusively from DOM text nodes of the already authorized report.
-export function generarPdfHojas(hojas){
+export function generarPdfHojas(hojas,{duplexPorCarga=false}={}){
   if(!Array.isArray(hojas)||!hojas.length||hojas.length>21)throw Error("Cantidad de hojas PDF no válida.");
   const pdfPages=[];let commands=[],y=0,rowCount=0;
   const newPage=()=>{
@@ -78,6 +78,12 @@ export function generarPdfHojas(hojas){
     commands=[];pdfPages.push(commands);y=PAGE_H-MARGIN;
     commands.push(`BT /F2 8 Tf 0.12 0.23 0.38 rg 1 0 0 1 ${MARGIN} ${y.toFixed(2)} Tm (VISURA PREPARA) Tj ET`);
     y-=24;
+  };
+  // En modo dúplex cada documento (carátula o LP) ocupa un número PAR de caras.
+  // Una página de relleno no lleva cabecera: debe quedar totalmente en blanco.
+  const blankPage=()=>{
+    if(pdfPages.length>=180)throw Error("El informe es demasiado largo para exportar de forma segura.");
+    commands=[];pdfPages.push(commands);y=PAGE_H-MARGIN;
   };
   function addLine(text,{size=9.5,bold=false,space=3,indent=0}={}){
     const lines=wrap(text,CONTENT_W-indent,size,bold);
@@ -181,16 +187,20 @@ export function generarPdfHojas(hojas){
     label("1 / 1",right-30,45,7.3);
   }
   for(const hoja of hojas){
+    const startPage=pdfPages.length;
+    const closeSpread=()=>{
+      if(duplexPorCarga&&(pdfPages.length-startPage)%2)blankPage();
+    };
     if(!hoja||!['carga','portada','resumen_pasillos'].includes(hoja.tipo))throw Error("Tipo de informe PDF no reconocido.");
     newPage();
-    if(hoja.tipo==='resumen_pasillos'){resumenPasillosA4(hoja);continue;}
+    if(hoja.tipo==='resumen_pasillos'){resumenPasillosA4(hoja);closeSpread();continue;}
     if(hoja.tipo==='portada'){
       addLine(hoja.titulo||'RELACIÓN DE HOJAS DE PREPARACIÓN',{size:15,bold:true,space:10});rule();
       for(const linea of hoja.detalles||[])addLine(linea,{size:10,space:4});
       rule();
       for(const fila of hoja.filas||[])addLine(fila,{size:9,space:2});
       addLine('Archivo manual: comprueba la copia antes de eliminar ningún documento.',{size:8,space:6});
-      continue;
+      closeSpread();continue;
     }
     addLine(hoja.titulo||'HOJA DE PREPARACIÓN POR PASILLOS',{size:15,bold:true,space:4});
     addLine(hoja.subtitulo||'Exclusivamente mercancía procesada',{size:9,space:8});rule();
@@ -208,6 +218,7 @@ export function generarPdfHojas(hojas){
       addLine(pasillo.total||'Fin de pasillo',{size:9,bold:true,space:6});rule();
     }
     addLine(hoja.pie||'El picking se registra en Business Central.',{size:8,space:2});
+    closeSpread();
   }
   return makePdf(pdfPages);
 }
