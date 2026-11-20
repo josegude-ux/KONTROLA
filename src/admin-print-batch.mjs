@@ -11,7 +11,7 @@ export function configurarLoteImpresion({client,getUser,getWarehouse,errorText})
   let rows=[],allRows=[],selected=new Set(),currentWarehouse="",currentSession=null,seq=0,nextGroupStart=0,previewing=false,printCounts=new Map(),reprintMode=false,searchTerm="";
   const status=$("batchPrintStatus"),list=$("batchPrintList"),button=$("batchPrintOpen");
   function reset(){
-    rows=[];allRows=[];selected.clear();printCounts.clear();reprintMode=false;$("batchPrintReprint").checked=false;nextGroupStart=0;list.replaceChildren();button.disabled=true;
+    rows=[];allRows=[];selected.clear();printCounts.clear();reprintMode=false;$("batchPrintReprint").checked=false;searchTerm="";$("batchPrintSearch").value="";nextGroupStart=0;list.replaceChildren();button.disabled=true;
     $("batchArchiveName").textContent="";
     $("batchPrintSelectVisible").hidden=true;
     $("batchPrintOpen").hidden=true;
