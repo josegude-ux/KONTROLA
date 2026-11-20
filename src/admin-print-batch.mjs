@@ -4,6 +4,7 @@ import {fechaAlmacen} from "./business-date.mjs";
 import {nombreSugeridoArchivo,portadaLoteArchivo,MAX_HOJAS_ARCHIVO} from "./archive-period.mjs";
 import {destinoAcreditado,ordenarCargasR7,seleccionarNuevasR7,totalMercanciaAcreditado} from "./visura-print-r7-core.mjs";
 import {prepararVistaOriginalR7} from "./visura-r7-original-preview.mjs";
+import {componerLoteOriginalR7,MAX_ORIGINALES_LAB} from "./visura-r7-lote-original.mjs";
 import {listaMatriculasR7,hojaRepartoR7} from "./visura-print-r7-lists.mjs";
 import {generarPdfHojas,extraerHojasDeInforme} from "./print-pdf.mjs";
 
@@ -18,6 +19,7 @@ export function configurarLoteImpresion({client,getUser,getWarehouse,errorText,b
     $("batchPrintSelectVisible").hidden=true;
     $("batchPrintOpen").hidden=true;
     $("batchOriginalPreview").disabled=true;
+    $("batchOriginalLote").disabled=true;
     $("batchPrintPlatesCoruna").disabled=true;
     $("batchPrintDeliveryCoruna").disabled=true;
     $("batchPrintReprint").closest("label").hidden=true;
@@ -47,6 +49,7 @@ export function configurarLoteImpresion({client,getUser,getWarehouse,errorText,b
       .some(value=>String(value??"").toLocaleLowerCase("es-ES").includes(searchTerm)));
     button.disabled=selected.size===0;
     $("batchOriginalPreview").disabled=selected.size!==1||currentWarehouse!=="COR_01_COR"||previewing;
+    $("batchOriginalLote").disabled=selected.size<1||selected.size>MAX_ORIGINALES_LAB||currentWarehouse!=="COR_01_COR"||previewing;
     $("batchArchiveName").textContent=!rows.length
       ?""
       :!selected.size?"Selecciona las cargas para ver el nombre recomendado del PDF."
@@ -72,6 +75,7 @@ export function configurarLoteImpresion({client,getUser,getWarehouse,errorText,b
         if(check.checked)selected.add(load.codigo);else selected.delete(load.codigo);
         button.disabled=selected.size===0;
     $("batchOriginalPreview").disabled=selected.size!==1||currentWarehouse!=="COR_01_COR"||previewing;
+    $("batchOriginalLote").disabled=selected.size<1||selected.size>MAX_ORIGINALES_LAB||currentWarehouse!=="COR_01_COR"||previewing;
         $("batchArchiveName").textContent=selected.size
           ?"Nombre sugerido para guardar el PDF: "+nombreSugeridoArchivo(
             currentWarehouse,fechaAlmacen(),fechaAlmacen(),fechaAlmacen(),[...selected])
@@ -181,6 +185,7 @@ export function configurarLoteImpresion({client,getUser,getWarehouse,errorText,b
       previewing=false;
       if(request===seq)button.disabled=selected.size===0;
     $("batchOriginalPreview").disabled=selected.size!==1||currentWarehouse!=="COR_01_COR"||previewing;
+    $("batchOriginalLote").disabled=selected.size<1||selected.size>MAX_ORIGINALES_LAB||currentWarehouse!=="COR_01_COR"||previewing;
     }
   }
   // Listados originales recuperados de PRUEBA_3. Solo datos que concede la RPC,
@@ -280,6 +285,47 @@ export function configurarLoteImpresion({client,getUser,getWarehouse,errorText,b
         status.textContent="Original BC no preparado: "+errorText(error)+". No se ha registrado impresión.";
     }finally{previewing=false;if(active())render();}
   }
+  async function previewOriginalLote(){
+    if(previewing||selected.size<1||selected.size>MAX_ORIGINALES_LAB||
+      currentWarehouse!=="COR_01_COR"||!bucket)return;
+    const warehouse=currentWarehouse,session=currentSession,req=seq;
+    const codes=[...selected],chosen=rows.filter(row=>selected.has(row.codigo));
+    if(!session||getUser()?.id!==session||getWarehouse()!==warehouse||
+      chosen.length!==codes.length||new Set(codes).size!==codes.length)return;
+    const active=()=>req===seq&&getUser()?.id===session&&getWarehouse()===warehouse&&
+      selected.size===codes.length&&codes.every(code=>selected.has(code));
+    previewing=true;$("batchOriginalLote").disabled=true;button.disabled=true;
+    status.textContent="Verificando los originales BC y las hojas de frío de "+chosen.length+" LP…";
+    try{
+      const {data,error}=await client.rpc("kontrola_panel_cargas_impresion",{p_almacen:warehouse});
+      if(!active())return;
+      if(error)throw error;
+      const verified=comprobarLoteActualizado(chosen,data||[],warehouse);
+      const combined=await componerLoteOriginalR7({
+        rows:verified,autorizado:active,
+        preparar:row=>prepararVistaOriginalR7({client,bucket,row})
+      });
+      if(!active())return;
+      const file=new File([combined.bytes],"VISURA_COR1_ORIGINALES_BC_FRIO_DUPLEX_LAB_"+codes.length+"_LP.pdf",{type:"application/pdf"});
+      const share=typeof navigator.share==="function"&&
+        (typeof navigator.canShare!=="function"||navigator.canShare({files:[file]}));
+      if(/iPhone|iPad|iPod/i.test(navigator.userAgent||"")&&share){
+        await navigator.share({files:[file],title:"VISURA PREPARA · Revisión conjunta LAB"});
+      }else{
+        const url=URL.createObjectURL(file),link=document.createElement("a");
+        link.href=url;link.download=file.name;document.body.appendChild(link);link.click();link.remove();
+        setTimeout(()=>URL.revokeObjectURL(url),60000);
+      }
+      if(active())status.textContent="Vista LAB de "+codes.length+" LP · "+combined.paginas+
+        " páginas dúplex · "+combined.paginasPorLP.reduce((n,x)=>n+x.hojasFrio,0)+
+        " hoja(s) de FRÍO CORUÑA. No se ha registrado impresión. "+
+        (combined.avisos.length?combined.avisos.join(" "):"");
+    }catch(error){
+      if(active()&&error?.name!=="AbortError")
+        status.textContent="Lote BC no preparado: "+errorText(error)+". Ninguna LP se ha marcado como generada.";
+    }finally{previewing=false;if(req===seq)render();}
+  }
+  $("batchOriginalLote").addEventListener("click",previewOriginalLote);
   $("batchPrintRefresh").addEventListener("click",refresh);
   $("batchOriginalPreview").addEventListener("click",previewOriginal);
   $("batchPrintSearch").addEventListener("input",event=>{
