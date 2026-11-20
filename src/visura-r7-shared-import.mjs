@@ -41,7 +41,7 @@ export function crearImportadorCompartidoR7({client,getUser,getWarehouse,bucket}
     !$("adminSection2").hidden;
   function reset(){
     serial++;current=[];counts=new Map();selected.clear();busy=false;
-    list.replaceChildren();importButton.disabled=true;
+    list.replaceChildren();importButton.disabled=true;refreshButton.disabled=false;
     status.textContent="Abre Impresión y selecciona un almacén para consultar las LP compartidas.";
   }
   function render(){
@@ -95,6 +95,7 @@ export function crearImportadorCompartidoR7({client,getUser,getWarehouse,bucket}
     };
   }
   async function refresh(){
+    if(busy)return;
     const id=++serial,ctx=snapshot();
     selected.clear();list.replaceChildren();importButton.disabled=true;
     if(!valid(ctx)||ctx.warehouse!=="COR_01_COR"){
@@ -105,7 +106,9 @@ export function crearImportadorCompartidoR7({client,getUser,getWarehouse,bucket}
     try{
       const result=await query(ctx);
       if(id!==serial||!valid(ctx))return;
-      current=result.rows;counts=result.counts;render();
+      current=result.rows;counts=result.counts;
+      selected=new Set(seleccionarCargasSinGenerarR7(current,counts));
+      render();
     }catch(error){
       if(id!==serial||!valid(ctx))return;
       status.textContent="No se pudieron consultar las cargas compartidas: "+errorText(error);
@@ -116,6 +119,7 @@ export function crearImportadorCompartidoR7({client,getUser,getWarehouse,bucket}
     const id=++serial,ctx=snapshot(),codes=[...selected];
     if(!valid(ctx)||ctx.warehouse!=="COR_01_COR")return;
     busy=true;importButton.disabled=true;refreshButton.disabled=true;
+    let finalMessage="";
     status.textContent="Comprobando permisos, estado y huella de "+codes.length+" PDF…";
     const active=()=>id===serial&&valid(ctx);
     try{
@@ -146,20 +150,26 @@ export function crearImportadorCompartidoR7({client,getUser,getWarehouse,bucket}
         files.push(file);
       }
       if(!active())return;
+      const expected=await crypto.subtle.digest("SHA-256",
+        new TextEncoder().encode("visura-prepara-r7:"+ctx.user+":"+ctx.warehouse));
+      const expectedScope=[...new Uint8Array(expected).slice(0,12)]
+        .map(n=>n.toString(16).padStart(2,"0")).join("");
+      if(!active()||frame.dataset.scope!==expectedScope||
+        frame.contentWindow?.location.search!=="?visura_scope="+expectedScope)
+        throw Error("El motor R7 aún no está cargado con el usuario y almacén actuales.");
       const input=frame.contentDocument?.getElementById("pdfs");
-      if(!input||input.disabled||frame.dataset.scope?.length!==24)
-        throw Error("Abre el motor R7 y espera a que termine de cargarse.");
+      if(!input||input.disabled)throw Error("Abre el motor R7 y espera a que termine de cargarse.");
       if(typeof DataTransfer!=="function")throw Error("El navegador no permite entregar archivos al importador R7.");
       const transfer=new DataTransfer();
       files.forEach(file=>transfer.items.add(file));
       input.files=transfer.files;
       input.dispatchEvent(new Event("change",{bubbles:true}));
       selected.clear();
-      status.textContent="Importación de "+files.length+" PDF iniciada en R7. Comprueba su resultado en el panel inferior. No se ha registrado ninguna impresión en Supabase.";
+      finalMessage="Importación de "+files.length+" PDF iniciada en R7. Comprueba su resultado en el panel inferior. No se ha registrado ninguna impresión en Supabase.";
     }catch(error){
-      if(active())status.textContent="Importación no iniciada: "+errorText(error);
+      if(active())finalMessage="Importación no iniciada: "+errorText(error);
     }finally{
-      if(id===serial){busy=false;refreshButton.disabled=false;render();}
+      if(id===serial){busy=false;refreshButton.disabled=false;render();if(finalMessage)status.textContent=finalMessage;}
     }
   }
   refreshButton.addEventListener("click",refresh);
