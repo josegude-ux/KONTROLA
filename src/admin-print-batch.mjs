@@ -20,6 +20,7 @@ export function configurarLoteImpresion({client,getUser,getWarehouse,errorText,b
     $("batchPrintOpen").hidden=true;
     $("batchOriginalPreview").disabled=true;
     $("batchOriginalLote").disabled=true;
+    $("batchSelectOriginalLote").disabled=true;
     $("batchPrintPlatesCoruna").disabled=true;
     $("batchPrintDeliveryCoruna").disabled=true;
     $("batchPrintReprint").closest("label").hidden=true;
@@ -47,6 +48,7 @@ export function configurarLoteImpresion({client,getUser,getWarehouse,errorText,b
     $("batchPrintDeliveryCoruna").disabled=!corunaAcreditada||previewing;
     const visibleRows=rows.filter(row=>[row.codigo,row.matricula,row.repartidor,row.ruta]
       .some(value=>String(value??"").toLocaleLowerCase("es-ES").includes(searchTerm)));
+    $("batchSelectOriginalLote").disabled=!visibleRows.length||currentWarehouse!=="COR_01_COR"||previewing;
     button.disabled=selected.size===0;
     $("batchOriginalPreview").disabled=selected.size!==1||currentWarehouse!=="COR_01_COR"||previewing;
     $("batchOriginalLote").disabled=selected.size<1||selected.size>MAX_ORIGINALES_LAB||currentWarehouse!=="COR_01_COR"||previewing;
@@ -327,6 +329,15 @@ export function configurarLoteImpresion({client,getUser,getWarehouse,errorText,b
     }finally{previewing=false;if(req===seq)render();}
   }
   $("batchOriginalLote").addEventListener("click",previewOriginalLote);
+  $("batchSelectOriginalLote").addEventListener("click",()=>{
+    if(previewing||!currentSession||getUser()?.id!==currentSession||currentWarehouse!=="COR_01_COR")return;
+    const visible=rows.filter(row=>[row.codigo,row.matricula,row.repartidor,row.ruta]
+      .some(value=>String(value??"").toLocaleLowerCase("es-ES").includes(searchTerm)));
+    selected=new Set(visible.slice(0,MAX_ORIGINALES_LAB).map(row=>row.codigo));
+    render();
+    status.textContent=selected.size+" LP seleccionada(s) para revisar originales BC. Es una previsualización sin registrar impresión.";
+  });
+
   $("batchPrintRefresh").addEventListener("click",refresh);
   $("batchOriginalPreview").addEventListener("click",previewOriginal);
   $("batchPrintSearch").addEventListener("input",event=>{
