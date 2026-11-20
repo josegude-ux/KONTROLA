@@ -1155,3 +1155,15 @@ footer{padding:18px;text-align:center;background:#fff;border-top:1px solid #e6e8
 .vprint-shared-item small{display:block;font-size:11px;color:#59718a;margin-top:3px;overflow-wrap:anywhere}
 #visuraR7SharedImport{min-height:44px}
 @media(max-width:700px){.vprint-shared-list{grid-template-columns:1fr;max-height:240px}.vprint-shared-title{flex-wrap:wrap}.vprint-shared-title button{width:100%}}
+
+/* VISURA 15 R7 · conciliación solo lectura */
+.vprint-reconcile{margin:14px 0;padding:14px;border-radius:12px;border:1px solid #d7e1ea;background:#fafdff}
+.vprint-reconcile .vprint-shared-title{align-items:center}
+.vprint-reconcile h3{font-size:16px;color:#0b2647;margin:0 0 5px}
+.vprint-reconcile .muted{font-size:12px;line-height:1.55;margin:0 0 8px}
+.vprint-reconcile .secondary{flex:none}
+.vprint-compare-list{margin:9px 0 0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;max-height:330px;overflow-y:auto}
+.vprint-compare-item{min-width:0;border:1px solid #e0e8f0;border-radius:9px;padding:10px;background:#fff}
+.vprint-compare-item strong{display:block;color:#173451;font-size:13px;margin-bottom:4px}
+.vprint-compare-item span{display:block;color:#465e74;font-size:11px;line-height:1.45;overflow-wrap:anywhere}
+@media(max-width:700px){.vprint-compare-list{grid-template-columns:1fr;max-height:280px}.vprint-reconcile .vprint-shared-title{flex-wrap:wrap}.vprint-reconcile .vprint-shared-title button{width:100%}}
