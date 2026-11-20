@@ -6,7 +6,11 @@ const key=p=>[text(p.sku).toUpperCase(),text(p.location).toUpperCase(),Number(p.
 const isCold=p=>text(p?.location).toUpperCase()==="ZFRIO"&&p.qty!==null&&p.qty!==undefined&&Number.isFinite(Number(p.qty))&&Number(p.qty)>0;
 const isBarrel=p=>text(p?.unit).toUpperCase()==="BARRIL"&&text(p?.location).toUpperCase()!=="ZFRIO"&&p.qty!==null&&Number.isFinite(Number(p.qty))&&Number(p.qty)>0;
 const subset=(xs,fn)=>(Array.isArray(xs)?xs:[]).filter(fn);
-const compare=(a,b)=>a.length===b.length&&a.map(key).sort().every((s,i)=>s===b.map(key).sort()[i]);
+const compare=(a,b)=>{
+ if(a.length!==b.length)return false;
+ const left=a.map(key).sort(),right=b.map(key).sort();
+ return left.every((s,i)=>s===right[i]);
+};
 
 export function planAnexoFrioCargaR7(row,parsed){
  if(row?.almacen!=="COR_01_COR"||!/^LP\d{2}-\d{4,6}$/.test(text(row?.codigo)))
@@ -47,9 +51,11 @@ function wrap(font,s,size,width){
  return result;
 }
 export async function anexarInformesFrioR7(doc,items,{StandardFonts,rgb}={}){
- if(!doc||!Array.isArray(items)||items.length>5||!StandardFonts?.HelveticaBold)
+ if(!doc||!Array.isArray(items)||items.length>5)
    throw Error("Formato de anexos inválido.");
  if(!items.length)return {paginas:0,grupos:0};
+ if(!StandardFonts?.HelveticaBold||!StandardFonts?.Helvetica||typeof rgb!=="function")
+   throw Error("No se dispone de fuentes para los anexos de frío.");
  const font=await doc.embedFont(StandardFonts.Helvetica),bold=await doc.embedFont(StandardFonts.HelveticaBold);
  const W=841.89,H=595.28,margin=31,bottom=44,rowH=38;
  const dark=rgb(.06,.16,.27),muted=rgb(.35,.4,.45),pale=rgb(.88,.92,.96);
