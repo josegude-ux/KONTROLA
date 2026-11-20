@@ -79,8 +79,8 @@ test("ruta original privada ligada a LP y almacén COR1",()=>{
  assert.throws(()=>comprobarRutaOriginalCor1({codigo:"LP26-12345",almacen:"COR_01_COR",documento_ruta:"documentos/LP26-99999/"+hash+".pdf"}));
 });
 test("original BC: sin CDN, sin almacenamiento paralelo y sin registrar generación",()=>{
- const crop=read("src/visura-r7-corte-mercancia.mjs"),adapter=read("src/visura-r7-original-preview.mjs");
- const logic=read("src/admin-print-batch.mjs"),html=read("index.html"),admin=read("src/admin.mjs");
+ const crop=code("src/visura-r7-corte-mercancia.mjs"),adapter=code("src/visura-r7-original-preview.mjs");
+ const logic=code("src/admin-print-batch.mjs"),html=code("index.html"),admin=code("src/admin.mjs");
  assert.match(crop,/vendor\/pdf\.min\.mjs/);
  assert.doesNotMatch(crop,/https?:\/\//);
  assert.match(adapter,/crypto\.subtle\.digest/);
