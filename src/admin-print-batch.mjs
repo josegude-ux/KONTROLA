@@ -5,6 +5,7 @@ import {nombreSugeridoArchivo,portadaLoteArchivo,MAX_HOJAS_ARCHIVO} from "./arch
 import {destinoAcreditado,ordenarCargasR7,seleccionarNuevasR7,totalMercanciaAcreditado} from "./visura-print-r7-core.mjs";
 import {prepararVistaOriginalR7} from "./visura-r7-original-preview.mjs";
 import {listaMatriculasR7,hojaRepartoR7} from "./visura-print-r7-lists.mjs";
+import {generarPdfHojas,extraerHojasDeInforme} from "./print-pdf.mjs";
 
 // RPC existentes. La revisión BC lee un original autorizado sin registrar impresión.
 const $=id=>document.getElementById(id);
@@ -153,6 +154,12 @@ export function configurarLoteImpresion({client,getUser,getWarehouse,errorText,b
       // Componer el documento completo ANTES de registrar la generación en el servidor.
       const html=cover+verified.map(row=>'<section class="report-batch-sheet">'+buildPreparationReport(row)+"</section>").join("");
       if(!html.includes('class="preparation-report"'))throw Error("No se han generado hojas de carga.");
+      // Homologación previa a la RPC: comprobar que las N LP tienen hoja y que
+      // el PDF completo dúplex puede construirse sin perder páginas.
+      const preflight=document.createElement("div");preflight.innerHTML=html;
+      if(preflight.querySelectorAll("article.preparation-report").length!==verified.length)
+        throw Error("No se han compuesto todas las LP seleccionadas.");
+      generarPdfHojas(extraerHojasDeInforme(preflight),{duplexPorCarga:true});
       const {error:registerError}=await client.rpc("kontrola_registrar_lote_impresion",{p_almacen:warehouse,p_codigos:codes,p_reimprimir:reprintMode});
       if(registerError)throw registerError;
       if(request!==seq||getUser()?.id!==session||getWarehouse()!==warehouse)return;
