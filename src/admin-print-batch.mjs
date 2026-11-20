@@ -3,6 +3,7 @@ import {comprobarLoteActualizado} from "./archive-snapshot.mjs";
 import {fechaAlmacen} from "./business-date.mjs";
 import {nombreSugeridoArchivo,portadaLoteArchivo,MAX_HOJAS_ARCHIVO} from "./archive-period.mjs";
 import {destinoAcreditado,ordenarCargasR7,seleccionarNuevasR7,totalMercanciaAcreditado} from "./visura-print-r7-core.mjs";
+import {listaMatriculasR7,hojaRepartoR7} from "./visura-print-r7-lists.mjs";
 
 // Solo lectura; crea una vista imprimible a partir de las cargas autorizadas.
 // No incluye los PDF originales ni publica/actualiza documentos.
@@ -15,6 +16,8 @@ export function configurarLoteImpresion({client,getUser,getWarehouse,errorText})
     $("batchArchiveName").textContent="";
     $("batchPrintSelectVisible").hidden=true;
     $("batchPrintOpen").hidden=true;
+    $("batchPrintPlatesCoruna").disabled=true;
+    $("batchPrintDeliveryCoruna").disabled=true;
     $("batchPrintReprint").closest("label").hidden=true;
   }
   // Fecha operativa: publicación en Madrid, nunca la fecha documental de BC.
@@ -35,6 +38,9 @@ export function configurarLoteImpresion({client,getUser,getWarehouse,errorText})
     $("batchPrintNewCount").textContent=String(todays.length-generated);
     $("batchPrintDoneCount").textContent=String(generated);
     $("batchPrintSelectionCount").textContent=String(selected.size);
+    const corunaAcreditada=todays.some(row=>destinoAcreditado(row)==="CORUÑA");
+    $("batchPrintPlatesCoruna").disabled=!corunaAcreditada||previewing;
+    $("batchPrintDeliveryCoruna").disabled=!corunaAcreditada||previewing;
     const visibleRows=rows.filter(row=>[row.codigo,row.matricula,row.repartidor,row.ruta]
       .some(value=>String(value??"").toLocaleLowerCase("es-ES").includes(searchTerm)));
     button.disabled=selected.size===0;
@@ -166,6 +172,72 @@ export function configurarLoteImpresion({client,getUser,getWarehouse,errorText})
       if(request===seq)button.disabled=selected.size===0;
     }
   }
+  // Listados originales recuperados de PRUEBA_3. Solo datos que concede la RPC,
+  // sin mutaciones de impresión, sin marca automática y sin deducir el destino.
+  async function abrirAuxiliar(tipo){
+    if(previewing||!currentSession||getUser()?.id!==currentSession||getWarehouse()!==currentWarehouse){
+      status.textContent="Actualiza el almacén y verifica tu sesión antes de generar un listado.";return;
+    }
+    const warehouse=currentWarehouse,session=currentSession,req=seq;
+    const control=$("batchPrint"+(tipo==="matriculas"?"Plates":"Delivery")+"Coruna");
+    control.disabled=true;
+    try{
+      const {data,error}=await client.rpc("kontrola_panel_cargas_impresion",{p_almacen:warehouse});
+      if(req!==seq||getUser()?.id!==session||getWarehouse()!==warehouse)return;
+      if(error)throw error;
+      const todays=(data||[]).filter(row=>row&&row.codigo&&Array.isArray(row.productos)
+        &&publicadaHoy(row,fechaAlmacen()));
+      const out=tipo==="matriculas"?listaMatriculasR7(todays):hojaRepartoR7(todays);
+      const paper=$("reportPaper");paper.replaceChildren();
+      const create=(tag,text="",className="")=>{
+        const el=document.createElement(tag);if(className)el.className=className;el.textContent=String(text??"");return el;
+      };
+      for(const page of out.pages){
+        const article=create("article","","vprint-aux");
+        article.dataset.tipo=page.tipo;article.dataset.fecha=page.fecha;
+        article.append(create("h1",page.titulo),create("p","Fecha: "+page.fecha));
+        const table=create("table"),head=create("thead"),tr=create("tr");
+        const labels=page.tipo==="matriculas"?["Nº","Matrícula","Repartidor","Carga","Peso (kg)"]:["Matrícula","Repartidor","Carga","FRÍO"];
+        for(const label of labels)tr.append(create("th",label));
+        head.append(tr);table.append(head);
+        const tbody=create("tbody");
+        page.filas.forEach((row,i)=>{
+          const tr=create("tr");
+          const columns=page.tipo==="matriculas"
+            ?[i+1,row.matricula,row.repartidor,row.codigo,row.peso===null?"—":Number(row.peso).toLocaleString("es-ES")]
+            :[row.matricula,row.repartidor,row.codigo,row.frio?"SÍ":""];
+          for(const value of columns)tr.append(create("td",value));
+          if(page.tipo==="matriculas"&&row.peso!==null)tr.dataset.peso=String(row.peso);
+          if(page.tipo==="reparto")tr.dataset.frio=row.frio?"si":"no";
+          tbody.append(tr);
+        });
+        table.append(tbody);article.append(table);
+        const summary=page.tipo==="matriculas"
+          ?"RESUMEN: "+page.filas.length+" cargas · "+page.pesoTotal.toLocaleString("es-ES")+" kg"
+          :"RESUMEN: "+page.filas.length+" repartidores · Frío: "+page.filas.filter(f=>f.frio).length;
+        article.append(create("p",summary,"vprint-aux-sum"));
+        if(page.incidencias?.length){
+          const ul=create("ul","","vprint-aux-issues");
+          for(const issue of page.incidencias)ul.append(create("li",issue));
+          article.append(ul);
+        }
+        article.append(create("p",page.nota,"vprint-aux-note"));
+        paper.append(article);
+      }
+      $("reportTitle").textContent=tipo==="matriculas"?"Matrículas por peso · Coruña":"Hoja de reparto · Coruña";
+      $("batchDuplexSave").hidden=true;
+      $("reportPrintStatus").textContent="Listado independiente. No se registran LP como impresas. "+out.summary;
+      $("reportView").hidden=false;
+      document.body.classList.add("report-open");
+      window.scrollTo(0,0);
+    }catch(error){
+      status.textContent="No se pudo generar el listado auxiliar: "+errorText(error);
+    }finally{
+      if(req===seq)control.disabled=!allRows.some(row=>publicadaHoy(row,fechaAlmacen())&&destinoAcreditado(row)==="CORUÑA");
+    }
+  }
+  $("batchPrintPlatesCoruna").addEventListener("click",()=>abrirAuxiliar("matriculas"));
+  $("batchPrintDeliveryCoruna").addEventListener("click",()=>abrirAuxiliar("reparto"));
   $("batchPrintRefresh").addEventListener("click",refresh);
   $("batchPrintSearch").addEventListener("input",event=>{
     searchTerm=String(event.target.value||"").toLocaleLowerCase("es-ES").trim();render();
