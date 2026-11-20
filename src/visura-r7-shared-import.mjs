@@ -1,3 +1,5 @@
+import {fechaAlmacen} from "./business-date.mjs";
+import {reconciliarGeneracionesR7} from "./visura-r7-reconcile.mjs";
 // VISURA PREPARA · Adaptador mínimo de SOLO LECTURA hacia el motor original R7.
 // La fuente de cargas es la RPC autorizada, no localStorage. R7 sigue procesando
 // los PDF con su importador original. No registra impresión ni altera Supabase.
@@ -34,14 +36,18 @@ export function crearImportadorCompartidoR7({client,getUser,getWarehouse,bucket}
   const status=$("visuraR7SharedStatus"),list=$("visuraR7SharedList");
   const refreshButton=$("visuraR7SharedRefresh"),importButton=$("visuraR7SharedImport");
   const include=$("visuraR7IncludeGenerated"),frame=$("visuraR7PrintFrame");
-  let serial=0,current=[],counts=new Map(),selected=new Set(),busy=false;
+  const compareButton=$("visuraR7Compare"),compareStatus=$("visuraR7CompareStatus"),
+    compareList=$("visuraR7CompareList");
+  let serial=0,compareSerial=0,current=[],counts=new Map(),selected=new Set(),busy=false;
   const errorText=e=>String(e?.message||e||"Error").slice(0,240);
   const snapshot=()=>({user:getUser()?.id||null,warehouse:getWarehouse()||""});
   const valid=ctx=>ctx.user&&ctx.user===getUser()?.id&&ctx.warehouse===getWarehouse()&&
     !$("adminSection2").hidden;
   function reset(){
-    serial++;current=[];counts=new Map();selected.clear();busy=false;
+    serial++;compareSerial++;current=[];counts=new Map();selected.clear();busy=false;
     list.replaceChildren();importButton.disabled=true;refreshButton.disabled=false;include.disabled=false;
+    compareButton.disabled=false;compareList.replaceChildren();
+    compareStatus.textContent="Sin comparar: abre Impresión y consulta el servidor.";
     status.textContent="Abre Impresión y selecciona un almacén para consultar las LP compartidas.";
   }
   function render(){
@@ -96,6 +102,7 @@ export function crearImportadorCompartidoR7({client,getUser,getWarehouse,bucket}
   }
   async function refresh(){
     if(busy)return;
+    compareSerial++;
     const id=++serial,ctx=snapshot();
     selected.clear();list.replaceChildren();importButton.disabled=true;
     if(!valid(ctx)||ctx.warehouse!=="COR_01_COR"){
@@ -118,7 +125,7 @@ export function crearImportadorCompartidoR7({client,getUser,getWarehouse,bucket}
     if(busy||selected.size<1||selected.size>MAX_FILES)return;
     const id=++serial,ctx=snapshot(),codes=[...selected];
     if(!valid(ctx)||ctx.warehouse!=="COR_01_COR")return;
-    busy=true;importButton.disabled=true;refreshButton.disabled=true;include.disabled=true;
+    busy=true;compareSerial++;importButton.disabled=true;refreshButton.disabled=true;include.disabled=true;compareButton.disabled=true;
     let finalMessage="";
     render();
     status.textContent="Comprobando permisos, estado y huella de "+codes.length+" PDF…";
@@ -170,9 +177,66 @@ export function crearImportadorCompartidoR7({client,getUser,getWarehouse,bucket}
     }catch(error){
       if(active())finalMessage="Importación no iniciada: "+errorText(error);
     }finally{
-      if(id===serial){busy=false;refreshButton.disabled=false;include.disabled=false;render();if(finalMessage)status.textContent=finalMessage;}
+      if(id===serial){busy=false;refreshButton.disabled=false;include.disabled=false;compareButton.disabled=false;render();if(finalMessage)status.textContent=finalMessage;}
     }
   }
+  // Esta conciliación lee el estado local del iframe desde el MISMO ORIGEN
+  // y lo contrasta con dos RPC autorizadas. Nunca ejecuta registrar_lote_impresion.
+  async function comparar(){
+    const ctx=snapshot(),id=++compareSerial;
+    compareList.replaceChildren();
+    if(busy||!valid(ctx)||ctx.warehouse!=="COR_01_COR"){
+      compareStatus.textContent="Accede a Impresión COR1 con una sesión válida para comparar.";
+      return;
+    }
+    compareButton.disabled=true;
+    compareStatus.textContent="Comparando marcas locales con el historial compartido…";
+    const active=()=>id===compareSerial&&valid(ctx)&&!busy;
+    try{
+      const digest=await crypto.subtle.digest("SHA-256",
+        new TextEncoder().encode("visura-prepara-r7:"+ctx.user+":"+ctx.warehouse));
+      const scope=[...new Uint8Array(digest).slice(0,12)]
+        .map(n=>n.toString(16).padStart(2,"0")).join("");
+      if(!active()||frame.dataset.scope!==scope||
+         frame.contentWindow?.location.search!=="?visura_scope="+scope)
+        throw Error("Abre primero el motor R7 del usuario y almacén actuales.");
+      // Nunca leer datos de otro ámbito ni emitir datos de R7 hacia el servidor.
+      const localJSON=window.localStorage.getItem("visura_prepara_r7_cargas_"+scope);
+      const remote=await query(ctx);
+      if(!active())return;
+      const result=reconciliarGeneracionesR7({
+        localJSON,compartidas:remote.rows,impresiones:remote.counts,hoy:fechaAlmacen()
+      });
+      if(!active())return;
+      const c=result.counts;
+      compareStatus.textContent=c.pendientes+" generadas localmente, no registradas en VISURA · "+
+        c.bloqueoFecha+" bloqueadas por fecha documental · "+c.revisionDistinta+
+        " con PDF distinto o ruta no acreditada · "+c.servidorSinHash+
+        " con historial compartido sin huella · "+c.soloServidor+" solo en el servidor. "+
+        "SOLO LECTURA: ninguna impresión se ha registrado.";
+      const priorities={revisionDistinta:0,localInvalidado:1,bloqueoFecha:2,pendientes:3,
+        fueraDePanel:4,servidorSinHash:5,soloServidor:6};
+      const ordered=[...result.items].sort((a,b)=>
+        (priorities[a.estado]??9)-(priorities[b.estado]??9)||a.codigo.localeCompare(b.codigo,"es"));
+      for(const item of ordered.slice(0,60)){
+        const el=document.createElement("div");el.className="vprint-compare-item";
+        const strong=document.createElement("strong");strong.textContent=item.codigo;
+        const explanation=document.createElement("span");explanation.textContent=item.detail;
+        el.append(strong,explanation);compareList.append(el);
+      }
+      if(ordered.length>60){
+        const p=document.createElement("p");p.className="hint";
+        p.textContent="Se muestran 60 de "+ordered.length+" incidencias. Ninguna se ha enviado al servidor.";
+        compareList.append(p);
+      }
+    }catch(error){
+      if(active())compareStatus.textContent="No se pudo conciliar: "+errorText(error)+
+        ". No se han modificado los estados de impresión.";
+    }finally{
+      if(id===compareSerial)compareButton.disabled=false;
+    }
+  }
+  compareButton.addEventListener("click",comparar);
   refreshButton.addEventListener("click",refresh);
   importButton.addEventListener("click",importar);
   include.addEventListener("change",()=>{
