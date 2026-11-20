@@ -4,6 +4,8 @@ import {parsePdfFile} from "./pdf.mjs";
 import {buildPreparationReport} from "./report.mjs";
 import {generarPdfHojas,extraerHojasDeInforme} from "./print-pdf.mjs";
 import {recortarMercanciaCor1,crearVistaOriginalCor1R7} from "./visura-r7-corte-mercancia.mjs";
+import {planHojaFrioCorunaR7} from "./visura-r7-frio-coruna.mjs";
+import {destinoAcreditado} from "./visura-print-r7-core.mjs";
 
 export function comprobarRutaOriginalCor1(row){
   if(row?.almacen!=="COR_01_COR"||!/^LP\d{2}-\d{4,6}$/.test(String(row?.codigo||"")))
@@ -31,9 +33,16 @@ export async function prepararVistaOriginalR7({client,bucket,row}){
   // El recortador falla cerrado si no localiza el fin real de MERCANCÍA
   // o si detecta otra sección de almacén en las páginas seleccionadas.
   const pages=await recortarMercanciaCor1(file,parsed.pageNumbers);
+  // Verificación explícita de cantidad, unidad y SKU de ZFRIO frente al PDF ORIGINAL.
+  // Sin destino CORUÑA acreditado, no se añade una hoja individual engañosa.
+  const hojaFrio=planHojaFrioCorunaR7(row,parsed);
+  const frioPositivo=(row.productos||[]).some(p=>String(p?.location||"").toUpperCase()==="ZFRIO"&&Number(p?.qty)>0);
+  const sinDestinoFrio=frioPositivo&&!destinoAcreditado(row);
   const wrapper=document.createElement("div");
-  wrapper.innerHTML=buildPreparationReport(row);
+  const presentation={...row,observaciones:parsed.observations?.trim()||row.observaciones};
+  wrapper.innerHTML=buildPreparationReport(presentation);
   const detail=generarPdfHojas(extraerHojasDeInforme(wrapper));
-  const bytes=await crearVistaOriginalCor1R7({paginas:pages,detalle:detail,codigo:row.codigo});
-  return {bytes,paginasOriginales:pages.length,codigo:row.codigo};
+  const bytes=await crearVistaOriginalCor1R7({paginas:pages,detalle:detail,codigo:row.codigo,hojaFrio});
+  return {bytes,paginasOriginales:pages.length,codigo:row.codigo,
+    hojasFrio:hojaFrio?1:0,sinDestinoFrio};
 }
