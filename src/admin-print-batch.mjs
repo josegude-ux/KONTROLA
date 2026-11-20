@@ -318,7 +318,8 @@ export function configurarLoteImpresion({client,getUser,getWarehouse,errorText,b
       }
       if(active())status.textContent="Vista LAB de "+codes.length+" LP · "+combined.paginas+
         " páginas dúplex · "+combined.paginasPorLP.reduce((n,x)=>n+x.hojasFrio,0)+
-        " hoja(s) de FRÍO CORUÑA. No se ha registrado impresión. "+
+        " hoja(s) individuales FRÍO CORUÑA · "+combined.anexos.paginas+
+        " páginas de anexos generales. No se ha registrado impresión. "+
         (combined.avisos.length?combined.avisos.join(" "):"");
     }catch(error){
       if(active()&&error?.name!=="AbortError")
