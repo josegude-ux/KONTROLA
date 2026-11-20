@@ -1,4 +1,5 @@
 import {ordenarLineasPasillo} from "./logic.mjs";
+import {destinoAcreditado} from "./visura-print-r7-core.mjs";
 const escapeHtml=value=>String(value??"").replace(/[&<>"']/g,char=>({
   "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
 }[char]));
@@ -36,6 +37,8 @@ export function buildPreparationReport(load,{informativoCor2=false}={}){
   const products=load.productos||load.products||[];
   const warehouse=load.almacen||load.warehouse||"PENDIENTE DE CLASIFICAR";
   const weight=load.peso_kg??load.weight??null;
+  const destination=destinoAcreditado(load);
+  const observations=String(load.observaciones??load.observations??"").trim().slice(0,300);
   const grouped=new Map();
   for(const product of products){
     if(Number(product.qty)<=0)continue;
@@ -65,6 +68,8 @@ export function buildPreparationReport(load,{informativoCor2=false}={}){
       <div><dt>Fecha</dt><dd>${escapeHtml(load.fecha||load.date||"—")}</dd></div>
       <div><dt>Matrícula</dt><dd>${escapeHtml(load.matricula||load.plate||"—")}</dd></div>
       <div><dt>Ruta</dt><dd>${escapeHtml(load.ruta||load.route||"—")}</dd></div>
+      ${destination?`<div><dt>Destino</dt><dd>${escapeHtml(destination)}</dd></div>`:""}
+      ${observations?`<div><dt>Observaciones PDF</dt><dd>${escapeHtml(observations)}</dd></div>`:""}
       <div><dt>Repartidor</dt><dd>${escapeHtml(load.repartidor||load.driver||"—")}</dd></div>
       <div><dt>Peso</dt><dd>${weight===null?"—":number(weight)+" kg"}</dd></div>
       <div><dt>Referencias</dt><dd>${escapeHtml(load.referencias??load.refs??products.length)}</dd></div>
