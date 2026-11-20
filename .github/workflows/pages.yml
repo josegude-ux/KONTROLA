@@ -43,10 +43,13 @@ jobs:
           mkdir -p dist
           cp index.html styles.css manifest.webmanifest sw.js version.json control-cargas-prueba3.html dist/
           cp -R src assets vendor dist/
+          mkdir -p dist/lab
+          cp lab/visura-prepara-impresion-r7.html dist/lab/
           touch dist/.nojekyll
           test -f dist/index.html
           test -f dist/src/app.mjs
           test -f dist/control-cargas-prueba3.html
+          test -s dist/lab/visura-prepara-impresion-r7.html
           test -f dist/vendor/supabase.mjs
           test -s dist/vendor/pdf-lib.min.mjs
           test -s dist/vendor/pdf.min.mjs
