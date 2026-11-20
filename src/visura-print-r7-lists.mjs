@@ -47,9 +47,10 @@ export function listaMatriculasR7(rows){
 
 const conFrio=row=>Array.isArray(row.productos)&&row.productos.some(p=>String(p?.location??"").toUpperCase()==="ZFRIO"&&Number(p.qty)>0);
 const excluido=row=>{
- const plate=placaDe(row).replace(/\s/g,"").toUpperCase();
- const driver=conductorDe(row).toUpperCase();
- return plate.startsWith("CRALM")||plate.startsWith("CRVEN")||driver.startsWith("CC0");
+ // CRALM/CRVEN son códigos de camión; una matrícula convencional no basta.
+ const truck=texto(row?.camion??row?.codigo_camion??row?.matricula).replace(/\s/g,"").toUpperCase();
+ const driver=texto(row?.repartidor).toUpperCase();
+ return truck.startsWith("CRALM")||truck.startsWith("CRVEN")||/^CC0(?:$|\b|\d)/.test(driver);
 };
 export function hojaRepartoR7(rows){
  const {accepted,unknown,ferrol}=requireCoruna(rows);
