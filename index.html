@@ -318,6 +318,17 @@
           <span class="vprint-lab-tag">LAB · Sin publicar</span>
         </div>
         <p class="vprint-storage-note"><strong>Importante:</strong> este motor conserva los PDF y las marcas «Listado generado» en <strong>este navegador</strong>, aislados por usuario y almacén. <strong>No se sincronizan todavía</strong> entre ordenadores ni sustituyen el registro compartido de VISURA.</p>
+        <section class="vprint-shared-bridge" aria-label="Cargas compartidas de VISURA">
+          <div class="vprint-shared-title">
+            <div><h3>Traer PDF desde VISURA</h3>
+            <p class="muted">Selecciona hasta 5 LP compartidas de COR1. R7 las importará sin cambiar las cargas ni las impresiones del servidor.</p></div>
+            <button id="visuraR7SharedRefresh" type="button" class="secondary">Actualizar</button>
+          </div>
+          <label class="vprint-shared-include"><input type="checkbox" id="visuraR7IncludeGenerated"> Mostrar también LP con listado generado (para revisión o reimpresión)</label>
+          <div id="visuraR7SharedStatus" class="status" role="status" aria-live="polite">Consulta las LP compartidas disponibles.</div>
+          <div id="visuraR7SharedList" class="vprint-shared-list" aria-label="LP compartidas autorizadas"></div>
+          <button id="visuraR7SharedImport" type="button" class="primary" disabled>Traer PDF seleccionados a R7</button>
+        </section>
         <div id="visuraR7FrameStatus" class="status" role="status" aria-live="polite">Abre Impresión para cargar el motor R7.</div>
         <iframe id="visuraR7PrintFrame" title="VISURA PREPARA · Motor de impresión R7" class="vprint-r7-frame" loading="lazy" referrerpolicy="no-referrer" src="about:blank"></iframe>
         <details id="visuraLegacyPrintDetails" class="vprint-old-panel">
