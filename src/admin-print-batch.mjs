@@ -3,12 +3,12 @@ import {comprobarLoteActualizado} from "./archive-snapshot.mjs";
 import {fechaAlmacen} from "./business-date.mjs";
 import {nombreSugeridoArchivo,portadaLoteArchivo,MAX_HOJAS_ARCHIVO} from "./archive-period.mjs";
 import {destinoAcreditado,ordenarCargasR7,seleccionarNuevasR7,totalMercanciaAcreditado} from "./visura-print-r7-core.mjs";
+import {prepararVistaOriginalR7} from "./visura-r7-original-preview.mjs";
 import {listaMatriculasR7,hojaRepartoR7} from "./visura-print-r7-lists.mjs";
 
-// Solo lectura; crea una vista imprimible a partir de las cargas autorizadas.
-// No incluye los PDF originales ni publica/actualiza documentos.
+// RPC existentes. La revisión BC lee un original autorizado sin registrar impresión.
 const $=id=>document.getElementById(id);
-export function configurarLoteImpresion({client,getUser,getWarehouse,errorText}){
+export function configurarLoteImpresion({client,getUser,getWarehouse,errorText,bucket}){
   let rows=[],allRows=[],selected=new Set(),currentWarehouse="",currentSession=null,seq=0,nextGroupStart=0,previewing=false,printCounts=new Map(),reprintMode=false,searchTerm="";
   const status=$("batchPrintStatus"),list=$("batchPrintList"),button=$("batchPrintOpen");
   function reset(){
@@ -16,6 +16,7 @@ export function configurarLoteImpresion({client,getUser,getWarehouse,errorText})
     $("batchArchiveName").textContent="";
     $("batchPrintSelectVisible").hidden=true;
     $("batchPrintOpen").hidden=true;
+    $("batchOriginalPreview").disabled=true;
     $("batchPrintPlatesCoruna").disabled=true;
     $("batchPrintDeliveryCoruna").disabled=true;
     $("batchPrintReprint").closest("label").hidden=true;
@@ -44,6 +45,7 @@ export function configurarLoteImpresion({client,getUser,getWarehouse,errorText})
     const visibleRows=rows.filter(row=>[row.codigo,row.matricula,row.repartidor,row.ruta]
       .some(value=>String(value??"").toLocaleLowerCase("es-ES").includes(searchTerm)));
     button.disabled=selected.size===0;
+    $("batchOriginalPreview").disabled=selected.size!==1||currentWarehouse!=="COR_01_COR"||previewing;
     $("batchArchiveName").textContent=!rows.length
       ?""
       :!selected.size?"Selecciona las cargas para ver el nombre recomendado del PDF."
@@ -68,6 +70,7 @@ export function configurarLoteImpresion({client,getUser,getWarehouse,errorText})
         }
         if(check.checked)selected.add(load.codigo);else selected.delete(load.codigo);
         button.disabled=selected.size===0;
+    $("batchOriginalPreview").disabled=selected.size!==1||currentWarehouse!=="COR_01_COR"||previewing;
         $("batchArchiveName").textContent=selected.size
           ?"Nombre sugerido para guardar el PDF: "+nombreSugeridoArchivo(
             currentWarehouse,fechaAlmacen(),fechaAlmacen(),fechaAlmacen(),[...selected])
@@ -170,6 +173,7 @@ export function configurarLoteImpresion({client,getUser,getWarehouse,errorText})
     }finally{
       previewing=false;
       if(request===seq)button.disabled=selected.size===0;
+    $("batchOriginalPreview").disabled=selected.size!==1||currentWarehouse!=="COR_01_COR"||previewing;
     }
   }
   // Listados originales recuperados de PRUEBA_3. Solo datos que concede la RPC,
@@ -238,7 +242,39 @@ export function configurarLoteImpresion({client,getUser,getWarehouse,errorText})
   }
   $("batchPrintPlatesCoruna").addEventListener("click",()=>abrirAuxiliar("matriculas"));
   $("batchPrintDeliveryCoruna").addEventListener("click",()=>abrirAuxiliar("reparto"));
+  async function previewOriginal(){
+    if(previewing||selected.size!==1||currentWarehouse!=="COR_01_COR"||!bucket)return;
+    const code=[...selected][0],warehouse=currentWarehouse,session=currentSession,request=seq;
+    if(!session||getUser()?.id!==session||getWarehouse()!==warehouse)return;
+    const active=()=>request===seq&&getUser()?.id===session&&getWarehouse()===warehouse;
+    previewing=true;$("batchOriginalPreview").disabled=true;
+    status.textContent="Verificando y recortando el original BC de "+code+"…";
+    try{
+      const {data,error}=await client.rpc("kontrola_panel_cargas_impresion",{p_almacen:warehouse});
+      if(!active())return;
+      if(error)throw error;
+      const selectedRow=rows.find(row=>row.codigo===code);
+      const [row]=comprobarLoteActualizado([selectedRow],data||[],warehouse);
+      const result=await prepararVistaOriginalR7({client,bucket,row});
+      if(!active())return;
+      const output=new File([result.bytes],"VISURA_"+code+"_COR1_ORIGINAL_RECORTADO_LAB.pdf",{type:"application/pdf"});
+      const share=typeof navigator.share==="function"&&
+        (typeof navigator.canShare!=="function"||navigator.canShare({files:[output]}));
+      if(/iPhone|iPad|iPod/i.test(navigator.userAgent||"")&&share){
+        await navigator.share({files:[output],title:"VISURA PREPARA · Original COR1 LAB"});
+      }else{
+        const url=URL.createObjectURL(output),link=document.createElement("a");
+        link.href=url;link.download=output.name;document.body.appendChild(link);link.click();link.remove();
+        setTimeout(()=>URL.revokeObjectURL(url),60000);
+      }
+      if(active())status.textContent="Original COR1 recortado ("+result.paginasOriginales+" páginas) y detalle preparados en LAB. No se ha marcado «listado generado».";
+    }catch(error){
+      if(active()&&error?.name!=="AbortError")
+        status.textContent="Original BC no preparado: "+errorText(error)+". No se ha registrado impresión.";
+    }finally{previewing=false;if(active())render();}
+  }
   $("batchPrintRefresh").addEventListener("click",refresh);
+  $("batchOriginalPreview").addEventListener("click",previewOriginal);
   $("batchPrintSearch").addEventListener("input",event=>{
     searchTerm=String(event.target.value||"").toLocaleLowerCase("es-ES").trim();render();
   });
