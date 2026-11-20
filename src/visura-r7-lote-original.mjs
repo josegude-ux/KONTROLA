@@ -1,5 +1,6 @@
 // VISURA-215 LAB · Ensamblado de originales BC por LP (máximo 5 cargas).
 // Vista preliminar de solo lectura: NO registra impresión ni modifica Storage.
+import {anexarInformesFrioR7} from "./visura-r7-anexos-frio.mjs";
 export const MAX_ORIGINALES_LAB=5;
 
 export async function componerLoteOriginalR7({rows,preparar,autorizado=()=>true,pdfLib=null}={}){
@@ -17,7 +18,7 @@ export async function componerLoteOriginalR7({rows,preparar,autorizado=()=>true,
  if(!engine?.PDFDocument?.create||!engine?.PDFDocument?.load)
    throw Error("Motor de composición PDF no disponible.");
  const merged=await engine.PDFDocument.create();
- const paginasPorLP=[],avisos=[];
+ const paginasPorLP=[],avisos=[],resumenesFrio=[];
  for(const row of rows){
    if(!autorizado())throw Error("La sesión o el almacén ha cambiado durante la operación.");
    const result=await preparar(row);
@@ -31,8 +32,15 @@ export async function componerLoteOriginalR7({rows,preparar,autorizado=()=>true,
    const pages=await merged.copyPages(src,src.getPageIndices());
    pages.forEach(page=>merged.addPage(page));
    paginasPorLP.push({codigo:row.codigo,paginas:count,hojasFrio:result.hojasFrio||0});
+   if(result.anexo)resumenesFrio.push(result.anexo);
    if(result.sinDestinoFrio)avisos.push(row.codigo+": ZFRIO sin destino CORUÑA acreditado; hoja individual omitida.");
  }
+ if(!autorizado())throw Error("La sesión ha cambiado antes de adjuntar anexos.");
+ const anexos=await anexarInformesFrioR7(merged,resumenesFrio,{
+   StandardFonts:engine.StandardFonts,rgb:engine.rgb
+ });
+ if(merged.getPageCount()>140||merged.getPageCount()%2)
+   throw Error("Los anexos superan el límite o alteran la paridad del lote.");
  if(!autorizado())throw Error("La sesión ha cambiado antes de entregar el documento.");
- return {bytes:await merged.save(),paginas:merged.getPageCount(),paginasPorLP,avisos};
+ return {bytes:await merged.save(),paginas:merged.getPageCount(),paginasPorLP,avisos,anexos};
 }
