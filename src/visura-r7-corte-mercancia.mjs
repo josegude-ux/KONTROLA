@@ -1,4 +1,5 @@
 // VISURA-215 LAB · Port del recorte PRUEBA_3 R7.
+import {dibujarHojaFrioCorunaR7} from "./visura-r7-frio-coruna.mjs";
 // Utiliza PDF.js local empaquetado: sin CDN, sin OCR, sin alterar el PDF BC.
 const normalizar=value=>String(value??"").toUpperCase().normalize("NFD")
   .replace(/[\u0300-\u036f]/g,"").replace(/[^A-Z0-9]/g,"");
@@ -90,7 +91,7 @@ export async function recortarMercanciaCor1(file,numeros,{pdfjs=null}={}){
 }
 
 // Documento independiente de revisión. No marca «listado generado» ni modifica Supabase.
-export async function crearVistaOriginalCor1R7({paginas,detalle,codigo}){
+export async function crearVistaOriginalCor1R7({paginas,detalle,codigo,hojaFrio=null}){
   if(!Array.isArray(paginas)||!paginas.length||paginas.length>30||
     !/^LP\d{2}-\d{4,6}$/.test(String(codigo||"")))throw Error("Original no acreditado.");
   const {PDFDocument,StandardFonts,rgb}=await import("../vendor/pdf-lib.min.mjs");
@@ -111,6 +112,9 @@ export async function crearVistaOriginalCor1R7({paginas,detalle,codigo}){
     const copies=await doc.copyPages(extra,extra.getPageIndices());
     for(const page of copies)doc.addPage(page);
   }
+  // La hoja individual FRÍO CORUÑA sigue a la LP correspondiente.
+  // El reverso en blanco se agrega DESPUÉS de toda la documentación de la LP.
+  if(hojaFrio)await dibujarHojaFrioCorunaR7(doc,hojaFrio,{StandardFonts,rgb});
   if(doc.getPageCount()%2)doc.addPage([W,H]);
   return doc.save();
 }
