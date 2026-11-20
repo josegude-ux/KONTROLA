@@ -35,7 +35,13 @@ jobs:
       - name: Instalar dependencias bloqueadas
         run: npm ci
       - name: Verificar dependencias de navegador
-        run: npm run build:vendor && git diff --exit-code -- vendor
+        run: |
+          npm run build:vendor
+          test -s vendor/pdf-lib.min.mjs
+          node --input-type=module -e 'import("./vendor/pdf-lib.min.mjs").then(m => { if (typeof m.PDFDocument?.create !== "function" || !m.StandardFonts || typeof m.rgb !== "function") process.exit(1); })'
+          test -s vendor/pdf.min.mjs
+          test -s vendor/pdf.worker.min.mjs
+          git diff --exit-code -- vendor
       - name: Comprobar sintaxis
         run: |
           node --check src/app.mjs
