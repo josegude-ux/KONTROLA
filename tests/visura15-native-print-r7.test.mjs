@@ -3,9 +3,11 @@ import assert from "node:assert/strict";
 import {readFileSync} from "node:fs";
 import {generarPdfHojas} from "../src/print-pdf.mjs";
 import {ordenarCargasR7,seleccionarNuevasR7,destinoAcreditado,totalMercanciaAcreditado} from "../src/visura-print-r7-core.mjs";
+import {seleccionarCorteMercancia,validarPaginasCor1} from "../src/visura-r7-corte-mercancia.mjs";
+import {comprobarRutaOriginalCor1} from "../src/visura-r7-original-preview.mjs";
 
 const code=path=>readFileSync(new URL("../"+path,import.meta.url),"utf8");
-const sample=(codigo,destino,total,peso_kg)=>({codigo,destino,declared_total:total,peso_kg});
+const sample=(codigo,destino,total,peso_kg)=>({codigo,destino,declared_total:total,peso_kg,verified:true});
 
 test("destino de reparto nunca se inventa desde el almacén COR1",()=>{
   assert.equal(destinoAcreditado({almacen:"COR_01_COR",matricula:"FR1234"}),null);
@@ -17,9 +19,10 @@ test("TOTAL de mercancía FERROL descendente; no sustituir por peso ni referenci
   const rows=[sample("LP26-00001","FERROL",10,900),sample("LP26-00002","FERROL",50,100),
     sample("LP26-00003","CORUÑA",2,1000),sample("LP26-00004","FERROL",null,2000)];
   assert.deepEqual(ordenarCargasR7(rows).map(x=>x.codigo),
-    ["LP26-00003","LP26-00002","LP26-00001","LP26-00004"]);
-  assert.equal(totalMercanciaAcreditado({declared_total:null}),null);
-  assert.equal(totalMercanciaAcreditado({declared_total:"3,5"}),3.5);
+    ["LP26-00002","LP26-00003","LP26-00001","LP26-00004"]);
+  assert.equal(totalMercanciaAcreditado({destino:"FERROL",declared_total:null,verified:true}),null);
+  assert.equal(totalMercanciaAcreditado({destino:"FERROL",declared_total:100}),null);
+  assert.equal(totalMercanciaAcreditado({destino:"FERROL",declared_total:"3,5",verified:true}),3.5);
 });
 
 test("solo carga nueva sin generación previa; no reautoseleccionar duplicado",()=>{
@@ -56,4 +59,35 @@ test("UI se integra en Administración sin modificar flujo RPC ni crear app para
   assert.match(admin,/generarPdfHojas\(extraerHojasDeInforme\(source\),\{duplexPorCarga:true\}\)/);
   assert.match(css,/visura-print-panel/);
   assert.doesNotMatch(logic,/localStorage|sessionStorage|client\.from\(/);
+});
+
+test("corte R7 evita Total referencias de cabecera y se detiene antes de CONTROL ENVASES",()=>{
+ const lines=[{text:"Total referencias prod. 4",top:52},{text:"PRD00001",top:130},
+   {text:"Total referencias prod. 4",top:430},{text:"CONTROL ENVASES",top:465}];
+ assert.deepEqual(seleccionarCorteMercancia(lines,841),{tipo:"seccion",bottom:461});
+ assert.deepEqual(seleccionarCorteMercancia(lines.slice(0,3),841),{tipo:"total",bottom:447});
+ assert.equal(seleccionarCorteMercancia(lines.slice(0,1),841),null);
+});
+test("páginas COR1 verificadas: rechazar duplicados, fuera de rango o invertidas",()=>{
+ assert.deepEqual(validarPaginasCor1([1,2],3),[1,2]);
+ for(const ids of [[],[2,1],[1,1],[0],[4]])assert.throws(()=>validarPaginasCor1(ids,3));
+});
+test("ruta original privada ligada a LP y almacén COR1",()=>{
+ const hash="a".repeat(64),path="documentos/LP26-12345/"+hash+".pdf";
+ assert.deepEqual(comprobarRutaOriginalCor1({codigo:"LP26-12345",almacen:"COR_01_COR",documento_ruta:path}),{path,hash});
+ assert.throws(()=>comprobarRutaOriginalCor1({codigo:"LP26-12345",almacen:"COR_02_NAR",documento_ruta:path}));
+ assert.throws(()=>comprobarRutaOriginalCor1({codigo:"LP26-12345",almacen:"COR_01_COR",documento_ruta:"documentos/LP26-99999/"+hash+".pdf"}));
+});
+test("original BC: sin CDN, sin almacenamiento paralelo y sin registrar generación",()=>{
+ const crop=read("src/visura-r7-corte-mercancia.mjs"),adapter=read("src/visura-r7-original-preview.mjs");
+ const logic=read("src/admin-print-batch.mjs"),html=read("index.html"),admin=read("src/admin.mjs");
+ assert.match(crop,/vendor\/pdf\.min\.mjs/);
+ assert.doesNotMatch(crop,/https?:\/\//);
+ assert.match(adapter,/crypto\.subtle\.digest/);
+ assert.match(adapter,/storage\.from\(bucket\)\.download/);
+ assert.match(logic,/prepararVistaOriginalR7/);
+ assert.match(admin,/configurarLoteImpresion\(\{client,getUser,errorText,bucket/);
+ for(const id of ["adminSection2","batchPrintPanel","batchOriginalPreview"])
+   assert.equal(html.split('id="'+id+'"').length-1,1);
+ assert.doesNotMatch(adapter,/\.upload\(|\.insert\(|\.update\(/);
 });
