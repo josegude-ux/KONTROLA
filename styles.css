@@ -1104,3 +1104,23 @@ footer{padding:18px;text-align:center;background:#fff;border-top:1px solid #e6e8
 #adminSection2 #batchArchiveName{background:#f7f9fb;border-left:3px solid #0b2647;padding:8px 12px}
 @media(max-width:730px){.vprint-controls{grid-template-columns:1fr}.vprint-heading{flex-wrap:wrap}.vprint-heading .secondary{width:100%}#adminSection2 .batch-print-list{grid-template-columns:1fr;max-height:none}.vprint-metrics>div{padding:10px}.vprint-metrics strong{font-size:22px}}
 @media(max-width:380px){.vprint-metrics{grid-template-columns:1fr 1fr}.vprint-metrics>div:last-child{grid-column:1/-1}}
+
+/* VISURA15 LAB: listados auxiliares en el mismo flujo, no son generación de LP. */
+.vprint-aux-buttons{display:flex;flex-wrap:wrap;gap:10px;margin:16px 0 10px}
+.vprint-aux-buttons button{flex:1 1 220px;min-height:44px}
+.vprint-aux{background:#fff;color:#14283c;padding:16px;margin:14px auto 22px;max-width:850px}
+.vprint-aux h1{font-size:21px;font-weight:800;text-align:center;margin:0 0 8px}
+.vprint-aux>p{text-align:center}
+.vprint-aux table{width:100%;border-collapse:collapse;margin:14px 0 18px;font-size:12px}
+.vprint-aux th,.vprint-aux td{border:1px solid #cbd6df;padding:8px 7px;text-align:left}
+.vprint-aux th{background:#eaf0f5;font-weight:750;color:#0b2647}
+.vprint-aux .vprint-aux-sum{font-weight:800;border-top:2px solid #0b2647;padding-top:10px}
+.vprint-aux-note,.vprint-aux-issues{font-size:11px;color:#52657b}
+@media(max-width:620px){.vprint-aux{padding:6px}.vprint-aux table{font-size:10px}.vprint-aux th,.vprint-aux td{padding:5px 3px}}
+@media print{
+ .vprint-aux{break-after:page;page-break-after:always;padding:0;margin:0;box-shadow:none;max-width:initial}
+ .vprint-aux:last-child{break-after:auto;page-break-after:auto}
+ .vprint-aux tr{break-inside:avoid;page-break-inside:avoid}
+ .vprint-aux thead{display:table-header-group}
+ .vprint-aux th{background:#eaeaea!important;color:black!important}
+}
