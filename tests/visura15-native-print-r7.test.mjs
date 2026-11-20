@@ -91,3 +91,12 @@ test("original BC: sin CDN, sin almacenamiento paralelo y sin registrar generaci
    assert.equal(html.split('id="'+id+'"').length-1,1);
  assert.doesNotMatch(adapter,/\.upload\(|\.insert\(|\.update\(/);
 });
+
+test("la generación se registra solo tras prevalidar el PDF completo y todas las LP",()=>{
+ const script=code("src/admin-print-batch.mjs");
+ const compose=script.indexOf('const html=cover+verified.map');
+ const validate=script.indexOf('generarPdfHojas(extraerHojasDeInforme(preflight),{duplexPorCarga:true})');
+ const register=script.indexOf('client.rpc("kontrola_registrar_lote_impresion"');
+ assert.ok(compose>=0&&validate>compose&&register>validate);
+ assert.match(script,/querySelectorAll\("article\.preparation-report"\)\.length!==verified\.length/);
+});
