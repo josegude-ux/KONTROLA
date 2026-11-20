@@ -328,6 +328,11 @@
         <p class="hint">Solo cargas publicadas hoy para el almacén autorizado. Máximo 20 por lote. «Generado» no significa impresión física confirmada.</p>
         <div id="batchPrintList" class="batch-print-list" aria-label="Cargas para impresión"></div>
         <p class="hint" id="batchArchiveName" aria-live="polite"></p>
+        <div class="vprint-aux-buttons" role="group" aria-label="Listados auxiliares de reparto">
+          <button id="batchPrintPlatesCoruna" type="button" class="secondary" disabled>Matrículas por peso · Coruña</button>
+          <button id="batchPrintDeliveryCoruna" type="button" class="secondary" disabled>Hoja de reparto · Coruña</button>
+        </div>
+        <p class="hint">Estos informes no marcan cargas como impresas y requieren destino CORUÑA acreditado (no basta que la mercancía sea COR_01_COR).</p>
         <div class="vprint-actions">
           <button id="batchPrintSelectVisible" type="button" class="secondary">Seleccionar siguiente grupo de hasta 20</button>
           <button id="batchPrintOpen" type="button" class="primary" disabled>Generar listados seleccionados</button>
