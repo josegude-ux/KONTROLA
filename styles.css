@@ -1124,3 +1124,16 @@ footer{padding:18px;text-align:center;background:#fff;border-top:1px solid #e6e8
  .vprint-aux thead{display:table-header-group}
  .vprint-aux th{background:#eaeaea!important;color:black!important}
 }
+
+/* VISURA215 R7 motor original incorporado como contenido de Administración > Impresión. */
+.vprint-r7-intro{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:10px}
+.vprint-r7-intro h2{font-size:clamp(20px,2.3vw,28px);color:#0b2647;margin:4px 0 8px}
+.vprint-r7-intro .muted{margin:0;max-width:78ch;line-height:1.45}
+.vprint-lab-tag{padding:7px 11px;background:#f5e9e9;color:#7e232d;border-radius:10px;font-weight:750;font-size:12px;white-space:nowrap}
+.vprint-storage-note{font-size:13px;line-height:1.55;border-left:3px solid #d52835;background:#f8fafc;color:#213d58;padding:10px 13px;margin:10px 0;border-radius:0 9px 9px 0}
+.vprint-r7-frame{display:block;width:100%;height:900px;max-width:100%;background:#f3f6fa;border:1px solid #dbe3ec;border-radius:13px}
+.vprint-old-panel{margin-top:16px;padding:12px;border:1px solid #dce4ec;border-radius:12px;background:#fbfcfe}
+.vprint-old-panel>summary{cursor:pointer;color:#173a58;font-weight:750;font-size:13px;line-height:1.5}
+.vprint-old-panel[open]>summary{margin-bottom:13px}
+.vprint-old-panel>p{margin:0 0 12px;font-size:12px}
+@media(max-width:700px){.vprint-r7-frame{height:72vh;min-height:480px;border-radius:8px}.vprint-r7-intro{gap:9px}.vprint-storage-note{font-size:12px}}
