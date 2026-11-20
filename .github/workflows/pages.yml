@@ -33,6 +33,10 @@ jobs:
       - name: Comprobar dependencias de navegador
         run: |
           npm run build:vendor
+          test -s vendor/pdf-lib.min.mjs
+          node --input-type=module -e 'import("./vendor/pdf-lib.min.mjs").then(m => { if (typeof m.PDFDocument?.create !== "function" || !m.StandardFonts || typeof m.rgb !== "function") process.exit(1); })'
+          test -s vendor/pdf.min.mjs
+          test -s vendor/pdf.worker.min.mjs
           git diff --exit-code -- vendor
       - name: Preparar solo los archivos públicos de la aplicación
         run: |
@@ -44,6 +48,9 @@ jobs:
           test -f dist/src/app.mjs
           test -f dist/control-cargas-prueba3.html
           test -f dist/vendor/supabase.mjs
+          test -s dist/vendor/pdf-lib.min.mjs
+          test -s dist/vendor/pdf.min.mjs
+          test -s dist/vendor/pdf.worker.min.mjs
       - name: Subir aplicación estática
         uses: actions/upload-pages-artifact@v3
         with:
