@@ -1071,3 +1071,36 @@ footer{padding:18px;text-align:center;background:#fff;border-top:1px solid #e6e8
 #controlChecklistView .cc-row-main>.cc-quantity-action{flex:0 0 104px;width:104px;min-width:104px;min-height:56px;margin:0;padding:0 6px;flex-direction:column;gap:4px;border-radius:12px;border:0;background:#1b4fa0;color:#fff;font-size:16px;font-weight:700;align-self:stretch}
 #controlChecklistView .cc-row-main>.cc-quantity-action[aria-pressed="true"]{background:#227348}
 @media(max-width:390px){#controlChecklistView .cc-row-main{gap:10px;padding:10px 10px 10px 12px}#controlChecklistView .cc-row-main>.cc-quantity-action{flex-basis:96px;width:96px;min-width:96px}}
+
+
+/* VISURA-15 · Integración R7 UX nativa. Solo Administración > Impresión. */
+#adminSection2.visura-print-panel{max-width:1440px;margin-inline:auto;overflow:hidden}
+.vprint-heading{display:flex;gap:16px;align-items:flex-start;padding:5px 0 15px;border-bottom:1px solid #e1e7ec}
+.vprint-heading-symbol{width:48px;height:48px;border-radius:13px;background:#0b2647;color:white;display:grid;place-items:center;font-size:26px;flex:none}
+.vprint-heading-text{flex:1;min-width:0}.vprint-heading h2{margin:3px 0 6px;color:#0b2647;font-size:clamp(20px,2.4vw,27px)}
+.vprint-heading .muted{margin:0}.vprint-heading .secondary{flex:none}
+.vprint-eyebrow{color:#d52835;font-size:11px;font-weight:800;letter-spacing:1.2px;margin:0}
+.vprint-metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:16px 0}
+.vprint-metrics>div{border:1px solid #dbe4eb;border-radius:12px;background:#f8fafb;padding:12px 15px;min-width:0}
+.vprint-metrics strong{display:block;font-size:26px;font-weight:850;color:#0b2647;font-variant-numeric:tabular-nums}
+.vprint-metrics span{display:block;font-size:12px;color:#5b6e81;margin-top:3px}
+.vprint-controls{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:end;gap:12px;margin-top:14px}
+.vprint-search{display:block;min-width:0;font-size:12px;font-weight:750;color:#243c55}
+.vprint-search input{margin-top:6px;width:100%;min-width:0;min-height:44px;border:1px solid #cbd9e5;border-radius:10px;padding:9px 12px;background:white}
+#adminSection2 .batch-print-reprint{display:flex;align-items:center;gap:8px;padding:10px 12px;border:1px solid #d5e1e9;border-radius:10px;min-height:44px;font-size:13px;font-weight:650;margin:0}
+#adminSection2 .batch-print-reprint input{width:18px;height:18px;min-height:18px;margin:0;flex:none}
+#adminSection2 .batch-print-list{grid-template-columns:repeat(2,minmax(0,1fr));max-height:min(60vh,620px);gap:9px;overflow-y:auto}
+#adminSection2 .batch-print-row{padding:11px 13px;min-height:74px;border:1px solid #dce4eb;border-radius:11px;transition:border-color .15s,background .15s;align-items:flex-start}
+#adminSection2 .batch-print-row:has(input:checked){border-color:#7997af;background:#f1f7fa}
+#adminSection2 .batch-print-row input[type="checkbox"]{margin-top:5px;accent-color:#0b2647}
+#adminSection2 .batch-print-row b{font-size:14px;color:#0b2647;font-variant-numeric:tabular-nums}
+#adminSection2 .batch-print-row small{font-size:12px;color:#566c80;line-height:1.5;margin-top:4px}
+.vprint-row-title{display:flex;flex-wrap:wrap;align-items:center;gap:7px}
+.vprint-tag{display:inline-block;background:#eaf0f5;color:#143750;padding:3px 7px;border-radius:7px;font-size:10px;font-weight:750}
+.vprint-tag.reprint{background:#fff2dd;color:#78470f}
+.vprint-empty{grid-column:1/-1;margin:4px 0 12px;padding:20px;background:#f8fafb;border:1px dashed #c9d8e2;border-radius:12px;color:#52657b}
+.vprint-actions{display:flex;flex-wrap:wrap;gap:12px;align-items:stretch;margin-top:14px}
+.vprint-actions button{flex:1 1 240px;min-height:46px}
+#adminSection2 #batchArchiveName{background:#f7f9fb;border-left:3px solid #0b2647;padding:8px 12px}
+@media(max-width:730px){.vprint-controls{grid-template-columns:1fr}.vprint-heading{flex-wrap:wrap}.vprint-heading .secondary{width:100%}#adminSection2 .batch-print-list{grid-template-columns:1fr;max-height:none}.vprint-metrics>div{padding:10px}.vprint-metrics strong{font-size:22px}}
+@media(max-width:380px){.vprint-metrics{grid-template-columns:1fr 1fr}.vprint-metrics>div:last-child{grid-column:1/-1}}
