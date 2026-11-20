@@ -1137,3 +1137,21 @@ footer{padding:18px;text-align:center;background:#fff;border-top:1px solid #e6e8
 .vprint-old-panel[open]>summary{margin-bottom:13px}
 .vprint-old-panel>p{margin:0 0 12px;font-size:12px}
 @media(max-width:700px){.vprint-r7-frame{height:72vh;min-height:480px;border-radius:8px}.vprint-r7-intro{gap:9px}.vprint-storage-note{font-size:12px}}
+
+/* VISURA 15 R7 · consulta compartida, sin duplicar motor ni estado de impresión */
+.vprint-shared-bridge{border:1px solid #d5dfe9;background:#fff;border-radius:13px;padding:14px;margin:15px 0}
+.vprint-shared-title{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.vprint-shared-title h3{color:#0b2647;margin:0 0 5px;font-size:17px}
+.vprint-shared-title p{margin:0 0 10px;font-size:12px;max-width:75ch;line-height:1.45}
+.vprint-shared-title button{flex:none;min-height:42px}
+.vprint-shared-include{display:flex;align-items:center;gap:9px;font-size:12px;color:#38516c;margin:4px 0 9px}
+.vprint-shared-include input{width:17px;height:17px;margin:0;accent-color:#0b2647}
+.vprint-shared-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;max-height:260px;overflow-y:auto;margin:10px 0}
+.vprint-shared-item{display:flex;align-items:flex-start;gap:10px;min-width:0;padding:10px;background:#f8fafc;border:1px solid #dce5ed;border-radius:10px;cursor:pointer}
+.vprint-shared-item:has(input:checked){background:#edf4fa;border-color:#7590a6}
+.vprint-shared-item input{width:18px;height:18px;flex:none;margin:3px 0 0}
+.vprint-shared-item span{display:block;min-width:0}
+.vprint-shared-item strong{display:block;font-size:13px;color:#0b2647}
+.vprint-shared-item small{display:block;font-size:11px;color:#59718a;margin-top:3px;overflow-wrap:anywhere}
+#visuraR7SharedImport{min-height:44px}
+@media(max-width:700px){.vprint-shared-list{grid-template-columns:1fr;max-height:240px}.vprint-shared-title{flex-wrap:wrap}.vprint-shared-title button{width:100%}}
