@@ -727,11 +727,40 @@ export function createAdminController({client,getUser,bucket,global,errorText,on
       }
     }finally{button.disabled=false;}
   });
+  // Salida vectorial nativa: carátula y cada LP empiezan en anverso;
+  // se inserta reverso totalmente en blanco si el número de páginas es impar.
+  // Conserva la RPC compartida de generación; no confirma impresión física.
+  $("batchDuplexSave").addEventListener("click",async()=>{
+    const button=$("batchDuplexSave"),notice=$("reportPrintStatus");
+    if(button.disabled)return;
+    button.disabled=true;
+    try{
+      const source=$("reportPaper");
+      if(!source.querySelector(".report-batch-sheet"))throw Error("El documento no es un lote de impresión.");
+      const bytes=generarPdfHojas(extraerHojasDeInforme(source),{duplexPorCarga:true});
+      const name=nombrePdfInforme($("reportTitle").textContent+" DUPLEX");
+      const file=new File([bytes],name,{type:"application/pdf"});
+      const canShare=!!navigator.share&&
+        (typeof navigator.canShare!=="function"||navigator.canShare({files:[file]}));
+      const ios=/iPhone|iPad|iPod/i.test(navigator.userAgent||"");
+      if(ios&&canShare){
+        notice.textContent="PDF dúplex preparado. Guárdalo en Archivos y revisa la impresión a doble cara.";
+        await navigator.share({files:[file],title:"VISURA PREPARA · Dúplex por LP"});
+      }else{
+        const url=URL.createObjectURL(file),link=document.createElement("a");
+        link.href=url;link.download=name;document.body.appendChild(link);link.click();link.remove();
+        setTimeout(()=>URL.revokeObjectURL(url),60000);
+        notice.textContent="PDF dúplex preparado. Comprueba las páginas por parejas antes de imprimir.";
+      }
+    }catch(error){
+      if(error?.name!=="AbortError")notice.textContent="No se ha preparado el PDF dúplex: "+errorText(error);
+    }finally{button.disabled=false;}
+  });
   $("downloadReport").addEventListener("click",()=>{
     const blob=new Blob([buildReportDownloadHtml($("reportTitle").textContent,$("printStyles").textContent,$("reportPaper").outerHTML)],{type:"text/html;charset=utf-8"});
     const safeName=$("reportTitle").textContent.replace(/[^A-Za-z0-9_-]+/g,"_");
     const link=document.createElement("a");link.href=URL.createObjectURL(blob);link.download=(safeName||"kontrola")+".html";link.click();setTimeout(()=>URL.revokeObjectURL(link.href),1000);
   });
-  $("closeReport").addEventListener("click",()=>{$("reportView").hidden=true;document.body.classList.remove("report-open");});
+  $("closeReport").addEventListener("click",()=>{$("reportView").hidden=true;document.body.classList.remove("report-open");$("batchDuplexSave").hidden=true;});
   return {open,refreshSummary,refreshAttention,clearSensitive,isBusy:()=>busy};
 }
