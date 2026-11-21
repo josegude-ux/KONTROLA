@@ -6,6 +6,16 @@ const SHA=/^[a-f0-9]{64}$/;
 const RUTA=/^documentos\/(LP\d{2}-\d{4,6})\/([a-f0-9]{64})\.pdf$/;
 const MAX_LOCAL_BYTES=12*1024*1024;
 const MAX_LOCAL_ROWS=5000;
+function fechaMadridPublicacion(timestamp){
+  if(typeof timestamp!=="string"||!timestamp.trim())return null;
+  const date=new Date(timestamp);
+  if(!Number.isFinite(date.getTime()))return null;
+  const parts=new Intl.DateTimeFormat("en-GB",{
+    timeZone:"Europe/Madrid",year:"numeric",month:"2-digit",day:"2-digit"
+  }).formatToParts(date);
+  const map=Object.fromEntries(parts.filter(p=>p.type!=="literal").map(p=>[p.type,p.value]));
+  return [map.year,map.month,map.day].join("-");
+}
 
 export function reconciliarGeneracionesR7({localJSON,compartidas,impresiones,hoy}={}){
   if(typeof hoy!=="string"||!/^\d{4}-\d{2}-\d{2}$/.test(hoy))
@@ -69,12 +79,19 @@ export function reconciliarGeneracionesR7({localJSON,compartidas,impresiones,hoy
       continue;
     }
     if(!complete){counts.pendienteImportar++;continue;}
-    if(String(row.fecha??"").slice(0,10)!==hoy){
-      add(row.codigo,"bloqueoFecha","La RPC actual exige fecha documental "+hoy+
-        "; esta LP tiene "+String(row.fecha??"sin fecha")+".");
+    // El adaptador R7 NO usa la condición histórica c.fecha=hoy; usa
+    // fecha real de publicación, presente en la RPC panel_cargas_impresion.
+    if(fechaMadridPublicacion(row.publicado_en)!==hoy){
+      add(row.codigo,"bloqueoFecha","La nueva sincronización solo admite LP publicadas hoy ("+
+        hoy+"); publicación: "+String(row.publicado_en??"no acreditada")+".");
       continue;
     }
-    add(row.codigo,"pendientes","Listado R7 generado localmente; pendiente de registrar en VISURA.");
+    if(Date.parse(local.listadoGeneradoAt)<Date.parse(row.publicado_en)-5*60*1000){
+      add(row.codigo,"localInvalidado",
+        "La generación local precede a la publicación; requiere revisión.");
+      continue;
+    }
+    add(row.codigo,"pendientes","Listado R7 generado localmente sobre el PDF vigente y publicado hoy; sin registro VISURA.");
   }
   for(const [code,local] of mLocal){
     if(mRemote.has(code))continue;
