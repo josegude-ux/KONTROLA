@@ -242,6 +242,34 @@ export function crearImportadorCompartidoR7({client,getUser,getWarehouse,bucket}
       }
     }
   }
+  // El iframe original de R7 solo notifica la finalización de un persist local.
+  // No se aceptan eventos de otras ventanas, orígenes ni ámbitos de usuario.
+  async function recibirAvisoR7(event){
+    const data=event?.data;
+    if(!data||data.type!=="visura:r7:listados-generados"||
+       event.origin!==window.location.origin||event.source!==frame.contentWindow||
+       typeof data.scope!=="string"||frame.dataset.scope!==data.scope||
+       !/^[a-f0-9]{24}$/.test(data.scope))return;
+    const codes=data.codigos;
+    if(!Array.isArray(codes)||!codes.length||codes.length>20||
+       codes.some(code=>typeof code!=="string"||!CODE.test(code))||
+       new Set(codes).size!==codes.length)return;
+    const ctx=snapshot();
+    if(!valid(ctx)||ctx.warehouse!=="COR_01_COR")return;
+    try{
+      const digest=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(
+        "visura-prepara-r7:"+ctx.user+":"+ctx.warehouse));
+      const expected=[...new Uint8Array(digest).slice(0,12)]
+        .map(n=>n.toString(16).padStart(2,"0")).join("");
+      if(!valid(ctx)||frame.dataset.scope!==expected||data.scope!==expected)return;
+      compareSerial++;compareButton.disabled=false;compareList.replaceChildren();
+      compareStatus.textContent="R7 acaba de guardar "+codes.length+
+        " listado(s) generado(s) localmente. Pulsa «Comparar estados» para revisar "+
+        "su situación en VISURA. No se ha escrito en el servidor.";
+    }catch{/* Un aviso fallido no puede alterar los listados ni el servidor. */}
+  }
+  if(typeof window.addEventListener==="function")
+    window.addEventListener("message",recibirAvisoR7);
   compareButton.addEventListener("click",comparar);
   refreshButton.addEventListener("click",refresh);
   importButton.addEventListener("click",importar);
