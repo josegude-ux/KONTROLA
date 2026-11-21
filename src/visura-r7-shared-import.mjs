@@ -1,5 +1,5 @@
 import {fechaAlmacen} from "./business-date.mjs";
-import {reconciliarGeneracionesR7} from "./visura-r7-reconcile.mjs";
+import {prepararSincronizacionR7} from "./visura-r7-sync-preflight.mjs";
 // VISURA PREPARA · Adaptador mínimo de SOLO LECTURA hacia el motor original R7.
 // La fuente de cargas es la RPC autorizada, no localStorage. R7 sigue procesando
 // los PDF con su importador original. No registra impresión ni altera Supabase.
@@ -205,16 +205,18 @@ export function crearImportadorCompartidoR7({client,getUser,getWarehouse,bucket}
       const localJSON=window.localStorage.getItem("visura_prepara_r7_cargas_"+scope);
       const remote=await query(ctx);
       if(!active())return;
-      const result=reconciliarGeneracionesR7({
+      const plan=prepararSincronizacionR7({
         localJSON,compartidas:remote.rows,impresiones:remote.counts,hoy:fechaAlmacen()
       });
+      const result=plan.audit;
       if(!active())return;
       const c=result.counts;
       compareStatus.textContent=c.pendientes+" generadas localmente, no registradas en VISURA · "+
         c.bloqueoFecha+" bloqueadas por fecha documental · "+c.revisionDistinta+
         " con PDF distinto o ruta no acreditada · "+c.servidorSinHash+
         " con historial compartido sin huella · "+c.soloServidor+" solo en el servidor. "+
-        "SOLO LECTURA: ninguna impresión se ha registrado.";
+        plan.candidatos.length+" candidata(s) preparadas para un futuro registro seguro. "+
+        "ESCRITURA DESACTIVADA EN LAB: ninguna impresión se ha registrado.";
       const priorities={revisionDistinta:0,localInvalidado:1,bloqueoFecha:2,pendientes:3,
         fueraDePanel:4,servidorSinHash:5,soloServidor:6};
       const ordered=[...result.items].sort((a,b)=>
