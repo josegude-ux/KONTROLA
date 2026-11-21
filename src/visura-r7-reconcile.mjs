@@ -17,7 +17,7 @@ function fechaMadridPublicacion(timestamp){
   return [map.year,map.month,map.day].join("-");
 }
 
-export function reconciliarGeneracionesR7({localJSON,compartidas,impresiones,hoy}={}){
+export function reconciliarGeneracionesR7({localJSON,compartidas,impresiones,versionados=null,hoy}={}){
   if(typeof hoy!=="string"||!/^\d{4}-\d{2}-\d{2}$/.test(hoy))
     throw Error("Fecha Madrid no acreditada para conciliar.");
   if(!Array.isArray(compartidas)||!(impresiones instanceof Map))
@@ -42,7 +42,7 @@ export function reconciliarGeneracionesR7({localJSON,compartidas,impresiones,hoy
   }
   const items=[],counts={
     pendientes:0,bloqueoFecha:0,revisionDistinta:0,localInvalidado:0,
-    servidorSinHash:0,soloServidor:0,fueraDePanel:0,pendienteImportar:0
+    servidorSinHash:0,sincronizados:0,soloServidor:0,fueraDePanel:0,pendienteImportar:0
   };
   const add=(codigo,estado,detail="")=>{items.push({codigo,estado,detail});counts[estado]++;};
   for(const row of compartidas){
@@ -74,8 +74,16 @@ export function reconciliarGeneracionesR7({localJSON,compartidas,impresiones,hoy
       continue;
     }
     if(attempts>0){
-      add(row.codigo,"servidorSinHash","VISURA registra "+attempts+
-        " generación(es), pero su histórico no identifica la huella del PDF.");
+      // La nueva RPC por revisión permanece desactivada hasta migrar el servidor.
+      // Cuando exista, solo su evidencia de hash permite afirmar sincronización.
+      const v=versionados instanceof Map?versionados.get(row.codigo):null;
+      if(v&&v.documento_hash===serverHash&&Number.isInteger(Number(v.generaciones))&&
+        Number(v.generaciones)>0&&Number(v.generaciones)<=attempts){
+        add(row.codigo,"sincronizados","VISURA confirma generación de la revisión actual.");
+      }else{
+        add(row.codigo,"servidorSinHash","VISURA registra "+attempts+
+          " generación(es), pero no acredita esta revisión del PDF.");
+      }
       continue;
     }
     if(!complete){counts.pendienteImportar++;continue;}
