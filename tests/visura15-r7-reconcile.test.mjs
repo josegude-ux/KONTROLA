@@ -58,7 +58,7 @@ test("controlador solo lee Supabase y localStorage; nunca registra listados",()=
  const module=readFileSync(new URL("../src/visura-r7-shared-import.mjs",import.meta.url),"utf8");
  const reconciliation=readFileSync(new URL("../src/visura-r7-reconcile.mjs",import.meta.url),"utf8");
  const html=readFileSync(new URL("../index.html",import.meta.url),"utf8");
- assert.match(module,/reconciliarGeneracionesR7/);
+ assert.match(module,/prepararSincronizacionR7/);
  assert.match(module,/window\.localStorage\.getItem/);
  assert.match(module,/visuraR7Compare/);
  assert.match(module,/kontrola_panel_cargas_impresion/);
