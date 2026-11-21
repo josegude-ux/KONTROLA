@@ -1,48 +1,41 @@
 -- VISURA 200 · encargo de 000 (VISURA-000-CP-REVISION-FUNCIONES-ANON-KONTROLA-20261121-035).
 -- Retira EXECUTE sobrante a anon y PUBLIC en 5 funciones SECURITY DEFINER de public.
--- Cada sentencia solo se ejecuta si la función existe: en una base sin ellas (p. ej. la CI del repositorio) se omite con un aviso.
+-- Cada función y cada rol se comprueba antes: si no existe en la base, se omite con un aviso (p. ej. la CI del repositorio).
 -- No cambia el cuerpo de ninguna función. No aplicar sin AUTORIZO.
 
-do $$ begin
-  if to_regprocedure('public.es_administrador()') is null then
-    raise notice 'Omitido: public.es_administrador() no existe en esta base';
-  else
-    revoke execute on function public.es_administrador() from public, anon;
-    grant execute on function public.es_administrador() to authenticated, service_role;
-  end if;
-end $$;
-
-do $$ begin
-  if to_regprocedure('public.usuario_autorizado()') is null then
-    raise notice 'Omitido: public.usuario_autorizado() no existe en esta base';
-  else
-    revoke execute on function public.usuario_autorizado() from public, anon;
-    grant execute on function public.usuario_autorizado() to authenticated, service_role;
-  end if;
-end $$;
-
-do $$ begin
-  if to_regprocedure('public.kontrola_finalizar_preparacion(text)') is null then
-    raise notice 'Omitido: public.kontrola_finalizar_preparacion(text) no existe en esta base';
-  else
-    revoke execute on function public.kontrola_finalizar_preparacion(text) from public, anon;
-    grant execute on function public.kontrola_finalizar_preparacion(text) to authenticated, service_role;
-  end if;
-end $$;
-
--- Funciones de disparador: no se llaman por RPC; el disparador no necesita EXECUTE de anon, PUBLIC ni authenticated.
-do $$ begin
-  if to_regprocedure('public.kontrola_asignar_bultos_publicados()') is null then
-    raise notice 'Omitido: public.kontrola_asignar_bultos_publicados() no existe en esta base';
-  else
-    revoke execute on function public.kontrola_asignar_bultos_publicados() from public, anon, authenticated;
-  end if;
-end $$;
-
-do $$ begin
-  if to_regprocedure('public.kontrola_incidente_auditar()') is null then
-    raise notice 'Omitido: public.kontrola_incidente_auditar() no existe en esta base';
-  else
-    revoke execute on function public.kontrola_incidente_auditar() from public, anon, authenticated;
-  end if;
+do $$
+declare
+  rec record;
+  r text;
+begin
+  for rec in
+    select * from (values
+      ('public.es_administrador()',                   array['anon'],                 array['authenticated','service_role']),
+      ('public.usuario_autorizado()',                 array['anon'],                 array['authenticated','service_role']),
+      ('public.kontrola_finalizar_preparacion(text)', array['anon'],                 array['authenticated','service_role']),
+      -- Funciones de disparador: no se llaman por RPC; el disparador no necesita EXECUTE de anon ni de authenticated.
+      ('public.kontrola_asignar_bultos_publicados()', array['anon','authenticated'], array[]::text[]),
+      ('public.kontrola_incidente_auditar()',         array['anon','authenticated'], array[]::text[])
+    ) as t(sig, revoke_roles, grant_roles)
+  loop
+    if to_regprocedure(rec.sig) is null then
+      raise notice 'Omitido: % no existe en esta base', rec.sig;
+      continue;
+    end if;
+    execute format('revoke execute on function %s from public', rec.sig);
+    foreach r in array rec.revoke_roles loop
+      if exists (select 1 from pg_roles where rolname = r) then
+        execute format('revoke execute on function %s from %I', rec.sig, r);
+      else
+        raise notice 'Rol % no existe en esta base; se omite el revoke de %', r, rec.sig;
+      end if;
+    end loop;
+    foreach r in array rec.grant_roles loop
+      if exists (select 1 from pg_roles where rolname = r) then
+        execute format('grant execute on function %s to %I', rec.sig, r);
+      else
+        raise notice 'Rol % no existe en esta base; se omite el grant de %', r, rec.sig;
+      end if;
+    end loop;
+  end loop;
 end $$;
