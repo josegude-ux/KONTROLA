@@ -45,4 +45,11 @@ grep -q "KONTROLA_OPERATOR_STATS_OK" /tmp/kontrola-operator-stats.log
 # Propuesta de archivo: ejecutar SOLO en base aislada tras las pruebas principales.
 "${PSQL[@]}" -f tests/integration/archive.sql >/tmp/kontrola-archivo.log
 grep -q "KONTROLA_ARCHIVE_OK" /tmp/kontrola-archivo.log
-echo "KONTROLA_DATABASE_OK migrations=6 workflow=passed revisions=passed stats=passed concurrency=passed archive=passed"
+# R7 · aplicar el borrador exclusivamente en la base temporal kontrola_test,
+# NUNCA en Supabase conectado, y probar permisos, hash y concurrencia real.
+"${PSQL[@]}" -f docs/sql/PROPUESTA-LAB-REGISTRO-IDEMPOTENTE-R7-20261121.sql >/tmp/kontrola-r7-ddl.log
+"${PSQL[@]}" -f tests/integration/r7-sync.sql >/tmp/kontrola-r7-sync.log
+grep -q "VISURA_R7_SQL_OK" /tmp/kontrola-r7-sync.log
+bash tests/integration/r7-concurrency.sh "$DB" >/tmp/kontrola-r7-concurrency.log
+grep -q "VISURA_R7_CONCURRENCY_OK" /tmp/kontrola-r7-concurrency.log
+echo "KONTROLA_DATABASE_OK migrations=6 workflow=passed revisions=passed stats=passed concurrency=passed archive=passed r7_sql=passed r7_concurrency=passed"
