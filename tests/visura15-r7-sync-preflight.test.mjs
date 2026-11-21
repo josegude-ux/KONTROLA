@@ -5,7 +5,7 @@ import {prepararSincronizacionR7,ESCRITURA_R7_HABILITADA,MAX_PLAN_R7}
  from "../src/visura-r7-sync-preflight.mjs";
 const hash=c=>c.repeat(64);
 const rem=(n,day,h)=>({codigo:n,almacen:"COR_01_COR",estado:"publicada",
- fecha:day,documento_ruta:"documentos/"+n+"/"+hash(h)+".pdf"});
+ fecha:day,publicado_en:day+"T00:00:00Z",documento_ruta:"documentos/"+n+"/"+hash(h)+".pdf"});
 const loc=(n,h,datetime="2026-11-21T02:01:00.000Z")=>({id:n,pdfHash:hash(h),
  listadoGeneradoHash:hash(h),listadoGeneradoAt:datetime});
 const params=(local,remote,counts=new Map())=>({localJSON:JSON.stringify(local),
@@ -24,11 +24,14 @@ test("preflight prepara una LP completa pero NUNCA habilita registro",()=>{
  }]);
 });
 
-test("fecha documental distinta, marca vieja o historial sin hash no se preparan",()=>{
+test("publicación anterior, marca vieja o historial sin hash no se preparan",()=>{
  const unknown=prepararSincronizacionR7(params(
   [loc("LP26-12345","a")],[rem("LP26-12345","2026-11-20","a")]));
  assert.equal(unknown.candidatos.length,0);
  assert.equal(unknown.audit.counts.bloqueoFecha,1);
+ const backdated=prepararSincronizacionR7(params(
+  [loc("LP26-12345","a")],[{...rem("LP26-12345","2026-11-20","a"),publicado_en:"2026-11-21T00:00:00Z"}]));
+ assert.equal(backdated.candidatos.length,1);
  const older=prepararSincronizacionR7(params(
   [loc("LP26-12345","b")],[rem("LP26-12345","2026-11-21","a")]));
  assert.equal(older.candidatos.length,0);
@@ -60,6 +63,8 @@ test("SQL propuesta NO aplicada: agrega hash solo al historial existente y RPC i
  assert.match(sql,/for update/);
  assert.match(sql,/documento_hash <> p_documento_hash/);
  assert.match(sql,/resultado:='YA_REGISTRADO'/);
+ assert.match(sql,/v_carga\.publicado_en at time zone 'Europe\/Madrid'/);
+ assert.match(sql,/get diagnostics v_insertadas = row_count/);
  assert.match(sql,/or not public\.kontrola_es_administrador\(\)/);
  assert.match(sql,/or not public\.kontrola_puede_almacen\(p_almacen\)/);
  assert.match(sql,/revoke all on function public\.kontrola_registrar_generacion_r7/);
