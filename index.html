@@ -42,7 +42,7 @@
       <button class="primary full" type="submit" id="loginButton">Entrar</button>
     </form>
     <p id="authMessage" class="status" role="status" aria-live="polite"></p>
-    <p class="hint">Las cuentas son habilitadas por administración. No existen usuarios de demostración.<br>Versión <span id="loginVersion">0.3.53</span></p>
+    <p class="hint">Las cuentas son habilitadas por administración. No existen usuarios de demostración.<br>Versión <span id="loginVersion">0.3.54</span></p>
   </div>
 </section>
 <div id="shell" hidden>
@@ -304,16 +304,78 @@
         <div id="postPublishActions" class="post-publish-actions" hidden><p class="muted">Carga publicada. Siguiente paso:</p><button id="generateSheet" type="button" class="primary" disabled>Generar hoja de preparación COR1</button><button id="saveCompactA4Admin" type="button" class="secondary" disabled>Guardar listado A4 COR1</button><button id="goToBatchPrint" type="button" class="secondary">Imprimir varias cargas</button></div>
       </section>
       <section class="panel" id="adminSection1" role="tabpanel" hidden><div class="line"><div><h2>Necesitan atención</h2><p class="muted">Documentos, clasificaciones, verificaciones e incidencias pendientes.</p></div><button id="reloadAttention" type="button" class="secondary">Actualizar</button></div><div id="pendingPublishSummary" class="status" role="status"></div><div class="actions"><button id="pendingSelectAll" type="button" class="secondary">Seleccionar aprobadas</button><button id="pendingPublishSelected" type="button" class="primary" disabled>Publicar seleccionadas</button></div><div id="pendingPublishList" class="attention-list"></div><div id="pendingPublishResult" class="status" role="status"></div><h3>Otros avisos</h3><div id="attentionList" class="attention-list"></div></section>
-      <section class="panel" id="adminSection2" role="tabpanel" hidden id="batchPrintPanel">
-        <div class="line"><div><h2>Imprimir varias hojas procesadas</h2><p class="muted">Selecciona hasta 20 cargas de hoy del almacén. Se agrupan las hojas procesadas en un único informe. Los PDF originales no se modifican.</p></div><button id="batchPrintRefresh" type="button" class="secondary">Actualizar</button></div>
-        <div id="batchPrintStatus" class="status" role="status" aria-live="polite"></div><button id="pendingPrintNotice" type="button" class="secondary" hidden></button>
-        <p class="hint">Solo aparecen cargas publicadas de hoy. Las pendientes se revisan desde «Pendientes». Máximo 20 hojas por grupo. El archivo en OneDrive se gestiona por separado.</p>
+      <section class="panel visura-print-panel" id="adminSection2" role="tabpanel" hidden>
+        <div class="vprint-r7-intro">
+          <div><p class="vprint-eyebrow">VISURA PREPARA · ALMACÉN</p>
+            <h2>Impresión de cargas · R7</h2>
+            <p class="muted">Motor original PRUEBA_3 R7 integrado en esta pantalla. Importa los PDF, revisa los destinos y genera todos los listados con las reglas ya desarrolladas.</p>
+          </div>
+          <span class="vprint-lab-tag">LAB · Sin publicar</span>
+        </div>
+        <p class="vprint-storage-note"><strong>Conexión LAB:</strong> ahora puedes traer PDF desde las cargas compartidas de VISURA. El registro de listados generados del servidor se consulta antes de importar. <strong>Las marcas nuevas que crees dentro de R7 siguen siendo locales</strong> y no se sincronizan todavía con los demás ordenadores.</p>
+        <section class="vprint-shared-bridge" aria-label="Cargas compartidas de VISURA">
+          <div class="vprint-shared-title">
+            <div><h3>Traer PDF desde VISURA</h3>
+            <p class="muted">Selecciona hasta 5 LP compartidas de COR1. R7 las importará sin cambiar las cargas ni las impresiones del servidor.</p></div>
+            <button id="visuraR7SharedRefresh" type="button" class="secondary">Actualizar</button>
+          </div>
+          <label class="vprint-shared-include"><input type="checkbox" id="visuraR7IncludeGenerated"> Mostrar también LP con listado generado (para revisión o reimpresión)</label>
+          <div id="visuraR7SharedStatus" class="status" role="status" aria-live="polite">Consulta las LP compartidas disponibles.</div>
+          <div id="visuraR7SharedList" class="vprint-shared-list" aria-label="LP compartidas autorizadas"></div>
+          <button id="visuraR7SharedImport" type="button" class="primary" disabled>Traer PDF seleccionados a R7</button>
+        </section>
+        <section class="vprint-reconcile" aria-label="Conciliación de impresión R7 y VISURA">
+          <div class="vprint-shared-title">
+            <div><h3>Comparar los listados de R7 con VISURA</h3>
+              <p class="muted">Detecta los listados generados localmente que aún no constan en el servidor o corresponden a otro PDF. La comparación no registra ni reimprime nada.</p></div>
+            <button id="visuraR7Compare" type="button" class="secondary">Comparar estados</button>
+          </div>
+          <div id="visuraR7CompareStatus" class="status" role="status" aria-live="polite">Sin comparar. Continúa trabajando con el motor R7 habitual.</div>
+          <div id="visuraR7CompareList" class="vprint-compare-list" aria-label="Diferencias de listados"></div>
+        </section>
+        <div id="visuraR7FrameStatus" class="status" role="status" aria-live="polite">Abre Impresión para cargar el motor R7.</div>
+        <iframe id="visuraR7PrintFrame" title="VISURA PREPARA · Motor de impresión R7" class="vprint-r7-frame" loading="lazy" referrerpolicy="no-referrer" src="about:blank"></iframe>
+        <details id="visuraLegacyPrintDetails" class="vprint-old-panel">
+          <summary>Consultar el sistema de impresión compartido existente</summary>
+          <p class="muted">Este apartado conserva el registro compartido original de VISURA. Evita registrar dos veces una misma LP mientras se homologa la conexión de R7.</p>
+          <div id="batchPrintPanel">
+        <div class="vprint-heading">
+          <div class="vprint-heading-symbol" aria-hidden="true">▤</div>
+          <div class="vprint-heading-text"><p class="vprint-eyebrow">VISURA PREPARA · ALMACÉN</p><h2>Documentación e impresión</h2>
+            <p class="muted">Las cargas se comparten entre ordenadores. Genera solo las nuevas y reimprime las anteriores cuando lo necesites.</p></div>
+          <button id="batchPrintRefresh" type="button" class="secondary">Actualizar</button>
+        </div>
+        <div class="vprint-metrics" aria-live="polite">
+          <div><strong id="batchPrintNewCount">0</strong><span>Nuevas por generar</span></div>
+          <div><strong id="batchPrintDoneCount">0</strong><span>Listados generados</span></div>
+          <div><strong id="batchPrintSelectionCount">0</strong><span>LP seleccionadas</span></div>
+        </div>
+        <div id="batchPrintStatus" class="status" role="status" aria-live="polite"></div>
+        <button id="pendingPrintNotice" type="button" class="secondary" hidden></button>
+        <div class="vprint-controls">
+          <label class="vprint-search">Buscar carga, matrícula o repartidor
+            <input id="batchPrintSearch" type="search" placeholder="Ej.: LP26-21664" autocomplete="off">
+          </label>
+          <label class="batch-print-reprint"><input id="batchPrintReprint" type="checkbox">
+            Ver listados ya generados para reimprimir</label>
+        </div>
+        <p class="hint">Solo cargas publicadas hoy para el almacén autorizado. Máximo 20 hojas por grupo. «Generado» no significa impresión física confirmada.</p>
+        <div id="batchPrintList" class="batch-print-list" aria-label="Cargas para impresión"></div>
         <p class="hint" id="batchArchiveName" aria-live="polite"></p>
-        <label class="batch-print-reprint"><input id="batchPrintReprint" type="checkbox"> Reimprimir cargas ya generadas (sin confirmar impresión)</label>
-        <div id="batchPrintList" class="batch-print-list"></div>
-        <button id="batchPrintSelectVisible" type="button" class="secondary">Seleccionar siguiente grupo de hasta 20 cargas</button>
-        <button id="batchPrintOpen" type="button" class="primary" disabled>Preparar impresión de hojas seleccionadas</button>
-      </section>
+        <div class="vprint-aux-buttons" role="group" aria-label="Listados auxiliares de reparto">
+          <button id="batchPrintPlatesCoruna" type="button" class="secondary" disabled>Matrículas por peso · Coruña</button>
+          <button id="batchPrintDeliveryCoruna" type="button" class="secondary" disabled>Hoja de reparto · Coruña</button>
+        </div>
+        <p class="hint">Estos informes no marcan cargas como impresas y requieren destino CORUÑA acreditado (no basta que la mercancía sea COR_01_COR).</p>
+        <div class="vprint-actions">
+          <button id="batchPrintSelectVisible" type="button" class="secondary">Seleccionar siguiente grupo de hasta 20 cargas</button>
+          <button id="batchPrintOpen" type="button" class="primary" disabled>Generar listados seleccionados</button>
+          <button id="batchOriginalPreview" type="button" class="secondary" disabled>Revisar original BC recortado (LAB · 1 LP)</button>
+          <button id="batchSelectOriginalLote" type="button" class="secondary" disabled>Seleccionar hasta 5 LP para revisar</button>
+          <button id="batchOriginalLote" type="button" class="secondary" disabled>Revisar lote BC + FRÍO (LAB · 1–5 LP)</button>
+        </div>
+        <p class="hint">Para imprimir a doble cara sin mezclar LP, utiliza «Guardar PDF dúplex por LP» desde la vista previa. La copia de OneDrive se gestiona por separado. La revisión del original BC es solo LAB y no marca el listado como generado.</p>
+      </div></details></section>
       <section class="panel" id="adminSection3" role="tabpanel" hidden id="operatorStatsPanel">
         <div class="line"><div><h2>Actividad por operario</h2><p class="muted">Estadísticas del almacén seleccionado. Solo visibles para administración.</p></div><button id="operatorStatsRefresh" type="button" class="secondary">Actualizar</button></div>
         <label>Fecha de inicio de la operación<input id="operatorStatsDate" type="date"></label>
@@ -353,7 +415,7 @@
     <section id="settingsView" class="view" hidden>
       <div class="page-heading"><button type="button" data-back="home" class="back-button">← Volver</button><h1>Ajustes</h1></div>
       <section class="panel">
-        <p><b>Aplicación:</b> VISURA PREPARA</p><p><b>Versión:</b> <span id="appVersion">0.3.53</span></p>
+        <p><b>Aplicación:</b> VISURA PREPARA</p><p><b>Versión:</b> <span id="appVersion">0.3.54</span></p>
         <p><b>Usuario:</b> <span id="profileName"></span></p><p><b>Perfil:</b> <span id="profileRole"></span></p>
         <div class="actions"><button type="button" id="checkUpdates" class="secondary">Buscar actualización</button><button id="logout" type="button" class="ghost-danger">Cerrar sesión</button></div>
         <div class="status" id="settingsStatus" role="status" aria-live="polite"></div>
@@ -363,7 +425,7 @@
   <footer> VISURA PREPARA · LOGÍSTICA · Los datos de picking se gestionan en Business Central.</footer>
 </div>
 <section id="reportView" class="report-view" hidden>
-  <header class="report-controls"><button id="closeReport" class="back-button" type="button">← Volver</button><h1 id="reportTitle">Hoja procesada</h1><div class="actions"><button id="downloadReport" class="secondary" type="button" title="Descarga una copia HTML; para OneDrive utiliza Guardar PDF">Descargar HTML</button><button id="printReport" class="primary" type="button">Imprimir / Guardar PDF</button></div></header>
+  <header class="report-controls"><button id="closeReport" class="back-button" type="button">← Volver</button><h1 id="reportTitle">Hoja procesada</h1><div class="actions"><button id="downloadReport" class="secondary" type="button" title="Descarga una copia HTML; para OneDrive utiliza Guardar PDF">Descargar HTML</button><button id="printReport" class="primary" type="button">Imprimir / Guardar PDF</button><button id="batchDuplexSave" class="secondary" type="button" hidden>Guardar PDF dúplex por LP</button></div></header>
   <p id="reportPrintStatus" role="status" aria-live="polite" class="status" aria-label="Estado de impresión"></p>
   <p class="hint archive-info" id="onedriveArchiveHelp">Para archivar: toca «Imprimir / Guardar PDF», guarda una copia PDF en Archivos y, cuando corresponda, muévela a la carpeta de OneDrive elegida. El traslado no es automático. No elimines archivos hasta comprobar que la copia está guardada.</p>
   <main id="reportPaper" class="report-paper"></main>

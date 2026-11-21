@@ -2,6 +2,7 @@ import {fechaAlmacen} from "./business-date.mjs";
 import {validarLotePdf,resumenLotePdf} from "./import-batch.mjs";
 import {configurarEstadisticasOperarios} from "./admin-stats.mjs";
 import {configurarLoteImpresion} from "./admin-print-batch.mjs";
+import {crearImportadorCompartidoR7} from "./visura-r7-shared-import.mjs";
 import {analyzeDocument,applyLineCorrection,publicationReadiness,warehouseZone,normalizeReviewFindings} from "./document-review.mjs";
 import {fechaISO} from "./logic.mjs";
 import {parsePdfFile} from "./pdf.mjs";
@@ -44,7 +45,40 @@ export function buildReportDownloadHtml(title,styles,content){
 export function createAdminController({client,getUser,bucket,global,errorText,onPublished}){
   const revisionControl=configureRevisionHistory({client,getUser,bucket,errorText});
   const operatorStats=configurarEstadisticasOperarios({client,getUser,errorText,getWarehouse:()=>document.getElementById("adminWarehouse").value});
-  const printBatch=configurarLoteImpresion({client,getUser,errorText,getWarehouse:()=>document.getElementById("adminWarehouse").value});
+  const printBatch=configurarLoteImpresion({client,getUser,errorText,bucket,getWarehouse:()=>document.getElementById("adminWarehouse").value});
+  const sharedR7=crearImportadorCompartidoR7({client,getUser,bucket,
+    getWarehouse:()=>document.getElementById("adminWarehouse").value});
+  // El motor R7 original se aloja en la vista de impresión existente, sin
+  // duplicar su lógica. Sus datos locales quedan separados por usuario/almacén.
+  // En LAB no se proyectan ni copian registros de Supabase a localStorage.
+  async function mostrarMotorR7(){
+    const current=getUser()?.id,warehouse=$("adminWarehouse")?.value;
+    const status=$("visuraR7FrameStatus"),frame=$("visuraR7PrintFrame");
+    if(!current||!warehouse||$("adminSection2").hidden){
+      if(status)status.textContent="Selecciona un almacén y accede desde Administración → Impresión.";
+      return;
+    }
+    if(!globalThis.crypto?.subtle)throw Error("R7 integrado requiere una conexión segura (HTTPS).");
+    const digest=await crypto.subtle.digest("SHA-256",
+      new TextEncoder().encode("visura-prepara-r7:"+current+":"+warehouse));
+    const scope=[...new Uint8Array(digest).slice(0,12)]
+      .map(x=>x.toString(16).padStart(2,"0")).join("");
+    if(getUser()?.id!==current||$("adminWarehouse").value!==warehouse||$("adminSection2").hidden)return;
+    if(frame.dataset.scope!==scope){
+      frame.dataset.scope=scope;
+      frame.onload=()=>{if(frame.dataset.scope===scope)status.textContent=
+        "R7 cargado en LAB. Importaciones y marcas locales de este usuario/almacén; sin sincronización entre ordenadores.";};
+      frame.onerror=()=>{if(frame.dataset.scope===scope)status.textContent="No se ha podido abrir el motor de impresión R7.";};
+      frame.src="./lab/visura-prepara-impresion-r7.html?visura_scope="+scope;
+    }
+  }
+  function cerrarMotorR7(){
+    const frame=$("visuraR7PrintFrame");
+    frame.onload=frame.onerror=null;
+    frame.dataset.scope="";
+    frame.src="about:blank";
+    $("visuraR7FrameStatus").textContent="El motor R7 se cargará cuando vuelvas a Impresión.";
+  }
   let busy=false,draft=null;
   let archiveGeneration=0;
   const setStatus=(message="",level="")=>{
@@ -626,7 +660,7 @@ export function createAdminController({client,getUser,bucket,global,errorText,on
   const adminActions=[
     ()=>{if(!busy)$("pdfInput").click();},
     ()=>Promise.all([refreshAttention(),refreshPendingPublish()]),
-    ()=>printBatch.refresh(),
+    ()=>Promise.all([printBatch.refresh(),mostrarMotorR7(),sharedR7.refresh()]),
     ()=>operatorStats.refresh(),
     ()=>refreshIncidents(),
     ()=>{$("revisionCode").focus();},
@@ -682,7 +716,7 @@ export function createAdminController({client,getUser,bucket,global,errorText,on
     $("archiveCode").value="";
     $("archiveStatus").textContent="";
     $("archivedLoadsList").replaceChildren();
-    revisionControl.clear();operatorStats.clear();printBatch.clear();
+    revisionControl.clear();operatorStats.clear();printBatch.clear();sharedR7.reset();cerrarMotorR7();
     for(const id of ["documentReview","attentionList","adminSummary","adminActivity",
       "incidentList","reviewReadiness","reportPaper"]){
       const element=$(id);if(element)element.replaceChildren();
@@ -699,10 +733,10 @@ export function createAdminController({client,getUser,bucket,global,errorText,on
   $("saveCompactA4Admin").addEventListener("click",saveAdminA4);
   $("printCor1Pack").addEventListener("click",printCor1Bundle);
   $("previewCor2Detail").addEventListener("click",showCor2Detail);
-  $("goToBatchPrint").addEventListener("click",()=>{selectAdminTab(2);printBatch.refresh();});
+  $("goToBatchPrint").addEventListener("click",()=>{selectAdminTab(2);printBatch.refresh();void mostrarMotorR7();void sharedR7.refresh();});
   $("locationReport").addEventListener("click",showLocationReport);
   $("publishReviewedLoad").addEventListener("click",publish);
-  $("adminWarehouse").addEventListener("change",()=>Promise.all([refreshAttention(),refreshPendingPublish(),refreshReviewSelector(),refreshSummary(),operatorStats.refresh(),printBatch.refresh()]));
+  $("adminWarehouse").addEventListener("change",()=>{if(!$("adminSection2").hidden){void mostrarMotorR7();void sharedR7.refresh();}else sharedR7.reset();return Promise.all([refreshAttention(),refreshPendingPublish(),refreshReviewSelector(),refreshSummary(),operatorStats.refresh(),printBatch.refresh()]);});
   $("reloadAttention").addEventListener("click",()=>Promise.all([refreshAttention(),refreshPendingPublish(),refreshReviewSelector()]));
   $("reloadIncidents").addEventListener("click",refreshIncidents);
   // iOS 27 can silently ignore window.print() from a standalone installed PWA.
@@ -727,11 +761,40 @@ export function createAdminController({client,getUser,bucket,global,errorText,on
       }
     }finally{button.disabled=false;}
   });
+  // Salida vectorial nativa: carátula y cada LP empiezan en anverso;
+  // se inserta reverso totalmente en blanco si el número de páginas es impar.
+  // Conserva la RPC compartida de generación; no confirma impresión física.
+  $("batchDuplexSave").addEventListener("click",async()=>{
+    const button=$("batchDuplexSave"),notice=$("reportPrintStatus");
+    if(button.disabled)return;
+    button.disabled=true;
+    try{
+      const source=$("reportPaper");
+      if(!source.querySelector(".report-batch-sheet"))throw Error("El documento no es un lote de impresión.");
+      const bytes=generarPdfHojas(extraerHojasDeInforme(source),{duplexPorCarga:true});
+      const name=nombrePdfInforme($("reportTitle").textContent+" DUPLEX");
+      const file=new File([bytes],name,{type:"application/pdf"});
+      const canShare=!!navigator.share&&
+        (typeof navigator.canShare!=="function"||navigator.canShare({files:[file]}));
+      const ios=/iPhone|iPad|iPod/i.test(navigator.userAgent||"");
+      if(ios&&canShare){
+        notice.textContent="PDF dúplex preparado. Guárdalo en Archivos y revisa la impresión a doble cara.";
+        await navigator.share({files:[file],title:"VISURA PREPARA · Dúplex por LP"});
+      }else{
+        const url=URL.createObjectURL(file),link=document.createElement("a");
+        link.href=url;link.download=name;document.body.appendChild(link);link.click();link.remove();
+        setTimeout(()=>URL.revokeObjectURL(url),60000);
+        notice.textContent="PDF dúplex preparado. Comprueba las páginas por parejas antes de imprimir.";
+      }
+    }catch(error){
+      if(error?.name!=="AbortError")notice.textContent="No se ha preparado el PDF dúplex: "+errorText(error);
+    }finally{button.disabled=false;}
+  });
   $("downloadReport").addEventListener("click",()=>{
     const blob=new Blob([buildReportDownloadHtml($("reportTitle").textContent,$("printStyles").textContent,$("reportPaper").outerHTML)],{type:"text/html;charset=utf-8"});
     const safeName=$("reportTitle").textContent.replace(/[^A-Za-z0-9_-]+/g,"_");
     const link=document.createElement("a");link.href=URL.createObjectURL(blob);link.download=(safeName||"kontrola")+".html";link.click();setTimeout(()=>URL.revokeObjectURL(link.href),1000);
   });
-  $("closeReport").addEventListener("click",()=>{$("reportView").hidden=true;document.body.classList.remove("report-open");});
+  $("closeReport").addEventListener("click",()=>{$("reportView").hidden=true;document.body.classList.remove("report-open");$("batchDuplexSave").hidden=true;});
   return {open,refreshSummary,refreshAttention,clearSensitive,isBusy:()=>busy};
 }

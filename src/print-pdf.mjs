@@ -70,7 +70,7 @@ function makePdf(pdfPages){
 }
 
 // Input comes exclusively from DOM text nodes of the already authorized report.
-export function generarPdfHojas(hojas){
+export function generarPdfHojas(hojas,{duplexPorCarga=false}={}){
   if(!Array.isArray(hojas)||!hojas.length||hojas.length>21)throw Error("Cantidad de hojas PDF no válida.");
   const pdfPages=[];let commands=[],y=0,rowCount=0;
   const newPage=()=>{
@@ -78,6 +78,12 @@ export function generarPdfHojas(hojas){
     commands=[];pdfPages.push(commands);y=PAGE_H-MARGIN;
     commands.push(`BT /F2 8 Tf 0.12 0.23 0.38 rg 1 0 0 1 ${MARGIN} ${y.toFixed(2)} Tm (VISURA PREPARA) Tj ET`);
     y-=24;
+  };
+  // En modo dúplex cada documento (carátula o LP) ocupa un número PAR de caras.
+  // Una página de relleno no lleva cabecera: debe quedar totalmente en blanco.
+  const blankPage=()=>{
+    if(pdfPages.length>=180)throw Error("El informe es demasiado largo para exportar de forma segura.");
+    commands=[];pdfPages.push(commands);y=PAGE_H-MARGIN;
   };
   function addLine(text,{size=9.5,bold=false,space=3,indent=0}={}){
     const lines=wrap(text,CONTENT_W-indent,size,bold);
@@ -181,16 +187,42 @@ export function generarPdfHojas(hojas){
     label("1 / 1",right-30,45,7.3);
   }
   for(const hoja of hojas){
-    if(!hoja||!['carga','portada','resumen_pasillos'].includes(hoja.tipo))throw Error("Tipo de informe PDF no reconocido.");
+    const startPage=pdfPages.length;
+    const closeSpread=()=>{
+      if(duplexPorCarga&&(pdfPages.length-startPage)%2)blankPage();
+    };
+    if(!hoja||!['carga','portada','resumen_pasillos','matriculas','reparto'].includes(hoja.tipo))throw Error("Tipo de informe PDF no reconocido.");
     newPage();
-    if(hoja.tipo==='resumen_pasillos'){resumenPasillosA4(hoja);continue;}
+    if(hoja.tipo==='resumen_pasillos'){resumenPasillosA4(hoja);closeSpread();continue;}
+    if(hoja.tipo==='matriculas'||hoja.tipo==='reparto'){
+      addLine(hoja.titulo||'LISTADO AUXILIAR',{size:15,bold:true,space:9});
+      addLine('Fecha: '+(hoja.fecha||'—'),{size:10,bold:true,space:6});rule();
+      const columns=hoja.tipo==='matriculas'?'Nº | MATRÍCULA | REPARTIDOR | CARGA | PESO KG'
+        :'MATRÍCULA | REPARTIDOR | CARGA | FRÍO';
+      addLine(columns,{size:9,bold:true,space:5});
+      for(const [i,row] of (hoja.filas||[]).entries()){
+        if(i>=1000)throw Error('Demasiadas filas en listado auxiliar.');
+        const line=hoja.tipo==='matriculas'
+          ?(i+1)+'  |  '+(row.matricula||'—')+'  |  '+(row.repartidor||'—')+'  |  '+(row.codigo||'—')+'  |  '+(row.peso===null||row.peso===undefined?'—':Number(row.peso).toLocaleString('es-ES'))
+          :(row.matricula||'—')+'  |  '+(row.repartidor||'—')+'  |  '+(row.codigo||'—')+'  |  '+(row.frio?'SÍ':'NO');
+        addLine(line,{size:8.6,space:3});
+      }
+      rule();
+      if(hoja.tipo==='matriculas')addLine('TOTAL: '+(hoja.filas||[]).length+' cargas · '+Number(hoja.pesoTotal||0).toLocaleString('es-ES')+' kg',{size:10,bold:true,space:7});
+      if(hoja.tipo==='reparto'){
+        addLine('REPARTIDORES: '+(hoja.filas||[]).length,{size:10,bold:true,space:6});
+        for(const issue of (hoja.incidencias||[]))addLine('REVISAR: '+issue,{size:8.5,space:3});
+      }
+      addLine(hoja.nota||'Listado informativo; no acredita la impresión física.',{size:8,space:4});
+      closeSpread();continue;
+    }
     if(hoja.tipo==='portada'){
       addLine(hoja.titulo||'RELACIÓN DE HOJAS DE PREPARACIÓN',{size:15,bold:true,space:10});rule();
       for(const linea of hoja.detalles||[])addLine(linea,{size:10,space:4});
       rule();
       for(const fila of hoja.filas||[])addLine(fila,{size:9,space:2});
       addLine('Archivo manual: comprueba la copia antes de eliminar ningún documento.',{size:8,space:6});
-      continue;
+      closeSpread();continue;
     }
     addLine(hoja.titulo||'HOJA DE PREPARACIÓN POR PASILLOS',{size:15,bold:true,space:4});
     addLine(hoja.subtitulo||'Exclusivamente mercancía procesada',{size:9,space:8});rule();
@@ -208,6 +240,7 @@ export function generarPdfHojas(hojas){
       addLine(pasillo.total||'Fin de pasillo',{size:9,bold:true,space:6});rule();
     }
     addLine(hoja.pie||'El picking se registra en Business Central.',{size:8,space:2});
+    closeSpread();
   }
   return makePdf(pdfPages);
 }
@@ -234,7 +267,22 @@ export function extraerHojasDeInforme(reportPaper){
       })),
       pie:article.querySelector('footer')?.textContent});
   }
-  if(!hojas.some(x=>x.tipo==='carga'))throw Error('No hay hojas de preparación para exportar.');
+  for(const article of reportPaper.querySelectorAll('.vprint-aux')){
+    const tipo=article.dataset.tipo;
+    if(!['matriculas','reparto'].includes(tipo))throw Error('Listado auxiliar no reconocido.');
+    const filas=[...article.querySelectorAll('tbody tr')].map(tr=>{
+      const c=[...tr.querySelectorAll('td')].map(td=>td.textContent);
+      return tipo==='matriculas'
+        ?{matricula:c[1],repartidor:c[2],codigo:c[3],peso:tr.dataset.peso?Number(tr.dataset.peso):null}
+        :{matricula:c[0],repartidor:c[1],codigo:c[2],frio:tr.dataset.frio==='si'};
+    });
+    hojas.push({tipo,titulo:article.querySelector('h1')?.textContent,fecha:article.dataset.fecha,
+      filas,pesoTotal:filas.reduce((n,f)=>n+(f.peso??0),0),
+      incidencias:[...article.querySelectorAll('.vprint-aux-issues li')].map(li=>li.textContent),
+      nota:article.querySelector('.vprint-aux-note')?.textContent});
+  }
+  if(!hojas.length||!hojas.some(x=>['carga','matriculas','reparto'].includes(x.tipo)))
+    throw Error('No hay hojas válidas para exportar.');
   return hojas;
 }
 

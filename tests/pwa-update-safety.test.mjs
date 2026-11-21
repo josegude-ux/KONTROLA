@@ -32,7 +32,7 @@ test("el service worker precarga todos los recursos del menu VISURA",()=>{
 test("la version visible coincide con la version declarada",()=>{
   const config=read("src/config.mjs");
   const version=JSON.parse(read("version.json")).version;
-  assert.equal(version,"0.3.53");
+  assert.equal(version,"0.3.54");
   const pkg=JSON.parse(read("package.json")).version;
   assert.equal(version,pkg);
   assert.ok(config.includes(`APP_VERSION="${version}"`));

@@ -1,4 +1,4 @@
 {
-  "version": "0.3.53",
-  "notes": "Huecos del camión: el código 8G 4E / 6G 1E prevalece sobre un «Huecos plts. camión: 0»; se reconoce el formato E (europeo) y un 0 heredado obliga a releer el PDF. Rehace la PR #74 (e5aacd8) sobre main 0.3.52."
+  "version": "0.3.54",
+  "notes": "Impresión R7 en Administración > Impresión (solo administración): motor original PRUEBA_3 R7 embebido, lectura de PDF compartidos de VISURA y comparación de estados, todo en solo lectura. PDF.js local 6.4.299, sin CDN ni SQL; la escritura R7 sigue desactivada. Ejecuta la orden 200-017 sobre el trabajo de 215 (0436d9f)."
 }
