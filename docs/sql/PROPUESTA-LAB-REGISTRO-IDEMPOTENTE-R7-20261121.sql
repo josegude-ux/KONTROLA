@@ -33,6 +33,8 @@ declare
   v_carga record;
   v_total bigint;
   v_existente boolean;
+  v_insertadas integer := 0;
+  v_hoy date;
 begin
   if (select auth.uid()) is null
      or not public.kontrola_es_administrador()
@@ -50,11 +52,15 @@ begin
   end if;
 
   -- SERIALIZAR contra dos equipos que intentan registrar la misma LP.
-  select c.codigo,c.documento_hash,c.documento_ruta,c.estado,c.almacen
+  -- Se utiliza publicado_en (VISURA), NO fecha documental (Business Central).
+  v_hoy := (now() at time zone 'Europe/Madrid')::date;
+  select c.codigo,c.documento_hash,c.documento_ruta,c.estado,c.almacen,c.publicado_en
     into v_carga from public.kontrola_cargas c
    where c.codigo=p_codigo and c.almacen=p_almacen
    for update;
   if not found or v_carga.estado <> 'publicada'
+     or (v_carga.publicado_en at time zone 'Europe/Madrid')::date <> v_hoy
+     or p_local_generado_en < v_carga.publicado_en - interval '5 minutes'
      or v_carga.documento_hash <> p_documento_hash
      or v_carga.documento_ruta <>
          'documentos/'||p_codigo||'/'||p_documento_hash||'.pdf'
@@ -86,9 +92,19 @@ begin
     ) values (
       p_codigo,p_almacen,(select auth.uid()),false,p_documento_hash,'R7'
     ) on conflict do nothing;
-
-    -- Un índice único + bloqueo de LP evita dobles anotaciones.
-    resultado:='REGISTRADO';
+    get diagnostics v_insertadas = row_count;
+    -- No confundir un conflicto concurrente con una inserción confirmada.
+    if v_insertadas = 1 then
+      resultado:='REGISTRADO';
+    elsif exists(
+      select 1 from public.kontrola_impresiones i where i.codigo=p_codigo
+        and i.almacen=p_almacen and i.documento_hash=p_documento_hash
+        and i.origen_generacion='R7'
+    ) then
+      resultado:='YA_REGISTRADO';
+    else
+      raise exception 'No se pudo confirmar el registro de generación R7';
+    end if;
   end if;
 
   select count(*)::bigint into v_total from public.kontrola_impresiones i
@@ -139,4 +155,7 @@ grant execute on function public.kontrola_estado_generacion_r7(text)
 -- B) confirmar huellas en las rutas y el contrato de primera generación
 -- C) probar concurrencia simultánea y reintento tras timeout con usuarios ficticios
 -- D) validar que la RPC antigua no registra a la vez una LP en otra revisión
--- E) NO aplicar la propuesta de fecha anterior sin revisión específica
+-- E) NO aplicar la propuesta de fecha anterior: la RPC R7 comprueba publicado_en
+--    en Europe/Madrid, y conserva la RPC histórica intacta
+-- F) Comprobar que el supuesto de primera impresión corresponde a 'generado'
+--    y no a la confirmación de impresión física
