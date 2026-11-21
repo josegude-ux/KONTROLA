@@ -8,8 +8,8 @@ const LP=/^LP\d{2}-\d{4,6}$/;
 export const ESCRITURA_R7_HABILITADA=false;
 export const MAX_PLAN_R7=5;
 
-export function prepararSincronizacionR7({localJSON,compartidas,impresiones,hoy}={}){
-  const audit=reconciliarGeneracionesR7({localJSON,compartidas,impresiones,hoy});
+export function prepararSincronizacionR7({localJSON,compartidas,impresiones,versionados=null,hoy}={}){
+  const audit=reconciliarGeneracionesR7({localJSON,compartidas,impresiones,versionados,hoy});
   const raw=JSON.parse(localJSON??"[]");
   const byId=new Map(raw.map(row=>[row.id,row]));
   const remote=new Map(compartidas.map(row=>[row.codigo,row]));
