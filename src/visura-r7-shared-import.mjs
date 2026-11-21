@@ -212,7 +212,7 @@ export function crearImportadorCompartidoR7({client,getUser,getWarehouse,bucket}
       if(!active())return;
       const c=result.counts;
       compareStatus.textContent=c.pendientes+" generadas localmente, no registradas en VISURA · "+
-        c.bloqueoFecha+" bloqueadas por fecha documental · "+c.revisionDistinta+
+        c.bloqueoFecha+" bloqueadas por fecha de publicación · "+c.revisionDistinta+
         " con PDF distinto o ruta no acreditada · "+c.servidorSinHash+
         " con historial compartido sin huella · "+c.soloServidor+" solo en el servidor. "+
         plan.candidatos.length+" candidata(s) preparadas para un futuro registro seguro. "+
