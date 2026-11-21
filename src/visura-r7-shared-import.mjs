@@ -4,6 +4,9 @@ import {prepararSincronizacionR7} from "./visura-r7-sync-preflight.mjs";
 // La fuente de cargas es la RPC autorizada, no localStorage. R7 sigue procesando
 // los PDF con su importador original. No registra impresión ni altera Supabase.
 const MAX_FILES=5;
+// La RPC versionada NO está desplegada en el servidor de producción.
+// Activar solo tras migración autorizada y homologada en PostgreSQL aislado.
+const CONSULTA_VERSIONADA_R7=false;
 const MAX_FILE_BYTES=25*1024*1024;
 const MAX_BATCH_BYTES=40*1024*1024;
 const CODE=/^LP\d{2}-\d{4,6}$/;
@@ -89,15 +92,29 @@ export function crearImportadorCompartidoR7({client,getUser,getWarehouse,bucket}
     }
   }
   async function query(ctx){
-    const [p,s]=await Promise.all([
+    const calls=[
       client.rpc("kontrola_panel_cargas_impresion",{p_almacen:ctx.warehouse}),
       client.rpc("kontrola_estado_impresion",{p_almacen:ctx.warehouse})
-    ]);
+    ];
+    if(CONSULTA_VERSIONADA_R7)
+      calls.push(client.rpc("kontrola_estado_generacion_r7",{p_almacen:ctx.warehouse}));
+    const [p,s,v]=await Promise.all(calls);
     if(p.error)throw p.error;
     if(s.error)throw s.error;
+    if(v?.error)throw v.error; // Nunca presentar una consulta incompleta como sincronizada.
+    const versionados=v?new Map():null;
+    for(const row of v?.data||[]){
+      const hash=String(row?.documento_hash??"");
+      const n=Number(row?.generaciones);
+      if(!CODE.test(String(row?.codigo))||versionados.has(row.codigo)||
+         !/^[a-f0-9]{64}$/.test(hash)||!Number.isInteger(n)||n<0)
+        throw Error("El servidor devolvió un registro R7 por versión inválido.");
+      versionados.set(row.codigo,{documento_hash:hash,generaciones:n});
+    }
     return {
       rows:(p.data||[]).filter(r=>r&&r.almacen===ctx.warehouse&&r.estado==="publicada"&&CODE.test(String(r.codigo))),
-      counts:new Map((s.data||[]).filter(r=>r&&CODE.test(String(r.codigo))).map(r=>[r.codigo,Number(r.intentos)||0]))
+      counts:new Map((s.data||[]).filter(r=>r&&CODE.test(String(r.codigo))).map(r=>[r.codigo,Number(r.intentos)||0])),
+      versionados
     };
   }
   async function refresh(){
@@ -206,7 +223,8 @@ export function crearImportadorCompartidoR7({client,getUser,getWarehouse,bucket}
       const remote=await query(ctx);
       if(!active())return;
       const plan=prepararSincronizacionR7({
-        localJSON,compartidas:remote.rows,impresiones:remote.counts,hoy:fechaAlmacen()
+        localJSON,compartidas:remote.rows,impresiones:remote.counts,
+        versionados:remote.versionados,hoy:fechaAlmacen()
       });
       const result=plan.audit;
       if(!active())return;
@@ -214,11 +232,12 @@ export function crearImportadorCompartidoR7({client,getUser,getWarehouse,bucket}
       compareStatus.textContent=c.pendientes+" generadas localmente, no registradas en VISURA · "+
         c.bloqueoFecha+" bloqueadas por fecha de publicación · "+c.revisionDistinta+
         " con PDF distinto o ruta no acreditada · "+c.servidorSinHash+
-        " con historial compartido sin huella · "+c.soloServidor+" solo en el servidor. "+
+        " sin huella de revisión · "+c.sincronizados+
+        " confirmadas por versión · "+c.soloServidor+" solo en el servidor. "+
         plan.candidatos.length+" candidata(s) preparadas para un futuro registro seguro. "+
         "ESCRITURA DESACTIVADA EN LAB: ninguna impresión se ha registrado.";
       const priorities={revisionDistinta:0,localInvalidado:1,bloqueoFecha:2,pendientes:3,
-        fueraDePanel:4,servidorSinHash:5,soloServidor:6};
+        fueraDePanel:4,servidorSinHash:5,soloServidor:6,sincronizados:7};
       const ordered=[...result.items].sort((a,b)=>
         (priorities[a.estado]??9)-(priorities[b.estado]??9)||a.codigo.localeCompare(b.codigo,"es"));
       for(const item of ordered.slice(0,60)){
