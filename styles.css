@@ -1071,3 +1071,99 @@ footer{padding:18px;text-align:center;background:#fff;border-top:1px solid #e6e8
 #controlChecklistView .cc-row-main>.cc-quantity-action{flex:0 0 104px;width:104px;min-width:104px;min-height:56px;margin:0;padding:0 6px;flex-direction:column;gap:4px;border-radius:12px;border:0;background:#1b4fa0;color:#fff;font-size:16px;font-weight:700;align-self:stretch}
 #controlChecklistView .cc-row-main>.cc-quantity-action[aria-pressed="true"]{background:#227348}
 @media(max-width:390px){#controlChecklistView .cc-row-main{gap:10px;padding:10px 10px 10px 12px}#controlChecklistView .cc-row-main>.cc-quantity-action{flex-basis:96px;width:96px;min-width:96px}}
+
+
+/* VISURA-15 · Integración R7 UX nativa. Solo Administración > Impresión. */
+#adminSection2.visura-print-panel{max-width:1440px;margin-inline:auto;overflow:hidden}
+.vprint-heading{display:flex;gap:16px;align-items:flex-start;padding:5px 0 15px;border-bottom:1px solid #e1e7ec}
+.vprint-heading-symbol{width:48px;height:48px;border-radius:13px;background:#0b2647;color:white;display:grid;place-items:center;font-size:26px;flex:none}
+.vprint-heading-text{flex:1;min-width:0}.vprint-heading h2{margin:3px 0 6px;color:#0b2647;font-size:clamp(20px,2.4vw,27px)}
+.vprint-heading .muted{margin:0}.vprint-heading .secondary{flex:none}
+.vprint-eyebrow{color:#d52835;font-size:11px;font-weight:800;letter-spacing:1.2px;margin:0}
+.vprint-metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:16px 0}
+.vprint-metrics>div{border:1px solid #dbe4eb;border-radius:12px;background:#f8fafb;padding:12px 15px;min-width:0}
+.vprint-metrics strong{display:block;font-size:26px;font-weight:850;color:#0b2647;font-variant-numeric:tabular-nums}
+.vprint-metrics span{display:block;font-size:12px;color:#5b6e81;margin-top:3px}
+.vprint-controls{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:end;gap:12px;margin-top:14px}
+.vprint-search{display:block;min-width:0;font-size:12px;font-weight:750;color:#243c55}
+.vprint-search input{margin-top:6px;width:100%;min-width:0;min-height:44px;border:1px solid #cbd9e5;border-radius:10px;padding:9px 12px;background:white}
+#adminSection2 .batch-print-reprint{display:flex;align-items:center;gap:8px;padding:10px 12px;border:1px solid #d5e1e9;border-radius:10px;min-height:44px;font-size:13px;font-weight:650;margin:0}
+#adminSection2 .batch-print-reprint input{width:18px;height:18px;min-height:18px;margin:0;flex:none}
+#adminSection2 .batch-print-list{grid-template-columns:repeat(2,minmax(0,1fr));max-height:min(60vh,620px);gap:9px;overflow-y:auto}
+#adminSection2 .batch-print-row{padding:11px 13px;min-height:74px;border:1px solid #dce4eb;border-radius:11px;transition:border-color .15s,background .15s;align-items:flex-start}
+#adminSection2 .batch-print-row:has(input:checked){border-color:#7997af;background:#f1f7fa}
+#adminSection2 .batch-print-row input[type="checkbox"]{margin-top:5px;accent-color:#0b2647}
+#adminSection2 .batch-print-row b{font-size:14px;color:#0b2647;font-variant-numeric:tabular-nums}
+#adminSection2 .batch-print-row small{font-size:12px;color:#566c80;line-height:1.5;margin-top:4px}
+.vprint-row-title{display:flex;flex-wrap:wrap;align-items:center;gap:7px}
+.vprint-tag{display:inline-block;background:#eaf0f5;color:#143750;padding:3px 7px;border-radius:7px;font-size:10px;font-weight:750}
+.vprint-tag.reprint{background:#fff2dd;color:#78470f}
+.vprint-empty{grid-column:1/-1;margin:4px 0 12px;padding:20px;background:#f8fafb;border:1px dashed #c9d8e2;border-radius:12px;color:#52657b}
+.vprint-actions{display:flex;flex-wrap:wrap;gap:12px;align-items:stretch;margin-top:14px}
+.vprint-actions button{flex:1 1 240px;min-height:46px}
+#adminSection2 #batchArchiveName{background:#f7f9fb;border-left:3px solid #0b2647;padding:8px 12px}
+@media(max-width:730px){.vprint-controls{grid-template-columns:1fr}.vprint-heading{flex-wrap:wrap}.vprint-heading .secondary{width:100%}#adminSection2 .batch-print-list{grid-template-columns:1fr;max-height:none}.vprint-metrics>div{padding:10px}.vprint-metrics strong{font-size:22px}}
+@media(max-width:380px){.vprint-metrics{grid-template-columns:1fr 1fr}.vprint-metrics>div:last-child{grid-column:1/-1}}
+
+/* VISURA15 LAB: listados auxiliares en el mismo flujo, no son generación de LP. */
+.vprint-aux-buttons{display:flex;flex-wrap:wrap;gap:10px;margin:16px 0 10px}
+.vprint-aux-buttons button{flex:1 1 220px;min-height:44px}
+.vprint-aux{background:#fff;color:#14283c;padding:16px;margin:14px auto 22px;max-width:850px}
+.vprint-aux h1{font-size:21px;font-weight:800;text-align:center;margin:0 0 8px}
+.vprint-aux>p{text-align:center}
+.vprint-aux table{width:100%;border-collapse:collapse;margin:14px 0 18px;font-size:12px}
+.vprint-aux th,.vprint-aux td{border:1px solid #cbd6df;padding:8px 7px;text-align:left}
+.vprint-aux th{background:#eaf0f5;font-weight:750;color:#0b2647}
+.vprint-aux .vprint-aux-sum{font-weight:800;border-top:2px solid #0b2647;padding-top:10px}
+.vprint-aux-note,.vprint-aux-issues{font-size:11px;color:#52657b}
+@media(max-width:620px){.vprint-aux{padding:6px}.vprint-aux table{font-size:10px}.vprint-aux th,.vprint-aux td{padding:5px 3px}}
+@media print{
+ .vprint-aux{break-after:page;page-break-after:always;padding:0;margin:0;box-shadow:none;max-width:initial}
+ .vprint-aux:last-child{break-after:auto;page-break-after:auto}
+ .vprint-aux tr{break-inside:avoid;page-break-inside:avoid}
+ .vprint-aux thead{display:table-header-group}
+ .vprint-aux th{background:#eaeaea!important;color:black!important}
+}
+
+/* VISURA215 R7 motor original incorporado como contenido de Administración > Impresión. */
+.vprint-r7-intro{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:10px}
+.vprint-r7-intro h2{font-size:clamp(20px,2.3vw,28px);color:#0b2647;margin:4px 0 8px}
+.vprint-r7-intro .muted{margin:0;max-width:78ch;line-height:1.45}
+.vprint-lab-tag{padding:7px 11px;background:#f5e9e9;color:#7e232d;border-radius:10px;font-weight:750;font-size:12px;white-space:nowrap}
+.vprint-storage-note{font-size:13px;line-height:1.55;border-left:3px solid #d52835;background:#f8fafc;color:#213d58;padding:10px 13px;margin:10px 0;border-radius:0 9px 9px 0}
+.vprint-r7-frame{display:block;width:100%;height:900px;max-width:100%;background:#f3f6fa;border:1px solid #dbe3ec;border-radius:13px}
+.vprint-old-panel{margin-top:16px;padding:12px;border:1px solid #dce4ec;border-radius:12px;background:#fbfcfe}
+.vprint-old-panel>summary{cursor:pointer;color:#173a58;font-weight:750;font-size:13px;line-height:1.5}
+.vprint-old-panel[open]>summary{margin-bottom:13px}
+.vprint-old-panel>p{margin:0 0 12px;font-size:12px}
+@media(max-width:700px){.vprint-r7-frame{height:72vh;min-height:480px;border-radius:8px}.vprint-r7-intro{gap:9px}.vprint-storage-note{font-size:12px}}
+
+/* VISURA 15 R7 · consulta compartida, sin duplicar motor ni estado de impresión */
+.vprint-shared-bridge{border:1px solid #d5dfe9;background:#fff;border-radius:13px;padding:14px;margin:15px 0}
+.vprint-shared-title{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.vprint-shared-title h3{color:#0b2647;margin:0 0 5px;font-size:17px}
+.vprint-shared-title p{margin:0 0 10px;font-size:12px;max-width:75ch;line-height:1.45}
+.vprint-shared-title button{flex:none;min-height:42px}
+.vprint-shared-include{display:flex;align-items:center;gap:9px;font-size:12px;color:#38516c;margin:4px 0 9px}
+.vprint-shared-include input{width:17px;height:17px;margin:0;accent-color:#0b2647}
+.vprint-shared-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;max-height:260px;overflow-y:auto;margin:10px 0}
+.vprint-shared-item{display:flex;align-items:flex-start;gap:10px;min-width:0;padding:10px;background:#f8fafc;border:1px solid #dce5ed;border-radius:10px;cursor:pointer}
+.vprint-shared-item:has(input:checked){background:#edf4fa;border-color:#7590a6}
+.vprint-shared-item input{width:18px;height:18px;flex:none;margin:3px 0 0}
+.vprint-shared-item span{display:block;min-width:0}
+.vprint-shared-item strong{display:block;font-size:13px;color:#0b2647}
+.vprint-shared-item small{display:block;font-size:11px;color:#59718a;margin-top:3px;overflow-wrap:anywhere}
+#visuraR7SharedImport{min-height:44px}
+@media(max-width:700px){.vprint-shared-list{grid-template-columns:1fr;max-height:240px}.vprint-shared-title{flex-wrap:wrap}.vprint-shared-title button{width:100%}}
+
+/* VISURA 15 R7 · conciliación solo lectura */
+.vprint-reconcile{margin:14px 0;padding:14px;border-radius:12px;border:1px solid #d7e1ea;background:#fafdff}
+.vprint-reconcile .vprint-shared-title{align-items:center}
+.vprint-reconcile h3{font-size:16px;color:#0b2647;margin:0 0 5px}
+.vprint-reconcile .muted{font-size:12px;line-height:1.55;margin:0 0 8px}
+.vprint-reconcile .secondary{flex:none}
+.vprint-compare-list{margin:9px 0 0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;max-height:330px;overflow-y:auto}
+.vprint-compare-item{min-width:0;border:1px solid #e0e8f0;border-radius:9px;padding:10px;background:#fff}
+.vprint-compare-item strong{display:block;color:#173451;font-size:13px;margin-bottom:4px}
+.vprint-compare-item span{display:block;color:#465e74;font-size:11px;line-height:1.45;overflow-wrap:anywhere}
+@media(max-width:700px){.vprint-compare-list{grid-template-columns:1fr;max-height:280px}.vprint-reconcile .vprint-shared-title{flex-wrap:wrap}.vprint-reconcile .vprint-shared-title button{width:100%}}
