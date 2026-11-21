@@ -5,7 +5,7 @@ import {reconciliarGeneracionesR7} from "../src/visura-r7-reconcile.mjs";
 const hash=c=>c.repeat(64);
 const row=(code,date,digest)=>({
  codigo:code,estado:"publicada",almacen:"COR_01_COR",
- documento_ruta:"documentos/"+code+"/"+hash(digest)+".pdf",fecha:date
+ documento_ruta:"documentos/"+code+"/"+hash(digest)+".pdf",fecha:date,publicado_en:date+"T00:00:00Z"
 });
 const generated=(code,digest)=>({id:code,pdfHash:hash(digest),
  listadoGeneradoAt:"2026-11-21T08:35:00.000Z",listadoGeneradoHash:hash(digest)});
@@ -20,10 +20,17 @@ test("R7 con PDF idéntico y sin historial servidor es un pendiente, no una escr
  assert.equal(x.items.find(i=>i.codigo==="LP26-00001").estado,"pendientes");
 });
 
-test("fecha BC anterior a hoy bloquea registro con RPC actual",()=>{
+test("publicación anterior a hoy bloquea nueva sincronización R7",()=>{
  const x=reconcile([generated("LP26-00002","b")]);
  assert.equal(x.counts.bloqueoFecha,1);
  assert.equal(x.counts.pendientes,0);
+});
+
+test("BC anterior pero publicación de hoy admite preflight R7",()=>{
+ const backdated={...current[1],publicado_en:"2026-11-21T01:00:00Z"};
+ const x=reconcile([generated("LP26-00002","b")],new Map(),[backdated]);
+ assert.equal(x.counts.pendientes,1);
+ assert.equal(x.counts.bloqueoFecha,0);
 });
 
 test("impresión compartida SIN hash no se certifica como misma versión",()=>{
