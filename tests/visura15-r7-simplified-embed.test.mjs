@@ -39,7 +39,7 @@ test("un solo acceso principal dentro de Administración > Impresión",()=>{
  assert.match(app,/visible\(\$\("preparacionImpresionR7Shortcut"\),ownProfile\.rol==="administrador"\)/);
  assert.match(app,/\$\("preparacionImpresionR7Shortcut"\)\.addEventListener/);
  assert.match(app,/document\.querySelector\('\[data-admin-tab="2"\]'\)\?\.click\(\)/);
- assert.match(html,/No se sincronizan todavía/);
+ assert.match(html,/no se sincronizan todavía/i);
  assert.match(admin,/async function mostrarMotorR7/);
  assert.match(admin,/getUser\(\)\?\.id/);
  assert.match(admin,/new TextEncoder\(\)\.encode\("visura-prepara-r7:"\+current\+":"\+warehouse\)/);
