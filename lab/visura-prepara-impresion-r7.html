@@ -928,6 +928,16 @@ function registrarListadosGenerados(cargas){
  }
  for(const r of afectadas)selectedIds.delete(r.id);
  list();
+ // Único gancho de integración VISURA: aviso al contenedor DESPUÉS de persistir.
+ // No altera la impresión ni envía datos al servidor; solo códigos LP y ámbito.
+ try{
+   if(window.parent!==window&&location.origin!=="null"){
+     window.parent.postMessage({
+       type:"visura:r7:listados-generados",scope:VISURA_SCOPE,
+       codigos:afectadas.map(r=>r.id).filter(id=>/^LP\\d{2}-\\d{4,6}$/.test(id)).slice(0,20)
+     },location.origin);
+   }
+ }catch{/* No bloquear una generación local si falla un aviso de LAB. */}
  return afectadas.length;
 }
 // «TOTAL» es la cifra declarada al final de MERCANCÍA, NO el nº de referencias ni el peso.
