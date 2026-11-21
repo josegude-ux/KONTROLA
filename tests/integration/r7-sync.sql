@@ -1,6 +1,6 @@
 \set ON_ERROR_STOP on
 -- VISURA PREPARA · R7. SOLO sobre kontrola_test local ya creada por run.sh.
--- El borrador SQL se aplicó únicamente a esta base de pruebas efímera.
+-- La propuesta SQL se aplicará únicamente a esta base de pruebas efímera.
 reset role;
 insert into public.kontrola_cargas(
  codigo,productos,documento_ruta,documento_hash,publicado_por,almacen,estado,fecha,publicado_en
@@ -23,18 +23,23 @@ select set_config('request.jwt.claim.sub','00000000-0000-0000-0000-000000000001'
 -- Fecha BC de ayer, publicación hoy => primera generación R7 válida.
 select * from public.kontrola_registrar_generacion_r7(
  'COR_01_COR','LP26-88001',repeat('a',64),now()
-)\gset r7_first_
+) \gset r7_first_
 select test.assert(:'r7_first_resultado'='REGISTRADO','primera generación R7 confirmada');
 select test.assert(:'r7_first_intentos'='1','primera generación conserva un único intento');
 
 -- Idempotencia: el mismo PDF desde el mismo u otro equipo no genera otra fila.
 select * from public.kontrola_registrar_generacion_r7(
  'COR_01_COR','LP26-88001',repeat('a',64),now()
-)\gset r7_repeat_
+) \gset r7_repeat_
 select test.assert(:'r7_repeat_resultado'='YA_REGISTRADO','repetición idempotente');
+-- RLS prohíbe SELECT directo al rol autenticado: verificar recuento como
+-- propietario de la base efímera, sin abrir permisos a la app.
+reset role;
 select test.assert((select count(*)=1 from public.kontrola_impresiones
  where codigo='LP26-88001' and documento_hash=repeat('a',64)),
  'sin filas duplicadas por la misma LP+hash');
+set role authenticated;
+select set_config('request.jwt.claim.sub','00000000-0000-0000-0000-000000000001',false);
 
 -- El histórico previo sin huella se mantiene ambiguo: revisión manual obligatoria.
 do $r7$
